@@ -1,0 +1,211 @@
+import { Hono } from 'hono';
+import type { AppEnv } from '../env';
+import { validateProductInput, type Product, type ProductInput, type PurchaseRecord } from '../../shared/domain/product';
+import type { ProductTypeKey, RatingKey, StrainTypeKey } from '../../shared/domain/productTypes';
+import type { Ratings } from '../../shared/domain/ratings';
+import { randomId } from '../lib/crypto';
+import { fail, jsonBody } from '../lib/http';
+import { requireUser } from '../lib/session';
+
+// Your own products. Every query is scoped by user_id, so another user's ID
+// behaves exactly like a missing one (404). Followers get their own, narrower
+// routes in Phase 7 — nothing here is ever sent to anyone but the owner.
+
+export const products = new Hono<AppEnv>();
+products.use('*', requireUser());
+
+interface ProductRow {
+  id: string;
+  name: string;
+  strain_type: string | null;
+  product_type: string;
+  product_type_other: string | null;
+  concentrate_type: string;
+  concentrate_type_other: string | null;
+  country: string | null;
+  country_other: string | null;
+  source: string | null;
+  date_tried: string | null;
+  leafly_link: string | null;
+  notes: string | null;
+  hit_time_minutes: number | null;
+  archived: number;
+  private: number;
+  created_at: number;
+  updated_at: number;
+}
+
+interface RatingRow {
+  product_id: string;
+  category: string;
+  value: number;
+}
+
+interface PurchaseRow {
+  id: string;
+  product_id: string;
+  seq: number;
+  date: string | null;
+  amount: number | null;
+  total_paid: number;
+  supplier: string | null;
+}
+
+function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow[]): Product {
+  const r: Ratings = {};
+  for (const x of ratings) r[x.category as RatingKey] = x.value;
+  return {
+    id: row.id,
+    name: row.name,
+    strainType: row.strain_type as StrainTypeKey | null,
+    productType: row.product_type as ProductTypeKey,
+    productTypeOther: row.product_type_other,
+    concentrateType: row.concentrate_type,
+    concentrateTypeOther: row.concentrate_type_other,
+    country: row.country,
+    countryOther: row.country_other,
+    source: row.source,
+    dateTried: row.date_tried,
+    leaflyLink: row.leafly_link,
+    notes: row.notes,
+    hitTimeMinutes: row.hit_time_minutes,
+    ratings: r,
+    purchases: purchases.map(
+      (p): PurchaseRecord => ({ id: p.id, seq: p.seq, date: p.date, amount: p.amount, totalPaid: p.total_paid, supplier: p.supplier }),
+    ),
+    archived: row.archived === 1,
+    private: row.private === 1,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+const PRODUCT_COLUMNS = `id, name, strain_type, product_type, product_type_other, concentrate_type, concentrate_type_other,
+  country, country_other, source, date_tried, leafly_link, notes, hit_time_minutes, archived, private, created_at, updated_at`;
+
+/** Loads the user's products (optionally one) with ratings and purchases, in three queries. */
+async function load(db: D1Database, userId: string, where: { id?: string; archived?: boolean }): Promise<Product[]> {
+  const cond = where.id !== undefined ? 'AND id = ?2' : where.archived !== undefined ? 'AND archived = ?2' : '';
+  const arg = where.id ?? (where.archived === undefined ? undefined : where.archived ? 1 : 0);
+  const bind = (sql: string) => (arg === undefined ? db.prepare(sql).bind(userId) : db.prepare(sql).bind(userId, arg));
+  const productCond = cond.replace('id =', 'p.id =').replace('archived =', 'p.archived =');
+  const [rows, ratings, purchases] = await db.batch<unknown>([
+    bind(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE user_id = ?1 ${cond} ORDER BY created_at`),
+    bind(`SELECT r.product_id, r.category, r.value FROM ratings r JOIN products p ON p.id = r.product_id WHERE r.user_id = ?1 ${productCond}`),
+    bind(`SELECT pu.id, pu.product_id, pu.seq, pu.date, pu.amount, pu.total_paid, pu.supplier FROM purchases pu JOIN products p ON p.id = pu.product_id
+          WHERE pu.user_id = ?1 ${productCond} ORDER BY pu.seq`),
+  ]);
+  const byProduct = <T extends { product_id: string }>(list: T[]) => {
+    const m = new Map<string, T[]>();
+    for (const x of list) m.set(x.product_id, [...(m.get(x.product_id) ?? []), x]);
+    return m;
+  };
+  const r = byProduct(ratings!.results as RatingRow[]);
+  const pu = byProduct(purchases!.results as PurchaseRow[]);
+  return (rows!.results as ProductRow[]).map((row) => toProduct(row, r.get(row.id) ?? [], pu.get(row.id) ?? []));
+}
+
+async function loadOne(db: D1Database, userId: string, id: string): Promise<Product> {
+  const [p] = await load(db, userId, { id });
+  if (!p) fail(404, 'not_found', 'That product doesn’t exist.');
+  return p;
+}
+
+function parse(body: unknown): ProductInput {
+  const result = validateProductInput(body);
+  if (!result.ok) fail(400, 'invalid_product', result.message);
+  return result.value;
+}
+
+/** Statements that write the product's ratings and purchases for `input`. */
+async function childWrites(db: D1Database, userId: string, productId: string, input: ProductInput): Promise<D1PreparedStatement[]> {
+  const out: D1PreparedStatement[] = [];
+  // Ratings: set or clear only what the editor mentioned; everything else is kept.
+  for (const [category, value] of Object.entries(input.ratings)) {
+    out.push(
+      value === null
+        ? db.prepare('DELETE FROM ratings WHERE product_id = ?1 AND category = ?2 AND user_id = ?3').bind(productId, category, userId)
+        : db
+            .prepare('INSERT INTO ratings (product_id, user_id, category, value) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (product_id, category) DO UPDATE SET value = excluded.value')
+            .bind(productId, userId, category, value),
+    );
+  }
+  // Purchases: the list is replaced. Existing ones keep their entry order (seq); new ones go after.
+  const { results: existing } = await db.prepare('SELECT id, seq FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId).all<{ id: string; seq: number }>();
+  const seqById = new Map(existing.map((e) => [e.id, e.seq]));
+  let next = existing.reduce((n, e) => Math.max(n, e.seq), 0);
+  out.push(db.prepare('DELETE FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId));
+  for (const p of input.purchases) {
+    const known = p.id !== undefined && seqById.has(p.id);
+    const seq = known ? seqById.get(p.id!)! : ++next;
+    out.push(
+      db
+        .prepare('INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)')
+        .bind(known ? p.id! : randomId(), productId, userId, seq, p.date, p.amount, p.totalPaid, p.supplier),
+    );
+  }
+  return out;
+}
+
+const FIELDS = (i: ProductInput) =>
+  [i.name, i.strainType, i.productType, i.productTypeOther, i.concentrateType, i.concentrateTypeOther, i.country, i.countryOther, i.source, i.dateTried, i.leaflyLink, i.notes, i.hitTimeMinutes, i.private ? 1 : 0] as const;
+
+products.get('/', async (c) => {
+  const archived = c.req.query('archived');
+  return c.json({ products: await load(c.env.DB, c.var.user!.id, { archived: archived === '1' }) });
+});
+
+products.get('/:id', async (c) => c.json({ product: await loadOne(c.env.DB, c.var.user!.id, c.req.param('id')) }));
+
+products.post('/', async (c) => {
+  const userId = c.var.user!.id;
+  const input = parse(await jsonBody(c));
+  const id = randomId();
+  const now = Date.now();
+  const db = c.env.DB;
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO products (id, user_id, name, strain_type, product_type, product_type_other, concentrate_type, concentrate_type_other,
+           country, country_other, source, date_tried, leafly_link, notes, hit_time_minutes, private, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?17)`,
+      )
+      .bind(id, userId, ...FIELDS(input), now),
+    ...(await childWrites(db, userId, id, input)),
+  ]);
+  return c.json({ product: await loadOne(db, userId, id) }, 201);
+});
+
+products.put('/:id', async (c) => {
+  const userId = c.var.user!.id;
+  const id = c.req.param('id');
+  const input = parse(await jsonBody(c));
+  const db = c.env.DB;
+  await loadOne(db, userId, id); // 404 unless it's yours
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE products SET name = ?3, strain_type = ?4, product_type = ?5, product_type_other = ?6, concentrate_type = ?7, concentrate_type_other = ?8,
+           country = ?9, country_other = ?10, source = ?11, date_tried = ?12, leafly_link = ?13, notes = ?14, hit_time_minutes = ?15, private = ?16, updated_at = ?17
+         WHERE id = ?1 AND user_id = ?2`,
+      )
+      .bind(id, userId, ...FIELDS(input), Date.now()),
+    ...(await childWrites(db, userId, id, input)),
+  ]);
+  return c.json({ product: await loadOne(db, userId, id) });
+});
+
+/** The profile's Private switch and the Archive / Un-archive actions save immediately. */
+for (const flag of ['private', 'archived'] as const) {
+  products.post(`/:id/${flag}`, async (c) => {
+    const body = await jsonBody(c);
+    if (typeof body.value !== 'boolean') fail(400, 'bad_request', 'The request could not be read.');
+    const userId = c.var.user!.id;
+    const id = c.req.param('id');
+    const res = await c.env.DB.prepare(`UPDATE products SET ${flag} = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4`)
+      .bind(body.value ? 1 : 0, Date.now(), id, userId)
+      .run();
+    if (res.meta.changes !== 1) fail(404, 'not_found', 'That product doesn’t exist.');
+    return c.json({ product: await loadOne(c.env.DB, userId, id) });
+  });
+}

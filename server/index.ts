@@ -4,6 +4,7 @@ import type { AppEnv } from './env';
 import { loadSession } from './lib/session';
 import { auth } from './routes/auth';
 import { account } from './routes/account';
+import { products } from './routes/products';
 
 export type { Env } from './env';
 
@@ -36,6 +37,7 @@ app.get('/health', async (c) => {
 
 app.route('/auth', auth);
 app.route('/account', account);
+app.route('/products', products);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
 

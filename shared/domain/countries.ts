@@ -1,4 +1,4 @@
-// Country picklist. DRAFT — awaiting the owner's approval of the list itself.
+// Country picklist, approved by the owner (D9).
 // Stored as an ISO 3166-1 alpha-2 code, or OTHER_COUNTRY with free text
 // (the same "Other" pattern as product type and concentrate type).
 

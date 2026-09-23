@@ -8,3 +8,4 @@ export * from './leaderboard';
 export * from './log';
 export * from './leafly';
 export * from './account';
+export * from './product';
