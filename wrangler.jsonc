@@ -12,8 +12,7 @@
     {
       "binding": "DB",
       "database_name": "green-tracker",
-      // Filled in when the production database is created (wrangler d1 create green-tracker).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "0cb063fc-ce0e-4f8f-a7b1-0354e47b325f",
       "migrations_dir": "migrations"
     }
   ],
