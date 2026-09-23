@@ -3,6 +3,7 @@ import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';
 import { headlinePrice, type Purchase } from '../../../shared/domain/money';
+import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { overall } from '../../../shared/domain/ratings';
@@ -31,8 +32,13 @@ export function StrainTag(p: { strain: string | null }) {
 
 export function Thumb(p: { product: Product; class?: string }) {
   const def = productType(p.product.productType);
-  // No photo: the type mark in accent; Other / Not set leave the square empty. (Photos: Phase 5.)
-  return <div class={`thumb ${p.class ?? ''}`}>{def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>;
+  const first = p.product.photos[0];
+  // The first photo's thumbnail; no photo → the type mark in accent; Other / Not set → empty.
+  return (
+    <div class={`thumb ${p.class ?? ''}`}>
+      {first ? <img src={photoUrl(first, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}
+    </div>
+  );
 }
 
 /** Line 2 of a row: strain tag · flag · type mark (· lock on your own private products). */

@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.4.0 (Phase 4 — Leaderboard)
+**Current version:** 0.5.0 (Phase 5 — photos)
 
 ---
 
@@ -52,8 +52,8 @@ this document records how they were implemented and every decision made on top.
 | 2 | Accounts: passkeys, recovery codes, sessions, rate limits | **Done** |
 | 3 | Products: editor, profile, archive, private | **Done** |
 | 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | **Done** |
-| 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | Next |
-| 6 | Log: loose entries, projections, grouping, promotion | |
+| 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | **Done** |
+| 6 | Log: loose entries, projections, grouping, promotion | Next |
 | 7 | Social: follows, requests, blocks, search, follower view, privacy suite | |
 | 8 | Data & account: export, restore, delete account, More/About | |
 | 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | |
@@ -71,7 +71,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D5 | Filter and Rank by stored **per device** (localStorage), not synced. | |
 | D6 | Navigation: **4 tabs** — Leaderboard, Log, People (with pending-requests badge), More. | |
 | D7 | Usernames: 3–20 characters, `a–z 0–9 _`, shown as typed, unique case-insensitively. | |
-| D8 | **Thumbnails (scope addition, approved):** a ~320px thumbnail is generated in the browser on upload and on every crop, stored alongside the cropped image and original. Lists use thumbnails. | One more R2 object per photo. |
+| D8 | **Thumbnails (scope addition, approved):** a ~320px thumbnail is generated in the browser on upload and on every crop, stored alongside the cropped image and original. Lists use thumbnails. | One more R2 object per photo. See §4 *Photos*. |
 | D9 | Country list in `shared/domain/countries.ts` (90 countries + Other) — **approved as drafted** (2026-09-23). | |
 | D10 | The owner tests on a real iPhone (installed to the Home Screen). This environment only has Chromium. | |
 | D11 | Web address: **`green-tracker.green-tracker.workers.dev`** (2026-09-23). | This is the passkey relying-party ID. Changing it later invalidates every passkey (accounts would need recovery codes). |
@@ -122,123 +122,40 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 - **Leafly link:** stored exactly as typed. When opening, anything not starting
   `http://` or `https://` gets `https://` prepended — which also means a typed
   `javascript:` link can never run.
-- **Photos in R2** are keyed `u/<user>/<photo>/{original,cropped,thumb}.jpg`,
-  independent of the parent record. Promotion re-assigns a photo with a single
-  row update inside one D1 batch — atomic, no R2 operation.
-- **Photo caching:** served with `Cache-Control: private, no-cache` + ETag, so a
-  revoked follower's device can't keep showing cached photos.
-- **Deployment.** The Vite Cloudflare plugin writes the deployable config to
-  `dist/green_tracker/wrangler.json`; deploy scripts pass it with `--config`
-  (the plugin's redirect file lands under `client/` because Vite's root is
-  `client`). The cloud build environment's proxy replaces the short-lived JWT
-  that the Workers static-assets upload uses with the API token, so that upload
-  fails with 401. There, `deploy:embedded` bundles the built client into the
-  Worker with the same routing (`/api/*` → API, exact file, else `index.html`;
-  hashed `/assets/*` cached immutably). Same Worker, same bindings. A normal
-  machine or CI should use `npm run deploy`.
-- **Accounts (Phase 2).**
-  - *Sign-up* is username → passkey → recovery codes. The username rides on the
-    server-side WebAuthn challenge; the user row, first passkey and codes are
-    written in one D1 batch only after the passkey verifies, so an abandoned
-    sign-up leaves nothing behind. A name taken in between gets `username_taken`.
-  - *Passkeys* are discoverable (resident) credentials with user verification
-    required; sign-in needs no username. ES256 and RS256 accepted, attestation
-    `none`. RP ID and origin come from `RP_ID` / `ORIGIN` vars (D11). Challenges
-    are single use and expire after 5 minutes. More than one passkey per
-    account; the **last passkey can't be removed** (refused with a message).
-    Passkey names are the device family from the User-Agent (iPhone, Mac…).
-  - *Recovery codes*: 10 codes of 8 characters from a 31-symbol alphabet with no
-    look-alikes (0/O, 1/I/L), shown as `XXXX-XXXX` (~40 bits each). Stored as
-    SHA-256 of user ID + code. Input ignores case, spaces and dashes. A wrong
-    code and an unknown username give the same answer. Using a code opens a
-    session that can only add a passkey or sign out until it has one (D4);
-    every other API returns `needs_passkey`. Regenerating replaces the set.
-  - *Sessions*: 256-bit random token in an `HttpOnly; SameSite=Lax` cookie
-    (`Secure` on https), only its SHA-256 stored. 60 days, sliding: using the
-    app on any day pushes expiry back to 60 days. Sign out deletes the row;
-    sign out everywhere deletes all of the user's rows.
-  - *Request safety*: every non-GET API request must carry `Origin` equal to
-    `ORIGIN` (CSRF). API responses are `Cache-Control: no-store`. Errors are
-    `{ error, message }` with the message written to show as-is; server logs
-    record only method, route and error type.
-  - *Rate limits* (fixed windows in D1, IP stored hashed): sign-up 10/hour per
-    IP; passkey sign-in 60/10 min per IP; recovery 10/hour per IP and 5/hour per
-    username; username checks 120/10 min per IP. Old windows are pruned lazily.
-  - *Client*: Preact with a tiny history router. Signed-out paths are `/signin`,
-    `/signup`, `/recover`. Leaderboard, Log and People show "on its way" cards
-    until their phases. More has Account (username, passkeys, recovery codes,
-    sign out, sign out everywhere) and About (version). Recovery codes can be
-    copied or saved (share sheet → Save to Files on iPhone, download elsewhere).
-- **Products (Phase 3).** Decisions where the brief is silent are marked *(builder)*.
-  - *One shape, one validator*: `shared/domain/product.ts` defines the record and
-    `validateProductInput`, used by the editor before saving and by the server on
-    every write. It trims text (blank → null), auto-capitalises name, Source and
-    supplier (idempotent, so the server applying it again is harmless), checks
-    ranges and real calendar dates, and drops purchases with no total paid.
-  - *Ratings on save*: the editor sends only the categories of the current type,
-    each as a number (set) or null (clear). Categories not sent are left exactly
-    as stored, which is what makes a type switch lossless.
-  - *Hit time is kept when a product moves away from Edibles*, hidden, the same as
-    ratings and concentrate type *(builder)*.
-  - *Purchases* are replaced as a list on save. An existing purchase keeps its
-    entry order (`seq`); new ones go after. Latest = newest date, then latest entered.
-  - *A total paid of £0 is allowed* (a gift) and gives £0.00/g; an amount must be
-    more than 0 *(builder)*.
-  - *Leaderboard in Phase 3* is the default ranking only (Overall, all types) with
-    the approved row design, the podium, private locks, the metadata-line fallbacks
-    and the + button. Everything else in §10.1 is Phase 4.
-  - *Profile*: Details lists only fields that are set *(builder)*. The Overall
-    explanation under the ratings is the same per-type text as the editor. Private
-    saves immediately and shows the change at once, reverting if the save fails.
-  - *Archive*: rows ranked by Overall with rank numbers but **no podium metals**
-    (the podium belongs to the Leaderboard) *(builder)*, each with Un-archive (P7).
-    An archived product's profile is read-only with an Un-archive button *(builder)*.
-  - *Isolation*: every product query is scoped to the signed-in user; another
-    user's product ID behaves exactly like a missing one (404). Nothing here is
-    ever sent to followers — they get their own routes in Phase 7.
-  - *Sliders* (0.3.1) are our own component (`client/src/components/Slider.tsx`), not
-    `<input type="range">`: one continuous drag works from unrated, the whole bar is
-    touchable, a tap jumps to a value, a vertical swipe still scrolls the page
-    (`touch-action: pan-y`; a touch only takes over once it moves sideways), and the
-    value is taken where the finger lifts. Keyboard: arrows ±0.1, Page Up/Down ±1,
-    Home/End. Hit time uses the same control in 15-minute steps.
-  - *CSS naming*: component modifiers are prefixed (`slider--unset`), never bare
-    generic names like `.empty`, which already means the empty-state card.
-  - *Client cache*: products are cached in memory for instant back-navigation and
-    cleared whenever the signed-in account changes.
-- **Leaderboard (Phase 4).**
-  - *View state* (`client/src/viewState.ts`): `{ filter, rankBy }` in localStorage
-    under `gt.view`, per device (D5). The Type filter is the one setting the Log will
-    share. Every read and write goes through `resolveViewState`, so an invalid value →
-    All, and a Rank by the filter doesn't offer → Overall, overwriting what's stored.
-    Storage failures (private browsing) just mean the setting doesn't persist.
-  - *Control row*: two pills over transparent native selects (16px, so iOS shows its
-    picker and never zooms), sticky under the header (P4). Filter options carry
-    🌿 💧 🍪 💨; the closed pill has no icon. Active = not Overall / not All.
-  - *Label fitting is measured on the device*: after each change the row checks
-    whether it overflows and, only if it does, first shortens the Rank label, then
-    the Type label. Short forms: `VFM`, `Consis.`, `Price/g`, `Price/mg`, `Conc.`.
-    **Measured at 375px (Chromium), every filter × Rank by combination:** only two
-    need shortening — Concentrate × Price per gram (`Price/g`) and Concentrate ×
-    Value for money (`VFM`). The Type pill never needs it. Everything fits at 390px.
-    Because it's measured live, iPhone Safari's own font widths decide on the phone.
-  - *Score block* shows the ranked value, relabelled: scores 1dp (`7.8 TASTE`),
-    price £ 2dp (`£0.18 PRICE`), VFM 2dp (`3.28 VFM`). Price-ranked rows show the
-    price on the metadata line too (chosen in the brief).
-  - *Tiles* recalculate over the visible rows; hidden only when you have no products
-    at all. Under a filter or ranking that shows nothing they read `0 / – / 0g`.
-  - *Empty states*: genuinely empty (Add a product); filtered-empty names the type
-    and how many products you have (Show all types); rank-empty names the ranking
-    (Rank by Overall) and wins when both apply. Price and VFM rank-empty cards say
-    what's missing (a purchase with an amount; an Overall and a priced latest
-    purchase) *(builder copy)*.
-  - *Returning lands where you were* (`client/src/scrollReturn.ts`): tapping a row
-    remembers the product and the row's position on screen, from layout offsets
-    (not transformed rects, per brief §10). Coming back from that product puts the
-    row at the same screen position, or leaves the page at the top if the row is
-    already fully visible there; a row that's gone → top. Memory only, so tab
-    switches and launches start at the top. The browser's own scroll restoration is
-    off; header Back buttons go back through history when there is some.
+- **Photos (Phase 5).** *(Replaces the Phase-0 note on photo keys.)*
+  - *All image work is in the browser*: resize to 1600px long edge at JPEG 0.82;
+    crops are rendered from the stored original (never a crop of a crop); the
+    thumbnail (D8) is ~320px on the short edge. Drawing an `<img>` to a canvas
+    applies EXIF orientation, so stored images are upright. The server only stores
+    and serves files (the free plan's CPU budget can't process images).
+  - *Image sets*: every version is an immutable set of R2 objects at
+    `u/<user>/s/<set>/{original,cropped,thumb}.jpg`. A new photo's set holds all
+    three; a re-crop's set holds cropped + thumb and the photo keeps its
+    `original_set`. The photo row points at its current `image_set`, which is also
+    the ETag and the `?v=` in image URLs, so a crop is a new URL.
+  - *Upload first, commit on Save*: the editor uploads new photos and crops at once
+    as pending sets (`uploads` table); Save attaches them in the same D1 batch as
+    the rest of the product. Cancel, leaving the editor, removing a new photo or
+    re-cropping it again discards pending sets immediately; any left over are swept
+    after a day. Files a save makes unused (old crops, removed photos) are deleted
+    only after the batch commits. Promotion (Phase 6) will just re-point `log_entry_id`
+    → `product_id` on the row.
+  - *Where a crop is saved* (brief §11): from the profile or its viewer → at once
+    (`POST /api/photos/:id/crop`); from the editor or its viewer → on Save, with the
+    viewer showing the unsaved crop; Cancel discards it.
+  - *Serving*: `GET /api/photos/:id/{thumb|cropped|original}` for signed-in owners
+    only (followers: cropped/thumb of visible products, Phase 7), with
+    `Cache-Control: private, no-cache` and an ETag, so phones revalidate (cheap 304s)
+    and revoked access can't keep showing cached photos. Uploads must be JPEG
+    (checked by signature), ≤ 8MB per image and ≤ 1MB per thumbnail.
+  - *Removing photos* happens in the editor (viewer → Remove photo), applied on Save
+    *(builder: the brief doesn't mention deletion)*. There's no reordering: photos
+    keep the order they were added, and the first is the hero and list thumbnail
+    *(builder; can be added if wanted)*.
+  - *Viewer*: full-bleed black over header and tabs, close top-left, swipe between
+    photos (P8, native scroll-snap), `n / N` counter, Crop this photo. *Cropper*:
+    Cancel · Free | Square · Apply, corner handles with 44px touch areas, drag to
+    move, dimmed surround, Reset to original (→ no crop).
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -249,6 +166,23 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.5.0 — Phase 5: photos
+- Add photos in the editor (several at once), resized in the browser; ~320px
+  thumbnails; first photo is the profile hero and the Leaderboard thumbnail.
+- Photo grid with crop buttons, full-screen viewer with swipe, cropper (Free /
+  Square, corner handles, Reset to original). Profile crops save at once; editor
+  crops and new/removed photos apply on Save and are discarded on Cancel.
+- Server: migration 0003 (photos rebuilt around image sets — the table was empty;
+  checked on production before migrating), pending uploads, authorised serving with
+  ETags, post-commit cleanup of unused files.
+- API responses keep `no-store` unless a route sets its own cache policy (photos).
+- **Fixed before release:** buttons in the viewer and cropper defaulted to "submit",
+  so tapping Square inside the editor saved and closed it. All overlay buttons are
+  now `type="button"`, with a regression test.
+- Tests: 10 API tests (serving, ETag/304, re-crop, delete, reorder, profile crop,
+  single-use uploads, JPEG check, crop bounds, cross-user isolation) and a
+  Playwright journey with real JPEGs checking pixel sizes (1600px, 320px, square).
 
 ### 0.4.0 — Phase 4: Leaderboard
 - Rank by and Type controls (sticky, native pickers, active state, remembered per

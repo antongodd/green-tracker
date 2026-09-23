@@ -8,6 +8,7 @@ import { CONCENTRATE_SUBTYPES, PRODUCT_TYPES, RATING_LABELS, STRAIN_TYPES, produ
 import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
 import { errorText } from '../api';
 import { Header } from '../components/chrome';
+import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { todayIso } from '../components/ProductRow';
 import { PlusIcon } from '../icons';
@@ -23,7 +24,7 @@ interface PurchaseDraft {
   supplier: string;
 }
 
-interface Form extends Omit<ProductInput, 'ratings' | 'purchases'> {
+interface Form extends Omit<ProductInput, 'ratings' | 'purchases' | 'photos'> {
   /** Every stored rating, including hidden ones; only the current type's are sent. */
   ratings: Ratings;
   purchases: PurchaseDraft[];
@@ -38,7 +39,7 @@ const parseNum = (s: string): number | null | 'bad' => {
   return Number.isFinite(n) ? n : 'bad';
 };
 
-function toForm(input: ProductInput, stored: Ratings): Form {
+function toForm({ photos: _photos, ...input }: ProductInput, stored: Ratings): Form {
   return {
     ...input,
     ratings: { ...stored },
@@ -47,7 +48,9 @@ function toForm(input: ProductInput, stored: Ratings): Form {
 }
 
 /** Builds what the server receives; returns a message if a number can't be read. */
-function toInput(f: Form): ProductInput | string {
+function toInput(f: Form, drafts: PhotoDraft[]): ProductInput | string {
+  const photos = photosToInput(drafts);
+  if (typeof photos === 'string') return photos;
   const set = productType(f.productType).ratingSet;
   const ratings: ProductInput['ratings'] = {};
   for (const s of set) ratings[s.key] = f.ratings[s.key] ?? null;
@@ -58,7 +61,7 @@ function toInput(f: Form): ProductInput | string {
     if (amount === 'bad' || totalPaid === 'bad') return 'Amounts and prices must be numbers.';
     purchases.push({ ...(d.id ? { id: d.id } : {}), date: d.date || null, amount, totalPaid, supplier: d.supplier || null });
   }
-  return { ...f, ratings, purchases };
+  return { ...f, ratings, purchases, photos };
 }
 
 const TYPE_OPTIONS = PRODUCT_TYPES.map((t) => ({ value: t.key, label: t.label }));
@@ -71,6 +74,8 @@ export function Editor(p: { id: string | null }) {
   const [form, setForm] = useState<Form | null>(() => (p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : toForm(emptyProductInput(), {})));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (existing ? draftsFromRecords(existing.photos) : []));
+  const saved = useRef(false);
   const loaded = useRef(!!form);
 
   useEffect(() => {
@@ -79,6 +84,7 @@ export function Editor(p: { id: string | null }) {
       .then((prod: Product) => {
         loaded.current = true;
         setForm(toForm(productToInput(prod), prod.ratings));
+        setDrafts(draftsFromRecords(prod.photos));
       })
       .catch((e) => setError(errorText(e)));
   }, [p.id]);
@@ -112,15 +118,16 @@ export function Editor(p: { id: string | null }) {
   async function save() {
     if (!form) return;
     setError('');
-    const input = toInput(form);
+    const input = toInput(form, drafts);
     if (typeof input === 'string') return setError(input);
     const checked = validateProductInput(input);
     if (!checked.ok) return setError(checked.message);
     setSaving(true);
     try {
-      const saved = await saveProduct(p.id, checked.value);
-      if (p.id) back(`/products/${saved.id}`);
-      else navigate(`/products/${saved.id}`, { replace: true });
+      const product = await saveProduct(p.id, checked.value);
+      saved.current = true; // the pending uploads now belong to the product
+      if (p.id) back(`/products/${product.id}`);
+      else navigate(`/products/${product.id}`, { replace: true });
     } catch (e) {
       setError(errorText(e));
       setSaving(false);
@@ -211,6 +218,8 @@ export function Editor(p: { id: string | null }) {
             </button>
           </section>
 
+          <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} />
+
           <section class="fgroup" aria-label="Notes">
             <label class="cap" for="notes">
               Notes
@@ -242,8 +251,8 @@ export function Editor(p: { id: string | null }) {
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+          <button class="btn primary" onClick={save} disabled={saving || drafts.some((d) => d.status === 'uploading')}>
+            {saving ? 'Saving…' : drafts.some((d) => d.status === 'uploading') ? 'Uploading photos…' : 'Save'}
           </button>
         </div>
       </div>

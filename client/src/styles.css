@@ -355,3 +355,58 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .tiles.two { grid-template-columns: repeat(2, 1fr); }
 .tile { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline); min-width: 0; }
 .tile b { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- photos (brief §6.9) ---------- */
+.thumb img, .hero-photo img, .pgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lrow .thumb img { border-radius: 8px; }
+.hero-photo { overflow: hidden; padding: 0; border: 0; cursor: zoom-in; width: calc(100% - 32px); }
+.hero-photo:has(img) { height: 300px; }
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.pcell { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--surface-2); border: 0; padding: 0; cursor: zoom-in; }
+.pcell.uploading img { opacity: 0.45; }
+.pcell .state { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 600; color: var(--text); background: var(--bar); border-radius: 999px; padding: 2px 8px; }
+.pcell .state.bad { color: var(--danger); }
+.crop-btn { position: absolute; right: 6px; bottom: 6px; z-index: 1; width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--bar); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: #fff; display: flex; align-items: center; justify-content: center; }
+.crop-btn svg { width: 16px; height: 16px; }
+.crop-btn::before { content: ""; position: absolute; inset: -6px; } /* 44px tap target */
+.add-cell { aspect-ratio: 1; border-radius: 8px; border: 1px dashed var(--hairline-strong); background: var(--surface-2); color: var(--accent-bright); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 13px; font-weight: 600; cursor: pointer; position: relative; }
+.add-cell svg { width: 26px; height: 26px; }
+.add-cell input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 16px; }
+
+/* Viewer and cropper cover everything, header and tabs included (no leaf). */
+.viewer, .cropper { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; display: flex; flex-direction: column; padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); touch-action: none; }
+.viewer { touch-action: pan-x; }
+.viewer-top { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 4px; }
+.viewer-btn { width: 44px; height: 44px; border: 0; background: none; color: #fff; display: flex; align-items: center; justify-content: center; }
+.viewer-btn svg { width: 24px; height: 24px; }
+.viewer-count { font-size: 15px; color: rgba(255, 255, 255, 0.8); }
+.viewer-strip { flex: 1; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain; }
+.viewer-strip::-webkit-scrollbar { display: none; }
+.viewer-slide { flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; align-items: center; justify-content: center; }
+.viewer-slide img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; }
+.viewer-bottom { display: grid; gap: 4px; padding: 12px 16px; max-width: 480px; width: 100%; margin: 0 auto; }
+.viewer .btn.secondary { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.16); color: #fff; }
+.danger-text { color: var(--danger) !important; }
+.cropper-top, .cropper-bottom { position: relative; z-index: 2; background: #000; }
+.cropper-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; height: 56px; padding: 0 12px 0 4px; }
+.cropper-top .btn.sm { justify-self: end; }
+.cropper-top .hbtn { color: #fff; }
+.segmented { display: flex; background: rgba(255, 255, 255, 0.12); border-radius: 9px; padding: 2px; }
+.segmented button { min-width: 72px; height: 32px; border: 0; border-radius: 7px; background: none; color: rgba(255, 255, 255, 0.8); font-size: 14px; font-weight: 600; }
+.segmented button.on { background: rgba(255, 255, 255, 0.24); color: #fff; }
+.cropper-stage { flex: 1; min-height: 0; margin: 12px 20px; display: flex; align-items: center; justify-content: center; }
+.cropper-frame { position: relative; touch-action: none; }
+.cropper-frame img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-select: none; pointer-events: none; }
+.crop-box { position: absolute; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); outline: 1px solid rgba(255, 255, 255, 0.9); cursor: move; touch-action: none; }
+.handle { position: absolute; width: 44px; height: 44px; touch-action: none; }
+.handle::after { content: ""; position: absolute; width: 18px; height: 18px; border: 3px solid #fff; }
+.handle.nw { left: -22px; top: -22px; cursor: nwse-resize; }
+.handle.ne { right: -22px; top: -22px; cursor: nesw-resize; }
+.handle.sw { left: -22px; bottom: -22px; cursor: nesw-resize; }
+.handle.se { right: -22px; bottom: -22px; cursor: nwse-resize; }
+.handle.nw::after { left: 19px; top: 19px; border-right: 0; border-bottom: 0; }
+.handle.ne::after { right: 19px; top: 19px; border-left: 0; border-bottom: 0; }
+.handle.sw::after { left: 19px; bottom: 19px; border-right: 0; border-top: 0; }
+.handle.se::after { right: 19px; bottom: 19px; border-left: 0; border-top: 0; }
+.cropper-bottom { display: flex; justify-content: center; padding: 4px 16px 12px; }
+.cropper-bottom .btn.text { width: auto; }

@@ -86,13 +86,13 @@ export function Sheet(p: { title?: string; message?: string; options: SheetOptio
             </div>
           )}
           {p.options.map((o) => (
-            <button key={o.label} class={`opt${o.danger ? ' dng' : ''}`} onClick={o.onSelect}>
+            <button type="button" key={o.label} class={`opt${o.danger ? ' dng' : ''}`} onClick={o.onSelect}>
               {o.label}
             </button>
           ))}
         </div>
         <div class="grp">
-          <button class="opt bold" onClick={p.onCancel} autoFocus>
+          <button type="button" class="opt bold" onClick={p.onCancel} autoFocus>
             Cancel
           </button>
         </div>

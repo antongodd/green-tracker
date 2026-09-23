@@ -10,7 +10,12 @@ import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate, StrainTag } from '../components/ProductRow';
 import { ExternalIcon, LockIcon, TypeMark } from '../icons';
-import { cachedProduct, fetchProduct, setFlag } from '../products';
+import { cacheProduct, cachedProduct, fetchProduct, setFlag } from '../products';
+import { api } from '../api';
+import { loadImage, renderCrop, uploadSet } from '../images';
+import { PhotoGrid, shownFromRecord } from '../components/PhotoGrid';
+import { Cropper, PhotoViewer } from '../components/PhotoViewer';
+import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 
 function Ratings(p: { product: Product }) {
@@ -90,7 +95,30 @@ export function Profile(p: { id: string }) {
   const [error, setError] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [viewing, setViewing] = useState<number | null>(null);
+  const [cropping, setCropping] = useState<number | null>(null);
+  const [savingCrop, setSavingCrop] = useState(false);
   const path = `/products/${p.id}`;
+
+  /** A crop made on the profile is saved straight away (brief §11), rendered from the original. */
+  async function saveCrop(index: number, crop: Crop | null) {
+    const current = product;
+    const photo = current?.photos[index];
+    if (!current || !photo) return;
+    setCropping(null);
+    setSavingCrop(true);
+    setError('');
+    try {
+      const original = await loadImage(shownFromRecord(photo).original as string);
+      const upload = await uploadSet(await renderCrop(original, crop));
+      const r = await api<{ photo: PhotoRecord }>('POST', `/photos/${encodeURIComponent(photo.id)}/crop`, { upload, crop });
+      const updated = { ...current, photos: current.photos.map((x) => (x.id === photo.id ? r.photo : x)) };
+      setProduct(cacheProduct(updated));
+    } catch (e) {
+      setError(errorText(e));
+    }
+    setSavingCrop(false);
+  }
 
   useEffect(() => {
     fetchProduct(p.id)
@@ -162,7 +190,13 @@ export function Profile(p: { id: string }) {
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
       <main class="screen">
-        <div class="hero-photo">{def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+        {product.photos[0] ? (
+          <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
+            <img src={shownFromRecord(product.photos[0]).image} alt="" />
+          </button>
+        ) : (
+          <div class="hero-photo">{def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+        )}
         <div class="hero">
           <h1>{product.name}</h1>
           <div class={`hero-score${o === null ? ' unrated' : ''}`}>
@@ -194,6 +228,13 @@ export function Profile(p: { id: string }) {
         </div>
 
         <Ratings product={product} />
+        {product.photos.length > 0 && (
+          <section class="sect" aria-label="Photos">
+            <span class="cap">Photos</span>
+            <PhotoGrid photos={product.photos.map(shownFromRecord)} onOpen={setViewing} onCrop={setCropping} />
+            {savingCrop && <p class="small">Saving crop…</p>}
+          </section>
+        )}
         <PriceHistory product={product} />
         {product.notes && (
           <section class="sect" aria-label="Notes">
@@ -245,6 +286,20 @@ export function Profile(p: { id: string }) {
         </section>
       </main>
       <TabBar active={product.archived ? 'more' : 'leaderboard'} />
+      {viewing !== null && (
+        <PhotoViewer
+          photos={product.photos.map(shownFromRecord)}
+          start={viewing}
+          onClose={() => setViewing(null)}
+          onCrop={(i) => {
+            setViewing(null);
+            setCropping(i);
+          }}
+        />
+      )}
+      {cropping !== null && product.photos[cropping] && (
+        <Cropper original={shownFromRecord(product.photos[cropping]!).original} crop={product.photos[cropping]!.crop} onCancel={() => setCropping(null)} onApply={(crop) => saveCrop(cropping, crop)} />
+      )}
       {confirmArchive && (
         <Sheet
           title={`Archive “${product.name}”?`}

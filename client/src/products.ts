@@ -18,6 +18,9 @@ function remember(p: Product): Product {
   return p;
 }
 
+/** Updates the cache after a change made elsewhere (e.g. a profile crop). */
+export const cacheProduct = (p: Product): Product => remember(p);
+
 export const cachedProducts = (): Product[] | null => list;
 export const cachedProduct = (id: string): Product | undefined => byId.get(id);
 
