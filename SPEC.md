@@ -32,6 +32,15 @@ this document records how they were implemented and every decision made on top.
 | `npm run dev` | Local dev (Vite + Worker in workerd) |
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
 | `npm run deploy` | Build, apply remote migrations, deploy (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
+| `npm run deploy:embedded` | Same, but embeds the client files in the Worker instead of using Workers static assets. For the cloud build environment, whose proxy breaks the assets upload (see §4, Deployment) |
+
+### Cloudflare resources
+
+| Resource | Name | ID |
+|---|---|---|
+| Worker | `green-tracker` | https://green-tracker.green-tracker.workers.dev |
+| D1 (WEUR) | `green-tracker` | `0cb063fc-ce0e-4f8f-a7b1-0354e47b325f` |
+| R2 | `green-tracker-photos` | |
 
 ## 2. Build phases
 
@@ -62,9 +71,11 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D6 | Navigation: **4 tabs** — Leaderboard, Log, People (with pending-requests badge), More. | |
 | D7 | Usernames: 3–20 characters, `a–z 0–9 _`, shown as typed, unique case-insensitively. | |
 | D8 | **Thumbnails (scope addition, approved):** a ~320px thumbnail is generated in the browser on upload and on every crop, stored alongside the cropped image and original. Lists use thumbnails. | One more R2 object per photo. |
-| D9 | Country list drafted in `shared/domain/countries.ts` (90 countries + Other) — **awaiting owner review of the list itself.** | |
+| D9 | Country list in `shared/domain/countries.ts` (90 countries + Other) — **approved as drafted** (2026-09-23). | |
 | D10 | The owner tests on a real iPhone (installed to the Home Screen). This environment only has Chromium. | |
-| D11 | Web address — **pending.** Passkeys are bound to it; settle it before real accounts exist. | |
+| D11 | Web address: **`green-tracker.green-tracker.workers.dev`** (2026-09-23). | This is the passkey relying-party ID. Changing it later invalidates every passkey (accounts would need recovery codes). |
+| D12 | **A followed person's Leaderboard rows show Source** on the metadata line (2026-09-23). Overrides design brief §9 ("no metadata line"). | Follower rows: Source only — never price. No date-tried fallback (D3 hides it), so no Source → no metadata line. |
+| D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
 
 ## 4. Implementation decisions
 
@@ -96,6 +107,15 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
   row update inside one D1 batch — atomic, no R2 operation.
 - **Photo caching:** served with `Cache-Control: private, no-cache` + ETag, so a
   revoked follower's device can't keep showing cached photos.
+- **Deployment.** The Vite Cloudflare plugin writes the deployable config to
+  `dist/green_tracker/wrangler.json`; deploy scripts pass it with `--config`
+  (the plugin's redirect file lands under `client/` because Vite's root is
+  `client`). The cloud build environment's proxy replaces the short-lived JWT
+  that the Workers static-assets upload uses with the API token, so that upload
+  fails with 401. There, `deploy:embedded` bundles the built client into the
+  Worker with the same routing (`/api/*` → API, exact file, else `index.html`;
+  hashed `/assets/*` cached immutably). Same Worker, same bindings. A normal
+  machine or CI should use `npm run deploy`.
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -103,14 +123,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 
 ## 5. Open questions for the owner
 
-1. Web address (D11).
-2. Country list review (D9).
-3. With Source now visible to followers (D1): should a followed person's
-   Leaderboard rows show **Source** on the metadata line? The design brief
-   (§9, written before D1) says follower rows have no metadata line.
-4. Edible per-mg prices are shown to 2dp (brief §9), so a very cheap edible
-   (e.g. £0.004/mg) would display as `£0.00/mg`. Keep, or allow more decimals
-   for sub-penny values?
+1. Phase-1 design proposals (see `design/mockups.html` and §7) — awaiting approval.
 
 ## 6. Changelog
 

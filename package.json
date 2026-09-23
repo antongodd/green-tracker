@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler d1 migrations apply green-tracker --remote && wrangler deploy",
+    "preview": "npm run build && wrangler dev --config dist/green_tracker/wrangler.json",
+    "deploy": "npm run build && wrangler d1 migrations apply green-tracker --remote && wrangler deploy --config dist/green_tracker/wrangler.json",
     "db:migrate:local": "wrangler d1 migrations apply green-tracker --local",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy:embedded": "npm run build && wrangler d1 migrations apply green-tracker --remote && node scripts/deploy-embedded.mjs"
   },
   "dependencies": {
     "hono": "^4.13.8",
