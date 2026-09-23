@@ -31,7 +31,7 @@ this document records how they were implemented and every decision made on top.
 | `npm run typecheck` | TypeScript |
 | `npm run dev` | Local dev (Vite + Worker in workerd) |
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
-| `npm run deploy` | Build, apply remote migrations, deploy (needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) |
+| `npm run deploy` | Build, apply remote migrations, deploy (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
 
 ## 2. Build phases
 

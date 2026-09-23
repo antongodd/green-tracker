@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "green-tracker",
+  "account_id": "f8e8108b7cd94335e992d9569d41b48a",
   "main": "server/index.ts",
   "compatibility_date": "2026-09-01",
   "assets": {
