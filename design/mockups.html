@@ -1,0 +1,621 @@
+<title>Green Tracker Mockups</title>
+<meta name="theme-color" content="#050807">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #050807;
+  --surface-1: #0c1410;
+  --surface-2: #111c16;
+  --surface-3: #17251d;
+  --hairline: rgba(255,255,255,0.08);
+  --hairline-strong: rgba(255,255,255,0.14);
+  --bar: rgba(5,8,7,0.78);
+  --bar-solid: #060f0a;
+  --text: #eef4f0;
+  --text-2: rgba(238,244,240,0.64);
+  --text-3: rgba(238,244,240,0.38);
+  --accent: #2fb86a;
+  --accent-bright: #58e08c;
+  --accent-soft: rgba(47,184,106,0.14);
+  --on-accent: #04140b;
+  --indica: #b79bff;
+  --sativa: #ffcf6b;
+  --hybrid: #58e08c;
+  --gold: #e2b760;
+  --silver: #ced6de;
+  --bronze: #c68254;
+  --danger: #ff6b6b;
+  --warning: #f0a93b;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --header-h: 91px; /* 47 status + 44 bar */
+  --nav-h: 83px;    /* 49 bar + 34 home indicator */
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 32px 64px; }
+.num { font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--accent-soft); }
+
+/* ---------- page chrome ---------- */
+.intro { max-width: 760px; margin: 0 auto 40px; display: grid; gap: 16px; }
+.intro .brand { display: flex; align-items: center; gap: 10px; }
+.intro .brand svg { width: 34px; height: 34px; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.intro h1 { margin: 0; font-size: 28px; line-height: 1.15; text-wrap: balance; }
+.intro p { margin: 0; color: var(--text-2); max-width: 65ch; }
+.proposals { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.proposals li { background: var(--surface-1); padding: 12px 16px; display: grid; grid-template-columns: 40px 1fr; gap: 8px; }
+.proposals b { color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+.proposals span { color: var(--text-2); }
+.proposals strong { color: var(--text); font-weight: 600; }
+.note-box { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 16px; color: var(--text-2); font-size: 14px; }
+.note-box strong { color: var(--text); }
+
+.gallery { display: flex; flex-wrap: wrap; gap: 48px 32px; justify-content: center; }
+figure { margin: 0; width: 390px; max-width: 100%; display: grid; gap: 12px; align-content: start; }
+figcaption { display: grid; gap: 4px; }
+figcaption .cap-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+figcaption h2 { margin: 0; font-size: 17px; font-weight: 600; }
+figcaption p { margin: 0; color: var(--text-2); font-size: 13px; }
+.fs-btn { background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--accent-bright); cursor: pointer; white-space: nowrap; }
+
+/* ---------- phone frame ---------- */
+.phone { position: relative; width: 390px; max-width: 100%; height: 844px; border-radius: 40px; overflow: hidden; background: var(--bg); border: 1px solid var(--hairline-strong); isolation: isolate; }
+.scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding-top: var(--header-h); padding-bottom: calc(var(--nav-h) + 24px); scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.no-nav .scroll { padding-bottom: 120px; }
+
+.overlay { position: fixed; inset: 0; z-index: 50; background: var(--bg); }
+.overlay .phone { width: 100%; max-width: none; height: 100%; border: 0; border-radius: 0; }
+.overlay .close-fs { position: absolute; z-index: 60; right: 12px; bottom: calc(var(--nav-h) + 84px); background: var(--surface-3); border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 8px 14px; font-size: 13px; color: var(--text); cursor: pointer; }
+
+/* status bar + header (glass) */
+.hdr { position: absolute; top: 0; left: 0; right: 0; z-index: 5; background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-bottom: 1px solid var(--hairline); }
+.status { height: 47px; display: flex; justify-content: space-between; align-items: center; padding: 6px 32px 0; font-size: 16px; font-weight: 600; }
+.status .sys { display: flex; gap: 6px; align-items: center; }
+.status .sys i { display: block; background: var(--text); border-radius: 2px; }
+.bar { height: 44px; display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; padding: 0 8px; }
+.bar .slot { display: flex; align-items: center; min-height: 44px; }
+.bar .slot.r { justify-content: flex-end; }
+.bar .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-size: 17px; font-weight: 600; }
+.bar .title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .title svg { width: 26px; height: 26px; flex: none; }
+.hbtn { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; min-width: 44px; padding: 0 6px; color: var(--accent-bright); font-size: 16px; background: none; border: 0; }
+.hbtn svg { width: 22px; height: 22px; }
+
+/* tab bar (glass) */
+.nav { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; height: var(--nav-h); padding-bottom: 34px; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-top: 1px solid var(--hairline); }
+.nav::after { content: ""; position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--text); opacity: .9; }
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; font-weight: 600; color: var(--text-2); position: relative; }
+.tab svg { width: 26px; height: 26px; }
+.tab.on { color: var(--accent-bright); }
+.badge { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bar-solid); }
+.home-ind { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--text); opacity: .9; z-index: 7; }
+
+/* control row (sticky under header) */
+.controls { position: sticky; top: 0; z-index: 3; background: var(--bg); display: flex; gap: 8px; padding: 10px 16px; }
+.pill { position: relative; height: 38px; display: inline-flex; align-items: center; gap: 4px; padding: 0 14px; border-radius: 999px; background: var(--surface-1); border: 1px solid var(--hairline); font-size: 15px; white-space: nowrap; }
+.pill .k { color: var(--text-2); }
+.pill svg { width: 12px; height: 12px; color: var(--text-2); }
+.pill.active { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
+.pill.active .k, .pill.active svg { color: var(--accent-bright); }
+.controls .right { margin-left: auto; }
+
+/* stats tiles */
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 16px 12px; }
+.tiles.two { grid-template-columns: repeat(2, 1fr); }
+.tile { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+.tile b { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cap { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+
+/* leaderboard rows */
+.rows { display: grid; gap: 8px; padding: 0 16px; }
+.row { display: grid; grid-template-columns: 22px 54px minmax(0,1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline); position: relative; }
+.row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
+.row.p1 { border-color: rgba(226,183,96,.4); background: linear-gradient(115deg, rgba(226,183,96,.11), rgba(226,183,96,0) 55%), var(--surface-1); }
+.row.p2 { border-color: rgba(206,214,222,.4); background: linear-gradient(115deg, rgba(206,214,222,.09), rgba(206,214,222,0) 55%), var(--surface-1); }
+.row.p3 { border-color: rgba(198,130,84,.4); background: linear-gradient(115deg, rgba(198,130,84,.11), rgba(198,130,84,0) 55%), var(--surface-1); }
+.row.p1 .rk { color: var(--gold); } .row.p2 .rk { color: var(--silver); } .row.p3 .rk { color: var(--bronze); }
+.row.pressed { background: var(--surface-2); transform: scale(.99); }
+.thumb { width: 54px; height: 54px; border-radius: 10px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--accent-bright); flex: none; overflow: hidden; }
+.thumb svg { width: 50%; height: 50%; }
+.mid { min-width: 0; display: grid; gap: 3px; }
+.name { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cluster { display: flex; align-items: center; gap: 6px; min-height: 20px; color: var(--text-2); font-size: 14px; }
+.cluster svg { width: 15px; height: 15px; }
+.cluster .flag { font-size: 15px; line-height: 1; }
+.meta { font-size: 13px; color: var(--text-2); display: flex; min-width: 0; white-space: nowrap; }
+.meta .price { flex: none; font-variant-numeric: tabular-nums; }
+.meta .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.score { text-align: right; display: grid; justify-items: end; }
+.score b { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.score .cap { font-size: 10px; }
+.score.unrated b { color: var(--text-3); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid; }
+.tag.indica { color: var(--indica); border-color: rgba(183,155,255,.32); background: rgba(183,155,255,.08); }
+.tag.sativa { color: var(--sativa); border-color: rgba(255,207,107,.32); background: rgba(255,207,107,.08); }
+.tag.hybrid { color: var(--hybrid); border-color: rgba(88,224,140,.32); background: rgba(88,224,140,.08); }
+.lock { width: 13px !important; height: 13px !important; color: var(--text-2); }
+
+.fab { position: absolute; right: 16px; bottom: calc(var(--nav-h) + 16px); z-index: 4; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,.45); border: 0; }
+.fab svg { width: 26px; height: 26px; }
+
+/* photo stand-ins */
+.ph { position: relative; }
+.ph::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 20%, rgba(255,255,255,.18), transparent 40%); }
+.ph1 { background: radial-gradient(circle at 40% 55%, #9bb46a 0 12%, #5f7f3d 30%, #34472a 55%, #18201a 80%); }
+.ph2 { background: radial-gradient(circle at 55% 45%, #b8c68a 0 10%, #7c9350 28%, #4d3a5c 60%, #1d1824 85%); }
+.ph3 { background: radial-gradient(ellipse at 50% 60%, #f2c86a 0 18%, #c98a2c 40%, #5b3a14 70%, #1f160c 90%); }
+.ph4 { background: radial-gradient(circle at 45% 50%, #ff9a8b 0 14%, #f3c25a 32%, #7c4a2e 62%, #22160f 85%); }
+.ph5 { background: radial-gradient(circle at 50% 50%, #8a9a6a 0 15%, #556b3c 35%, #2d3a24 65%, #121812 90%); }
+.ph6 { background: radial-gradient(circle at 50% 45%, #6d5236 0 22%, #4a3622 45%, #251a10 75%, #120d08 95%); }
+.ph7 { background: radial-gradient(circle at 40% 50%, #a7c483 0 12%, #6f8f4a 30%, #3d5e39 55%, #162416 85%); }
+
+/* log */
+.group-h { position: sticky; top: 58px; z-index: 2; background: var(--bg); display: flex; align-items: center; gap: 8px; padding: 12px 16px 8px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+.group-h .n { margin-left: auto; font-variant-numeric: tabular-nums; }
+.group-h .flag { font-size: 15px; }
+.lrows { margin: 0 16px; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.lrow { display: grid; grid-template-columns: 40px minmax(0,1fr) auto 16px; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border-top: 1px solid var(--hairline); }
+.lrow:first-child { border-top: 0; }
+.lrow .thumb { width: 40px; height: 40px; border-radius: 8px; }
+.lrow .name { font-size: 16px; font-weight: 500; }
+.lrow .mk { width: 15px; height: 15px; color: var(--accent-bright); }
+.lrow .chev { width: 14px; height: 14px; color: var(--text-3); }
+.footnote { padding: 20px 24px 8px; color: var(--text-2); font-size: 13px; text-align: center; }
+
+/* profile */
+.hero-photo { height: 300px; margin: 0 16px; border-radius: 16px; overflow: hidden; }
+.hero { padding: 16px; display: grid; gap: 8px; }
+.hero h1 { margin: 0; font-size: 24px; line-height: 1.2; }
+.hero-score { display: flex; align-items: baseline; gap: 10px; }
+.hero-score b { font-size: 52px; font-weight: 700; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.hero-line { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 14px; flex-wrap: wrap; }
+.hero-line .dot::before { content: "·"; }
+.hero-price { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hero-price small { color: var(--text-2); font-weight: 400; font-size: 13px; }
+.sect { margin: 8px 16px 0; padding: 14px 16px; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; display: grid; gap: 12px; }
+.sect > .cap:first-child { margin-bottom: 2px; }
+.rbar { display: grid; grid-template-columns: 76px 1fr 34px; align-items: center; gap: 10px; font-size: 15px; }
+.rbar .track { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.rbar .fill { height: 100%; border-radius: 999px; background: var(--accent); }
+.rbar .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rbar.muted { color: var(--text-2); }
+.rbar.muted .fill { background: rgba(238,244,240,.28); }
+.hint { font-size: 12px; color: var(--text-2); }
+.sub { font-size: 13px; color: var(--text-2); }
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.pgrid div { aspect-ratio: 1; border-radius: 8px; position: relative; overflow: hidden; }
+.crop { position: absolute; right: 6px; bottom: 6px; z-index: 1; width: 32px; height: 32px; border-radius: 50%; background: var(--bar); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; color: #fff; }
+.crop svg { width: 16px; height: 16px; }
+.purchase { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding-top: 12px; border-top: 1px solid var(--hairline); font-size: 14px; }
+.purchase:first-of-type { border-top: 0; padding-top: 0; }
+.purchase .d { font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.purchase .u { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.purchase .s { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.latest { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-bright); background: var(--accent-soft); border-radius: 999px; padding: 2px 7px; }
+.vfm { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.vfm b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 15px; }
+.kv dt { color: var(--text-2); }
+.kv dd { margin: 0; text-align: right; }
+.switch-row { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+.switch { width: 51px; height: 31px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--hairline-strong); position: relative; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 25px; height: 25px; border-radius: 50%; background: var(--text); }
+.switch.on { background: var(--accent); border-color: var(--accent); }
+.switch.on::after { left: 22px; }
+
+/* buttons */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 12px; font-size: 16px; font-weight: 600; border: 1px solid transparent; width: 100%; }
+.btn svg { width: 16px; height: 16px; }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.secondary { background: var(--surface-2); border-color: var(--hairline); color: var(--text); }
+.btn.text { background: none; color: var(--accent-bright); height: 44px; font-weight: 500; }
+.btn.danger { background: var(--surface-2); border-color: var(--hairline); color: var(--danger); }
+.btn.sm { height: 34px; font-size: 14px; width: auto; padding: 0 14px; border-radius: 10px; }
+.btn.outline { background: none; border-color: var(--hairline-strong); color: var(--text-2); }
+.btn[disabled] { opacity: .4; }
+
+/* forms / editor */
+.fgroup { margin: 12px 16px 0; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 16px 16px; display: grid; gap: 12px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; color: var(--text-2); }
+.input { height: 48px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline-strong); padding: 0 14px; font-size: 16px; display: flex; align-items: center; justify-content: space-between; }
+.input.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input .ph-t { color: var(--text-3); }
+.input svg { width: 12px; height: 12px; color: var(--text-2); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rate { display: grid; gap: 10px; }
+.rate-top { display: flex; align-items: center; gap: 8px; }
+.rate-top .l { font-size: 16px; font-weight: 500; }
+.rate-top .val { margin-left: auto; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
+.rate-top .val.none { color: var(--text-3); }
+.clr { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; color: var(--text-2); }
+.clr svg { width: 10px; height: 10px; }
+.clr.hidden { visibility: hidden; }
+.slider { position: relative; height: 28px; }
+.slider .t { position: absolute; left: 0; right: 0; top: 11px; height: 6px; border-radius: 999px; background: var(--surface-3); }
+.slider .f { position: absolute; left: 0; top: 11px; height: 6px; border-radius: 999px; background: var(--accent); }
+.slider .th { position: absolute; top: 2px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; background: var(--accent); border: 3px solid var(--text); }
+.slider.empty .th { background: var(--surface-3); border-color: var(--text-3); margin-left: 0; }
+.hit { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.hit-top { display: flex; justify-content: space-between; align-items: baseline; }
+.hit-top .l { font-size: 15px; color: var(--text-2); }
+.hit-top .d { font-size: 15px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.steps { position: relative; height: 30px; }
+.steps .t { position: absolute; left: 0; right: 0; top: 13px; height: 4px; border-radius: 999px; background: var(--surface-3); }
+.steps .ticks { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; }
+.steps .ticks i { width: 2px; height: 10px; border-radius: 1px; background: var(--text-3); }
+.steps .ticks i.maj { height: 14px; background: var(--text-2); }
+.steps .knob { position: absolute; top: 5px; width: 20px; height: 20px; margin-left: -10px; border-radius: 6px; background: var(--text-2); border: 2px solid var(--text); }
+.steps-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.pcard { background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px; display: grid; gap: 4px; font-size: 14px; }
+.pcard .top { display: flex; justify-content: space-between; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pcard .bot { display: flex; justify-content: space-between; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.addrow { display: flex; align-items: center; gap: 8px; color: var(--accent-bright); font-weight: 500; min-height: 44px; }
+.addrow svg { width: 18px; height: 18px; }
+.savebar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 12px 16px 46px; background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-top: 1px solid var(--hairline); }
+
+/* empty state */
+.empty { margin: 24px 16px; padding: 28px 20px; display: grid; justify-items: center; gap: 8px; text-align: center; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 16px; }
+.empty svg.leaf-o { width: 48px; height: 48px; color: var(--text-3); }
+.empty h3 { margin: 4px 0 0; font-size: 17px; font-weight: 600; }
+.empty p { margin: 0 0 8px; color: var(--text-2); font-size: 14px; max-width: 30ch; }
+.empty .btn { width: auto; padding: 0 20px; }
+.sheetbox { display: grid; gap: 0; padding-block: 8px; background: var(--bg); border: 1px solid var(--hairline-strong); border-radius: 24px; }
+.sheetbox .lbl { padding: 12px 16px 0; }
+
+/* people */
+.search { margin: 4px 16px 12px; height: 44px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline-strong); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--text-3); font-size: 16px; }
+.search svg { width: 18px; height: 18px; }
+.seg { margin: 0 16px 12px; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 10px; padding: 3px; }
+.seg span { height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); }
+.seg span.on { background: var(--surface-3); color: var(--text); }
+.seg .c { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }
+.seg .n { color: var(--text-3); font-variant-numeric: tabular-nums; font-weight: 500; }
+.prow { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; gap: 12px; align-items: center; min-height: 60px; padding: 8px 12px; border-top: 1px solid var(--hairline); }
+.prow:first-child { border-top: 0; }
+.av { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-3); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; color: var(--text); }
+.prow .u { font-size: 16px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow .acts { display: flex; gap: 8px; }
+.more-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--text-2); }
+.more-btn svg { width: 20px; height: 20px; }
+.scrim { position: absolute; inset: 0; z-index: 8; background: rgba(0,0,0,.55); }
+.sheet { position: absolute; left: 8px; right: 8px; bottom: 34px; z-index: 9; display: grid; gap: 8px; }
+.sheet .grp { background: var(--surface-3); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.sheet .ttl { padding: 14px 16px; text-align: center; font-size: 13px; color: var(--text-2); border-bottom: 1px solid var(--hairline); }
+.sheet .opt { height: 56px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent-bright); border-top: 1px solid var(--hairline); }
+.sheet .opt:first-of-type { border-top: 0; }
+.sheet .opt.dng { color: var(--danger); }
+.sheet .opt.bold { font-weight: 600; color: var(--text); }
+
+/* sign in / create */
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: stretch; padding: 0 24px 34px; }
+.center .mid-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+.center .mid-area svg { width: 104px; height: 104px; }
+.center h1 { margin: 0; font-size: 30px; }
+.center .tag-line { color: var(--text-2); font-size: 15px; margin: 0; }
+.center .actions { display: grid; gap: 10px; padding-bottom: 12px; }
+.steps-ind { display: flex; gap: 6px; justify-content: center; padding: 8px 0 20px; }
+.steps-ind i { width: 24px; height: 4px; border-radius: 2px; background: var(--surface-3); }
+.steps-ind i.on { background: var(--accent); }
+.codes { background: var(--surface-2); border: 1px solid var(--hairline-strong); border-radius: 12px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-family: var(--mono); font-size: 16px; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.codes span::before { content: attr(data-n) "  "; color: var(--text-3); font-size: 12px; }
+.check { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 16px; }
+.check .box { width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--hairline-strong); background: var(--surface-2); flex: none; }
+
+/* more */
+.list { margin: 0 16px; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.li { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-top: 1px solid var(--hairline); font-size: 16px; }
+.li:first-child { border-top: 0; }
+.li > span:first-child { flex: 1; }
+.li .v { color: var(--text-2); font-size: 15px; font-variant-numeric: tabular-nums; }
+.li .chev { width: 13px; height: 13px; color: var(--text-3); flex: none; }
+.li.dng { color: var(--danger); }
+.lh { padding: 20px 32px 8px; }
+.more-foot { padding: 20px 16px; text-align: center; color: var(--text-3); font-size: 12px; }
+
+/* component sheet */
+.sheet-page { background: var(--bg); border: 1px solid var(--hairline-strong); border-radius: 24px; padding: 20px 16px; display: grid; gap: 20px; }
+.marks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.mk-cell { background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 6px; display: grid; justify-items: center; gap: 10px; font-size: 12px; color: var(--text-2); text-align: center; }
+.mk-cell .big { width: 48px; height: 48px; color: var(--accent-bright); }
+.mk-cell .sizes { display: flex; gap: 8px; align-items: center; color: var(--text-2); }
+.mk-cell .sizes svg:first-child { width: 15px; height: 15px; color: var(--accent-bright); }
+.mk-cell .sizes svg:last-child { width: 24px; height: 24px; }
+.ident { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.appicon { width: 76px; height: 76px; border-radius: 17px; background: #0d3a22; display: flex; align-items: center; justify-content: center; color: #7ef0ad; }
+.appicon svg { width: 54px; height: 54px; }
+.hleaf { width: 52px; height: 52px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pod { display: flex; gap: 8px; }
+.pod span { width: 36px; height: 36px; border-radius: 10px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .row, .btn { transition: transform .15s ease-out; }
+}
+@media (max-width: 440px) {
+  body { padding-inline: 12px; }
+  .intro h1 { font-size: 24px; }
+}
+</style>
+
+<!-- icon sprite (not display:none, so gradients resolve) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="leafGlass" x1="17" y1="4" x2="17" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8df3b6" stop-opacity="0.88"/>
+      <stop offset="0.5" stop-color="#58e08c" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#2fb86a" stop-opacity="0.34"/>
+    </linearGradient>
+    <linearGradient id="leafEdge" x1="17" y1="4" x2="17" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b6ffd4" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#2fb86a" stop-opacity="0.75"/>
+    </linearGradient>
+    <path id="gtLeaflet" d="M0 0 C-3.6 -7.5 -2.4 -16.6 0 -21 C2.4 -16.6 3.6 -7.5 0 0 Z"/>
+  </defs>
+  <symbol id="leaf-glass" viewBox="0 0 34 34">
+    <g transform="translate(17 26)" fill="url(#leafGlass)" stroke="url(#leafEdge)" stroke-width="1" stroke-linejoin="round">
+      <use href="#gtLeaflet" transform="rotate(-80) scale(0.54)"/>
+      <use href="#gtLeaflet" transform="rotate(80) scale(0.54)"/>
+      <use href="#gtLeaflet" transform="rotate(-41) scale(0.8)"/>
+      <use href="#gtLeaflet" transform="rotate(41) scale(0.8)"/>
+      <use href="#gtLeaflet"/>
+      <path d="M0 0 L0 4.4" stroke="url(#leafEdge)" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="t-flower" viewBox="0 0 24 24"><path fill="currentColor" d="M12 18.35C8.95 19.21 5.61 18.16 4.12 16.96C5.93 16.35 9.42 16.51 12 18.35Z M12 18.35C14.58 16.51 18.07 16.35 19.88 16.96C18.39 18.16 15.05 19.21 12 18.35Z M12 18.35C7.69 16.49 4.83 12.17 4.22 9.4C6.87 10.39 10.76 13.82 12 18.35Z M12 18.35C13.24 13.82 17.13 10.39 19.78 9.4C19.17 12.17 16.31 16.49 12 18.35Z M12 18.35C9.46 13.06 10.31 6.64 12 3.53C13.69 6.64 14.54 13.06 12 18.35Z M11.45 18.35H12.55V21.46H11.45Z"/></symbol>
+  <symbol id="t-leaf-outline" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round" d="M12 18.35C8.95 19.21 5.61 18.16 4.12 16.96C5.93 16.35 9.42 16.51 12 18.35Z M12 18.35C14.58 16.51 18.07 16.35 19.88 16.96C18.39 18.16 15.05 19.21 12 18.35Z M12 18.35C7.69 16.49 4.83 12.17 4.22 9.4C6.87 10.39 10.76 13.82 12 18.35Z M12 18.35C13.24 13.82 17.13 10.39 19.78 9.4C19.17 12.17 16.31 16.49 12 18.35Z M12 18.35C9.46 13.06 10.31 6.64 12 3.53C13.69 6.64 14.54 13.06 12 18.35Z M12 18.35V21.46"/></symbol>
+  <symbol id="t-conc" viewBox="0 0 24 24"><g fill="currentColor" transform="translate(12 12) scale(1.06) translate(-12 -12)"><path d="M11.87 8.08L20.89 3.47A1 1 0 0 0 19.91 1.73L11.33 7.12A0.55 0.55 0 0 0 11.87 8.08Z"/><path d="M8.75 9.5C8.75 7.65 9.95 6.5 11.4 6.5C12.95 6.5 14.1 7.7 14.1 9.5C14.1 11.45 12.6 12.3 12.25 14.1C12.05 15.25 11.98 15.95 11.68 16.75C11.48 17.28 10.98 17.28 10.8 16.75C10.52 15.9 10.42 15.1 10.3 14.1C10.03 12.2 8.75 11.4 8.75 9.5Z"/><path d="M11.3 17.24C12.61 18.81 13.05 19.86 13.05 20.3A1.75 1.75 0 1 1 9.55 20.3C9.55 19.86 9.99 18.81 11.3 17.24Z"/></g></symbol>
+  <symbol id="t-edible" viewBox="0 0 24 24"><g fill="currentColor" transform="translate(12 12) scale(0.92) translate(-12 -12)"><path fill-rule="evenodd" clip-rule="evenodd" d="M21.1 12L21.08 12.4L21.04 12.79L20.97 13.18L20.88 13.57L20.78 13.95L20.66 14.32L20.51 14.68L20.36 15.04L20.18 15.39L20 15.73L19.8 16.06L19.59 16.38L19.36 16.69L19.13 16.99L18.89 17.29L18.64 17.57L18.38 17.85L18.12 18.12L17.84 18.38L17.57 18.63L17.28 18.88L16.98 19.12L16.68 19.35L16.37 19.56L16.05 19.77L15.72 19.97L15.38 20.15L15.03 20.32L14.67 20.47L14.31 20.61L13.93 20.72L13.56 20.82L13.17 20.9L12.78 20.96L12.39 20.99L12 21L11.61 20.99L11.22 20.95L10.83 20.89L10.45 20.81L10.07 20.71L9.7 20.59L9.34 20.45L8.98 20.29L8.64 20.12L8.3 19.94L7.97 19.74L7.65 19.53L7.34 19.31L7.04 19.08L6.75 18.84L6.47 18.59L6.19 18.34L5.92 18.08L5.65 17.81L5.4 17.54L5.14 17.26L4.9 16.97L4.66 16.67L4.44 16.37L4.22 16.05L4.02 15.72L3.83 15.39L3.65 15.04L3.49 14.68L3.34 14.32L3.22 13.95L3.11 13.57L3.02 13.18L2.96 12.79L2.92 12.4L2.9 12L2.91 11.6L2.94 11.21L2.99 10.81L3.06 10.42L3.16 10.04L3.27 9.66L3.4 9.29L3.55 8.92L3.72 8.57L3.9 8.22L4.1 7.89L4.31 7.56L4.53 7.24L4.77 6.93L5.01 6.64L5.27 6.35L5.54 6.08L5.81 5.81L6.1 5.56L6.39 5.32L6.7 5.09L7.01 4.88L7.34 4.68L7.67 4.5L8.01 4.33L8.35 4.17L8.7 4.03L9.05 3.9L9.41 3.79L9.77 3.69L10.14 3.61L10.51 3.54L10.88 3.48L11.25 3.44L11.63 3.41L12 3.4L12.38 3.4L12.75 3.41L13.13 3.44L13.5 3.47L13.88 3.53L14.25 3.59L14.63 3.67L14.99 3.77L15.36 3.88L15.72 4.01L15.77 4.76L15.6 5.76L15.64 6.29L15.72 6.69L15.83 7.01L15.95 7.29L16.09 7.53L16.24 7.76L16.41 7.96L16.59 8.15L16.78 8.33L17 8.5L17.25 8.66L17.53 8.8L17.88 8.94L18.3 9.06L18.32 9.38L18.36 9.68L18.44 9.97L18.55 10.24L18.7 10.51L18.89 10.79L19.14 11.06L19.5 11.34L20.1 11.65Z M11.3 15.82C9.62 16.29 7.79 15.72 6.97 15.06C7.96 14.72 9.88 14.81 11.3 15.82Z M11.3 15.82C12.72 14.81 14.64 14.72 15.63 15.06C14.81 15.72 12.98 16.29 11.3 15.82Z M11.3 15.82C8.93 14.8 7.36 12.42 7.02 10.9C8.48 11.44 10.62 13.33 11.3 15.82Z M11.3 15.82C11.98 13.33 14.12 11.44 15.58 10.9C15.24 12.42 13.67 14.8 11.3 15.82Z M11.3 15.82C9.9 12.91 10.37 9.38 11.3 7.67C12.23 9.38 12.7 12.91 11.3 15.82Z M11 15.82L11.6 15.82L11.6 17.53L11 17.53Z"/><path d="M19.5 3A0.8 0.8 0 1 1 21.1 3A0.8 0.8 0 1 1 19.5 3Z M16.98 2.3A0.52 0.52 0 1 1 18.02 2.3A0.52 0.52 0 1 1 16.98 2.3Z M22.1 12.9A0.5 0.5 0 1 1 23.1 12.9A0.5 0.5 0 1 1 22.1 12.9Z"/></g></symbol>
+  <symbol id="t-preroll" viewBox="0 0 24 24"><g fill="currentColor" transform="translate(12 12) scale(1.08) translate(-12 -12)"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.62 21.02L16.49 9.51L13.91 7.29L4.18 19.78A0.95 0.95 0 0 0 5.62 21.02Z M5.4 17.97L7.22 19.53L7.69 18.99L5.87 17.43Z"/><path d="M16.17 7.56L19.14 6.19L17.94 3.78L19.98 2.76L19.62 2.04L16.86 3.42L18.06 5.81L15.83 6.84Z M13.86 6.42L15.45 4.6L13.86 2.78L13.34 3.22L14.55 4.6L13.34 5.98Z"/></g></symbol>
+  <!-- tab bar -->
+  <symbol id="n-board" viewBox="0 0 24 24"><path fill="currentColor" d="M9 7.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V20H9Z M2.5 12.5a1 1 0 0 1 1-1H8V20H3.5a1 1 0 0 1-1-1Z M16 14.5h4.5a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H16Z M12 1.9l.8 1.6 1.8.26-1.3 1.27.3 1.78L12 5.97l-1.6.84.3-1.78-1.3-1.27 1.8-.26Z"/></symbol>
+  <symbol id="n-log" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M6 2.5h11.5a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 6 2.5Z M8.5 7.25h8v1.5h-8Z M8.5 11.25h8v1.5h-8Z M8.5 15.25h5v1.5h-5Z"/></symbol>
+  <symbol id="n-people" viewBox="0 0 24 24"><path fill="currentColor" d="M9 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M1.5 19.5c0-3.3 3.4-5.5 7.5-5.5s7.5 2.2 7.5 5.5v.5a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5Z M16.5 11.2a3.3 3.3 0 1 0-1.1-6.4 5.5 5.5 0 0 1 0 6.2c.35.13.72.2 1.1.2Z M18 20.5h4a.5.5 0 0 0 .5-.5v-.4c0-2.6-2.3-4.4-5.4-4.8 1 1.1 1.4 2.4 1.4 3.8Z"/></symbol>
+  <symbol id="n-more" viewBox="0 0 24 24"><path fill="currentColor" d="M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M19 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></symbol>
+  <!-- ui -->
+  <symbol id="u-chev-d" viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5 6 8l3.5-3.5"/></symbol>
+  <symbol id="u-chev-r" viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 2.5 8 6l-3.5 3.5"/></symbol>
+  <symbol id="u-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M15 4.5 7.5 12l7.5 7.5"/></symbol>
+  <symbol id="u-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M12 4.5v15M4.5 12h15"/></symbol>
+  <symbol id="u-lock" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M7 10V7.5a5 5 0 0 1 10 0V10h.5A1.5 1.5 0 0 1 19 11.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20.5v-9A1.5 1.5 0 0 1 6.5 10Zm2.3 0h5.4V7.5a2.7 2.7 0 0 0-5.4 0Z"/></symbol>
+  <symbol id="u-x" viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol>
+  <symbol id="u-ext" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3"/></symbol>
+  <symbol id="u-crop" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4"/></symbol>
+  <symbol id="u-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM15.5 15.5l5 5"/></symbol>
+  <symbol id="u-dots" viewBox="0 0 24 24"><path fill="currentColor" d="M5 10.2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6ZM12 10.2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6ZM19 10.2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Z"/></symbol>
+  <symbol id="u-copy" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3"/></symbol>
+  <symbol id="u-save" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 2v8.5M4.5 7 8 10.5 11.5 7M2.5 13.5h11"/></symbol>
+</svg>
+
+<header class="intro">
+  <div class="brand"><svg aria-hidden="true"><use href="#leaf-glass"/></svg><span class="eyebrow">Green Tracker · Phase 1 · Design checkpoint</span></div>
+  <h1>Screen mockups for your approval</h1>
+  <p>Each screen is drawn at iPhone size (390 × 844) using the design brief’s colours, type and spacing. On your iPhone, tap <strong>Full screen</strong> on any frame to see it at real size. All products, people and prices are made-up examples, and photos are coloured stand-ins. The numbers follow the real rules (Overall, £/g, TOTAL, value for money).</p>
+  <p>These are the design choices the brief leaves to me. Please approve or change each one. You can reply with the numbers, for example “P2 uppercase, rest fine”.</p>
+  <ol class="proposals">
+    <li><b>P1</b><div><strong>Tab bar icons.</strong> <span>Four tabs (decided): Leaderboard = podium, Log = notebook, People = two people, More = three dots. Pending requests show as a green count on People.</span></div></li>
+    <li><b>P2</b><div><strong>Strain tags in Title case</strong> <span>(Indica, Sativa, Hybrid) rather than UPPERCASE. Uppercase is already used for the score labels, so title case keeps the two apart.</span></div></li>
+    <li><b>P3</b><div><strong>Floating + button</strong> <span>bottom-right, above the tab bar, on your Leaderboard and Log. Never on someone else’s.</span></div></li>
+    <li><b>P4</b><div><strong>Sticky controls and sticky country headers.</strong> <span>The Rank / Type row stays under the header while you scroll, so an active filter is always visible. Each Log country heading stays pinned while you scroll through its group.</span></div></li>
+    <li><b>P5</b><div><strong>Editors use a fixed Save bar</strong> <span>in place of the tab bar, so Save is always in reach. Cancel sits top-left.</span></div></li>
+    <li><b>P6</b><div><strong>People layout.</strong> <span>A search box on top, then a Requests · Followers · Following switcher. Actions like Remove, Unfollow and Block sit behind a ⋯ button on each row and open a confirmation sheet. Swipe gestures are hidden, so I’ve avoided them.</span></div></li>
+    <li><b>P7</b><div><strong>Archive: an Un-archive button on each row</strong> <span>(same row design as the Leaderboard). No swipe, for the same reason.</span></div></li>
+    <li><b>P8</b><div><strong>Photo viewer: swipe left and right</strong> <span>between a product’s photos, with Close top-left and “Crop this photo” at the bottom.</span></div></li>
+    <li><b>P9</b><div><strong>Sign-in copy:</strong> <span>“Rate, rank and remember everything you’ve tried.” under the title.</span></div></li>
+  </ol>
+  <div class="note-box"><strong>Your answers, shown here:</strong> a followed person’s rows show <strong>Source only</strong> (never price). Date tried stays hidden from followers, so rows with no Source have no metadata line at all (see “@mila”). Edible prices stay at 2 decimals (£0.05/mg).</div>
+  <div class="note-box"><strong>Heads-up for Phase 4:</strong> the longest control combination, “Rank: Price per gram” next to “Type: Concentrate”, is tight at 375px (iPhone SE / mini). I’ll measure every combination when the real screen is built and shorten only the ones that don’t fit, as the brief says.</div>
+</header>
+
+<main class="gallery" id="gallery"></main>
+
+<script>
+(function () {
+  const I = (id, cls = '') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const TYPE = { flower: ['t-flower', 'Flower'], conc: ['t-conc', 'Concentrate'], edible: ['t-edible', 'Edibles'], preroll: ['t-preroll', 'Pre roll'], other: [null, 'Other'] };
+  const mark = (t, cls = '') => TYPE[t][0] ? `<svg class="${cls}" role="img" aria-label="${TYPE[t][1]}"><use href="#${TYPE[t][0]}"/></svg>` : '';
+  const tag = (s) => s ? `<span class="tag ${s.toLowerCase()}">${s}</span>` : '';
+
+  const status = () => `<div class="status"><span class="num">9:41</span><span class="sys"><i style="width:17px;height:11px;opacity:.9"></i><i style="width:15px;height:11px;opacity:.9"></i><i style="width:25px;height:12px;border-radius:3px"></i></span></div>`;
+  const header = ({ left = '', title = 'Green Tracker', leaf = true, right = '' } = {}) =>
+    `<div class="hdr">${status()}<div class="bar"><div class="slot">${left}</div><div class="title">${leaf ? I('leaf-glass') : ''}<span>${title}</span></div><div class="slot r">${right}</div></div></div>`;
+  const back = (label = '') => `<span class="hbtn" aria-label="Back">${I('u-back')}${label}</span>`;
+  const nav = (on, badge = 2) => `<nav class="nav" aria-label="Tabs">${[
+    ['board', 'Leaderboard', 'n-board'], ['log', 'Log', 'n-log'], ['people', 'People', 'n-people'], ['more', 'More', 'n-more'],
+  ].map(([k, l, i]) => `<span class="tab${k === on ? ' on' : ''}">${I(i)}${l}${k === 'people' && badge ? `<span class="badge">${badge}</span>` : ''}</span>`).join('')}</nav>`;
+  const pill = (k, v, active) => `<span class="pill${active ? ' active' : ''}"><span class="k">${k}:</span> ${v} ${I('u-chev-d')}</span>`;
+  const controls = (rank, type, rankActive, typeActive) =>
+    `<div class="controls">${rank ? pill('Rank', rank, rankActive) : ''}<span class="right">${pill('Type', type, typeActive)}</span></div>`;
+  const tiles = (arr) => `<div class="tiles${arr.length === 2 ? ' two' : ''}">${arr.map(([v, l]) => `<div class="tile"><b>${v}</b><span class="cap">${l}</span></div>`).join('')}</div>`;
+  const fab = (l) => `<span class="fab" aria-label="${l}">${I('u-plus')}</span>`;
+  const thumb = (photo, t) => `<div class="thumb${photo ? ' ph ' + photo : ''}">${photo ? '' : mark(t)}</div>`;
+
+  function row(p, i) {
+    const cls = i < 3 ? ` p${i + 1}` : '';
+    const meta = p.price || p.src || p.date
+      ? `<div class="meta">${p.price ? `<span class="price">${p.price}</span>` : ''}${p.price && p.src ? '<span>&nbsp;·&nbsp;</span>' : ''}${p.src ? `<span class="src">${p.src}</span>` : ''}${!p.price && !p.src && p.date ? `<span>${p.date}</span>` : ''}</div>` : '';
+    const score = p.score ? `<div class="score"><b>${p.score}</b><span class="cap">${p.label || 'Overall'}</span></div>` : `<div class="score unrated"><b>–</b><span class="cap">Unrated</span></div>`;
+    return `<div class="row${cls}${p.pressed ? ' pressed' : ''}"><span class="rk">${i + 1}</span>${thumb(p.photo, p.type)}<div class="mid"><div class="name">${p.name}</div><div class="cluster">${tag(p.strain)}${p.flag ? `<span class="flag" role="img" aria-label="${p.country}">${p.flag}</span>` : ''}${mark(p.type)}${p.private ? I('u-lock', 'lock') : ''}</div>${meta}</div>${score}</div>`;
+  }
+
+  const screens = [];
+  const add = (id, title, desc, html, opts = {}) => screens.push({ id, title, desc, html, ...opts });
+
+  // 1. Leaderboard
+  const mine = [
+    { name: 'Gelato 41', strain: 'Hybrid', flag: '🇺🇸', country: 'United States', type: 'flower', price: '£2.71/g', src: 'Cookies', score: '8.9', photo: 'ph1' },
+    { name: 'Lemon Cherry Gelato', strain: 'Hybrid', flag: '🇨🇦', country: 'Canada', type: 'flower', price: '£2.50/g', src: 'Grasshopper Farms Craft Collective', score: '8.6', photo: 'ph2' },
+    { name: 'Blue Zushi Live Rosin', strain: 'Indica', flag: '🇺🇸', country: 'United States', type: 'conc', price: '£45.00/g', src: 'Doja', score: '8.5', photo: 'ph3' },
+    { name: 'Peach Rings Gummies', strain: 'Sativa', flag: '🇨🇦', country: 'Canada', type: 'edible', price: '£0.12/mg', src: 'Wana', score: '8.2', private: true },
+    { name: 'Zkittlez Pre roll', strain: 'Indica', flag: '🇪🇸', country: 'Spain', type: 'preroll', src: 'Dr. Greenthumb', score: '8.1' },
+    { name: 'Moroccan Hash', strain: 'Indica', flag: '🇲🇦', country: 'Morocco', type: 'conc', price: '£8.00/g', score: '7.5', photo: 'ph6' },
+    { name: 'Mystery sample', type: 'other', date: '12 Aug 2026' },
+  ];
+  add('leaderboard', 'Leaderboard', 'Default view: Rank Overall, Type All. Podium for the top three. Shows a private lock, the no-photo placeholders (an Other product leaves its square empty), a long Source truncating while the price stays whole, the date-tried fallback, and an unrated product at the bottom.',
+    `${header()}<div class="scroll">${controls('Overall', 'All')}${tiles([['7', 'Products'], ['8.3', 'Average'], ['19.5g', 'Total']])}<div class="rows">${mine.map(row).join('')}</div></div>${fab('Add a product')}${nav('board')}`);
+
+  // 2. Leaderboard filtered + ranked by price
+  const edibles = [
+    { name: 'Camino Midnight Blueberry', strain: 'Indica', flag: '🇺🇸', country: 'United States', type: 'edible', price: '£0.18/mg', src: 'Kiva', score: '£0.18', label: 'Price', photo: 'ph4' },
+    { name: 'Peach Rings Gummies', strain: 'Sativa', flag: '🇨🇦', country: 'Canada', type: 'edible', price: '£0.12/mg', src: 'Wana', score: '£0.12', label: 'Price', private: true },
+    { name: 'Chocolate brownie', strain: 'Hybrid', flag: '🇳🇱', country: 'Netherlands', type: 'edible', price: '£0.05/mg', src: 'Homemade', score: '£0.05', label: 'Price' },
+  ];
+  add('filtered', 'Leaderboard: filtered and ranked', 'Type: Edibles and Rank: Price per mg are both active, so both pills turn green. Ranks restart at 1, the podium follows the visible order, and every tile recalculates. TOTAL reads 0g because edibles never count towards grams.',
+    `${header()}<div class="scroll">${controls('Price per mg', 'Edibles', true, true)}${tiles([['3', 'Products'], ['8.2', 'Average'], ['0g', 'Total']])}<div class="rows">${edibles.map(row).join('')}</div></div>${fab('Add a product')}${nav('board')}`);
+
+  // 3. Log
+  const lg = (name, t, photo, product) => `<div class="lrow">${thumb(photo, t)}<span class="name">${name}</span>${product && TYPE[t][0] ? mark(t, 'mk') : '<span></span>'}${I('u-chev-r', 'chev')}</div>`;
+  const group = (flag, name, rows) => `<div class="group-h"><span class="flag">${flag}</span>${name}<span class="n">${rows.length}</span></div><div class="lrows">${rows.join('')}</div>`;
+  add('log', 'Log', 'Grouped by country (most rows first, “No country” last), with photos first and then A–Z inside each group. Products show a green type mark and open their profile. Loose entries have no mark and open the log editor. A loose entry without a photo still shows its type in the thumbnail.',
+    `${header()}<div class="scroll">${controls(null, 'All')}${tiles([['11', 'Products'], ['4', 'Countries'], ['34.5g', 'Total']])}
+    ${group('🇺🇸', 'United States', [lg('Blue Zushi Live Rosin', 'conc', 'ph3', 1), lg('Gary Payton', 'flower', 'ph7'), lg('Gelato 41', 'flower', 'ph1', 1), lg('Wedding Cake', 'flower')])}
+    ${group('🇨🇦', 'Canada', [lg('Lemon Cherry Gelato', 'flower', 'ph2', 1), lg('Peach Rings Gummies', 'edible', null, 1), lg('Pink Kush', 'flower')])}
+    ${group('🇲🇦', 'Morocco', [lg('Moroccan Hash', 'conc', 'ph6', 1)])}
+    ${group('🇪🇸', 'Spain', [lg('Zkittlez Pre roll', 'preroll', null, 1)])}
+    ${group('', 'No country', [lg('Mystery sample', 'other', null, 1), lg('Tangie', 'flower')])}
+    <p class="footnote">Everything you’ve tried, grouped by country. Rows with a type mark have a full profile on your Leaderboard.</p></div>${fab('Add a log entry')}${nav('log')}`);
+
+  // 4. Profile
+  const rb = (l, v, muted) => `<div class="rbar${muted ? ' muted' : ''}"><span>${l}</span><div class="track"><div class="fill" style="width:${v * 10}%"></div></div><span class="v">${v.toFixed(1)}</span></div>`;
+  add('profile', 'Product profile', 'Hero with Overall as the biggest number, then ratings (High is greyed out because it doesn’t count for flower), photos with crop buttons, price history with the latest purchase marked, value for money, notes, Leafly, details and actions.',
+    `${header({ left: back(), title: 'Gelato 41', right: '<span class="hbtn">Edit</span>' })}<div class="scroll">
+      <div class="hero-photo ph ph1"></div>
+      <div class="hero"><h1>Gelato 41</h1>
+        <div class="hero-score"><b>8.9</b><span class="cap">Overall</span></div>
+        <div class="hero-line">${tag('Hybrid')}<span>Flower</span><span class="dot"></span><span class="flag">🇺🇸</span><span>United States</span></div>
+        <div class="hero-price">£2.71<small>/g</small></div></div>
+      <div class="sect"><span class="cap">Ratings</span>${rb('Look', 9.2)}${rb('Smell', 9.0)}${rb('Taste', 8.8)}${rb('Burn', 8.6)}${rb('High', 9.4, 1)}
+        <div class="hint">High is rated but doesn’t count towards Overall for flower.</div><div class="sub">Rated 5 of 5 categories</div></div>
+      <div class="sect"><span class="cap">Photos</span><div class="pgrid">${['ph1', 'ph7', 'ph5', 'ph2', 'ph1'].map((c) => `<div class="ph ${c}"><span class="crop" aria-label="Crop">${I('u-crop')}</span></div>`).join('')}</div></div>
+      <div class="sect"><span class="cap">Price history</span>
+        <div class="purchase"><span class="d">14 Sep 2026 <span class="latest">Latest</span></span><span class="u">£2.71/g</span><span class="s">3.5g · £9.50</span><span class="s" style="text-align:right">Cookies SF</span></div>
+        <div class="purchase"><span class="d">2 Jul 2026</span><span class="u">£2.57/g</span><span class="s">7g · £18.00</span><span class="s" style="text-align:right">Friend</span></div>
+        <div class="vfm"><span><span class="cap">Value for money</span><div class="hint">Overall ÷ latest £/g · higher is better</div></span><b>3.28</b></div></div>
+      <div class="sect"><span class="cap">Notes</span><div style="font-size:15px">Creamy, sweet and gassy. Dense purple buds, burned clean to white ash. Worth the price.</div></div>
+      <div class="sect"><span class="cap">Leafly</span><span class="btn secondary">View on Leafly ${I('u-ext')}</span></div>
+      <div class="sect"><span class="cap">Details</span><dl class="kv"><dt>Strain type</dt><dd>Hybrid</dd><dt>Product type</dt><dd>Flower</dd><dt>Country</dt><dd>🇺🇸 United States</dd><dt>Source</dt><dd>Cookies</dd><dt>Date tried</dt><dd>14 Sep 2026</dd></dl></div>
+      <div class="sect"><span class="btn primary">Edit</span><div class="switch-row"><span>Private<div class="hint">Hidden from your followers</div></span><span class="switch"></span></div><span class="btn danger">Archive</span></div>
+    </div>${nav('board')}`);
+
+  // 5. Editor (edible)
+  const rate = (l, v) => `<div class="rate"><div class="rate-top"><span class="l">${l}</span><span class="val${v == null ? ' none' : ''}">${v == null ? '—' : v.toFixed(1)}</span><span class="clr${v == null ? ' hidden' : ''}" aria-label="Clear ${l}">${I('u-x')}</span></div><div class="slider${v == null ? ' empty' : ''}"><div class="t"></div>${v == null ? '' : `<div class="f" style="width:${(v - 1) / 9 * 100}%"></div>`}<div class="th" style="left:${v == null ? 0 : (v - 1) / 9 * 100}%"></div></div></div>`;
+  const ticks = Array.from({ length: 13 }, (_, i) => `<i class="${i % 4 === 0 ? 'maj' : ''}"></i>`).join('');
+  const fld = (l, v, sel, ph) => `<div class="field"><label>${l}</label><div class="input">${ph ? `<span class="ph-t">${v}</span>` : `<span>${v}</span>`}${sel ? I('u-chev-d') : ''}</div></div>`;
+  add('editor', 'Product editor (edible)', 'Grouped form. Edibles show only Taste and High, and the hit-time control is a stepped duration picker, so it can’t be mistaken for a third score. The explanation of Overall changes with the product type. Save stays fixed at the bottom.',
+    `${header({ left: '<span class="hbtn">Cancel</span>', title: 'Peach Rings Gummies' })}<div class="scroll">
+      <div class="fgroup"><span class="cap">Basics</span>${fld('Name', 'Peach Rings Gummies')}</div>
+      <div class="fgroup"><span class="cap">Classification</span><div class="two-col">${fld('Product type', 'Edibles', 1)}${fld('Strain type', 'Sativa', 1)}</div></div>
+      <div class="fgroup"><span class="cap">Origin</span>${fld('Country', '🇨🇦 Canada', 1)}<div class="two-col">${fld('Source', 'Wana')}${fld('Date tried', '6 Sep 2026')}</div></div>
+      <div class="fgroup"><span class="cap">Ratings</span>${rate('Taste', 7.2)}${rate('High', 8.7)}
+        <div class="hit"><div class="hit-top"><span class="l">Hit time</span><span class="d">1h 15m</span></div><div class="steps"><div class="t"></div><div class="ticks">${ticks}</div><div class="knob" style="left:${5 / 12 * 100}%"></div></div><div class="steps-lbl"><span>0</span><span>1h</span><span>2h</span><span>3h</span></div></div>
+        <div class="sub">Rated 2 of 2 · Overall 8.2</div><div class="hint">Overall is Taste ⅓ and High ⅔. Blank categories are left out.</div></div>
+      <div class="fgroup"><span class="cap">Purchases</span><div class="pcard"><div class="top"><span>100mg · £12.00</span><span>£0.12/mg</span></div><div class="bot"><span>6 Sep 2026</span><span>Dispensary on Queen St</span></div></div><span class="addrow">${I('u-plus')}Add purchase</span></div>
+      <div class="fgroup"><span class="cap">Private</span><div class="switch-row"><span>Hide from followers</span><span class="switch on"></span></div></div>
+    </div><div class="savebar"><span class="btn primary">Save</span></div><span class="home-ind"></span>`, { noNav: true });
+
+  // 6. Follower view
+  const mila = [
+    { name: 'Wedding Cake', strain: 'Hybrid', flag: '🇺🇸', country: 'United States', type: 'flower', src: 'Jungle Boys', score: '9.1', photo: 'ph5' },
+    { name: 'Hash Rosin', strain: 'Indica', flag: '🇬🇧', country: 'United Kingdom', type: 'conc', score: '8.8', photo: 'ph3' },
+    { name: 'Tropicana Cookies', strain: 'Sativa', flag: '🇪🇸', country: 'Spain', type: 'flower', src: 'Seed Junky Genetics', score: '8.4', photo: 'ph4' },
+    { name: 'Midnight Blueberry', strain: 'Hybrid', flag: '🇺🇸', country: 'United States', type: 'edible', src: 'Kiva Confections', score: '7.8' },
+    { name: 'Northern Lights', strain: 'Indica', flag: '🇳🇱', country: 'Netherlands', type: 'preroll', src: 'Barney’s Farm' },
+  ];
+  add('mila', '@mila’s Leaderboard (someone you follow)', '“@mila” in the header shows it isn’t your tracker. It’s read-only: two tiles, no price or value-for-money ranking, no + button and no locks. Rows show Source only; Hash Rosin has no Source, so it has no metadata line.',
+    `${header({ left: back(), title: '@mila', leaf: false })}<div class="scroll">${controls('Overall', 'All')}${tiles([['5', 'Products'], ['8.5', 'Average']])}<div class="rows">${mila.map(row).join('')}</div></div>${nav('people')}`);
+
+  // 7. People
+  const prow = (u, acts) => `<div class="prow"><span class="av">${u[1].toUpperCase()}</span><span class="u">${u}</span><span class="acts">${acts}</span></div>`;
+  add('people', 'People', 'Search is the only search box in the app. Requests come first and match the badge on the tab. Approve is the one primary button on each row.',
+    `${header()}<div class="scroll"><div class="search">${I('u-search')}Search usernames</div>
+      <div class="seg"><span class="on">Requests <span class="c">2</span></span><span>Followers <span class="n">5</span></span><span>Following <span class="n">4</span></span></div>
+      <div class="list">${prow('@sam_k', '<span class="btn primary sm">Approve</span><span class="btn secondary sm">Decline</span>')}${prow('@greenleaf_jo', '<span class="btn primary sm">Approve</span><span class="btn secondary sm">Decline</span>')}</div>
+      <div class="lh cap">Suggested by search · “mi”</div>
+      <div class="list">${prow('@mila', '<span class="btn outline sm">Following</span>')}${prow('@mike_r', '<span class="btn outline sm">Requested</span>')}${prow('@minty', '<span class="btn primary sm">Follow</span>')}</div>
+    </div>${nav('people')}`);
+
+  add('people-menu', 'People: row menu', 'On the Following list, the ⋯ button opens a sheet with that person’s actions. Each destructive choice asks again before it happens.',
+    `${header()}<div class="scroll"><div class="search">${I('u-search')}Search usernames</div>
+      <div class="seg"><span>Requests <span class="c">2</span></span><span>Followers <span class="n">5</span></span><span class="on">Following <span class="n">4</span></span></div>
+      <div class="list">${['@mila', '@dank_dave', '@hazel', '@tom.b'].map((u) => prow(u, `<span class="more-btn" aria-label="Actions for ${u}">${I('u-dots')}</span>`)).join('')}</div>
+    </div>${nav('people')}<div class="scrim"></div><div class="sheet"><div class="grp"><div class="ttl">@mila</div><div class="opt">View leaderboard</div><div class="opt dng">Unfollow</div><div class="opt dng">Block</div></div><div class="grp"><div class="opt bold">Cancel</div></div></div>`);
+
+  // 8. Sign in
+  add('signin', 'Sign in', 'Full-screen and centred, with the buttons low enough to reach with one thumb. Passkey sign-in uses Face ID.',
+    `<div class="center"><div style="margin:0 -24px">${status()}</div><div class="mid-area"><svg aria-hidden="true"><use href="#leaf-glass"/></svg><h1>Green Tracker</h1><p class="tag-line">Rate, rank and remember everything you’ve tried.</p></div>
+      <div class="actions"><span class="btn primary">Sign in with passkey</span><span class="btn secondary">Create account</span><span class="btn text">Use a recovery code</span></div></div><span class="home-ind"></span>`, { noNav: true });
+
+  // 9. Recovery codes
+  const codes = ['7KQ4-M2XD', 'P9TR-4WHB', 'C3NV-8ZLE', 'H6YJ-Q1KS', 'W2FD-7MPA', 'B8LX-3RGN', 'E5ZU-9VCT', 'N4HK-6JWQ', 'R7SB-2DYF', 'T1GM-5XEL'];
+  add('codes', 'Create account: recovery codes', 'Step 3 of 3. The codes appear only once, so Continue stays disabled until you tick that you’ve saved them.',
+    `${header({ left: back(), title: 'Recovery codes', leaf: false })}<div class="scroll" style="padding-inline:16px"><div class="steps-ind"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      <p style="margin:0 0 16px;color:var(--text-2)">If you lose your passkey, one of these codes gets you back in. Each code works once. <strong style="color:var(--text)">This is the only time you’ll see them.</strong></p>
+      <div class="codes">${codes.map((c, i) => `<span data-n="${String(i + 1).padStart(2, ' ')}">${c}</span>`).join('')}</div>
+      <div class="two-col" style="margin:12px 0 16px"><span class="btn secondary">${I('u-copy')}Copy</span><span class="btn secondary">${I('u-save')}Save</span></div>
+      <div class="check"><span class="box"></span>I’ve saved these codes somewhere safe</div></div>
+      <div class="savebar"><span class="btn primary" disabled>Continue</span></div><span class="home-ind"></span>`, { noNav: true });
+
+  // 10. More
+  const li = (l, v = '', cls = '') => `<div class="li ${cls}"><span>${l}</span>${v ? `<span class="v">${v}</span>` : ''}${cls ? '' : I('u-chev-r', 'chev')}</div>`;
+  add('more', 'More', 'Grouped settings list. Version shows the build your phone is running.',
+    `${header()}<div class="scroll">
+      <div class="lh cap">Account</div><div class="list">${li('Username', '@anton')}${li('Passkeys', '2')}${li('Recovery codes', '8 left')}${li('Blocked people', '1')}${li('Sign out')}${li('Sign out everywhere')}</div>
+      <div class="lh cap">Data</div><div class="list">${li('Export')}${li('Restore')}</div>
+      <div class="lh cap">Products</div><div class="list">${li('Archive', '3')}</div>
+      <div class="lh cap">About</div><div class="list">${li('Version', '0.1.0+231ab1c', 'plain')}</div>
+      <div class="lh cap">Danger zone</div><div class="list">${li('Delete account', '', 'dng')}</div>
+    </div>${nav('more')}`);
+
+  // Empty states (sheet)
+  const emptyCard = (t, b, btn) => `<div class="empty"><svg class="leaf-o" aria-hidden="true"><use href="#t-leaf-outline"/></svg><h3>${t}</h3><p>${b}</p><span class="btn secondary">${btn}</span></div>`;
+  add('empty', 'Leaderboard empty states', 'Three different cards, so the app never says it’s empty when it isn’t. The filter and ranking cards name what’s hiding everything and offer one tap back.',
+    `<div class="sheetbox"><div class="lbl cap">1 · No products yet</div>${emptyCard('Nothing ranked yet', 'Add the first thing you’ve tried and it’ll appear here.', 'Add a product')}
+      <div class="lbl cap">2 · Filter matches nothing</div>${emptyCard('No Pre roll yet', 'You have 7 products, but none are Pre roll.', 'Show all types')}
+      <div class="lbl cap">3 · Ranking hides everything</div>${emptyCard('Nothing rated on Burn', 'None of your Pre roll products has a Burn rating yet.', 'Rank by Overall')}</div>`, { sheet: true });
+
+  // Component sheet
+  const mk = (t) => `<div class="mk-cell">${mark(t, 'big')}<div class="sizes">${mark(t)}${mark(t)}</div>${TYPE[t][1]}</div>`;
+  add('components', 'Marks, tags and buttons', 'The four type marks drawn from the brief’s geometry, shown at placeholder, Log (15px) and Leaderboard sizes. The cookie’s leaf and bite and the joint’s paper band are cut-outs, which only work if the shapes render correctly. Also shown: the header leaf, the app icon, tags, podium and button kinds.',
+    `<div class="sheet-page">
+      <div><div class="cap" style="margin-bottom:8px">Type marks</div><div class="marks">${['flower', 'conc', 'edible', 'preroll'].map(mk).join('')}</div></div>
+      <div><div class="cap" style="margin-bottom:8px">Identity: header leaf · app icon</div><div class="ident"><svg class="hleaf" aria-hidden="true"><use href="#leaf-glass"/></svg><span class="appicon">${mark('flower')}</span></div></div>
+      <div><div class="cap" style="margin-bottom:8px">Strain tags · podium</div><div class="chips">${tag('Indica')}${tag('Sativa')}${tag('Hybrid')}<span style="flex:1"></span><span class="pod"><span style="color:var(--gold);border-color:rgba(226,183,96,.4)">1</span><span style="color:var(--silver);border-color:rgba(206,214,222,.4)">2</span><span style="color:var(--bronze);border-color:rgba(198,130,84,.4)">3</span></span></div></div>
+      <div><div class="cap" style="margin-bottom:8px">Control pills</div><div class="chips">${pill('Rank', 'Overall')}${pill('Type', 'Flower', true)}</div></div>
+      <div><div class="cap" style="margin-bottom:8px">Buttons</div><div class="btn-grid"><span class="btn primary">Save</span><span class="btn secondary">Cancel</span><span class="btn text">Use a recovery code</span><span class="btn danger">Archive</span></div></div>
+      <div><div class="cap" style="margin-bottom:8px">Input · focused</div><div class="input focus">Gelato 41</div></div>
+    </div>`, { sheet: true });
+
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = screens.map((s) => `<figure id="${s.id}"><figcaption><div class="cap-top"><h2>${s.title}</h2>${s.sheet ? '' : `<button class="fs-btn" type="button" data-fs="${s.id}">Full screen</button>`}</div><p>${s.desc}</p></figcaption>${s.sheet ? s.html : `<div class="phone${s.noNav ? ' no-nav' : ''}">${s.html}</div>`}</figure>`).join('');
+
+  // Full screen: move the phone into a viewport-sized overlay, and back on close.
+  let open = null;
+  gallery.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-fs]');
+    if (!b) return;
+    const fig = document.getElementById(b.dataset.fs);
+    const phone = fig.querySelector('.phone');
+    const ov = document.createElement('div');
+    ov.className = 'overlay';
+    const close = document.createElement('button');
+    close.type = 'button'; close.className = 'close-fs'; close.textContent = 'Close full screen';
+    ov.append(phone, close);
+    document.body.append(ov);
+    open = { fig, phone, ov };
+    close.focus();
+    close.addEventListener('click', shut);
+  });
+  function shut() {
+    if (!open) return;
+    open.fig.append(open.phone);
+    open.ov.remove();
+    open.fig.querySelector('[data-fs]').focus();
+    open = null;
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') shut(); });
+})();
+</script>
