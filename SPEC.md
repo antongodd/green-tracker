@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.1.0 (Phase 0 — foundations)
+**Current version:** 0.2.0 (Phase 2 — accounts)
 
 ---
 
@@ -20,16 +20,17 @@ this document records how they were implemented and every decision made on top.
 | Front end | Preact + Vite (`client/`), plain CSS with the design-brief tokens |
 | Passkeys | @simplewebauthn (Phase 2) |
 | Shared rules | `shared/domain/` — pure functions used by server and client |
-| Tests | Vitest (domain), @cloudflare/vitest-pool-workers (API, from Phase 2), Playwright (e2e/visual) |
+| Tests | Vitest: `domain` project (pure rules) and `api` project (the real Worker in workerd via `wrangler dev`, fresh local D1, a software passkey). Playwright e2e against the built app with Chromium's virtual authenticator |
 | Version | `package.json` version + short commit, injected at build (`__APP_VERSION__`), served at `/api/version` and shown on About |
 
 ### Commands
 
 | | |
 |---|---|
-| `npm test` | Domain unit tests |
+| `npm test` | Domain and API tests |
+| `npm run test:e2e` | Build, then Playwright end-to-end tests at 390×844 (set `PW_CHROMIUM` to use a preinstalled Chromium). Screens are saved to `.playwright/screens/` |
 | `npm run typecheck` | TypeScript |
-| `npm run dev` | Local dev (Vite + Worker in workerd) |
+| `npm run dev` | Local dev (Vite + Worker in workerd). Copy `.dev.vars.example` to `.dev.vars` first so passkeys bind to localhost |
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
 | `npm run deploy` | Build, apply remote migrations, deploy (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
 | `npm run deploy:embedded` | Same, but embeds the client files in the Worker instead of using Workers static assets. For the cloud build environment, whose proxy breaks the assets upload (see §4, Deployment) |
@@ -48,8 +49,8 @@ this document records how they were implemented and every decision made on top.
 |---|---|---|
 | 0 | Foundations: scaffold, schema, domain module + tests, spec | **Done** |
 | 1 | Design checkpoint: mockups at 390px for owner approval | **Done** |
-| 2 | Accounts: passkeys, recovery codes, sessions, rate limits | Next |
-| 3 | Products: editor, profile, archive, private | |
+| 2 | Accounts: passkeys, recovery codes, sessions, rate limits | **Done** |
+| 3 | Products: editor, profile, archive, private | Next |
 | 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | |
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | |
 | 6 | Log: loose entries, projections, grouping, promotion | |
@@ -133,6 +134,39 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   Worker with the same routing (`/api/*` → API, exact file, else `index.html`;
   hashed `/assets/*` cached immutably). Same Worker, same bindings. A normal
   machine or CI should use `npm run deploy`.
+- **Accounts (Phase 2).**
+  - *Sign-up* is username → passkey → recovery codes. The username rides on the
+    server-side WebAuthn challenge; the user row, first passkey and codes are
+    written in one D1 batch only after the passkey verifies, so an abandoned
+    sign-up leaves nothing behind. A name taken in between gets `username_taken`.
+  - *Passkeys* are discoverable (resident) credentials with user verification
+    required; sign-in needs no username. ES256 and RS256 accepted, attestation
+    `none`. RP ID and origin come from `RP_ID` / `ORIGIN` vars (D11). Challenges
+    are single use and expire after 5 minutes. More than one passkey per
+    account; the **last passkey can't be removed** (refused with a message).
+    Passkey names are the device family from the User-Agent (iPhone, Mac…).
+  - *Recovery codes*: 10 codes of 8 characters from a 31-symbol alphabet with no
+    look-alikes (0/O, 1/I/L), shown as `XXXX-XXXX` (~40 bits each). Stored as
+    SHA-256 of user ID + code. Input ignores case, spaces and dashes. A wrong
+    code and an unknown username give the same answer. Using a code opens a
+    session that can only add a passkey or sign out until it has one (D4);
+    every other API returns `needs_passkey`. Regenerating replaces the set.
+  - *Sessions*: 256-bit random token in an `HttpOnly; SameSite=Lax` cookie
+    (`Secure` on https), only its SHA-256 stored. 60 days, sliding: using the
+    app on any day pushes expiry back to 60 days. Sign out deletes the row;
+    sign out everywhere deletes all of the user's rows.
+  - *Request safety*: every non-GET API request must carry `Origin` equal to
+    `ORIGIN` (CSRF). API responses are `Cache-Control: no-store`. Errors are
+    `{ error, message }` with the message written to show as-is; server logs
+    record only method, route and error type.
+  - *Rate limits* (fixed windows in D1, IP stored hashed): sign-up 10/hour per
+    IP; passkey sign-in 60/10 min per IP; recovery 10/hour per IP and 5/hour per
+    username; username checks 120/10 min per IP. Old windows are pruned lazily.
+  - *Client*: Preact with a tiny history router. Signed-out paths are `/signin`,
+    `/signup`, `/recover`. Leaderboard, Log and People show "on its way" cards
+    until their phases. More has Account (username, passkeys, recovery codes,
+    sign out, sign out everywhere) and About (version). Recovery codes can be
+    copied or saved (share sheet → Save to Files on iPhone, download elsewhere).
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -143,6 +177,17 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.2.0 — Phase 2: accounts
+- Passkey sign-up (username → passkey → 10 recovery codes) and sign-in; recovery-code
+  sign-in that must add a new passkey first; add/remove passkeys; regenerate codes.
+- Sessions, sign out, sign out everywhere; Origin check; rate limits; `no-store`.
+- App shell from the approved design: glass header and tab bar with the iPhone
+  safe-area rules, sign-in, create account, recovery, More, Passkeys, Recovery codes.
+- Migration 0002: sign-up username on challenges; expiry indexes.
+- Tests: 26 API tests against the real Worker with a software passkey (the §17
+  account and privacy checks that apply so far) and 2 Playwright journeys with a
+  virtual authenticator.
 
 ### 0.1.0 — Phase 1: design checkpoint (approved)
 - Owner approved P1–P9 (P2 changed to uppercase tags).
