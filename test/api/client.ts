@@ -26,6 +26,24 @@ export class Browser {
     const json = (await res.json()) as any;
     return { status: res.status, json, headers: res.headers };
   }
+  /** multipart/form-data POST (photo uploads). */
+  async upload(path: string, parts: Record<string, Uint8Array | string>) {
+    const form = new FormData();
+    for (const [k, v] of Object.entries(parts)) form.append(k, new Blob([v], { type: 'image/jpeg' }), `${k}.jpg`);
+    const headers: Record<string, string> = { 'cf-connecting-ip': this.ip, origin: 'http://localhost' };
+    if (this.cookies.size) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+    const res = await fetch(inject('apiBase') + path, { method: 'POST', headers, body: form });
+    return { status: res.status, json: (await res.json()) as any };
+  }
+
+  /** Raw GET (images): status, headers and bytes. */
+  async raw(path: string, headers: Record<string, string> = {}) {
+    const h: Record<string, string> = { 'cf-connecting-ip': this.ip, ...headers };
+    if (this.cookies.size) h.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+    const res = await fetch(inject('apiBase') + path, { headers: h });
+    return { status: res.status, headers: res.headers, bytes: new Uint8Array(await res.arrayBuffer()) };
+  }
+
   get = (path: string) => this.req('GET', path);
   post = (path: string, body: unknown = {}) => this.req('POST', path, body);
   del = (path: string) => this.req('DELETE', path);

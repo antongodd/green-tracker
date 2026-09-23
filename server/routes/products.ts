@@ -4,6 +4,7 @@ import { validateProductInput, type Product, type ProductInput, type PurchaseRec
 import type { ProductTypeKey, RatingKey, StrainTypeKey } from '../../shared/domain/productTypes';
 import type { Ratings } from '../../shared/domain/ratings';
 import { randomId } from '../lib/crypto';
+import { deleteLater, PHOTO_COLUMNS, planPhotoWrites, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { fail, jsonBody } from '../lib/http';
 import { requireUser } from '../lib/session';
 
@@ -51,7 +52,7 @@ interface PurchaseRow {
   supplier: string | null;
 }
 
-function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow[]): Product {
+function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow[], photos: PhotoRow[]): Product {
   const r: Ratings = {};
   for (const x of ratings) r[x.category as RatingKey] = x.value;
   return {
@@ -73,6 +74,7 @@ function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow
     purchases: purchases.map(
       (p): PurchaseRecord => ({ id: p.id, seq: p.seq, date: p.date, amount: p.amount, totalPaid: p.total_paid, supplier: p.supplier }),
     ),
+    photos: photos.map(toPhotoRecord),
     archived: row.archived === 1,
     private: row.private === 1,
     createdAt: row.created_at,
@@ -89,20 +91,23 @@ async function load(db: D1Database, userId: string, where: { id?: string; archiv
   const arg = where.id ?? (where.archived === undefined ? undefined : where.archived ? 1 : 0);
   const bind = (sql: string) => (arg === undefined ? db.prepare(sql).bind(userId) : db.prepare(sql).bind(userId, arg));
   const productCond = cond.replace('id =', 'p.id =').replace('archived =', 'p.archived =');
-  const [rows, ratings, purchases] = await db.batch<unknown>([
+  const [rows, ratings, purchases, photoRows] = await db.batch<unknown>([
     bind(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE user_id = ?1 ${cond} ORDER BY created_at`),
     bind(`SELECT r.product_id, r.category, r.value FROM ratings r JOIN products p ON p.id = r.product_id WHERE r.user_id = ?1 ${productCond}`),
     bind(`SELECT pu.id, pu.product_id, pu.seq, pu.date, pu.amount, pu.total_paid, pu.supplier FROM purchases pu JOIN products p ON p.id = pu.product_id
           WHERE pu.user_id = ?1 ${productCond} ORDER BY pu.seq`),
+    bind(`SELECT ${PHOTO_COLUMNS.split(', ').map((c) => `ph.${c}`).join(', ')} FROM photos ph JOIN products p ON p.id = ph.product_id
+          WHERE ph.user_id = ?1 ${productCond} ORDER BY ph.position`),
   ]);
-  const byProduct = <T extends { product_id: string }>(list: T[]) => {
+  const byProduct = <T extends { product_id: string | null }>(list: T[]) => {
     const m = new Map<string, T[]>();
-    for (const x of list) m.set(x.product_id, [...(m.get(x.product_id) ?? []), x]);
+    for (const x of list) m.set(x.product_id!, [...(m.get(x.product_id!) ?? []), x]);
     return m;
   };
   const r = byProduct(ratings!.results as RatingRow[]);
   const pu = byProduct(purchases!.results as PurchaseRow[]);
-  return (rows!.results as ProductRow[]).map((row) => toProduct(row, r.get(row.id) ?? [], pu.get(row.id) ?? []));
+  const ph = byProduct(photoRows!.results as PhotoRow[]);
+  return (rows!.results as ProductRow[]).map((row) => toProduct(row, r.get(row.id) ?? [], pu.get(row.id) ?? [], ph.get(row.id) ?? []));
 }
 
 async function loadOne(db: D1Database, userId: string, id: string): Promise<Product> {
@@ -163,6 +168,7 @@ products.post('/', async (c) => {
   const id = randomId();
   const now = Date.now();
   const db = c.env.DB;
+  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos);
   await db.batch([
     db
       .prepare(
@@ -172,7 +178,9 @@ products.post('/', async (c) => {
       )
       .bind(id, userId, ...FIELDS(input), now),
     ...(await childWrites(db, userId, id, input)),
+    ...photoPlan.statements,
   ]);
+  deleteLater(c.executionCtx, c.env.PHOTOS, photoPlan.unusedKeys);
   return c.json({ product: await loadOne(db, userId, id) }, 201);
 });
 
@@ -182,6 +190,7 @@ products.put('/:id', async (c) => {
   const input = parse(await jsonBody(c));
   const db = c.env.DB;
   await loadOne(db, userId, id); // 404 unless it's yours
+  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos);
   await db.batch([
     db
       .prepare(
@@ -191,7 +200,10 @@ products.put('/:id', async (c) => {
       )
       .bind(id, userId, ...FIELDS(input), Date.now()),
     ...(await childWrites(db, userId, id, input)),
+    ...photoPlan.statements,
   ]);
+  // Only after the batch has committed: files no longer used by any photo.
+  deleteLater(c.executionCtx, c.env.PHOTOS, photoPlan.unusedKeys);
   return c.json({ product: await loadOne(db, userId, id) });
 });
 

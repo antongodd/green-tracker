@@ -9,3 +9,4 @@ export * from './log';
 export * from './leafly';
 export * from './account';
 export * from './product';
+export * from './photo';

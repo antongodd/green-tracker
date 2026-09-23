@@ -5,6 +5,7 @@
 import { autoCapitalise } from './capitalise';
 import { COUNTRIES, OTHER_COUNTRY } from './countries';
 import { CONCENTRATE_SUBTYPES, DEFAULT_PRODUCT_TYPE, RATING_CATEGORIES, STRAIN_TYPES, isProductTypeKey, productType, type ProductTypeKey, type RatingKey, type StrainTypeKey } from './productTypes';
+import { MAX_PHOTOS_PER_PRODUCT, parseCrop, type PhotoInput, type PhotoRecord } from './photo';
 import { isValidHitTime, isValidRating, type Ratings } from './ratings';
 
 export interface PurchaseRecord {
@@ -36,6 +37,8 @@ export interface Product {
   /** Every stored rating, including categories outside the current type (hidden, ignored). */
   ratings: Ratings;
   purchases: PurchaseRecord[];
+  /** In display order; the first is the hero and the list thumbnail. */
+  photos: PhotoRecord[];
   archived: boolean;
   private: boolean;
   createdAt: number;
@@ -72,6 +75,7 @@ export interface ProductInput {
   hitTimeMinutes: number | null;
   ratings: Partial<Record<RatingKey, number | null>>;
   purchases: PurchaseInput[];
+  photos: PhotoInput[];
   private: boolean;
 }
 
@@ -101,14 +105,20 @@ export function emptyProductInput(): ProductInput {
     hitTimeMinutes: null,
     ratings: {},
     purchases: [],
+    photos: [],
     private: false,
   };
 }
 
 /** The editor's starting point for an existing product. */
 export function productToInput(p: Product): ProductInput {
-  const { id: _id, archived: _a, createdAt: _c, updatedAt: _u, purchases, ratings, ...rest } = p;
-  return { ...rest, ratings: { ...ratings }, purchases: purchases.map(({ seq: _s, ...pu }) => ({ ...pu })) };
+  const { id: _id, archived: _a, createdAt: _c, updatedAt: _u, purchases, ratings, photos, ...rest } = p;
+  return {
+    ...rest,
+    ratings: { ...ratings },
+    purchases: purchases.map(({ seq: _s, ...pu }) => ({ ...pu })),
+    photos: photos.map((ph) => ({ id: ph.id, crop: ph.crop })),
+  };
 }
 
 export type ValidationResult = { ok: true; value: ProductInput } | { ok: false; message: string };
@@ -208,6 +218,21 @@ export function validateProductInput(raw: unknown): ValidationResult {
     purchases.push({ ...(id ? { id } : {}), date, amount, totalPaid: p.totalPaid, supplier });
   }
 
+  const photosIn = r.photos ?? [];
+  if (!Array.isArray(photosIn)) return fail('The photos could not be read.');
+  if (photosIn.length > MAX_PHOTOS_PER_PRODUCT) return fail(`Up to ${MAX_PHOTOS_PER_PRODUCT} photos per product.`);
+  const photos: PhotoInput[] = [];
+  for (const phRaw of photosIn) {
+    if (!phRaw || typeof phRaw !== 'object') return fail('A photo could not be read.');
+    const ph = phRaw as Record<string, unknown>;
+    const id = typeof ph.id === 'string' ? ph.id : undefined;
+    const upload = typeof ph.upload === 'string' ? ph.upload : undefined;
+    if (!id && !upload) return fail('A photo could not be read.');
+    const crop = parseCrop(ph.crop);
+    if (crop === undefined) return fail('A photo crop could not be read.');
+    photos.push({ ...(id ? { id } : {}), ...(upload ? { upload } : {}), crop });
+  }
+
   return {
     ok: true,
     value: {
@@ -226,6 +251,7 @@ export function validateProductInput(raw: unknown): ValidationResult {
       hitTimeMinutes: hit as number | null,
       ratings,
       purchases,
+      photos,
       private: r.private === true,
     },
   };

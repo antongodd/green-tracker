@@ -5,6 +5,7 @@ import { loadSession } from './lib/session';
 import { auth } from './routes/auth';
 import { account } from './routes/account';
 import { products } from './routes/products';
+import { photos, uploads } from './routes/photos';
 
 export type { Env } from './env';
 
@@ -12,10 +13,11 @@ declare const __APP_VERSION__: string;
 
 const app = new Hono<AppEnv>().basePath('/api');
 
-// API responses hold personal data: never cache them anywhere.
+// API responses hold personal data: never cache them anywhere — unless a route
+// sets its own policy (photos: private, no-cache + ETag, so they revalidate).
 app.use('*', async (c, next) => {
   await next();
-  c.header('cache-control', 'no-store');
+  if (!c.res.headers.has('cache-control')) c.header('cache-control', 'no-store');
 });
 
 // Cross-site request forgery: every state-changing request must come from the app's own origin.
@@ -38,6 +40,8 @@ app.get('/health', async (c) => {
 app.route('/auth', auth);
 app.route('/account', account);
 app.route('/products', products);
+app.route('/uploads', uploads);
+app.route('/photos', photos);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
 
