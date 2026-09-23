@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.3.1 (Phase 3 — products)
+**Current version:** 0.4.0 (Phase 4 — Leaderboard)
 
 ---
 
@@ -51,8 +51,8 @@ this document records how they were implemented and every decision made on top.
 | 1 | Design checkpoint: mockups at 390px for owner approval | **Done** |
 | 2 | Accounts: passkeys, recovery codes, sessions, rate limits | **Done** |
 | 3 | Products: editor, profile, archive, private | **Done** |
-| 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | Next |
-| 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | |
+| 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | **Done** |
+| 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | Next |
 | 6 | Log: loose entries, projections, grouping, promotion | |
 | 7 | Social: follows, requests, blocks, search, follower view, privacy suite | |
 | 8 | Data & account: export, restore, delete account, More/About | |
@@ -95,7 +95,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 | P7 | Archive: Un-archive button per row. No swipe. |
 | P8 | Photo viewer: swipe between a product's photos. |
 | P9 | Sign-in tagline: "Rate, rank and remember everything you've tried." |
-| — | Widest control pair at 375px to be measured in Phase 4; abbreviate only what doesn't fit. |
+| — | Widest control pair at 375px measured in Phase 4 — see §4 *Leaderboard*. |
 
 ## 4. Implementation decisions
 
@@ -206,6 +206,39 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     generic names like `.empty`, which already means the empty-state card.
   - *Client cache*: products are cached in memory for instant back-navigation and
     cleared whenever the signed-in account changes.
+- **Leaderboard (Phase 4).**
+  - *View state* (`client/src/viewState.ts`): `{ filter, rankBy }` in localStorage
+    under `gt.view`, per device (D5). The Type filter is the one setting the Log will
+    share. Every read and write goes through `resolveViewState`, so an invalid value →
+    All, and a Rank by the filter doesn't offer → Overall, overwriting what's stored.
+    Storage failures (private browsing) just mean the setting doesn't persist.
+  - *Control row*: two pills over transparent native selects (16px, so iOS shows its
+    picker and never zooms), sticky under the header (P4). Filter options carry
+    🌿 💧 🍪 💨; the closed pill has no icon. Active = not Overall / not All.
+  - *Label fitting is measured on the device*: after each change the row checks
+    whether it overflows and, only if it does, first shortens the Rank label, then
+    the Type label. Short forms: `VFM`, `Consis.`, `Price/g`, `Price/mg`, `Conc.`.
+    **Measured at 375px (Chromium), every filter × Rank by combination:** only two
+    need shortening — Concentrate × Price per gram (`Price/g`) and Concentrate ×
+    Value for money (`VFM`). The Type pill never needs it. Everything fits at 390px.
+    Because it's measured live, iPhone Safari's own font widths decide on the phone.
+  - *Score block* shows the ranked value, relabelled: scores 1dp (`7.8 TASTE`),
+    price £ 2dp (`£0.18 PRICE`), VFM 2dp (`3.28 VFM`). Price-ranked rows show the
+    price on the metadata line too (chosen in the brief).
+  - *Tiles* recalculate over the visible rows; hidden only when you have no products
+    at all. Under a filter or ranking that shows nothing they read `0 / – / 0g`.
+  - *Empty states*: genuinely empty (Add a product); filtered-empty names the type
+    and how many products you have (Show all types); rank-empty names the ranking
+    (Rank by Overall) and wins when both apply. Price and VFM rank-empty cards say
+    what's missing (a purchase with an amount; an Overall and a priced latest
+    purchase) *(builder copy)*.
+  - *Returning lands where you were* (`client/src/scrollReturn.ts`): tapping a row
+    remembers the product and the row's position on screen, from layout offsets
+    (not transformed rects, per brief §10). Coming back from that product puts the
+    row at the same screen position, or leaves the page at the top if the row is
+    already fully visible there; a row that's gone → top. Memory only, so tab
+    switches and launches start at the top. The browser's own scroll restoration is
+    off; header Back buttons go back through history when there is some.
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -216,6 +249,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.4.0 — Phase 4: Leaderboard
+- Rank by and Type controls (sticky, native pickers, active state, remembered per
+  device, fallback to Overall), tiles over the visible rows, relabelled scores,
+  three empty states, return to the tapped row, labels measured to fit.
+- Header Back now goes back through history; scroll restoration is app-controlled.
+- Tests: 9 Playwright tests on a seeded 16-product account covering §17's Leaderboard
+  checks (podium, renumbering, tiles, TOTAL 0g for edibles, price ranking and
+  relabelling, persistence, fallback, both empty states and which wins, every
+  control combination at 375px, scroll return / tab switch / archived row).
 
 ### 0.3.1 — slider fix (owner report)
 - **Fixed:** dragging an unrated rating slider stopped after the first step (~1.2) on

@@ -1,6 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { BackIcon, BoardIcon, LeafGlass, LogIcon, MoreIcon, PeopleIcon } from '../icons';
-import { linkTo } from '../router';
+import { back, linkTo } from '../router';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
@@ -21,9 +21,15 @@ export function Header(p: { title?: string; leaf?: boolean; left?: ComponentChil
   );
 }
 
+/** Goes back in the app's history when there is some (so screens can restore); otherwise to `to`. */
 export function BackButton(p: { to: string; label?: string }) {
+  const onClick = (e: MouseEvent) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    back(p.to);
+  };
   return (
-    <a class="hbtn" href={p.to} onClick={linkTo(p.to)} aria-label={p.label ? undefined : 'Back'}>
+    <a class="hbtn" href={p.to} onClick={onClick} aria-label={p.label ? undefined : 'Back'}>
       <BackIcon />
       {p.label}
     </a>

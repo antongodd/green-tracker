@@ -1,12 +1,14 @@
 import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
-import { formatScore, formatUnitPrice } from '../../../shared/domain/format';
+import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
+import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';
 import { headlinePrice, type Purchase } from '../../../shared/domain/money';
 import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { overall } from '../../../shared/domain/ratings';
 import { LockIcon, TypeMark } from '../icons';
 import { linkTo } from '../router';
+import { rememberRow } from '../scrollReturn';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** `2026-08-12` → `12 Aug 2026`. Dates are calendar days: no time zone involved. */
@@ -69,7 +71,14 @@ export function MetaLine(p: { product: Product }) {
   );
 }
 
-export function Score(p: { value: number | null; label?: string }) {
+/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp. */
+export function formatRankValue(rankBy: RankBy, value: number): string {
+  if (rankBy === 'price') return formatGBP(value);
+  if (rankBy === 'vfm') return formatVFM(value);
+  return formatScore(value);
+}
+
+export function Score(p: { value: number | null; label?: string; text?: string }) {
   if (p.value === null) {
     return (
       <div class="score unrated">
@@ -80,17 +89,26 @@ export function Score(p: { value: number | null; label?: string }) {
   }
   return (
     <div class="score">
-      <b>{formatScore(p.value)}</b>
+      <b>{p.text ?? formatScore(p.value)}</b>
       <span class="cap">{p.label ?? 'Overall'}</span>
     </div>
   );
 }
 
-/** The Leaderboard / Archive row (brief §6.1). */
-export function ProductRow(p: { product: Product; rank: number; podium: 1 | 2 | 3 | null; children?: ComponentChildren }) {
+/**
+ * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
+ * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
+ */
+export function ProductRow(p: { product: Product; rank: number; podium: 1 | 2 | 3 | null; rankBy?: RankBy; value?: number | null; list?: string }) {
   const href = `/products/${p.product.id}`;
+  const rankBy = p.rankBy ?? 'overall';
+  const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
+  const open = (e: MouseEvent) => {
+    if (p.list) rememberRow(p.list, p.product.id, e.currentTarget as HTMLElement);
+    linkTo(href)(e);
+  };
   return (
-    <a class={`row${p.podium ? ` p${p.podium}` : ''}`} href={href} onClick={linkTo(href)} data-product={p.product.id}>
+    <a class={`row${p.podium ? ` p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
       <div class="mid">
@@ -98,7 +116,7 @@ export function ProductRow(p: { product: Product; rank: number; podium: 1 | 2 | 
         <Cluster product={p.product} showLock />
         <MetaLine product={p.product} />
       </div>
-      <Score value={overall(p.product.productType, p.product.ratings)} />
+      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} />
     </a>
   );
 }

@@ -34,10 +34,14 @@ export function back(fallback: string): void {
   } else navigate(fallback, { replace: true });
 }
 
+// The app decides where each screen starts (top, or a restored position), not the browser.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
 let lastPath = location.pathname;
 window.addEventListener('popstate', () => {
   const from = lastPath;
   lastPath = location.pathname;
+  window.scrollTo(0, 0);
   changed(from);
 });
 
