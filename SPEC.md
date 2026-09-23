@@ -47,8 +47,8 @@ this document records how they were implemented and every decision made on top.
 | # | Phase | Status |
 |---|---|---|
 | 0 | Foundations: scaffold, schema, domain module + tests, spec | **Done** |
-| 1 | Design checkpoint: mockups at 390px for owner approval | **Awaiting approval** |
-| 2 | Accounts: passkeys, recovery codes, sessions, rate limits | |
+| 1 | Design checkpoint: mockups at 390px for owner approval | **Done** |
+| 2 | Accounts: passkeys, recovery codes, sessions, rate limits | Next |
 | 3 | Products: editor, profile, archive, private | |
 | 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | |
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | |
@@ -76,6 +76,23 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D11 | Web address: **`green-tracker.green-tracker.workers.dev`** (2026-09-23). | This is the passkey relying-party ID. Changing it later invalidates every passkey (accounts would need recovery codes). |
 | D12 | **A followed person's Leaderboard rows show Source** on the metadata line (2026-09-23). Overrides design brief §9 ("no metadata line"). | Follower rows: Source only — never price. No date-tried fallback (D3 hides it), so no Source → no metadata line. |
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
+
+### Design approvals (Phase 1, 2026-09-23)
+
+Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
+
+| # | Decision |
+|---|---|
+| P1 | Tab bar icons: podium (Leaderboard), notebook (Log), two people (People), three dots (More). Pending-request count on People. |
+| P2 | Strain tags **UPPERCASE** (INDICA / SATIVA / HYBRID), 11px semibold, +0.06em tracking. |
+| P3 | Floating + bottom-right above the tab bar on your Leaderboard and Log; never on someone else's. |
+| P4 | Control row sticky under the header; Log country headers sticky within their group. |
+| P5 | Editors: fixed Save bar replaces the tab bar; Cancel top-left. |
+| P6 | People: search, then Requests · Followers · Following segmented control; row actions via ⋯ → action sheet → confirmation. No swipe. |
+| P7 | Archive: Un-archive button per row. No swipe. |
+| P8 | Photo viewer: swipe between a product's photos. |
+| P9 | Sign-in tagline: "Rate, rank and remember everything you've tried." |
+| — | Widest control pair at 375px to be measured in Phase 4; abbreviate only what doesn't fit. |
 
 ## 4. Implementation decisions
 
@@ -123,22 +140,12 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 
 ## 5. Open questions for the owner
 
-1. Phase-1 design proposals P1–P9 — awaiting approval. Mockups: `design/mockups.html`
-   (published: https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
-   - P1 Tab bar icons: podium, notebook, two people, three dots; request count on People.
-   - P2 Strain tags in Title case.
-   - P3 Floating + bottom-right on your Leaderboard and Log.
-   - P4 Sticky control row; sticky Log country headers.
-   - P5 Editors: fixed Save bar replaces the tab bar; Cancel top-left.
-   - P6 People: search, then Requests · Followers · Following switcher; row actions via ⋯ → confirmation sheet (no swipe).
-   - P7 Archive: Un-archive button per row (no swipe).
-   - P8 Photo viewer: swipe between photos.
-   - P9 Sign-in line: "Rate, rank and remember everything you've tried."
-   - Note: the widest control pair ("Rank: Price per gram" + "Type: Concentrate") is tight at 375px; measure in Phase 4 and abbreviate only what doesn't fit.
+None.
 
 ## 6. Changelog
 
-### 0.1.0 — Phase 1: design checkpoint (in review)
+### 0.1.0 — Phase 1: design checkpoint (approved)
+- Owner approved P1–P9 (P2 changed to uppercase tags).
 - `design/mockups.html`: 11 screens at 390×844 (Leaderboard default and filtered/ranked,
   Log, profile, edible editor, a followed person's Leaderboard, People and its row menu,
   sign in, recovery codes, More) plus empty states and a marks/tags/buttons sheet.
