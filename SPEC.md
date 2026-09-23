@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.2.0 (Phase 2 — accounts)
+**Current version:** 0.3.0 (Phase 3 — products)
 
 ---
 
@@ -50,8 +50,8 @@ this document records how they were implemented and every decision made on top.
 | 0 | Foundations: scaffold, schema, domain module + tests, spec | **Done** |
 | 1 | Design checkpoint: mockups at 390px for owner approval | **Done** |
 | 2 | Accounts: passkeys, recovery codes, sessions, rate limits | **Done** |
-| 3 | Products: editor, profile, archive, private | Next |
-| 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | |
+| 3 | Products: editor, profile, archive, private | **Done** |
+| 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | Next |
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | |
 | 6 | Log: loose entries, projections, grouping, promotion | |
 | 7 | Social: follows, requests, blocks, search, follower view, privacy suite | |
@@ -76,6 +76,8 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D10 | The owner tests on a real iPhone (installed to the Home Screen). This environment only has Chromium. | |
 | D11 | Web address: **`green-tracker.green-tracker.workers.dev`** (2026-09-23). | This is the passkey relying-party ID. Changing it later invalidates every passkey (accounts would need recovery codes). |
 | D12 | **A followed person's Leaderboard rows show Source** on the metadata line (2026-09-23). Overrides design brief §9 ("no metadata line"). | Follower rows: Source only — never price. No date-tried fallback (D3 hides it), so no Source → no metadata line. |
+| D14 | **Date tried starts empty** on a new product (2026-09-23). | Undated products sort after dated ones in ties. |
+| D15 | **A new purchase's date defaults to today**, editable (2026-09-23). | |
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
 
 ### Design approvals (Phase 1, 2026-09-23)
@@ -167,6 +169,35 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     until their phases. More has Account (username, passkeys, recovery codes,
     sign out, sign out everywhere) and About (version). Recovery codes can be
     copied or saved (share sheet → Save to Files on iPhone, download elsewhere).
+- **Products (Phase 3).** Decisions where the brief is silent are marked *(builder)*.
+  - *One shape, one validator*: `shared/domain/product.ts` defines the record and
+    `validateProductInput`, used by the editor before saving and by the server on
+    every write. It trims text (blank → null), auto-capitalises name, Source and
+    supplier (idempotent, so the server applying it again is harmless), checks
+    ranges and real calendar dates, and drops purchases with no total paid.
+  - *Ratings on save*: the editor sends only the categories of the current type,
+    each as a number (set) or null (clear). Categories not sent are left exactly
+    as stored, which is what makes a type switch lossless.
+  - *Hit time is kept when a product moves away from Edibles*, hidden, the same as
+    ratings and concentrate type *(builder)*.
+  - *Purchases* are replaced as a list on save. An existing purchase keeps its
+    entry order (`seq`); new ones go after. Latest = newest date, then latest entered.
+  - *A total paid of £0 is allowed* (a gift) and gives £0.00/g; an amount must be
+    more than 0 *(builder)*.
+  - *Leaderboard in Phase 3* is the default ranking only (Overall, all types) with
+    the approved row design, the podium, private locks, the metadata-line fallbacks
+    and the + button. Everything else in §10.1 is Phase 4.
+  - *Profile*: Details lists only fields that are set *(builder)*. The Overall
+    explanation under the ratings is the same per-type text as the editor. Private
+    saves immediately and shows the change at once, reverting if the save fails.
+  - *Archive*: rows ranked by Overall with rank numbers but **no podium metals**
+    (the podium belongs to the Leaderboard) *(builder)*, each with Un-archive (P7).
+    An archived product's profile is read-only with an Un-archive button *(builder)*.
+  - *Isolation*: every product query is scoped to the signed-in user; another
+    user's product ID behaves exactly like a missing one (404). Nothing here is
+    ever sent to followers — they get their own routes in Phase 7.
+  - *Client cache*: products are cached in memory for instant back-navigation and
+    cleared whenever the signed-in account changes.
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -177,6 +208,21 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.3.0 — Phase 3: products
+- Products API: create, read, update, archive / un-archive, private; owner-only.
+- Product editor: Basics, Classification (Other pattern, concentrate type), Origin,
+  Ratings (slider + tap-to-type + clear, per-type explanation, Rated N of N, live
+  Overall), stepped hit-time picker for edibles, Purchases with live £/unit, Notes,
+  Leafly link, Private; fixed Save bar; inline errors.
+- Product profile: hero with Overall, price and private/archived badges; rating
+  bars (High muted where it doesn't count); price history with Latest; value for
+  money; notes; Leafly (View / Search, opens outside the app); details; Edit,
+  Private switch, Archive with confirmation. Scroll returns after editing.
+- Leaderboard (default ranking) and More → Archive with Un-archive.
+- Tests: 37 unit tests and 22 API tests added (type-switch keeps ratings, purchase
+  order, validation, cross-user isolation); Playwright journey through the real
+  editor, profile, type switch, private, archive and restore.
 
 ### 0.2.0 — Phase 2: accounts
 - Passkey sign-up (username → passkey → 10 recovery codes) and sign-in; recovery-code

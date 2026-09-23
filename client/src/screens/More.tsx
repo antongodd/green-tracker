@@ -4,6 +4,7 @@ import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ChevronRight } from '../icons';
 import { addPasskey } from '../passkey';
+import { fetchArchived } from '../products';
 import { linkTo } from '../router';
 import { formatDate, useSession } from '../session';
 
@@ -39,6 +40,13 @@ export function More() {
   const { me, refresh } = useSession();
   const [confirmEverywhere, setConfirmEverywhere] = useState(false);
   const [error, setError] = useState('');
+  const [archived, setArchived] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchArchived()
+      .then((list) => setArchived(list.length))
+      .catch(() => {});
+  }, []);
 
   async function signOut(everywhere: boolean) {
     setConfirmEverywhere(false);
@@ -70,6 +78,12 @@ export function More() {
               {error}
             </p>
           )}
+        </div>
+        <div class="lh cap">Products</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="Archive" value={archived === null ? undefined : String(archived)} to="/more/archive" />
+          </div>
         </div>
         <div class="lh cap">About</div>
         <div class="wrap">

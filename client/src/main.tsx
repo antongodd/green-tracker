@@ -6,7 +6,11 @@ import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
+import { Editor } from './screens/Editor';
+import { Archive, Leaderboard } from './screens/Leaderboard';
 import { More, Passkeys, RecoveryCodes } from './screens/More';
+import { Profile } from './screens/Profile';
+import { clearProductCache } from './products';
 import { Placeholder } from './screens/Placeholder';
 import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
@@ -22,7 +26,12 @@ function App() {
 
   const refresh = useCallback(async () => {
     try {
-      setMe(await api<Me>('GET', '/auth/me'));
+      const next = await api<Me>('GET', '/auth/me');
+      // A different (or no) account must never see the previous one's cached data.
+      setMe((prev) => {
+        if (prev?.user?.username !== next.user?.username) clearProductCache();
+        return next;
+      });
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -88,25 +97,33 @@ function App() {
   } else if (me.needsPasskey) {
     screen = <NewPasskey />;
   } else {
-    switch (path) {
-      case '/log':
-        screen = <Placeholder tab="log" />;
-        break;
-      case '/people':
-        screen = <Placeholder tab="people" />;
-        break;
-      case '/more':
-        screen = <More />;
-        break;
-      case '/more/passkeys':
-        screen = <Passkeys />;
-        break;
-      case '/more/recovery-codes':
-        screen = <RecoveryCodes />;
-        break;
-      default:
-        screen = <Placeholder tab="leaderboard" />;
-    }
+    const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
+    if (path === '/products/new') screen = <Editor key="new" id={null} />;
+    else if (product?.[2]) screen = <Editor key={product[1]} id={decodeURIComponent(product[1]!)} />;
+    else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
+    else
+      switch (path) {
+        case '/log':
+          screen = <Placeholder tab="log" />;
+          break;
+        case '/people':
+          screen = <Placeholder tab="people" />;
+          break;
+        case '/more':
+          screen = <More />;
+          break;
+        case '/more/passkeys':
+          screen = <Passkeys />;
+          break;
+        case '/more/recovery-codes':
+          screen = <RecoveryCodes />;
+          break;
+        case '/more/archive':
+          screen = <Archive />;
+          break;
+        default:
+          screen = <Leaderboard />;
+      }
   }
 
   return <SessionContext.Provider value={{ me, refresh }}>{screen}</SessionContext.Provider>;

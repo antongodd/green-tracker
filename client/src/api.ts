@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
 const OFFLINE = 'You’re offline. Check your connection and try again.';
 
-export async function api<T = unknown>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+export async function api<T = unknown>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
