@@ -3,6 +3,7 @@ import { useState } from 'preact/hooks';
 import { formatScore } from '../../../shared/domain/format';
 import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
 import { ChevronDown, CrossIcon } from '../icons';
+import { Slider } from './Slider';
 
 /** Native select (iOS shows its own picker), styled as an input. */
 export function Select(p: { id: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; label: string }) {
@@ -64,7 +65,6 @@ const clamp = (v: number) => Math.min(RATING_MAX, Math.max(RATING_MIN, v));
 export function RatingInput(p: { id: string; label: string; value: number | null; onChange: (v: number | null) => void }) {
   const [typing, setTyping] = useState<string | null>(null);
   const v = p.value;
-  const pct = v === null ? 0 : ((v - RATING_MIN) / (RATING_MAX - RATING_MIN)) * 100;
 
   function commit() {
     if (typing === null) return;
@@ -77,9 +77,9 @@ export function RatingInput(p: { id: string; label: string; value: number | null
   return (
     <div class="rate">
       <div class="rate-top">
-        <label class="l" for={`${p.id}-range`}>
+        <span class="l" id={`${p.id}-label`}>
           {p.label}
-        </label>
+        </span>
         {typing === null ? (
           <button type="button" class={`val${v === null ? ' none' : ''}`} onClick={() => setTyping(v === null ? '' : formatScore(v))} aria-label={`${p.label}: ${v === null ? 'unrated' : formatScore(v)}. Tap to type a value`}>
             {v === null ? '—' : formatScore(v)}
@@ -100,17 +100,16 @@ export function RatingInput(p: { id: string; label: string; value: number | null
           <CrossIcon />
         </button>
       </div>
-      <input
+      <Slider
         id={`${p.id}-range`}
-        type="range"
-        class={`range${v === null ? ' empty' : ''}`}
         min={RATING_MIN}
         max={RATING_MAX}
         step={0.1}
-        value={v ?? RATING_MIN}
-        style={{ '--pct': `${pct}%` }}
-        aria-valuetext={v === null ? 'Unrated' : formatScore(v)}
-        onInput={(e) => p.onChange(Number(e.currentTarget.value))}
+        bigStep={1}
+        value={v}
+        onChange={p.onChange}
+        label={p.label}
+        valueText={v === null ? 'Unrated' : formatScore(v)}
       />
     </div>
   );
@@ -125,7 +124,7 @@ export function HitTimeInput(p: { value: number | null; onChange: (v: number | n
   return (
     <div class="hit">
       <div class="hit-top">
-        <label for="hit-time">Hit time</label>
+        <span>Hit time</span>
         <span class="d">
           {formatHitTime(p.value)}
           {p.value !== null && (
@@ -135,16 +134,17 @@ export function HitTimeInput(p: { value: number | null; onChange: (v: number | n
           )}
         </span>
       </div>
-      <input
+      <Slider
         id="hit-time"
-        type="range"
-        class="range steps"
+        variant="steps"
         min={0}
-        max={stops}
-        step={1}
-        value={(p.value ?? 0) / HIT_TIME_STEP}
-        aria-valuetext={formatHitTime(p.value)}
-        onInput={(e) => p.onChange(Number(e.currentTarget.value) * HIT_TIME_STEP)}
+        max={HIT_TIME_MAX}
+        step={HIT_TIME_STEP}
+        bigStep={60}
+        value={p.value}
+        onChange={p.onChange}
+        label="Hit time"
+        valueText={formatHitTime(p.value)}
       />
       <div class="ticks" aria-hidden="true">
         {Array.from({ length: stops + 1 }, (_, i) => (

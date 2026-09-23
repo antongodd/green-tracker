@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.3.0 (Phase 3 — products)
+**Current version:** 0.3.1 (Phase 3 — products)
 
 ---
 
@@ -196,6 +196,14 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - *Isolation*: every product query is scoped to the signed-in user; another
     user's product ID behaves exactly like a missing one (404). Nothing here is
     ever sent to followers — they get their own routes in Phase 7.
+  - *Sliders* (0.3.1) are our own component (`client/src/components/Slider.tsx`), not
+    `<input type="range">`: one continuous drag works from unrated, the whole bar is
+    touchable, a tap jumps to a value, a vertical swipe still scrolls the page
+    (`touch-action: pan-y`; a touch only takes over once it moves sideways), and the
+    value is taken where the finger lifts. Keyboard: arrows ±0.1, Page Up/Down ±1,
+    Home/End. Hit time uses the same control in 15-minute steps.
+  - *CSS naming*: component modifiers are prefixed (`slider--unset`), never bare
+    generic names like `.empty`, which already means the empty-state card.
   - *Client cache*: products are cached in memory for instant back-navigation and
     cleared whenever the signed-in account changes.
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
@@ -208,6 +216,18 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.3.1 — slider fix (owner report)
+- **Fixed:** dragging an unrated rating slider stopped after the first step (~1.2) on
+  iPhone. Cause: the unrated slider carried the class `empty`, which is also the
+  empty-state card's class, so it had extra margins and padding; they vanished on the
+  first value and the bar jumped out from under the finger. Replaced the native range
+  with a custom slider (see §4) and prefixed its classes.
+- **Fixed:** the Date tried field overflowed its card (date inputs' built-in minimum width).
+- Fixed bars no longer hide what's scrolled into view (scroll padding).
+- Tests: finger drag from unrated in one gesture, bar doesn't move when first rated,
+  tap, vertical swipe, mouse, keyboard, hit time, date field width. Slider tests share
+  one account (sign-up is rate-limited to 10 an hour).
 
 ### 0.3.0 — Phase 3: products
 - Products API: create, read, update, archive / un-archive, private; owner-only.
