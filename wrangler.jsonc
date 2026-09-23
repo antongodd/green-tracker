@@ -17,5 +17,10 @@
     }
   ],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
+  // Passkeys are bound to this address (D11). Local dev overrides these in .dev.vars.
+  "vars": {
+    "RP_ID": "green-tracker.green-tracker.workers.dev",
+    "ORIGIN": "https://green-tracker.green-tracker.workers.dev"
+  },
   "observability": { "enabled": true }
 }

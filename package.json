@@ -15,12 +15,15 @@
     "deploy:embedded": "npm run build && wrangler d1 migrations apply green-tracker --remote && node scripts/deploy-embedded.mjs"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.0.2",
     "hono": "^4.13.8",
     "preact": "^10.29.8"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.58.0",
     "@cloudflare/workers-types": "^5.20260923.1",
+    "@playwright/test": "^1.63.0",
     "@preact/preset-vite": "^2.10.6",
     "@types/node": "^26.6.2",
     "typescript": "^7.0.2",

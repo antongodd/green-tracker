@@ -1,0 +1,13 @@
+// Worker config for the API tests: the server only (no client assets),
+// local D1/R2, and passkeys bound to http://localhost.
+{
+  "name": "green-tracker-test",
+  "main": "../../server/index.ts",
+  "compatibility_date": "2026-09-01",
+  "define": { "__APP_VERSION__": "\"test\"" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "green-tracker", "database_id": "local-test", "migrations_dir": "../../migrations" }
+  ],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
+  "vars": { "RP_ID": "localhost", "ORIGIN": "http://localhost" }
+}

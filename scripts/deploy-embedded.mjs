@@ -98,6 +98,7 @@ const config = {
   compatibility_flags: built.compatibility_flags,
   d1_databases: built.d1_databases.map((d) => ({ ...d, migrations_dir: '../../migrations' })),
   r2_buckets: built.r2_buckets,
+  vars: built.vars,
   observability: built.observability,
 };
 writeFileSync(join(outDir, 'wrangler.json'), JSON.stringify(config, null, 2));
