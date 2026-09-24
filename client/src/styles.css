@@ -463,7 +463,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .country-btn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .country-btn .nm, .cp-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .flag { flex: none; font-size: 20px; line-height: 1; }
-.cpicker { position: fixed; top: 0; left: 0; right: 0; height: 100dvh; z-index: 60; display: flex; flex-direction: column; background: var(--bg); padding-top: var(--safe-top); }
+.cpicker { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; background: var(--bg); padding-top: var(--safe-top); }
 .cpicker::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: var(--safe-top); background: var(--bar-solid); }
 .cp-top { display: grid; grid-template-columns: 88px minmax(0, 1fr) 88px; align-items: center; height: 44px; padding: 0 4px; font-size: 17px; text-align: center; }
 .cp-top .hbtn { justify-self: start; }
