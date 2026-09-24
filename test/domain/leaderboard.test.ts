@@ -21,13 +21,21 @@ const p = (id: string, productType: string, ratings: RankableProduct['ratings'],
 });
 
 describe('Default ranking (§17 Leaderboard)', () => {
-  it('highest Overall first; unrated at the bottom; podium on the top three', () => {
+  it('highest Overall first; unrated at the bottom; podium on the top four (D19)', () => {
     const rows = rankProducts(
-      [p('low', 'flower', { look: 5 }), p('unrated', 'flower', {}), p('high', 'flower', { look: 9 }), p('mid', 'flower', { look: 7 }), p('x', 'flower', { look: 6 })],
+      [p('low', 'flower', { look: 5 }), p('unrated', 'flower', {}), p('high', 'flower', { look: 9 }), p('mid', 'flower', { look: 7 }), p('x', 'flower', { look: 6 }), p('lowest', 'flower', { look: 2 })],
       { filter: 'all', rankBy: 'overall' },
     );
-    expect(rows.map((r) => r.product.id)).toEqual(['high', 'mid', 'x', 'low', 'unrated']);
-    expect(rows.map((r) => r.podium)).toEqual([1, 2, 3, null, null]);
+    expect(rows.map((r) => r.product.id)).toEqual(['high', 'mid', 'x', 'low', 'lowest', 'unrated']);
+    expect(rows.map((r) => r.podium)).toEqual([1, 2, 3, 4, null, null]);
+  });
+
+  it('an unrated product never gets a tier, even within the top four (D19)', () => {
+    const rows = rankProducts([p('a', 'flower', { look: 8 }), p('b', 'flower', {}), p('c', 'flower', { look: 6 }), p('d', 'flower', {})], { filter: 'all', rankBy: 'overall' });
+    expect(rows.map((r) => r.product.id)).toEqual(['a', 'c', 'b', 'd']);
+    expect(rows.map((r) => r.podium)).toEqual([1, 2, null, null]);
+    const none = rankProducts([p('u1', 'flower', {}), p('u2', 'flower', {})], { filter: 'all', rankBy: 'overall' });
+    expect(none.map((r) => r.podium)).toEqual([null, null]);
   });
 
   it('ties broken by most recent date tried', () => {
@@ -42,6 +50,14 @@ describe('Default ranking (§17 Leaderboard)', () => {
     const rows = rankProducts([p('f', 'flower', { look: 9 }), p('e', 'edibles', { taste: 5 })], { filter: 'edibles', rankBy: 'overall' });
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ rank: 1, podium: 1 });
+  });
+
+  it('under another Rank by, the four tiers follow that order', () => {
+    const rows = rankProducts(
+      [1, 2, 3, 4, 5].map((n) => p(`t${n}`, 'flower', { taste: n, look: 10 - n })),
+      { filter: 'all', rankBy: 'taste' },
+    );
+    expect(rows.map((r) => [r.product.id, r.podium])).toEqual([['t5', 1], ['t4', 2], ['t3', 3], ['t2', 4], ['t1', null]]);
   });
 
   it('Other and Not set products appear under All', () => {

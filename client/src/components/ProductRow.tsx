@@ -1,6 +1,6 @@
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
-import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';
+import { rankByCaption, type Podium, type RankBy } from '../../../shared/domain/leaderboard';
 import { headlinePrice, type Purchase } from '../../../shared/domain/money';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
@@ -110,7 +110,7 @@ export function Score(p: { value: number | null; label?: string; text?: string }
  * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
  * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
  */
-export function ProductRow(p: { product: Product; rank: number; podium: 1 | 2 | 3 | null; rankBy?: RankBy; value?: number | null; list?: string }) {
+export function ProductRow(p: { product: Product; rank: number; podium: Podium | null; rankBy?: RankBy; value?: number | null; list?: string }) {
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
   const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
@@ -119,7 +119,7 @@ export function ProductRow(p: { product: Product; rank: number; podium: 1 | 2 | 
     linkTo(href)(e);
   };
   return (
-    <a class={`row${p.podium ? ` p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
+    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
       <div class="mid">

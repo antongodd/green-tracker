@@ -101,9 +101,9 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
 // edge and wash, section titles are green, the bars have green lines, and the
 // active tab sits on its bubble. Tiles and podium rows keep their own styles.
 test('every main screen has the green look', async () => {
-  const cards = '.row:not(.p1):not(.p2):not(.p3), .lrows, .sect, .fgroup, .list, .empty, .seg';
+  const cards = '.row:not(.tier), .lrows, .sect, .fgroup, .list, .empty, .seg';
   // Enough rated products that the Leaderboard has rows below the podium.
-  for (const name of ['Plain Row A', 'Plain Row B']) await post('/api/products', { ...emptyProductInput(), name, strainType: 'indica', ratings: { look: 3, smell: 3, taste: 3, burn: 3, high: 3 } });
+  for (const name of ['Plain Row A', 'Plain Row B', 'Plain Row C']) await post('/api/products', { ...emptyProductInput(), name, strainType: 'indica', ratings: { look: 3, smell: 3, taste: 3, burn: 3, high: 3 } });
   const found: string[] = [];
   const screens = ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, `/log/${entryId}`, '/more/passkeys', '/more/archive'];
   for (const path of screens) {
