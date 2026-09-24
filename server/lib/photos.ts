@@ -44,9 +44,17 @@ export async function planPhotoWrites(
   userId: string,
   owner: { productId: string } | { logEntryId: string },
   inputs: PhotoInput[],
+  opts: { adoptFromLogEntry?: string } = {},
 ): Promise<{ statements: D1PreparedStatement[]; unusedKeys: string[] }> {
   const [col, ownerId] = 'productId' in owner ? (['product_id', owner.productId] as const) : (['log_entry_id', owner.logEntryId] as const);
-  const { results: existing } = await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE user_id = ?1 AND ${col} = ?2`).bind(userId, ownerId).all<PhotoRow>();
+  const { results: own } = await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE user_id = ?1 AND ${col} = ?2`).bind(userId, ownerId).all<PhotoRow>();
+  // Promotion: the entry's photo moves to the new product — the same row and files,
+  // re-pointed (moved, not copied; its original travels too).
+  let adopted: PhotoRow[] = [];
+  if (opts.adoptFromLogEntry) {
+    adopted = (await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE user_id = ?1 AND log_entry_id = ?2`).bind(userId, opts.adoptFromLogEntry).all<PhotoRow>()).results;
+  }
+  const existing = [...own, ...adopted];
   const byId = new Map(existing.map((r) => [r.id, r]));
 
   const uploadIds = inputs.map((i) => i.upload).filter((u): u is string => !!u);
@@ -74,6 +82,11 @@ export async function planPhotoWrites(
       const row = byId.get(input.id);
       if (!row) fail(400, 'invalid_photos', 'That photo no longer exists. Please reopen the editor.');
       kept.add(row.id);
+      if (adopted.includes(row)) {
+        statements.push(
+          db.prepare(`UPDATE photos SET ${col} = ?1, ${col === 'product_id' ? 'log_entry_id' : 'product_id'} = NULL, updated_at = ?2 WHERE id = ?3 AND user_id = ?4`).bind(ownerId, now, row.id, userId),
+        );
+      }
       if (input.upload) {
         if (!uploads.has(input.upload)) gone();
         // A new crop: point at the new set; the old cropped + thumb become unused.

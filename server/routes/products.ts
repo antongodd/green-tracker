@@ -110,13 +110,13 @@ async function load(db: D1Database, userId: string, where: { id?: string; archiv
   return (rows!.results as ProductRow[]).map((row) => toProduct(row, r.get(row.id) ?? [], pu.get(row.id) ?? [], ph.get(row.id) ?? []));
 }
 
-async function loadOne(db: D1Database, userId: string, id: string): Promise<Product> {
+export async function loadOne(db: D1Database, userId: string, id: string): Promise<Product> {
   const [p] = await load(db, userId, { id });
   if (!p) fail(404, 'not_found', 'That product doesn’t exist.');
   return p;
 }
 
-function parse(body: unknown): ProductInput {
+export function parseProduct(body: unknown): ProductInput {
   const result = validateProductInput(body);
   if (!result.ok) fail(400, 'invalid_product', result.message);
   return result.value;
@@ -162,32 +162,41 @@ products.get('/', async (c) => {
 
 products.get('/:id', async (c) => c.json({ product: await loadOne(c.env.DB, c.var.user!.id, c.req.param('id')) }));
 
-products.post('/', async (c) => {
-  const userId = c.var.user!.id;
-  const input = parse(await jsonBody(c));
+/**
+ * The writes that create a product from `input`, for the caller's D1 batch. Also
+ * used by promotion, which adopts the log entry's photo (`adoptFromLogEntry`).
+ */
+export async function createProductWrites(db: D1Database, userId: string, input: ProductInput, opts: { adoptFromLogEntry?: string } = {}) {
   const id = randomId();
-  const now = Date.now();
-  const db = c.env.DB;
-  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos);
-  await db.batch([
+  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos, opts);
+  const statements = [
     db
       .prepare(
         `INSERT INTO products (id, user_id, name, strain_type, product_type, product_type_other, concentrate_type, concentrate_type_other,
            country, country_other, source, date_tried, leafly_link, notes, hit_time_minutes, private, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?17)`,
       )
-      .bind(id, userId, ...FIELDS(input), now),
+      .bind(id, userId, ...FIELDS(input), Date.now()),
     ...(await childWrites(db, userId, id, input)),
     ...photoPlan.statements,
-  ]);
-  deleteLater(c.executionCtx, c.env.PHOTOS, photoPlan.unusedKeys);
+  ];
+  return { id, statements, unusedKeys: photoPlan.unusedKeys };
+}
+
+products.post('/', async (c) => {
+  const userId = c.var.user!.id;
+  const input = parseProduct(await jsonBody(c));
+  const db = c.env.DB;
+  const { id, statements, unusedKeys } = await createProductWrites(db, userId, input);
+  await db.batch(statements);
+  deleteLater(c.executionCtx, c.env.PHOTOS, unusedKeys);
   return c.json({ product: await loadOne(db, userId, id) }, 201);
 });
 
 products.put('/:id', async (c) => {
   const userId = c.var.user!.id;
   const id = c.req.param('id');
-  const input = parse(await jsonBody(c));
+  const input = parseProduct(await jsonBody(c));
   const db = c.env.DB;
   await loadOne(db, userId, id); // 404 unless it's yours
   const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos);
