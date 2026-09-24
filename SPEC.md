@@ -254,6 +254,24 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     (`signalUnknownCredential`) so the device can offer to remove it.
   - *More* is grouped Account · Data · Products · About · Danger zone.
 
+## 5. Open questions for the owner
+
+None.
+
+## 6. Changelog
+
+### 0.8.0 — Phase 8: your data and account
+- Export (all data, photos embedded, share sheet), Restore (checked, summarised,
+  confirmed, atomic), Delete account (typed username + passkey), More regrouped.
+- Tests: 7 API tests that read the local database and file store directly —
+  restore keeps hidden ratings, purchase order, crops, flags and dates; a bad record
+  or a foreign upload changes nothing; deletion leaves no rows in any table and no
+  files, frees the username, and ends every relation. Safeguards checked by
+  deliberately removing them (file purge, username check, challenge check: all
+  caught). 2 Playwright tests: export → change → restore → delete, and a non-export
+  file refused.
+
+### 0.7.0 — Phase 7: people and following
 - Search, follow requests (badge), approve / decline, followers, following,
   remove follower, unfollow, block / unblock (More → Blocked people).
 - Someone else's read-only Leaderboard and product profiles.
