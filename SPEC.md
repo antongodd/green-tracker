@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.9.0 (Phase 9 — PWA & hardening; all phases done)
+**Current version:** 0.9.1 (all phases done; automatic deploys)
 
 ---
 
@@ -32,7 +32,7 @@ this document records how they were implemented and every decision made on top.
 | `npm run typecheck` | TypeScript |
 | `npm run dev` | Local dev (Vite + Worker in workerd). Copy `.dev.vars.example` to `.dev.vars` first so passkeys bind to localhost |
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
-| `npm run deploy` | Build, apply remote migrations, deploy (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
+| `npm run deploy` | Build, apply remote migrations, deploy — normally run by GitHub Actions on every push to `main` (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
 | `npm run deploy:embedded` | Same, but embeds the client files in the Worker instead of using Workers static assets. For the cloud build environment, whose proxy breaks the assets upload (see §4, Deployment) |
 
 ### Cloudflare resources
@@ -286,11 +286,33 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     is covered by validation-failure rollback plus D1 batch atomicity, not by
     injecting a failure inside a batch.
 
+- **Deployment.**
+  - *Automatic* (`.github/workflows/ci.yml`): every pull request runs typecheck,
+    the Vitest suites and the Playwright suite. Every push to `main` runs the same
+    tests and, only if they pass, `npm run deploy` (build → remote D1 migrations →
+    deploy with Workers static assets), then polls `/api/health` until the live site
+    reports this exact build (`<version>+<commit>`), failing the run if it doesn't.
+    Deploys run one at a time. It needs one repository secret, `CLOUDFLARE_API_TOKEN`
+    (Workers Scripts edit + D1 edit on the account in `wrangler.jsonc`).
+  - *Migrations run before the new code goes live*, so each migration must work
+    with the previous build still running (add columns/tables; don't rename or drop
+    in the same release as the code that stops using them).
+  - *From the cloud build environment* use `npm run deploy:embedded`: its proxy
+    rewrites the static-assets upload token, so the client files are embedded in the
+    Worker instead, with the same routing and the `_headers` security headers.
+  - *Rollback*: revert the commit on `main` (CI redeploys it), or in an emergency
+    `npx wrangler rollback` to the previous Worker version. D1 has Time Travel for
+    point-in-time restore of the database.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.9.1 — automatic deploys
+- GitHub Actions: tests on every pull request; on `main`, tests → deploy → check the
+  live site serves the new build. Branch merged to `main`.
 
 ### 0.9.0 — Phase 9: PWA & hardening
 - Installable app (manifest, icons, Home Screen meta), service worker with an
