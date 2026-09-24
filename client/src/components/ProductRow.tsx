@@ -29,7 +29,13 @@ export function StrainTag(p: { strain: string | null }) {
   return s ? <span class={`tag ${s.key}`}>{s.label}</span> : null;
 }
 
-export function Thumb(p: { product: Product; class?: string }) {
+/** What a row needs to draw a product — your own, or one shared with you by someone you follow. */
+export type RowProduct = Pick<Product, 'id' | 'name' | 'productType' | 'strainType' | 'country' | 'countryOther'> & {
+  photos: { id: string; version: string }[];
+  private?: boolean;
+};
+
+export function Thumb(p: { product: RowProduct; class?: string }) {
   const def = productType(p.product.productType);
   const first = p.product.photos[0];
   // The first photo's thumbnail; no photo → the type mark in accent; Other / Not set → empty.
@@ -41,7 +47,7 @@ export function Thumb(p: { product: Product; class?: string }) {
 }
 
 /** Line 2 of a row: strain tag · flag · type mark (· lock on your own private products). */
-export function Cluster(p: { product: Product; showLock?: boolean }) {
+export function Cluster(p: { product: RowProduct; showLock?: boolean }) {
   const def = productType(p.product.productType);
   const country = countryDisplay(p.product.country, p.product.countryOther);
   return (

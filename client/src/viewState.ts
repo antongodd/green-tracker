@@ -4,19 +4,25 @@
 import { resolveViewState, type ViewState } from '../../shared/domain/leaderboard';
 
 const KEY = 'gt.view';
+/**
+ * Someone else's Leaderboard offers no Price or VFM, so its Rank by is stored
+ * separately — viewing a friend never resets your own price ranking. The Type
+ * filter stays shared everywhere.
+ */
+const OTHERS_KEY = 'gt.view.others';
 
-function read(): { filter?: unknown; rankBy?: unknown } {
+function read(key = KEY): { filter?: unknown; rankBy?: unknown } {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as { filter?: unknown; rankBy?: unknown }) : {};
   } catch {
     return {};
   }
 }
 
-function write(view: ViewState): void {
+function write(view: ViewState, key = KEY): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(view));
+    localStorage.setItem(key, JSON.stringify(view));
   } catch {
     // Private browsing or storage full: the setting just won't persist.
   }
@@ -33,5 +39,19 @@ export function loadView(): ViewState {
 export function saveView(next: ViewState): ViewState {
   const { filter, rankBy } = resolveViewState(next, { money: true });
   write({ filter, rankBy });
+  return { filter, rankBy };
+}
+
+/** A followed person's view: the shared Type filter with its own Rank by (never Price or VFM). */
+export function loadOthersView(): ViewState {
+  const { rankBy } = read(OTHERS_KEY);
+  const { filter, rankBy: r } = resolveViewState({ filter: loadView().filter, rankBy }, { money: false });
+  return { filter, rankBy: r };
+}
+
+export function saveOthersView(next: ViewState): ViewState {
+  const { filter, rankBy } = resolveViewState(next, { money: false });
+  write({ filter, rankBy }, OTHERS_KEY);
+  saveView({ ...loadView(), filter });
   return { filter, rankBy };
 }

@@ -39,6 +39,8 @@ export interface Me {
   needsPasskey?: boolean;
   passkeys?: number;
   recoveryCodesLeft?: number;
+  /** Incoming follow requests: the badge on the People tab. */
+  pendingRequests?: number;
 }
 
 export interface Passkey {

@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { BackIcon, BoardIcon, LeafGlass, LogIcon, MoreIcon, PeopleIcon } from '../icons';
 import { back, linkTo } from '../router';
+import { useSession } from '../session';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
@@ -46,7 +47,8 @@ const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon }[] 
 ];
 
 /** Tab bar (D6, P1). The active tab is the only indicator of the main screen. */
-export function TabBar(p: { active: Tab | null; requests?: number }) {
+export function TabBar(p: { active: Tab | null }) {
+  const requests = useSession().me.pendingRequests ?? 0;
   return (
     <nav class="nav" aria-label="Main">
       <div class="tabs">
@@ -54,9 +56,9 @@ export function TabBar(p: { active: Tab | null; requests?: number }) {
           <a key={key} class="tab" href={path} onClick={linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
             <Icon />
             {label}
-            {key === 'people' && !!p.requests && (
-              <span class="badge" aria-label={`${p.requests} follow requests`}>
-                {p.requests}
+            {key === 'people' && requests > 0 && (
+              <span class="badge" aria-label={`${requests} follow ${requests === 1 ? 'request' : 'requests'}`}>
+                {requests}
               </span>
             )}
           </a>

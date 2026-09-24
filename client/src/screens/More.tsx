@@ -70,6 +70,7 @@ export function More() {
             <Row label="Username" value={`@${me.user?.username}`} />
             <Row label="Passkeys" value={String(passkeys)} to="/more/passkeys" />
             <Row label="Recovery codes" value={`${codes} left`} to="/more/recovery-codes" />
+            <Row label="Blocked people" to="/more/blocked" />
             <Row label="Sign out" onClick={() => signOut(false)} />
             <Row label="Sign out everywhere" onClick={() => setConfirmEverywhere(true)} />
           </div>

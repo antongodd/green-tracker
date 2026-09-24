@@ -135,3 +135,4 @@ export const LockIcon = icon('M7 10V7.5a5 5 0 0 1 10 0V10h.5A1.5 1.5 0 0 1 19 11
 export const ExternalIcon = icon('M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3', { stroke: 1.6, viewBox: '0 0 16 16' });
 export const CropIcon = icon('M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4', { stroke: 1.6, viewBox: '0 0 16 16' });
 export const CameraIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5ZM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', { stroke: 1.6 });
+export const SearchIcon = icon('M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM15.5 15.5l5 5', { stroke: 2.2 });

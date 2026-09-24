@@ -426,3 +426,30 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .lrow .mk { width: 15px; height: 15px; color: var(--accent-bright); }
 .lrow .chev { width: 14px; height: 14px; color: var(--text-3); }
 .footnote { max-width: 720px; margin: 0 auto; padding: 20px 24px 8px; text-align: center; color: var(--text-2); font-size: 13px; }
+
+/* ---------- People (P6) ---------- */
+.search { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline-strong); color: var(--text-3); }
+.search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.search svg { width: 18px; height: 18px; flex: none; }
+.search input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; font-size: 16px; color: var(--text); -webkit-appearance: none; appearance: none; }
+.search input::placeholder { color: var(--text-3); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; border-radius: 10px; background: var(--surface-1); border: 1px solid var(--hairline); }
+.seg button { display: flex; align-items: center; justify-content: center; gap: 6px; height: 36px; border: 0; border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; font-weight: 600; }
+.seg button.on { background: var(--surface-3); color: var(--text); }
+.seg .c { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }
+.seg .n { color: var(--text-3); font-weight: 500; }
+.prow { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 8px 8px 12px; border-top: 1px solid var(--hairline); }
+.prow:first-child { border-top: 0; }
+.prow .who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; min-height: 44px; }
+.prow .u { min-width: 0; display: grid; font-size: 16px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow .acts { display: flex; gap: 8px; align-items: center; flex: none; }
+.av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface-3); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+.av.lg { width: 88px; height: 88px; font-size: 36px; }
+.btn.sm { width: auto; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 14px; }
+.btn.outline { background: none; border-color: var(--hairline-strong); color: var(--text-2); }
+.more-btn { width: 44px; height: 44px; border: 0; background: none; color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.more-btn svg { width: 22px; height: 22px; }
+.empty-line { padding: 8px 4px; }
+.stranger { display: grid; justify-items: center; gap: 12px; padding: 48px 24px; text-align: center; max-width: 420px; margin: 0 auto; }
+.stranger h1 { margin: 0; font-size: 22px; }
+.hdr .hbtn svg { width: 22px; height: 22px; }

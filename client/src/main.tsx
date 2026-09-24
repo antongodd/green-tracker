@@ -14,7 +14,8 @@ import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
 import { clearEntryCache } from './logEntries';
-import { Placeholder } from './screens/Placeholder';
+import { BlockedPeople, People } from './screens/People';
+import { Person, SharedProfile } from './screens/Person';
 import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
 
@@ -105,10 +106,13 @@ function App() {
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote)?$/);
+    const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+))?$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
     else if (path === '/log/new') screen = <LogEditor key="new-entry" id={null} />;
     else if (entry?.[2]) screen = <Editor key={`promote-${entry[1]}`} id={null} promoteFrom={decodeURIComponent(entry[1]!)} />;
     else if (entry) screen = <LogEditor key={entry[1]} id={decodeURIComponent(entry[1]!)} />;
+    else if (them?.[2]) screen = <SharedProfile key={path} username={decodeURIComponent(them[1]!)} id={decodeURIComponent(them[2])} />;
+    else if (them) screen = <Person key={path} username={decodeURIComponent(them[1]!)} />;
     else if (product?.[2]) screen = <Editor key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else
@@ -117,7 +121,10 @@ function App() {
           screen = <Log />;
           break;
         case '/people':
-          screen = <Placeholder tab="people" />;
+          screen = <People />;
+          break;
+        case '/more/blocked':
+          screen = <BlockedPeople />;
           break;
         case '/more':
           screen = <More />;

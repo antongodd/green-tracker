@@ -62,7 +62,8 @@ auth.get('/username', async (c) => {
 // Sign up: username → passkey → recovery codes. No user row exists until the passkey verifies.
 
 auth.post('/signup/options', async (c) => {
-  await hit(c, LIMITS.signup, await clientKey(c));
+  const override = Number(c.env.SIGNUP_LIMIT_PER_HOUR);
+  await hit(c, override > 0 ? { ...LIMITS.signup, max: override } : LIMITS.signup, await clientKey(c));
   const username = str(await jsonBody(c), 'username');
   checkUsername(username);
   if (await usernameTaken(c.env.DB, username)) fail(409, 'username_taken', TAKEN);

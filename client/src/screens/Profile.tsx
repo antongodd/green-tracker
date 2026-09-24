@@ -18,7 +18,8 @@ import { Cropper, PhotoViewer } from '../components/PhotoViewer';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 
-function Ratings(p: { product: Product }) {
+/** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
+export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
   const { productType: type, ratings } = p.product;
   const def = productType(type);
   const count = ratedCount(type, ratings);

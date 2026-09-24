@@ -14,7 +14,7 @@ rmSync(persist, { recursive: true, force: true });
 execFileSync('npx', ['wrangler', 'd1', 'migrations', 'apply', 'green-tracker', '--local', '--persist-to', persist, '--config', config], { cwd: root, env, stdio: 'ignore' });
 const child = spawn(
   'npx',
-  ['wrangler', 'dev', '--config', config, '--port', port, '--ip', '127.0.0.1', '--persist-to', persist, '--var', 'RP_ID:localhost', '--var', `ORIGIN:http://localhost:${port}`],
+  ['wrangler', 'dev', '--config', config, '--port', port, '--ip', '127.0.0.1', '--persist-to', persist, '--var', 'RP_ID:localhost', '--var', `ORIGIN:http://localhost:${port}`, '--var', 'SIGNUP_LIMIT_PER_HOUR:1000'],
   { cwd: root, env, stdio: 'inherit' },
 );
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => (child.kill(sig), process.exit(0)));

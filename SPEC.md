@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.6.0 (Phase 6 — the Log)
+**Current version:** 0.7.0 (Phase 7 — people and following)
 
 ---
 
@@ -54,8 +54,8 @@ this document records how they were implemented and every decision made on top.
 | 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | **Done** |
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | **Done** |
 | 6 | Log: loose entries, projections, grouping, promotion | **Done** |
-| 7 | Social: follows, requests, blocks, search, follower view, privacy suite | Next |
-| 8 | Data & account: export, restore, delete account, More/About | |
+| 7 | Social: follows, requests, blocks, search, follower view, privacy suite | **Done** |
+| 8 | Data & account: export, restore, delete account, More/About | Next |
 | 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | |
 
 ## 3. Owner decisions (on top of the briefs)
@@ -182,6 +182,48 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     (same row and files — moved, not copied, original included) and deletes the
     entry. Afterwards Back goes to the Log, not the deleted entry. Reloading the
     promotion screen (nothing to promote) returns to the entry *(builder)*.
+- **People and following (Phase 7).**
+  - *One access rule* (`server/lib/social.ts` `canView`): an **approved** follow and
+    no block either way, checked on every request — so a pending request grants
+    nothing, and unfollow / removal / block end access immediately.
+  - *What crosses accounts* (`shared/domain/social.ts` `SharedProduct`): built
+    field by field from an allow-list, never by copying the product and deleting
+    fields. Identity (name, strain type, product type, concentrate type — only for
+    concentrates, country), the ratings **in the product's current set** (a hidden
+    Consistency from an earlier type is not sent), hit time (edibles), photo ids and
+    versions, and **Source** (D1). Never: prices, purchases, amounts, suppliers, VFM,
+    notes, date tried, Leafly, private/archived flags, the Log. Private and archived
+    products are left out entirely (list, tiles, counts, photos).
+  - *Date tried stays hidden (D3)*: the server orders the follower's list by the
+    owner's tie-break (most recent date tried, undated last, name) and sends only
+    that position as `tieRank`; the shared ranking code uses it for ties.
+  - *Photos for followers*: cropped and thumb only, only for products that are
+    neither private nor archived, only while `canView` holds. Originals, Log photos
+    and everything else → **403**, identical whether or not the photo exists (so the
+    reply can't be used to probe). The owner of a deleted photo also gets 403.
+  - *Non-followers* get `{ username, relation }` and nothing else. Someone who has
+    blocked you is indistinguishable from a username that doesn't exist (404).
+  - *Search*: usernames, case-insensitive, at least 2 characters, prefix matches
+    first, `_` and `%` taken literally, 20 results, blocked people hidden both ways,
+    rate-limited (120 per 10 min per user).
+  - *Block*: removes follows and pending requests both ways; the blocked person
+    can't find, view or request the blocker and isn't told; undone from More →
+    Blocked people. Decline is silent. Following is one-way.
+  - *Screens* (P6): People has search, then Requests (badge, same count as the tab
+    badge) · Followers · Following; ⋯ opens a sheet (View leaderboard, Follow back,
+    Remove follower, Unfollow / Cancel request, Block), each destructive choice
+    confirmed. `/u/<username>` is their read-only Leaderboard with `@username` in the
+    header, Rank by without Price/VFM, PRODUCTS and AVERAGE tiles only, Source-only
+    metadata (D12), no + button, no locks; or, if you don't follow them, just the
+    username, a Follow / Requested button and "Follow to see their leaderboard."
+    Their product profile shows hero, ratings, hit time, photos (viewer without
+    crop) and details (strain, type, concentrate type, country, Source).
+  - *Their Rank by is stored separately* (`gt.view.others`), so looking at a friend
+    never resets your own price ranking; the Type filter stays shared.
+  - *Routes*: individual people live under `/api/people/u/<username>`, so no
+    username can collide with the list routes.
+  - *Test servers* raise the sign-up rate limit with `SIGNUP_LIMIT_PER_HOUR`; a test
+    fails if it ever appears in `wrangler.jsonc` (production stays at 10 an hour).
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -192,6 +234,20 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.7.0 — Phase 7: people and following
+- Search, follow requests (badge), approve / decline, followers, following,
+  remove follower, unfollow, block / unblock (More → Blocked people).
+- Someone else's read-only Leaderboard and product profiles.
+- Server: people routes, the single access rule, the follower allow-list, follower
+  photo serving, pending-request count on `/api/auth/me`.
+- Photo route: non-owners get a uniform 403 ("not authorised") for anything they
+  can't see.
+- Tests: 18 API privacy tests on raw responses with planted secrets (every §17
+  "Accounts and social" item except account deletion, which is Phase 8), each
+  safeguard checked by deliberately breaking it (notes leak, pending treated as
+  approved, originals served, private shown: all caught); 6 Playwright tests with
+  two people in two browsers.
 
 ### 0.6.0 — Phase 6: the Log
 - Log screen: country groups (sticky headers, counts), product projections and

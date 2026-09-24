@@ -33,7 +33,7 @@ export function useLockScroll() {
  * Full-screen viewer (brief §6.9): full-bleed black over header and tabs, close
  * top-left, swipe between photos (P8), "Crop this photo" at the bottom.
  */
-export function PhotoViewer(p: { photos: ShownPhoto[]; start: number; onClose: () => void; onCrop: (i: number) => void; onRemove?: (i: number) => void }) {
+export function PhotoViewer(p: { photos: ShownPhoto[]; start: number; onClose: () => void; onCrop?: (i: number) => void; onRemove?: (i: number) => void }) {
   useLockScroll();
   const strip = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(p.start);
@@ -82,9 +82,12 @@ export function PhotoViewer(p: { photos: ShownPhoto[]; start: number; onClose: (
         ))}
       </div>
       <div class="viewer-bottom">
-        <button type="button" class="btn secondary" onClick={() => p.onCrop(index)} disabled={!current || current.uploading}>
-          <CropIcon /> Crop this photo
-        </button>
+        {/* Someone else's photos are read-only: no crop (brief §5). */}
+        {p.onCrop && (
+          <button type="button" class="btn secondary" onClick={() => p.onCrop!(index)} disabled={!current || current.uploading}>
+            <CropIcon /> Crop this photo
+          </button>
+        )}
         {p.onRemove && (
           <button type="button" class="btn text danger-text" onClick={() => p.onRemove!(index)}>
             Remove photo
