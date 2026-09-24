@@ -77,7 +77,8 @@ test('flags beside every country, a Used section, and typing filters the list', 
 
   await page.getByLabel('Name', { exact: true }).fill('Picked Here');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  // Wait for the saved product's profile (/products/new matches /products/<id> too).
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   const { products } = await get('/api/products');
   expect(products.find((p: { name: string }) => p.name === 'Picked Here')).toMatchObject({ country: 'NL', countryOther: null });
 });
