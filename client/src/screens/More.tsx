@@ -99,7 +99,7 @@ export function More() {
             <Row label="Version" value={__APP_VERSION__} />
           </div>
         </div>
-        <div class="lh cap">Danger zone</div>
+        <div class="lh cap dng">Danger zone</div>
         <div class="wrap">
           <div class="list">
             <Row label="Delete account" to="/more/delete" danger />

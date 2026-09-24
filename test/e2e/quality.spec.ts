@@ -97,6 +97,44 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
   expect(found, found.join('\n')).toEqual([]);
 });
 
+// The green look (D18, 0.12.0): every card on every main screen carries the green
+// edge and wash, section titles are green, the bars have green lines, and the
+// active tab sits on its bubble. Tiles and podium rows keep their own styles.
+test('every main screen has the green look', async () => {
+  const cards = '.row:not(.p1):not(.p2):not(.p3), .lrows, .sect, .fgroup, .list, .empty, .seg';
+  // Enough rated products that the Leaderboard has rows below the podium.
+  for (const name of ['Plain Row A', 'Plain Row B']) await post('/api/products', { ...emptyProductInput(), name, strainType: 'indica', ratings: { look: 3, smell: 3, taste: 3, burn: 3, high: 3 } });
+  const found: string[] = [];
+  const screens = ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, `/log/${entryId}`, '/more/passkeys', '/more/archive'];
+  for (const path of screens) {
+    await page.goto(path);
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator(cards).first()).toBeVisible();
+    const bad = await page.evaluate((sel) => {
+      const out: string[] = [];
+      const green = (c: string) => c.replace(/\s/g, '').startsWith('rgba(88,224,140');
+      document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
+        const cs = getComputedStyle(el);
+        if (!green(cs.borderTopColor) || !cs.backgroundImage.includes('linear-gradient')) out.push(`card .${el.className}: ${cs.borderTopColor} ${cs.backgroundImage.slice(0, 40)}`);
+      });
+      document.querySelectorAll<HTMLElement>('.lh.cap:not(.dng), .fgroup > .cap, .sect > .cap, .group-h').forEach((el) => {
+        if (getComputedStyle(el).color !== 'rgb(88, 224, 140)') out.push(`title "${el.textContent}": ${getComputedStyle(el).color}`);
+      });
+      const dng = document.querySelector('.lh.cap.dng');
+      if (dng && getComputedStyle(dng).color !== 'rgb(255, 107, 107)') out.push('Danger zone title should stay red');
+      const hdr = document.querySelector('.hdr');
+      if (hdr && !green(getComputedStyle(hdr).borderBottomColor)) out.push('header line');
+      const bar = document.querySelector('.nav, .savebar');
+      if (bar && !green(getComputedStyle(bar).borderTopColor)) out.push('bottom bar line');
+      const tab = document.querySelector('.tab[aria-current="page"]');
+      if (tab && !getComputedStyle(tab, '::before').backgroundColor.replace(/\s/g, '').startsWith('rgba(88,224,140')) out.push('active tab bubble');
+      return out;
+    }, cards);
+    found.push(...bad.map((b) => `${path}: ${b}`));
+  }
+  expect(found, found.join('\n')).toEqual([]);
+});
+
 test('the signed-out screens pass too', async ({ browser }) => {
   const fresh = await (await browser.newContext()).newPage();
   const found: string[] = [];

@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.11.0 (all phases done; centred, green-washed stats tiles)
+**Current version:** 0.12.0 (all phases done; the green look across every screen)
 
 ---
 
@@ -81,6 +81,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
 | D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
 | D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
+| D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -362,11 +363,34 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   unchanged. Tested: centred to within 1px, inside the tile edges and not cut off (also
   at 375px, with COUNTRIES, the longest label), wash present, on all three screens.
 
+- **The green look (D18, 0.12.0).** Tokens in `client/src/styles.css`: `--card-bg`
+  (115°, `--accent-bright` 7% → 0 by 55%, over `--surface-1`), `--card-edge` (16%),
+  `--divider` (10%, lines inside cards), `--bar-line` (22%, header / tab bar / Save bar),
+  `--photo-edge` (1px outline at 14%) and `--bar-fill` (rating bars and the editor's
+  slider). Cards: Leaderboard rows (not the podium), Log groups, profile sections,
+  editor sections, More / People / Passkeys / Archive lists, the People segmented
+  control, empty-state cards and the country picker's lists. Pills get a lighter
+  version of the tile wash (10%, edge 26%); an active pill keeps its stronger state.
+  Section titles (`.lh.cap`, a card's own caption, Log country headers, the picker's
+  headings) are `--accent-bright`; captions under numbers stay `--text-2`; More's "Danger zone" title is `--danger`. Kept as
+  they were: text boxes and dropdowns (so they still read as things you type into),
+  buttons, action sheets, the purchase cards nested inside the editor, the photo
+  viewer and cropper, and the podium rows (until 0.13.0). Tested: every card, title
+  and bar on nine screens (your Leaderboard, Log, People, More, a product, its editor,
+  a Log entry, Passkeys, Archive), and axe finds no contrast problems.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.12.0 — the green look everywhere (owner request)
+- The stats tiles' green now runs through the whole app (decision D18): cards have
+  a soft green fade and edge, section titles are green, the header, tab bar and Save
+  bar have green lines, the active tab sits on a green bubble, rating bars fade from
+  green to bright green, and photos have a thin green outline.
+- Tests: a new check of the green look on nine screens; axe still finds nothing.
 
 ### 0.11.0 — stats tiles (owner request)
 - The number and label in every stats tile are centred, and each tile has a faint
