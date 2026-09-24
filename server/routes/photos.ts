@@ -4,6 +4,7 @@ import { MAX_IMAGE_BYTES, MAX_THUMB_BYTES, parseCrop, PHOTO_VARIANTS, type Photo
 import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, isJpeg, newSetId, PHOTO_COLUMNS, photoKey, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
+import { canView } from '../lib/social';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -73,21 +74,35 @@ photos.use('*', requireUser());
 
 /**
  * Serves a photo file through an authorised request — never a public bucket URL.
- * Phase 5: the owner only (followers get cropped images of visible products in Phase 7).
- * `private, no-cache` + ETag: the device revalidates every time, so revoked access
- * can't keep showing a cached photo, while unchanged images cost only a 304.
+ * - The owner: any variant of any of their photos.
+ * - An approved follower (lib/social.ts canView): cropped or thumb only, of a photo
+ *   on a product that is neither private nor archived. Never originals, never Log photos.
+ * - Anyone else, or anything else: 403, the same whether or not the photo exists.
+ * `private, no-cache` + ETag: the device revalidates every time, so access that has
+ * ended (unfollow, removal, block, private, archive) can't keep showing a cached
+ * photo, while unchanged images cost only a 304.
  */
 photos.get('/:id/:variant', async (c) => {
   const variant = c.req.param('variant') as PhotoVariant;
   if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'Not found.');
-  const userId = c.var.user!.id;
-  const row = await c.env.DB.prepare('SELECT original_set, image_set FROM photos WHERE id = ?1 AND user_id = ?2').bind(c.req.param('id'), userId).first<{ original_set: string; image_set: string }>();
-  if (!row) fail(404, 'not_found', 'Not found.');
+  const me = c.var.user!.id;
+  const row = await c.env.DB.prepare(
+    `SELECT ph.user_id, ph.original_set, ph.image_set, ph.product_id, p.private, p.archived
+     FROM photos ph LEFT JOIN products p ON p.id = ph.product_id WHERE ph.id = ?1`,
+  )
+    .bind(c.req.param('id'))
+    .first<{ user_id: string; original_set: string; image_set: string; product_id: string | null; private: number | null; archived: number | null }>();
+  const denied: () => never = () => fail(403, 'not_authorised', 'You can’t see this photo.');
+  if (!row) denied();
+  if (row.user_id !== me) {
+    const shareable = variant !== 'original' && row.product_id !== null && row.private === 0 && row.archived === 0;
+    if (!shareable || !(await canView(c.env.DB, me, row.user_id))) denied();
+  }
   const set = variant === 'original' ? row.original_set : row.image_set;
   const etag = `"${set}-${variant}"`;
   const headers = { 'cache-control': 'private, no-cache', etag, 'content-type': 'image/jpeg' };
   if (c.req.header('if-none-match') === etag) return new Response(null, { status: 304, headers });
-  const obj = await c.env.PHOTOS.get(photoKey(userId, set, variant));
+  const obj = await c.env.PHOTOS.get(photoKey(row.user_id, set, variant));
   if (!obj) fail(404, 'not_found', 'Not found.');
   return new Response(obj.body, { headers: { ...headers, 'content-length': String(obj.size) } });
 });

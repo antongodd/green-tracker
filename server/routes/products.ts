@@ -86,7 +86,7 @@ const PRODUCT_COLUMNS = `id, name, strain_type, product_type, product_type_other
   country, country_other, source, date_tried, leafly_link, notes, hit_time_minutes, archived, private, created_at, updated_at`;
 
 /** Loads the user's products (optionally one) with ratings and purchases, in three queries. */
-async function load(db: D1Database, userId: string, where: { id?: string; archived?: boolean }): Promise<Product[]> {
+export async function load(db: D1Database, userId: string, where: { id?: string; archived?: boolean }): Promise<Product[]> {
   const cond = where.id !== undefined ? 'AND id = ?2' : where.archived !== undefined ? 'AND archived = ?2' : '';
   const arg = where.id ?? (where.archived === undefined ? undefined : where.archived ? 1 : 0);
   const bind = (sql: string) => (arg === undefined ? db.prepare(sql).bind(userId) : db.prepare(sql).bind(userId, arg));

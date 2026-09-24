@@ -7,6 +7,7 @@ import { account } from './routes/account';
 import { products } from './routes/products';
 import { photos, uploads } from './routes/photos';
 import { log } from './routes/log';
+import { people } from './routes/people';
 
 export type { Env } from './env';
 
@@ -44,6 +45,7 @@ app.route('/products', products);
 app.route('/uploads', uploads);
 app.route('/photos', photos);
 app.route('/log', log);
+app.route('/people', people);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
 

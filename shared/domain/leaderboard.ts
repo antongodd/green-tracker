@@ -14,8 +14,10 @@ export interface RankableProduct {
   name: string;
   productType: string;
   ratings: Ratings;
-  /** ISO date, YYYY-MM-DD. */
-  dateTried: string | null;
+  /** ISO date, YYYY-MM-DD. Absent in a follower's view (D3) — `tieRank` stands in. */
+  dateTried?: string | null;
+  /** A follower's view: the owner's tie-break order, precomputed by the server (D3). */
+  tieRank?: number;
   /** Absent in a follower's view — money is never sent to followers. */
   purchases?: readonly Purchase[];
 }
@@ -109,12 +111,18 @@ export function matchesFilter(typeKey: string, filter: TypeFilter): boolean {
   return filter === 'all' || typeKey === filter;
 }
 
-/** Most recent date tried first; undated after dated; then name, then id for a stable order. */
-function tieBreak(a: RankableProduct, b: RankableProduct): number {
-  if (a.dateTried !== b.dateTried) {
-    if (a.dateTried === null) return 1;
-    if (b.dateTried === null) return -1;
-    return a.dateTried < b.dateTried ? 1 : -1;
+/**
+ * Most recent date tried first; undated after dated; then name, then id for a stable
+ * order. A follower's view has no dates: it uses the server's precomputed `tieRank`.
+ */
+export function tieBreak(a: RankableProduct, b: RankableProduct): number {
+  if (a.tieRank !== undefined && b.tieRank !== undefined) return a.tieRank - b.tieRank;
+  const da = a.dateTried ?? null;
+  const db = b.dateTried ?? null;
+  if (da !== db) {
+    if (da === null) return 1;
+    if (db === null) return -1;
+    return da < db ? 1 : -1;
   }
   return a.name.localeCompare(b.name, 'en-GB', { sensitivity: 'accent' }) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 }

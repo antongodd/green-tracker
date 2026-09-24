@@ -35,15 +35,17 @@ auth.get('/me', async (c) => {
   if (!user) return c.json({ user: null });
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
-            (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes`,
+            (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes,
+            (SELECT COUNT(*) FROM follows WHERE followed_id = ?1 AND status = 'pending') AS requests`,
   )
     .bind(user.id)
-    .first<{ passkeys: number; codes: number }>();
+    .first<{ passkeys: number; codes: number; requests: number }>();
   return c.json({
     user: { username: user.username },
     needsPasskey: c.var.session!.needsPasskey,
     passkeys: counts?.passkeys ?? 0,
     recoveryCodesLeft: counts?.codes ?? 0,
+    pendingRequests: counts?.requests ?? 0,
   });
 });
 

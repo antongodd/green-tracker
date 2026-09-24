@@ -47,7 +47,7 @@ describe('loose log entries', () => {
     expect((await me.raw(photoUrl(e.photo!, 'thumb'))).status).toBe(200);
     expect((await me.del(`/api/log/${e.id}`)).status).toBe(200);
     expect((await me.get(`/api/log/${e.id}`)).status).toBe(404);
-    expect((await me.raw(photoUrl(e.photo!, 'thumb'))).status).toBe(404);
+    expect((await me.raw(photoUrl(e.photo!, 'thumb'))).status).toBe(403);
   });
 });
 
@@ -79,7 +79,7 @@ describe('promotion (§10.2)', () => {
     const e = await create(me, { name: 'No Photo After', photos: [{ upload: await newSet(me, 'rm'), crop: null }] });
     const res = await me.post(`/api/log/${e.id}/promote`, promotionInput(entry({ name: 'No Photo After', photos: [] })));
     expect(res.json.product.photos).toEqual([]);
-    expect((await me.raw(photoUrl(e.photo!, 'thumb'))).status).toBe(404);
+    expect((await me.raw(photoUrl(e.photo!, 'thumb'))).status).toBe(403);
   });
 
   it('a new crop made in the product editor applies to the moved photo', async () => {

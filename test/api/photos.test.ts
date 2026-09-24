@@ -77,7 +77,7 @@ describe('photos', () => {
     const [pa, pb, pc] = p.photos;
     const q = (await save(me, p.id, input({ photos: [{ id: pc!.id, crop: null }, { id: pa!.id, crop: null }] }))).json.product as Product;
     expect(q.photos.map((x) => x.id)).toEqual([pc!.id, pa!.id]);
-    expect((await me.raw(photoUrl(pb!, 'thumb'))).status).toBe(404);
+    expect((await me.raw(photoUrl(pb!, 'thumb'))).status).toBe(403);
   });
 
   it('a crop from the profile saves straight away', async () => {
@@ -128,7 +128,7 @@ describe('photo privacy (§17): serving checks the requester', () => {
     const attacker = new Browser();
     await signUp(attacker);
 
-    for (const v of ['thumb', 'cropped', 'original'] as const) expect((await attacker.raw(photoUrl(vp.photos[0]!, v))).status).toBe(404);
+    for (const v of ['thumb', 'cropped', 'original'] as const) expect((await attacker.raw(photoUrl(vp.photos[0]!, v))).status).toBe(403);
     expect((await new Browser().raw(photoUrl(vp.photos[0]!, 'thumb'))).status).toBe(401);
     // Using the victim's pending upload or photo ID in the attacker's own product.
     expect((await save(attacker, null, input({ photos: [{ upload: pendingUpload, crop: null }] }))).json.error).toBe('photo_upload_missing');
