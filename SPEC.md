@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.7.0 (Phase 7 — people and following)
+**Current version:** 0.8.0 (Phase 8 — your data and account)
 
 ---
 
@@ -55,8 +55,8 @@ this document records how they were implemented and every decision made on top.
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | **Done** |
 | 6 | Log: loose entries, projections, grouping, promotion | **Done** |
 | 7 | Social: follows, requests, blocks, search, follower view, privacy suite | **Done** |
-| 8 | Data & account: export, restore, delete account, More/About | Next |
-| 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | |
+| 8 | Data & account: export, restore, delete account, More/About | **Done** |
+| 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | Next |
 
 ## 3. Owner decisions (on top of the briefs)
 
@@ -224,18 +224,36 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     username can collide with the list routes.
   - *Test servers* raise the sign-up rate limit with `SIGNUP_LIMIT_PER_HOUR`; a test
     fails if it ever appears in `wrangler.jsonc` (production stays at 10 an hour).
-- **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
-  per request, too little to build a JSON with embedded photos on the server.
-  Restore uploads photos first, then replaces data in one D1 batch; photos
-  orphaned by a failed restore are cleaned up.
+- **Your data and account (Phase 8).**
+  - *Export* (`client/src/backup.ts`) runs in the browser from the ordinary read
+    APIs: every product (archived too) with all stored ratings (hidden categories
+    included), purchases in entry order, notes, Leafly, flags and creation time; every
+    Log entry; every photo as base64 JPEG, cropped **and** original, with its crop.
+    Not included: follows, followers, requests, blocks, passkeys, recovery codes, view
+    settings. One `.json` file named `green-tracker-<username>-<date>.json`, handed to
+    the share sheet on iPhone (Save to Files / iCloud) or downloaded elsewhere.
+  - *Restore*: the file is checked and summarised first (products, archived, Log
+    entries, photos, who exported it and when) and nothing changes until a second
+    confirmation. Photos upload as pending sets (thumbnails regenerated), then one
+    call, `POST /api/data/restore`, validates everything with the same rules as normal
+    edits and replaces all data **in one D1 batch** — all or nothing. Rows are written
+    set-based with SQLite `json_each` over JSON chunks (≤ 800KB each), so the number of
+    queries stays small however much there is (D1's per-request query limit couldn't
+    be checked from here: its docs are blocked in the build environment). Replaced
+    photo files are deleted after the commit; on any failure the uploads are discarded
+    and the message says nothing changed. Social data, passkeys and sessions are
+    untouched. A file from a newer app version is refused. An export can be restored
+    into a different account *(builder)*.
+  - *Delete account* needs the username typed **and a fresh passkey check of this
+    account** (a challenge issued for the delete; sign-in challenges don't count), so
+    an unlocked phone or a stolen session alone can't delete. The user row cascades to
+    every table (products, ratings, purchases, Log, photos, uploads, sessions, passkeys,
+    recovery codes, follows both ways, requests, blocks); then every R2 object under
+    `u/<user>/` is deleted by prefix (pending uploads included). The username becomes
+    free. Where supported, the browser is told the passkey is gone
+    (`signalUnknownCredential`) so the device can offer to remove it.
+  - *More* is grouped Account · Data · Products · About · Danger zone.
 
-## 5. Open questions for the owner
-
-None.
-
-## 6. Changelog
-
-### 0.7.0 — Phase 7: people and following
 - Search, follow requests (badge), approve / decline, followers, following,
   remove follower, unfollow, block / unblock (More → Blocked people).
 - Someone else's read-only Leaderboard and product profiles.

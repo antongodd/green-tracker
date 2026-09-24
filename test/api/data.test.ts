@@ -130,6 +130,10 @@ describe('delete account (brief §4, §17)', () => {
     expect((await confirmDelete(b, otherKey, username)).json.error).toBe('passkey_failed');
     const replay = await b.post('/api/data/delete', { challengeId: 'made-up', response: {}, username });
     expect(replay.status).toBe(400);
+    // A sign-in challenge (not issued for this delete) can't be used, even with the right passkey.
+    const signin = await b.post('/api/auth/signin/options');
+    const wrongKind = await b.post('/api/data/delete', { challengeId: signin.json.challengeId, response: await passkey.authenticate(signin.json.options), username });
+    expect(wrongKind.json.error).toBe('challenge_expired');
     expect((await b.get('/api/auth/me')).json.user.username).toBe(username);
   });
 

@@ -80,6 +80,13 @@ export function More() {
             </p>
           )}
         </div>
+        <div class="lh cap">Data</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="Export" to="/more/export" />
+            <Row label="Restore" to="/more/restore" />
+          </div>
+        </div>
         <div class="lh cap">Products</div>
         <div class="wrap">
           <div class="list">
@@ -90,6 +97,12 @@ export function More() {
         <div class="wrap">
           <div class="list">
             <Row label="Version" value={__APP_VERSION__} />
+          </div>
+        </div>
+        <div class="lh cap">Danger zone</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="Delete account" to="/more/delete" danger />
           </div>
         </div>
       </main>

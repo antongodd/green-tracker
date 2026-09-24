@@ -6,6 +6,7 @@ import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
+import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
 import { Editor } from './screens/Editor';
 import { Log } from './screens/Log';
 import { LogEditor } from './screens/LogEditor';
@@ -125,6 +126,15 @@ function App() {
           break;
         case '/more/blocked':
           screen = <BlockedPeople />;
+          break;
+        case '/more/export':
+          screen = <ExportScreen />;
+          break;
+        case '/more/restore':
+          screen = <RestoreScreen />;
+          break;
+        case '/more/delete':
+          screen = <DeleteAccount />;
           break;
         case '/more':
           screen = <More />;
