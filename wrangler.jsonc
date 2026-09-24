@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "green-tracker",
+  "account_id": "f8e8108b7cd94335e992d9569d41b48a",
+  "main": "server/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "green-tracker",
+      "database_id": "0cb063fc-ce0e-4f8f-a7b1-0354e47b325f",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
+  // Passkeys are bound to this address (D11). Local dev overrides these in .dev.vars.
+  "vars": {
+    "RP_ID": "green-tracker.green-tracker.workers.dev",
+    "ORIGIN": "https://green-tracker.green-tracker.workers.dev"
+  },
+  "observability": { "enabled": true }
+}

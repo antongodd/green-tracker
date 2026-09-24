@@ -1,0 +1,82 @@
+# Tests every pull request; on main, tests then deploys to Cloudflare and checks
+# the live site is serving the new build. Needs one repository secret,
+# CLOUDFLARE_API_TOKEN (the account ID is in wrangler.jsonc).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-results
+          path: .playwright/
+          include-hidden-files: true
+          retention-days: 7
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # One deploy at a time; a newer push waits rather than racing.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://green-tracker.green-tracker.workers.dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check the Cloudflare token is set
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Add the CLOUDFLARE_API_TOKEN repository secret (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+      - name: Build, migrate, deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run deploy
+      - name: Live site serves this build
+        run: |
+          want="$(node -p 'require("./package.json").version')+$(git rev-parse --short HEAD)"
+          for i in $(seq 1 12); do
+            got=$(curl -fsS https://green-tracker.green-tracker.workers.dev/api/health || true)
+            echo "$got"
+            echo "$got" | grep -q '"ok":true' && echo "$got" | grep -qF "\"$want\"" && exit 0
+            sleep 5
+          done
+          echo "::error::The live site isn't serving $want"
+          exit 1

@@ -1,0 +1,36 @@
+{
+  "name": "green-tracker",
+  "version": "0.9.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "npm run build && wrangler dev --config dist/green_tracker/wrangler.json",
+    "deploy": "npm run build && wrangler d1 migrations apply green-tracker --remote && wrangler deploy --config dist/green_tracker/wrangler.json",
+    "db:migrate:local": "wrangler d1 migrations apply green-tracker --local",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy:embedded": "npm run build && wrangler d1 migrations apply green-tracker --remote && node scripts/deploy-embedded.mjs",
+    "test:e2e": "npm run build && playwright test"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.0.2",
+    "hono": "^4.13.8",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/vite-plugin": "^1.58.0",
+    "@cloudflare/workers-types": "^5.20260923.1",
+    "@playwright/test": "^1.63.0",
+    "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1",
+    "wrangler": "^4.137.0"
+  }
+}
