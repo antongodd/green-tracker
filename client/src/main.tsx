@@ -5,6 +5,7 @@ import { api, type Me } from './api';
 import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
+import { installPress } from './press';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
@@ -176,3 +177,4 @@ render(
   document.getElementById('app')!,
 );
 registerServiceWorker();
+installPress();

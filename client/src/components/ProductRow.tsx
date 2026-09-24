@@ -7,7 +7,7 @@ import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { overall } from '../../../shared/domain/ratings';
 import { LockIcon, TypeMark } from '../icons';
-import { linkTo } from '../router';
+import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -116,7 +116,7 @@ export function ProductRow(p: { product: Product; rank: number; podium: Podium |
   const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
   const open = (e: MouseEvent) => {
     if (p.list) rememberRow(p.list, p.product.id, e.currentTarget as HTMLElement);
-    linkTo(href)(e);
+    openRow(e, href);
   };
   return (
     <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>

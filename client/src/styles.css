@@ -69,8 +69,6 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: no-preference) {
   .screen, .fullscreen { animation: enter 0.2s ease-out; }
   @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
-  .btn, .li.link { transition: transform 0.15s ease-out, background-color 0.15s ease-out; }
-  .btn:active:not(:disabled), .li.link:active { transform: scale(0.98); }
 }
 @media (prefers-reduced-motion: reduce) {
   .screen, .fullscreen { animation: fade 0.2s ease-out; }
@@ -169,7 +167,6 @@ button { cursor: pointer; }
 .li .v { color: var(--text-2); font-size: 15px; font-variant-numeric: tabular-nums; }
 .li .chev { width: 13px; height: 13px; color: var(--text-3); flex: none; }
 .li.dng { color: var(--danger); }
-.li.link:active { background: var(--surface-2); }
 .li .act { background: none; border: 0; color: var(--danger); font-size: 15px; min-height: 44px; padding: 0 4px; }
 
 /* ---------- full-screen pages (sign in, create account) ---------- */
@@ -219,7 +216,6 @@ button { cursor: pointer; }
 /* ---------- product rows (brief §6.1) ---------- */
 .rows { display: grid; gap: 8px; padding: 0 16px; max-width: 720px; margin: 0 auto; }
 .row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
-.row:active { background: var(--surface-2); transform: scale(0.99); }
 .row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
 .row .rk { position: relative; }
 
@@ -413,7 +409,9 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 /* ---------- photos (brief §6.9) ---------- */
 .thumb img, .hero-photo img, .pgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lrow .thumb img { border-radius: 8px; }
-.hero-photo { overflow: hidden; padding: 0; border: 0; cursor: zoom-in; width: calc(100% - 32px); }
+.hero-photo { position: relative; overflow: hidden; padding: 0; border: 0; cursor: zoom-in; width: calc(100% - 32px); }
+.hero-photo .hero-under { position: absolute; inset: 0; background: center / cover no-repeat; }
+.hero-photo img { position: relative; }
 .hero-photo:has(img) { height: 300px; }
 .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .pcell { position: relative; aspect-ratio: 1; border-radius: 8px; box-shadow: var(--photo-edge); overflow: hidden; background: var(--surface-2); border: 0; padding: 0; cursor: zoom-in; }
@@ -474,7 +472,6 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .lrows { margin: 0 16px; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 12px; overflow: hidden; }
 .lrow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 14px; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 1px solid var(--divider); color: var(--text); text-decoration: none; }
 .lrow:first-child { border-top: 0; }
-.lrow:active { background: var(--surface-2); }
 .lrow .thumb { width: 40px; height: 40px; border-radius: 8px; }
 .lrow .name { font-size: 16px; font-weight: 500; }
 .lrow .mk { width: 15px; height: 15px; color: var(--accent-bright); }
@@ -528,8 +525,44 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .cp-list ul { list-style: none; margin: 0; padding: 0; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 12px; overflow: hidden; }
 .cp-list li + li { border-top: 1px solid var(--divider); }
 .cp-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 14px; background: none; border: 0; font: inherit; font-size: 16px; color: var(--text); text-align: left; }
-.cp-row:active { background: var(--surface-2); }
 .cp-row[aria-current] { color: var(--accent-bright); }
 .cp-row .tick { flex: none; width: 16px; height: 16px; color: var(--accent-bright); }
 .cp-use { color: var(--accent-bright); }
 .cp-empty { padding: 14px; font-size: 15px; color: var(--text-2); }
+
+/* ---------- press: "Lift" (D20, 0.14.0) ----------
+   client/src/press.ts puts .is-pressed on whatever is under your finger (after a
+   moment, so scrolling never lights anything up). Things that stand alone lift up
+   and grow a little; rows packed inside a card light up green instead, since
+   growing would be cut off by the card's edge. Colour changes stay with Reduce
+   Motion; the growing and the spring back don't. */
+.lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .sheet .opt.is-pressed, .prow .who.is-pressed { background-color: rgba(88, 224, 140, 0.12); }
+.row:not(.tier).is-pressed { border-color: rgba(88, 224, 140, 0.5); }
+.pill.is-pressed, .country-btn.is-pressed { border-color: var(--accent-bright); }
+.btn.secondary.is-pressed, .seg button.is-pressed { background-color: var(--surface-3); }
+.btn.primary.is-pressed, .fab.is-pressed { filter: brightness(1.08); }
+@media (prefers-reduced-motion: no-preference) {
+  .row, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .tab svg, .hbtn, .hero-photo, .pcell, .add-cell, .seg button, .more-btn, .clr, .country-btn, .addrow {
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease-out, background-color 0.18s ease-out, border-color 0.18s ease-out, filter 0.18s ease-out;
+  }
+  .row.is-pressed { position: relative; z-index: 1; transform: scale(1.03); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(88, 224, 140, 0.25); }
+  .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .prow .who.is-pressed { transform: scale(1.02); }
+  .btn.is-pressed, .country-btn.is-pressed { transform: scale(1.03); }
+  .pill.is-pressed, .seg button.is-pressed, .pcell.is-pressed, .add-cell.is-pressed, .addrow.is-pressed { transform: scale(1.05); }
+  .fab.is-pressed { transform: scale(1.1); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55); }
+  .tab.is-pressed svg, .hbtn.is-pressed, .more-btn.is-pressed, .clr.is-pressed { transform: scale(1.12); }
+  .hero-photo.is-pressed { transform: scale(1.015); }
+}
+
+/* ---------- opening a product: "Photo grows" (D20) ----------
+   client/src/transitions.ts names the row's thumbnail and the product's big photo
+   gt-photo; the browser flies one into the other. The rest of the screen fades. */
+html.vt-photo .screen { animation: none; } /* the usual screen entrance would fight it */
+::view-transition-group(gt-photo) { animation-duration: 0.44s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 12px; overflow: hidden; }
+::view-transition-old(gt-photo), ::view-transition-new(gt-photo) { height: 100%; object-fit: cover; animation-duration: 0.3s; }
+html.vt-open::view-transition-old(root) { animation: gt-vt-out 0.15s ease-out both; }
+html.vt-open::view-transition-new(root) { animation: gt-vt-in 0.26s ease-out 0.16s both; }
+html.vt-back::view-transition-old(root) { animation: gt-vt-out 0.22s ease-out both; }
+html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out both; }
+@keyframes gt-vt-out { to { opacity: 0; } }
+@keyframes gt-vt-in { from { opacity: 0; } }

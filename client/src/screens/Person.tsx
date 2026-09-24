@@ -15,7 +15,7 @@ import { Cluster, formatRankValue, Score, StrainTag, Thumb } from '../components
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
 import { LeafOutline, MoreIcon, TypeMark } from '../icons';
 import * as api from '../people';
-import { cameFrom, linkTo } from '../router';
+import { cameFrom, linkTo, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadOthersView, saveOthersView } from '../viewState';
 import { Avatar } from './People';
@@ -30,7 +30,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
   const key = `u:${p.username}`;
   const open = (e: MouseEvent) => {
     rememberRow(key, p.product.id, e.currentTarget as HTMLElement);
-    linkTo(href)(e);
+    openRow(e, href);
   };
   return (
     <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
@@ -274,6 +274,7 @@ export function SharedProfile(p: { username: string; id: string }) {
       <main class="screen">
         {photos[0] ? (
           <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
+            <span class="hero-under" style={{ backgroundImage: `url("${photos[0].thumb}")` }} />
             <img src={photos[0].image} alt="" />
           </button>
         ) : (
