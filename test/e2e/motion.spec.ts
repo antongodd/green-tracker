@@ -33,13 +33,17 @@ const upload = () =>
 /** Records every view transition the page starts, and which parts animate in it. */
 const recordTransitions = () =>
   page.evaluate(() => {
-    const w = window as unknown as { __vt: string[][]; __vtMs: number[] };
+    const w = window as unknown as { __vt: string[][]; __vtMs: number[]; __enter: string[] };
     w.__vt = [];
     w.__vtMs = [];
+    w.__enter = [];
+    // Every start of the screen entrance fade (the flash the owner saw), in any element.
+    document.addEventListener('animationstart', (e) => e.animationName === 'enter' && w.__enter.push((e.target as Element).className), true);
     const doc = document as Document & { startViewTransition: (cb: () => Promise<void>) => { ready: Promise<void> } };
     const original = doc.startViewTransition.bind(doc);
     doc.startViewTransition = (cb) => {
       const started = performance.now();
+      w.__enter = [];
       const t = original(cb);
       const entry: string[] = [];
       w.__vt.push(entry);
@@ -49,6 +53,8 @@ const recordTransitions = () =>
     };
   });
 const transitions = () => page.evaluate(() => (window as unknown as { __vt: string[][] }).__vt);
+/** Entrance fades that started since the last transition began (should be none). */
+const entrances = () => page.evaluate(() => (window as unknown as { __enter: string[] }).__enter);
 /** How long each transition kept the old screen frozen before animating (the app allows 400ms). */
 const frozenMs = () => page.evaluate(() => (window as unknown as { __vtMs: number[] }).__vtMs);
 
@@ -141,12 +147,19 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   await expect(page.locator('.hero-photo img')).toBeVisible();
   await expect.poll(transitions).toEqual([expect.arrayContaining(['::view-transition-group(gt-photo)', '::view-transition-new(root)'])]);
   await expect(page.locator('html')).not.toHaveClass(/vt-photo/); // cleaned up afterwards
+  // …and nothing replays once the photo lands: in 0.14.0 the screen's own entrance fade
+  // restarted there, so the page dipped dark and faded in again (owner's recording).
+  await page.waitForTimeout(400);
+  expect(await entrances()).toEqual([]);
   await shot(page, '70-photo-grown');
 
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(row('Photo Kush')).toBeVisible();
   await expect.poll(transitions).toEqual([expect.anything(), expect.arrayContaining(['::view-transition-group(gt-photo)'])]);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
+  await page.waitForTimeout(400);
+  expect(await entrances()).toEqual([]);
   await expect(page.locator('[style*="view-transition-name"]')).toHaveCount(0);
   // Never a long freeze: each one starts animating well within half a second.
   for (const ms of await frozenMs()) expect(ms).toBeLessThan(600);

@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.14.0 (all phases done; Lift press and Photo grows)
+**Current version:** 0.14.1 (all phases done; Lift press and Photo grows)
 
 ---
 
@@ -416,7 +416,9 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     row it was opened from, once the list has restored its scroll, and only if that row
     is on screen; otherwise it's a plain fade. Loose Log entries, the browser's own
     back and every other screen change work as before. The screen entrance fade is
-    switched off during the flight.
+    switched off during the flight, and stays off on the screen that arrived (0.14.1:
+    switching it back on restarted it, so the page dipped dark and faded in again just
+    after the photo landed).
   - *Big photo loading*: the product page shows the row's thumbnail (already on the
     device) under the full photo until it arrives, so the flight never lands in an
     empty frame (and the page never shows a blank photo box while loading).
@@ -432,6 +434,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.14.1 — smoother Photo grows (owner report, with a screen recording)
+- **Fixed:** just after the photo landed, opening or leaving a product, the page below
+  the header dipped dark and faded back in. The screen's normal entrance fade was
+  switched off during the flight and then switched back on when it ended, which
+  restarted it. It now stays off on the screen that has just arrived.
+- Found by measuring the brightness of every frame of the recording (a 0.2s dip right
+  after each flight). Tests: the motion tests now record every start of that fade and
+  fail if one happens after a flight, on open and on Back (the old check looked too
+  late to see it).
 
 ### 0.14.0 — tap feel (owner request)
 - **Lift** (decision D20): everything you can tap lifts under your finger: rows and
