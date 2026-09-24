@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.9.1 (all phases done; automatic deploys)
+**Current version:** 0.10.0 (all phases done; searchable country picker)
 
 ---
 
@@ -79,6 +79,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D14 | **Date tried starts empty** on a new product (2026-09-23). | Undated products sort after dated ones in ties. |
 | D15 | **A new purchase's date defaults to today**, editable (2026-09-23). | |
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
+| D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -289,6 +290,33 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     is covered by validation-failure rollback plus D1 batch atomicity, not by
     injecting a failure inside a batch.
 
+- **Country picker (D16, 0.10.0).**
+  - *The field* shows the flag and name (`🇬🇧 United Kingdom`), `Not set`, or `Other`
+    (with the usual "Which country?" box beneath). Tapping opens a full-screen panel
+    (`client/src/components/CountryPicker.tsx`) over the header and Save bar: Cancel ·
+    "Country", a search box that has focus straight away, then the list.
+  - *The list*, with nothing typed: **Used** (listed countries on your non-archived
+    products and loose Log entries — the Log's scope — most used first, then A–Z, at
+    most 5; Other and archived products don't count; omitted if none or if that data
+    can't load), then **Not set**, A–Z with flags, and **Other…**. The current choice is
+    ticked. Worked out when the panel opens from data already on the device (fetched if
+    not yet loaded); nothing new is stored.
+  - *Search* (`searchCountries` in `shared/domain/countries.ts`): the query must start a
+    word of the name or of a search-only nickname; capitals, accents and punctuation are
+    ignored. Nicknames (`COUNTRY_ALIASES`): UK, Britain, Great Britain, GB, England,
+    Scotland, Wales, Northern Ireland → United Kingdom; USA, US, America → United States;
+    Holland → Netherlands; plus Czech Republic, Swaziland, Macedonia, Korea, Türkiye
+    *(builder)*. Order: a nickname typed in full, then names starting with the query,
+    then nicknames starting with it, then other word starts; A–Z within each. Used
+    hides while searching; Other… stays at the bottom.
+  - *No match* shows "No matching countries" and **Use "…" as Other**, which sets Other
+    and fills "Which country?" with the typed text (editable, as before). Enter picks
+    the first match (or that Other). Cancel and Escape change nothing.
+  - *iPhone keyboard*: iOS only opens the keyboard for a focus made during the tap, so
+    the tap focuses a throwaway input and the panel moves focus on to its search box.
+    The panel sizes itself to the visual viewport so the list's end sits above the
+    keyboard. Body scrolling is untouched (brief §11).
+
 - **Deployment.**
   - *Automatic* (`.github/workflows/ci.yml`): every pull request runs typecheck,
     the Vitest suites and the Playwright suite. Every push to `main` runs the same
@@ -312,6 +340,17 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.10.0 — searchable country picker (owner request)
+- Country, in the product and Log entry editors, opens a full-screen list with flags
+  beside every name, a search box (word starts, nicknames like UK and USA, accents
+  ignored), a Used section of your most-used countries, and "Use '…' as Other" when
+  nothing matches. The field itself shows the flag. Decision D16; stored data unchanged.
+- The search box no longer draws a second focus ring inside itself (People search too).
+- Tests: 9 domain tests (search, ordering, nicknames, accents, Used), 3 Playwright tests
+  (search and pick, Enter, Cancel/Escape, Not set, Other, Use as Other, saved values in
+  both editors), axe on the open picker; the product and promotion journeys now pick
+  their country through it. Totals: 214 Vitest, 47 Playwright.
 
 ### 0.9.1 — automatic deploys
 - GitHub Actions: tests on every pull request; on `main`, tests → deploy → check the

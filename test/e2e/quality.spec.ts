@@ -93,6 +93,7 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
   found.push(...(await axe(`/products/${productId}`, async () => void (await page.getByRole('button', { name: 'Crop photo 1' }).click()))));
   found.push(...(await axe('/', async () => void (await page.getByLabel('Type', { exact: true }).selectOption('pre_roll')))));
   await page.getByLabel('Type', { exact: true }).selectOption('all');
+  found.push(...(await axe(`/products/${productId}/edit`, async () => void (await page.getByLabel('Country', { exact: true }).click()))));
   expect(found, found.join('\n')).toEqual([]);
 });
 

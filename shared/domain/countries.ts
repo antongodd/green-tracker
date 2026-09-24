@@ -121,3 +121,69 @@ export function countryDisplay(code: string | null, otherText: string | null): C
   const name = NAMES.get(code);
   return name ? { key: code, name, flag: flagEmoji(code) } : null;
 }
+
+/**
+ * Search-only nicknames for the country picker (D16). Never shown or stored:
+ * they only help find a country ("uk" → United Kingdom).
+ */
+export const COUNTRY_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  GB: ['UK', 'Britain', 'Great Britain', 'GB', 'England', 'Scotland', 'Wales', 'Northern Ireland'],
+  US: ['USA', 'US', 'America', 'United States of America'],
+  NL: ['Holland'],
+  CZ: ['Czech Republic'],
+  SZ: ['Swaziland'],
+  MK: ['Macedonia'],
+  KR: ['Korea'],
+  TR: ['Türkiye'],
+};
+
+/** Lower-case, accents removed, runs of spaces/punctuation collapsed to one space. */
+export function normaliseSearch(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/** True when `q` (normalised) starts at the beginning of any word of `text` (normalised). */
+const startsAWord = (text: string, q: string) => ` ${text}`.includes(` ${q}`);
+
+/**
+ * Countries matching a search, best first (D16). A match is the query starting
+ * any word of the name or of a nickname; capitals and accents are ignored.
+ * Order: a nickname typed in full (UK), then names starting with the query,
+ * then nicknames starting with it, then any other word start — A–Z within each.
+ * An empty query returns every country, A–Z.
+ */
+export function searchCountries(query: string): { code: string; name: string }[] {
+  const q = normaliseSearch(query);
+  if (!q) return [...COUNTRIES];
+  const ranked: { c: { code: string; name: string }; rank: number }[] = [];
+  for (const c of COUNTRIES) {
+    const name = normaliseSearch(c.name);
+    const aliases = (COUNTRY_ALIASES[c.code] ?? []).map(normaliseSearch);
+    let rank = -1;
+    if (aliases.includes(q)) rank = 0;
+    else if (name.startsWith(q)) rank = 1;
+    else if (aliases.some((a) => a.startsWith(q))) rank = 2;
+    else if (startsAWord(name, q) || aliases.some((a) => startsAWord(a, q))) rank = 3;
+    if (rank >= 0) ranked.push({ c, rank });
+  }
+  // COUNTRIES is A–Z already and sort is stable, so ranking alone keeps A–Z within a rank.
+  return ranked.sort((a, b) => a.rank - b.rank).map((r) => r.c);
+}
+
+/**
+ * The picker's "Used" section (D16): listed countries on the given records, most
+ * used first, then A–Z; at most `limit`. Other (free text) and unknown codes are left out.
+ */
+export function usedCountries(codes: readonly (string | null)[], limit = 5): { code: string; name: string }[] {
+  const counts = new Map<string, number>();
+  for (const code of codes) if (code && NAMES.has(code)) counts.set(code, (counts.get(code) ?? 0) + 1);
+  return [...counts]
+    .sort((a, b) => b[1] - a[1] || NAMES.get(a[0])!.localeCompare(NAMES.get(b[0])!))
+    .slice(0, limit)
+    .map(([code]) => ({ code, name: NAMES.get(code)! }));
+}

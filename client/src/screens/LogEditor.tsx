@@ -5,8 +5,9 @@ import { emptyLogEntryInput, logEntryToInput, promotionInput, validateLogEntryIn
 import { productType, unitFor, type ProductTypeKey } from '../../../shared/domain/productTypes';
 import { ApiError, errorText } from '../api';
 import { Header, Sheet } from '../components/chrome';
+import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
-import { CONCENTRATE_OPTIONS, COUNTRY_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
+import { CONCENTRATE_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
 import { Select, TextField } from '../components/inputs';
 import { cachedEntry, deleteEntry, fetchEntry, saveEntry } from '../logEntries';
 import { startPromotion } from '../promotion';
@@ -71,6 +72,8 @@ export function LogEditor(p: { id: string | null }) {
   }
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
+  // "Use '…' as Other" in the country picker also fills the Which country? box.
+  const setCountry = (country: string | null, otherText?: string) => setForm((f) => (f ? { ...f, country, ...(otherText !== undefined ? { countryOther: otherText } : {}) } : f));
   const def = productType(form.productType);
   const unit = unitFor(form.productType).amount;
   const uploading = drafts.some((d) => d.status === 'uploading');
@@ -150,7 +153,7 @@ export function LogEditor(p: { id: string | null }) {
 
           <section class="fgroup" aria-label="Origin">
             <span class="cap">Origin</span>
-            <Select id="country" label="Country" value={form.country ?? ''} options={COUNTRY_OPTIONS} onChange={(v) => set('country', v || null)} />
+            <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
           </section>
 

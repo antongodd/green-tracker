@@ -8,7 +8,8 @@ import { RATING_LABELS, productType, unitFor, type ProductTypeKey, type RatingKe
 import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
 import { errorText } from '../api';
 import { Header } from '../components/chrome';
-import { CONCENTRATE_OPTIONS, COUNTRY_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
+import { CONCENTRATE_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
+import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { todayIso } from '../components/ProductRow';
@@ -105,6 +106,8 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   }, [p.id]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
+  // "Use '…' as Other" in the country picker also fills the Which country? box.
+  const setCountry = (country: string | null, otherText?: string) => setForm((f) => (f ? { ...f, country, ...(otherText !== undefined ? { countryOther: otherText } : {}) } : f));
   const cancel = () => (p.promoteFrom ? setConfirmLeave(true) : back(p.id ? `/products/${p.id}` : '/'));
 
   if (!form) {
@@ -187,7 +190,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
 
           <section class="fgroup" aria-label="Origin">
             <span class="cap">Origin</span>
-            <Select id="country" label="Country" value={form.country ?? ''} options={COUNTRY_OPTIONS} onChange={(v) => set('country', v || null)} />
+            <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
             <div class="two-col">
               <TextField id="source" label="Source" placeholder="Source/Brand" value={form.source ?? ''} onInput={(v) => set('source', v)} onBlur={() => set('source', autoCapitalise(form.source ?? ''))} autoCapitalize="words" />

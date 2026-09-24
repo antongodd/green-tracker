@@ -149,7 +149,7 @@ test('promotion: pre-filled from the live form, commits nothing until Save, asks
   await page.getByRole('button', { name: 'Add to leaderboard' }).click();
   await expect(page.getByText('Add to leaderboard', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Name')).toHaveValue('Gary Payton OG');
-  await expect(page.getByLabel('Country')).toHaveValue('US');
+  await expect(page.getByLabel('Country', { exact: true })).toHaveText('🇺🇸United States');
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
   await expect(page.getByRole('group', { name: 'Purchase 1' })).toHaveCount(0); // the amount is dropped
   await shot(page, '42-promote');
