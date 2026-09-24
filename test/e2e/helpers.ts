@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 /** A platform authenticator with Face ID-style user verification (Chromium's virtual authenticator). */
 export async function addAuthenticator(page: Page) {
@@ -25,3 +25,37 @@ export async function signUp(page: Page, username = `u${Date.now().toString(36)}
 }
 
 export const shot = (page: Page, name: string) => page.screenshot({ path: `.playwright/screens/${name}.png`, animations: 'disabled' });
+
+/** Stats tiles (0.11.0, D17): number and label centred in the tile, inside its
+ *  edges (nothing cut off), and the green diagonal wash applied. */
+export async function expectTilesCentredAndWashed(page: Page) {
+  const tiles = page.locator('.tile');
+  await expect(tiles.first()).toBeVisible();
+  const report = await tiles.evaluateAll((els) =>
+    els.map((el) => {
+      const t = el.getBoundingClientRect();
+      const mid = t.left + t.width / 2;
+      const parts = [el.querySelector('b')!, el.querySelector('.cap')!].map((c) => {
+        const r = (c as HTMLElement).getBoundingClientRect();
+        // Measure the text itself, not its box (a grid item can stretch).
+        const range = document.createRange();
+        range.selectNodeContents(c);
+        const tr = range.getBoundingClientRect();
+        return {
+          off: Math.abs(tr.left + tr.width / 2 - mid),
+          inside: tr.left >= t.left && tr.right <= t.right && r.right <= t.right,
+          clipped: (c as HTMLElement).scrollWidth > Math.ceil(r.width),
+        };
+      });
+      const bg = getComputedStyle(el).backgroundImage;
+      return { label: el.textContent, parts, wash: bg.includes('linear-gradient') && bg.includes('88, 224, 140') };
+    }),
+  );
+  for (const t of report) {
+    expect(t.wash, `${t.label}: green wash`).toBe(true);
+    for (const p of t.parts) {
+      expect(p.off, `${t.label}: centred`).toBeLessThanOrEqual(1);
+      expect(p.inside && !p.clipped, `${t.label}: fits`).toBe(true);
+    }
+  }
+}

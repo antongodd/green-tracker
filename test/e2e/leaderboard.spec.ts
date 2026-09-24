@@ -1,6 +1,6 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { expectTilesCentredAndWashed, shot, signUp } from './helpers';
 
 // One account for the file (sign-up is rate-limited), seeded through the real API.
 // Expected figures are worked by hand from the brief's rules.
@@ -50,6 +50,7 @@ test('default: Overall, all types; podium, tiles, unrated last', async () => {
   await expect(tile('Products')).toHaveText('16');
   await expect(tile('Average')).toHaveText('6.7'); // 100.758 ÷ 15 rated
   await expect(tile('Total')).toHaveText('12.5g'); // 3.5 + 7 + 1 + 1; no edibles
+  await expectTilesCentredAndWashed(page);
   await expect(pillBox('Rank by')).not.toHaveClass(/active/);
   await expect(pillBox('Type')).not.toHaveClass(/active/);
   await shot(page, '20-leaderboard');

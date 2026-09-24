@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { expectTilesCentredAndWashed, shot, signUp } from './helpers';
 
 // Two real people in two browsers: an owner with products, and a fan.
 test.describe.configure({ mode: 'serial' });
@@ -59,6 +59,7 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.row', { hasText: 'Hidden Haze' })).toHaveCount(0);
   await expect(fan.locator('.tile')).toHaveCount(2);
   await expect(fan.locator('.tile', { hasText: 'Total' })).toHaveCount(0);
+  await expectTilesCentredAndWashed(fan);
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' }).locator('.meta')).toHaveText('Jungle Boys');
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);
   await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(0);
