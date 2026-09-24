@@ -202,6 +202,8 @@ export function Profile(p: { id: string }) {
       <main class="screen">
         {product.photos[0] ? (
           <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
+            {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
+            <span class="hero-under" style={{ backgroundImage: `url("${shownFromRecord(product.photos[0]).thumb}")` }} />
             <img src={shownFromRecord(product.photos[0]).image} alt="" />
           </button>
         ) : (

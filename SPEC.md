@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.13.0 (all phases done; the holo podium: rainbow, gold, silver, bronze)
+**Current version:** 0.14.0 (all phases done; Lift press and Photo grows)
 
 ---
 
@@ -83,6 +83,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
 | D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
 | D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later. See §4 *Podium tiers*. |
+| D20 | **Tap feel: "Lift" and "Photo grows"** (2026-09-24; interactive mockup https://claude.ai/artifact/MbxQoAaWhAjdrifnM8kdy3). Everything you can tap lifts under your finger; opening a product from a list (your Leaderboard, the Log, a friend's Leaderboard) flies the row's photo into the product's big photo, and Back flies it home. Other screen changes are unchanged, for now. | Stand-alone things grow slightly (rows 3%, buttons 3%, pills 5%, tab icons and header buttons 12%) with a soft shadow on rows; rows packed inside a card (Log, More, People, country list, action sheets) light up green instead. Reduce Motion: colour only, and products open without the flight. Needs iOS 18+ for the flight (owner on iOS 26.6.2); elsewhere it simply opens as before. See §4 *Tap feel*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -397,11 +398,54 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the motion (≥ 4.5:1, 3:1 for the large score), since axe can't judge text over a
   gradient.
 
+- **Tap feel (D20, 0.14.0).**
+  - *Press* (`client/src/press.ts`): iPhone Safari barely shows `:active`, so the app
+    marks the element under the finger with `.is-pressed` itself (links, buttons,
+    filter pills, the country field). It shows after 60ms, so a scroll never lights
+    anything up; moving the finger more than 8px, a scroll or a cancel removes it; a
+    quick tap shows it for 120ms. Disabled buttons never press. The old `:active`
+    rules were removed.
+  - *Photo grows* (`client/src/transitions.ts`): uses the browser's view transitions.
+    The tapped row's thumbnail and the product's big photo (`.hero-photo`, the type
+    mark when there's no photo) are both named `gt-photo` for the moment of the
+    switch; the rest of the page fades (out 0.15s, in 0.26s after 0.16s; 0.44s flight).
+    The new screen gets at most 400ms to render and decode its photo before the
+    animation starts anyway. **Frames are paused while it waits, so it polls on timers,
+    never `requestAnimationFrame`** (found in testing: waiting on frames froze every
+    open for 4s until the browser gave up). Back from a product flies the photo to the
+    row it was opened from, once the list has restored its scroll, and only if that row
+    is on screen; otherwise it's a plain fade. Loose Log entries, the browser's own
+    back and every other screen change work as before. The screen entrance fade is
+    switched off during the flight.
+  - *Big photo loading*: the product page shows the row's thumbnail (already on the
+    device) under the full photo until it arrives, so the flight never lands in an
+    empty frame (and the page never shows a blank photo box while loading).
+  - Tested (`test/e2e/motion.spec.ts`): the press waits, lifts to 1.03 and cancels on
+    movement; scroll-like movement never presses; a quick tap still flashes; in-card
+    rows light up and stay within their card; the flight runs on open and Back (own
+    Leaderboard, Log, a product without a photo), never for loose entries, cleans up
+    after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
+    colour only and no flight.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.14.0 — tap feel (owner request)
+- **Lift** (decision D20): everything you can tap lifts under your finger: rows and
+  buttons grow slightly with a soft shadow, icons pop; rows inside a card light up
+  green. It waits a moment before showing, so scrolling never lights things up, and a
+  quick tap still flashes. (Before, iPhone showed almost no press feedback at all.)
+- **Photo grows**: opening a product from your Leaderboard, the Log or a friend's
+  Leaderboard flies its photo up into the big photo at the top; Back flies it home.
+- The big photo shows its thumbnail while the full photo loads.
+- Reduce Motion: presses change colour only, and products open without the flight.
+- Tests: 5 new Playwright tests (`motion.spec.ts`). Found while testing: the first
+  version waited for screen frames that the browser pauses during the transition, so
+  every product open froze for about 4 seconds (the existing tests still passed); fixed,
+  and a test now fails if the screen is ever frozen for more than 0.6s.
 
 ### 0.13.0 — the holo podium (owner request)
 - Four tiers instead of three (decision D19): 1st is a pastel rainbow holo card,

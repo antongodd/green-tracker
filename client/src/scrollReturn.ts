@@ -12,6 +12,9 @@ function docTop(el: HTMLElement): number {
   return y;
 }
 
+/** The row a product page was opened from, if any (for the Back animation, D20). */
+export const pendingReturn = (): { list: string; id: string } | null => (pending ? { list: pending.list, id: pending.id } : null);
+
 export function rememberRow(list: string, id: string, el: HTMLElement): void {
   pending = { list, id, screenTop: docTop(el) - window.scrollY };
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { backToRowWithPhoto, openProductWithPhoto } from './transitions';
 
 // A small history router: the app has a handful of flat paths.
 // Each entry records its depth, so Back can tell whether there is an in-app
@@ -35,7 +36,7 @@ export function replaceHistory(path: string): void {
 export function back(fallback: string): void {
   if (depth() > 0) {
     scrollByPath.set(location.pathname, window.scrollY);
-    history.back();
+    if (!backToRowWithPhoto(() => history.back())) history.back();
   } else navigate(fallback, { replace: true });
 }
 
@@ -66,6 +67,13 @@ export function usePath(): string {
 /** The path we arrived from, for screens that restore their scroll on return. */
 export const cameFrom = (): string | null => previousPath;
 export const savedScroll = (path: string): number | undefined => scrollByPath.get(path);
+
+/** Opens a product from a list row: with the photo animation where available (D20). */
+export function openRow(e: MouseEvent, path: string): void {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  if (!openProductWithPhoto(e.currentTarget as HTMLElement, () => navigate(path))) navigate(path);
+}
 
 /** Click handler for in-app links: keeps modifier-clicks and new tabs working. */
 export function linkTo(path: string) {
