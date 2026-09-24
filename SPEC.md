@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.10.3 (all phases done; searchable country picker)
+**Current version:** 0.11.0 (all phases done; centred, green-washed stats tiles)
 
 ---
 
@@ -80,6 +80,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D15 | **A new purchase's date defaults to today**, editable (2026-09-23). | |
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
 | D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
+| D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -354,11 +355,24 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     `npx wrangler rollback` to the previous Worker version. D1 has Time Travel for
     point-in-time restore of the database.
 
+- **Stats tiles (D17, 0.11.0).** One `Tiles` component and one `.tile` style serve all
+  three screens, so they stay alike. The wash is the podium rows' technique (§6.1 of the
+  design brief) in green, a little stronger and wider (135°, 16% → 0 at 70%) so it
+  reads on a small box. Numbers and labels keep `--text` / `--text-2`, so contrast is
+  unchanged. Tested: centred to within 1px, inside the tile edges and not cut off (also
+  at 375px, with COUNTRIES, the longest label), wash present, on all three screens.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.11.0 — stats tiles (owner request)
+- The number and label in every stats tile are centred, and each tile has a faint
+  green diagonal wash and green border, like the podium rows (decision D17). Same on
+  the Leaderboard, the Log and a followed person's Leaderboard.
+- Tests: tiles centred, not cut off (also at 375px) and washed, on all three screens.
 
 ### 0.10.3 — spec note
 - Recorded that Safari's AutoFill Contact button on iPhone is Safari's own feature, why

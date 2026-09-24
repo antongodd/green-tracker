@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput, type LogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { expectTilesCentredAndWashed, shot, signUp } from './helpers';
 
 // The approved mockup's Log, seeded through the real API (with real photos).
 const P = (over: Partial<ProductInput>): ProductInput => ({ ...emptyProductInput(), ...over });
@@ -81,6 +81,11 @@ test('grouped by country, ordered as the brief says, with the right tiles', asyn
   await expect(tile('Products')).toHaveText('11');
   await expect(tile('Countries')).toHaveText('4');
   await expect(tile('Total')).toHaveText('33.5g');
+  await expectTilesCentredAndWashed(page);
+  // COUNTRIES is the longest label: still fits on the narrowest iPhone.
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expectTilesCentredAndWashed(page);
+  await page.setViewportSize({ width: 390, height: 844 });
   // The type mark ("has a full profile") is on product rows only.
   const us = group('United States');
   await expect(us.locator('.lrow', { hasText: 'Gelato 41' }).getByRole('img', { name: 'Flower product' })).toBeVisible();

@@ -353,7 +353,8 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 /* ---------- stats tiles (brief §6.3) ---------- */
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 2px 16px 12px; max-width: 720px; margin: 0 auto; }
 .tiles.two { grid-template-columns: repeat(2, 1fr); }
-.tile { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline); min-width: 0; }
+/* Centred, with a faint green diagonal wash like the podium rows (D17, 0.11.0). */
+.tile { display: grid; gap: 2px; justify-items: center; text-align: center; padding: 10px 12px; border-radius: 12px; background: linear-gradient(135deg, rgba(88, 224, 140, 0.16), rgba(88, 224, 140, 0) 70%), var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.28); min-width: 0; }
 .tile b { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ---------- photos (brief §6.9) ---------- */
