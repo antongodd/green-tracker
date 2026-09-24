@@ -14,6 +14,7 @@ let page: Page;
 let productId: string;
 let entryId: string;
 const csp: string[] = [];
+let lastReload: unknown = null; // for the failure report
 
 const post = (path: string, body: unknown): Promise<any> =>
   page.evaluate(async ({ path, body }) => (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json(), { path, body });
@@ -61,15 +62,17 @@ test.afterEach(async ({}, info) => {
   if (info.status === info.expectedStatus || page.isClosed()) return;
   await info.attach('screenshot', { body: await page.screenshot(), contentType: 'image/png' }).catch(() => {});
   const state = await page
-    .evaluate(async () => ({
+    .evaluate(async (lastReload) => ({
       url: location.href,
+      lastReload,
       onLine: navigator.onLine,
       controller: navigator.serviceWorker?.controller?.scriptURL ?? null,
-      caches: await caches.keys(),
+      caches: await Promise.all((await caches.keys()).map(async (k) => [k, (await (await caches.open(k)).keys()).map((r) => r.url)])),
       html: document.documentElement.outerHTML.slice(0, 4000),
-    }))
+    }), lastReload)
     .catch((e) => ({ error: String(e) }));
   await info.attach('page-state', { body: JSON.stringify(state, null, 2), contentType: 'application/json' });
+  console.error(`page state after failure:\n${JSON.stringify(state, null, 2)}`); // readable in CI logs
 });
 
 async function axe(path: string, setup?: () => Promise<void>) {
@@ -143,7 +146,8 @@ test('offline: the app still opens, says it is offline, and can’t save; back o
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
 
   await context.setOffline(true);
-  await page.reload();
+  const reloaded = await page.reload();
+  lastReload = { status: reloaded?.status() ?? null, fromServiceWorker: reloaded?.fromServiceWorker() ?? null };
   await expect(page.getByRole('status').filter({ hasText: 'You’re offline — changes can’t be saved' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Can’t reach Green Tracker' })).toBeVisible();
   await context.setOffline(false);
