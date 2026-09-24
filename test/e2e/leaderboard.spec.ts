@@ -42,9 +42,9 @@ test('default: Overall, all types; podium, tiles, unrated last', async () => {
   await page.goto('/');
   await expect(rows()).toHaveCount(16);
   await expect(rows().nth(0)).toContainText('Gelato 41');
-  await expect(rows().nth(0)).toHaveClass(/p1/);
-  await expect(rows().nth(1)).toHaveClass(/p2/);
-  await expect(rows().nth(2)).toHaveClass(/p3/);
+  // Four tiers (D19): rainbow, gold, silver, bronze; then ordinary rows.
+  for (let i = 0; i < 4; i++) await expect(rows().nth(i)).toHaveClass(new RegExp(`\\btier p${i + 1}\\b`));
+  await expect(rows().nth(4)).not.toHaveClass(/tier/);
   await expect(rows().nth(15)).toContainText('Mystery Sample');
   await expect(rows().nth(15)).toContainText('Unrated');
   await expect(tile('Products')).toHaveText('16');
@@ -54,6 +54,84 @@ test('default: Overall, all types; podium, tiles, unrated last', async () => {
   await expect(pillBox('Rank by')).not.toHaveClass(/active/);
   await expect(pillBox('Type')).not.toHaveClass(/active/);
   await shot(page, '20-leaderboard');
+});
+
+// The holo podium (D19): everything moves, the light cascades 1 → 4, Reduce Motion
+// stops it, and the text on every tier stays readable at every moment of the motion
+// (measured from real pixels: axe can't judge text over a gradient).
+test('podium tiers: motion, Reduce Motion, and readable text throughout', async () => {
+  const tiers = page.locator('.row.tier');
+  await expect(tiers).toHaveCount(4);
+  const motion = () => tiers.evaluateAll((els) => els.map((el) => ({
+    row: el.getAnimations().length,
+    sheen: el.getAnimations({ subtree: true }).filter((a) => (a as CSSAnimation).animationName === 'tier-sheen').map((a) => String(a.effect!.getTiming().delay)),
+    edge: getComputedStyle(el).backgroundImage.includes('linear-gradient'),
+  })));
+  const moving = await motion();
+  expect(moving.every((m) => m.row > 0 && m.edge)).toBe(true);
+  expect(moving.map((m) => m.sheen)).toEqual([['0'], ['350'], ['700'], ['1050']]); // cascade, 1st on the beat
+
+  // Readability: pause every animation at a spread of moments, hide the text, photograph
+  // the rows, and compare each text colour with the brightest pixel behind it.
+  const boxes = await tiers.evaluateAll((els) => els.flatMap((el, i) => [...el.querySelectorAll<HTMLElement>('.name, .meta, .score b, .score .cap')].map((t) => {
+    const range = document.createRange();
+    range.selectNodeContents(t);
+    // The text itself, clipped to its own box (an ellipsised line's range runs past it), 1px in from antialiased edges.
+    const tr = range.getBoundingClientRect();
+    const b = t.getBoundingClientRect();
+    const x0 = Math.max(tr.left, b.left) + 1, x1 = Math.min(tr.right, b.right) - 1, y0 = Math.max(tr.top, b.top) + 1, y1 = Math.min(tr.bottom, b.bottom) - 1;
+    const r = { left: x0, top: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
+    return { row: i + 1, part: t.className || t.tagName, x: r.left, y: r.top, w: r.width, h: r.height, color: getComputedStyle(t).color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
+  })));
+  // (Set through the DOM: the app's CSP rightly refuses an injected <style>.)
+  await tiers.evaluateAll((els) => els.forEach((el) => el.querySelectorAll<HTMLElement>('.mid, .score, .rk').forEach((t) => (t.style.visibility = 'hidden'))));
+  const worst: string[] = [];
+  for (let step = 0; step < 12; step++) {
+    await page.evaluate((f) => {
+      for (const a of document.getAnimations()) {
+        const t = a.effect!.getTiming();
+        a.pause();
+        a.currentTime = Number(t.delay ?? 0) + f * Number(t.duration);
+      }
+    }, step / 12);
+    const png = Buffer.from(await page.screenshot({ clip: { x: 0, y: 0, width: 390, height: 844 } })).toString('base64');
+    const found = await page.evaluate(async ({ png, boxes }) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${png}`;
+      await img.decode();
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      const k = img.width / 390;
+      const lum = (r: number, g: number, b: number) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * ([0.2126, 0.7152, 0.0722][i] ?? 0), 0);
+      return boxes.map((b) => {
+        const d = ctx.getImageData(Math.round(b.x * k), Math.round(b.y * k), Math.max(1, Math.round(b.w * k)), Math.max(1, Math.round(b.h * k))).data;
+        const [fr = 0, fg = 0, fb = 0, fa = 1] = b.color.match(/[\d.]+/g)!.map(Number);
+        let min = Infinity;
+        for (let i = 0; i < d.length; i += 4) {
+          const [br, bg, bb] = [d[i] ?? 0, d[i + 1] ?? 0, d[i + 2] ?? 0];
+          const f = [fr * fa + br * (1 - fa), fg * fa + bg * (1 - fa), fb * fa + bb * (1 - fa)];
+          const [a, z] = [lum(f[0]!, f[1]!, f[2]!), lum(br, bg, bb)];
+          min = Math.min(min, (Math.max(a, z) + 0.05) / (Math.min(a, z) + 0.05));
+        }
+        return { ...b, ratio: min };
+      });
+    }, { png, boxes });
+    for (const f of found) if (f.ratio < (f.large ? 3 : 4.5)) worst.push(`step ${step}: row ${f.row} ${f.part} ${f.ratio.toFixed(2)}`);
+  }
+  expect(worst, worst.join('\n')).toEqual([]);
+
+  // Reduce Motion: colours stay, nothing moves.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  await expect(tiers).toHaveCount(4);
+  const still = await motion();
+  expect(still.every((m) => m.row === 0 && m.sheen.length === 0 && m.edge)).toBe(true);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.reload();
+  await expect(tiers).toHaveCount(4);
 });
 
 test('filter to Edibles: ranks renumber, podium follows, tiles recalculate, TOTAL 0g', async () => {
@@ -131,6 +209,10 @@ test('labels fit at 375px for every filter × Rank by combination; short forms o
       await pill('Rank by').selectOption(r);
       const m = await page.locator('.controls').evaluate((el) => ({ overflow: el.scrollWidth > el.clientWidth + 1, text: el.textContent }));
       expect(m.overflow, `${t} × ${r}`).toBe(false);
+      // Tiers go to the first four rated rows of whatever is shown, never an unrated one.
+      const got = await rows().evaluateAll((els) => els.map((e) => ({ tier: [...e.classList].find((c) => /^p[1-4]$/.test(c)) ?? null, unrated: !!e.querySelector('.score.unrated') })));
+      const rated = got.filter((g) => !g.unrated).length;
+      expect(got.map((g) => g.tier), `${t} × ${r}`).toEqual(got.map((_, i) => (i < Math.min(4, rated) ? `p${i + 1}` : null)));
       if (/VFM|Consis\.|Price\/|Conc\./.test(m.text ?? '')) compacted.push(`${t} × ${r}: ${m.text}`);
     }
   }

@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.12.0 (all phases done; the green look across every screen)
+**Current version:** 0.13.0 (all phases done; the holo podium: rainbow, gold, silver, bronze)
 
 ---
 
@@ -82,6 +82,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
 | D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
 | D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
+| D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later. See §4 *Podium tiers*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -375,15 +376,46 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   headings) are `--accent-bright`; captions under numbers stay `--text-2`; More's "Danger zone" title is `--danger`. Kept as
   they were: text boxes and dropdowns (so they still read as things you type into),
   buttons, action sheets, the purchase cards nested inside the editor, the photo
-  viewer and cropper, and the podium rows (until 0.13.0). Tested: every card, title
+  viewer and cropper, and the podium rows (their own styles, D19). Tested: every card, title
   and bar on nine screens (your Leaderboard, Log, People, More, a product, its editor,
   a Log entry, Passkeys, Archive), and axe finds no contrast problems.
+
+- **Podium tiers (D19, 0.13.0).** `rankProducts` gives `podium` 1–4 to the first four
+  rows **with a value**, so an unrated product (Overall only; other Rank bys hide them)
+  never gets one. Rows carry `tier p1`…`tier p4`. Styles in `client/src/styles.css`:
+  each tier has six colours (pastel rainbow; light-to-dark shades of gold, silver,
+  bronze) that flow along the 1.5px edge and through the rank number every 5s. 1st is a
+  holo card: the rainbow drifts behind a dark layer (70% → 86%) that keeps text
+  readable; 2nd–4th keep the metal wash (13%) on a plain card. A band of light (18%
+  white) sweeps across each row every 4.5s, starting 0 / 0.35 / 0.7 / 1.05s apart (the
+  cascade). The small grey lines (price · Source, the score caption) are brighter on
+  tier rows (84% instead of 64%) because the light passes behind them. All of it is
+  CSS animation of background positions, run by the phone's compositor; with Reduce
+  Motion on, no animation is created at all. Tested: tiers on the right rows for every
+  filter × Rank by (never an unrated one), on a followed person's board, the cascade
+  timing, Reduce Motion, and text contrast measured from real pixels at 12 moments of
+  the motion (≥ 4.5:1, 3:1 for the large score), since axe can't judge text over a
+  gradient.
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.13.0 — the holo podium (owner request)
+- Four tiers instead of three (decision D19): 1st is a pastel rainbow holo card,
+  2nd gold, 3rd silver, 4th bronze, each with a flowing edge and number, and a shimmer
+  that cascades down the four. Same on a followed person's Leaderboard.
+- Only rated products get a tier (an unrated product used to get a medal when it
+  landed in the top three).
+- iPhone Reduce Motion: colours stay, movement stops.
+- Tests: 2 new rule tests (unrated never tiered, tiers follow another Rank by), tiers
+  checked for every filter × Rank by and on a followed person's board, motion and
+  cascade timing, Reduce Motion, and a pixel-measured readability check across the
+  animation. That check caught first place's small grey text dipping below the
+  readability bar when the shimmer passed behind it; the dark layer and that text were
+  adjusted until it passed.
 
 ### 0.12.0 — the green look everywhere (owner request)
 - The stats tiles' green now runs through the whole app (decision D18): cards have

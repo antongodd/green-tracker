@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
-import { leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
+import { leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
 import { photoUrl } from '../../../shared/domain/photo';
 import { productTypeLabel } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
@@ -25,7 +25,7 @@ const enc = encodeURIComponent;
 const shown = (ph: { id: string; version: string }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null });
 
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
-function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: 1 | 2 | 3 | null; value: number | null; rankBy: ViewState['rankBy'] }) {
+function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: Podium | null; value: number | null; rankBy: ViewState['rankBy'] }) {
   const href = `/u/${enc(p.username)}/p/${enc(p.product.id)}`;
   const key = `u:${p.username}`;
   const open = (e: MouseEvent) => {
@@ -33,7 +33,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
     linkTo(href)(e);
   };
   return (
-    <a class={`row${p.podium ? ` p${p.podium}` : ''}`} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
+    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
       <div class="mid">

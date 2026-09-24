@@ -103,9 +103,13 @@ export interface RankedRow<P extends RankableProduct> {
   /** 1-based, renumbered over the visible list. */
   rank: number;
   value: number | null;
-  /** 1, 2, 3 for gold, silver, bronze — follows the visible order. */
-  podium: 1 | 2 | 3 | null;
+  /** 1–4 for rainbow, gold, silver, bronze (D19) — follows the visible order.
+   *  Only rated rows get a tier: an unrated product never has one. */
+  podium: Podium | null;
 }
+
+export type Podium = 1 | 2 | 3 | 4;
+export const PODIUM_TIERS = 4;
 
 export function matchesFilter(typeKey: string, filter: TypeFilter): boolean {
   return filter === 'all' || typeKey === filter;
@@ -145,7 +149,7 @@ export function rankProducts<P extends RankableProduct>(products: readonly P[], 
     }
     return tieBreak(a.product, b.product);
   });
-  return scored.map((r, i) => ({ ...r, rank: i + 1, podium: i < 3 ? ((i + 1) as 1 | 2 | 3) : null }));
+  return scored.map((r, i) => ({ ...r, rank: i + 1, podium: i < PODIUM_TIERS && r.value !== null ? ((i + 1) as Podium) : null }));
 }
 
 export interface LeaderboardTiles {

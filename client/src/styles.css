@@ -221,12 +221,52 @@ button { cursor: pointer; }
 .row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
 .row:active { background: var(--surface-2); transform: scale(0.99); }
 .row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
-.row.p1 { border-color: rgba(226, 183, 96, 0.4); background: linear-gradient(115deg, rgba(226, 183, 96, 0.11), rgba(226, 183, 96, 0) 55%), var(--surface-1); }
-.row.p2 { border-color: rgba(206, 214, 222, 0.4); background: linear-gradient(115deg, rgba(206, 214, 222, 0.09), rgba(206, 214, 222, 0) 55%), var(--surface-1); }
-.row.p3 { border-color: rgba(198, 130, 84, 0.4); background: linear-gradient(115deg, rgba(198, 130, 84, 0.11), rgba(198, 130, 84, 0) 55%), var(--surface-1); }
-.row.p1 .rk { color: #e2b760; }
-.row.p2 .rk { color: #ced6de; }
-.row.p3 .rk { color: #c68254; }
+.row .rk { position: relative; }
+
+/* ---------- podium tiers (D19, 0.13.0) ----------
+   p1 rainbow (holo, pastel), p2 gold, p3 silver, p4 bronze. Rated rows only
+   (shared/domain/leaderboard.ts). Every tier's edge and rank number flow through
+   its colours; a soft band of light sweeps across the four rows in a cascade,
+   first place on the same beat. Reduce Motion keeps the colours, stops the motion. */
+.row.tier { --tier-speed: 5s; position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent;
+  --tier-grad: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1)); }
+.row.p1 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; --sheen-delay: 0s; }
+.row.p2 { --t1: #f6dd9c; --t2: #e2b760; --t3: #fff1c9; --t4: #d9a94f; --t5: #f9e6b0; --t6: #c99a45; --metal: 226, 183, 96; --sheen-delay: 0.35s; }
+.row.p3 { --t1: #eef2f6; --t2: #ced6de; --t3: #ffffff; --t4: #aab4c0; --t5: #e3e9ef; --t6: #9aa5b1; --metal: 206, 214, 222; --sheen-delay: 0.7s; }
+.row.p4 { --t1: #f0b98f; --t2: #c68254; --t3: #ffd9bd; --t4: #b06e44; --t5: #e8a577; --t6: #a0613a; --metal: 198, 130, 84; --sheen-delay: 1.05s; }
+/* First place: holo card. The dark layer over the rainbow keeps text readable. */
+.row.p1 {
+  background:
+    linear-gradient(115deg, rgba(12, 20, 16, 0.7), rgba(12, 20, 16, 0.86) 70%) padding-box,
+    var(--tier-grad) padding-box,
+    var(--tier-grad) border-box;
+  background-size: 100% 100%, 200% 100%, 200% 100%;
+}
+/* Gold, silver, bronze: the calm metal wash, with a flowing metal edge. */
+.row.p2, .row.p3, .row.p4 {
+  background:
+    linear-gradient(115deg, rgba(var(--metal), 0.13), rgba(var(--metal), 0) 55%) padding-box,
+    linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
+    var(--tier-grad) border-box;
+  background-size: 100% 100%, 100% 100%, 200% 100%;
+}
+/* The shimmer passes behind the small grey lines, so they're a little brighter here
+   (measured by the podium readability test). */
+.row.tier .meta, .row.tier .score .cap { color: rgba(238, 244, 240, 0.84); }
+.row.tier .rk { font-size: 15px; color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.row.tier::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.18) 48%, rgba(255, 255, 255, 0.045) 56%, transparent 65%);
+  background-size: 250% 100%; background-position: 120% 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .row.p1 { animation: tier-flow-holo var(--tier-speed) linear infinite; }
+  .row.p2, .row.p3, .row.p4 { animation: tier-flow-edge var(--tier-speed) linear infinite; }
+  .row.tier .rk { animation: tier-flow-text var(--tier-speed) linear infinite; }
+  .row.tier::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
+}
+@keyframes tier-flow-holo { from { background-position: 0 0, 0% 0, 0% 0; } to { background-position: 0 0, 100% 0, 100% 0; } }
+@keyframes tier-flow-edge { from { background-position: 0 0, 0 0, 0% 0; } to { background-position: 0 0, 0 0, 100% 0; } }
+@keyframes tier-flow-text { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+@keyframes tier-sheen { 0% { background-position: 120% 0; } 60%, 100% { background-position: -60% 0; } }
 .thumb { width: 54px; height: 54px; border-radius: 10px; box-shadow: var(--photo-edge); background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--accent-bright); flex: none; overflow: hidden; }
 .thumb svg { width: 50%; height: 50%; }
 .mid { min-width: 0; display: grid; gap: 3px; }
