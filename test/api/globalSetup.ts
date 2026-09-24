@@ -41,6 +41,7 @@ export async function setup(project: TestProject) {
     await new Promise((r) => setTimeout(r, 250));
   }
   project.provide('apiBase', base);
+  project.provide('persistDir', persist);
 }
 
 export async function teardown() {
@@ -55,5 +56,7 @@ export async function teardown() {
 declare module 'vitest' {
   export interface ProvidedContext {
     apiBase: string;
+    /** Local D1 / R2 storage, for tests that check what's really stored. */
+    persistDir: string;
   }
 }

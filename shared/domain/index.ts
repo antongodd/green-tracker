@@ -12,3 +12,4 @@ export * from './product';
 export * from './photo';
 export * from './logEntry';
 export * from './social';
+export * from './backup';
