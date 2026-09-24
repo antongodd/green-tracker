@@ -433,6 +433,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .search svg { width: 18px; height: 18px; flex: none; }
 .search input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; font-size: 16px; color: var(--text); -webkit-appearance: none; appearance: none; }
 .search input::placeholder { color: var(--text-3); }
+.search input:focus-visible { outline: none; box-shadow: none; } /* the .search box shows focus */
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; border-radius: 10px; background: var(--surface-1); border: 1px solid var(--hairline); }
 .seg button { display: flex; align-items: center; justify-content: center; gap: 6px; height: 36px; border: 0; border-radius: 8px; background: none; color: var(--text-2); font-size: 14px; font-weight: 600; }
 .seg button.on { background: var(--surface-3); color: var(--text); }
@@ -456,3 +457,25 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 
 /* ---------- offline (design §6.12) ---------- */
 .offline { position: fixed; left: 0; right: 0; top: var(--header-h); z-index: 30; padding: 8px 16px; background: var(--warning); color: var(--on-accent); font-size: 14px; font-weight: 600; text-align: center; }
+
+/* Country field and picker (D16): the one non-native picker. */
+.country-btn { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; padding: 0 36px 0 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline-strong); font: inherit; font-size: 16px; color: var(--text); text-align: left; outline: none; }
+.country-btn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.country-btn .nm, .cp-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flag { flex: none; font-size: 20px; line-height: 1; }
+.cpicker { position: fixed; top: 0; left: 0; right: 0; height: 100dvh; z-index: 60; display: flex; flex-direction: column; background: var(--bg); padding-top: var(--safe-top); }
+.cpicker::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: var(--safe-top); background: var(--bar-solid); }
+.cp-top { display: grid; grid-template-columns: 88px minmax(0, 1fr) 88px; align-items: center; height: 44px; padding: 0 4px; font-size: 17px; text-align: center; }
+.cp-top .hbtn { justify-self: start; }
+.cp-search { padding: 4px 16px 8px; }
+.cp-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 16px calc(var(--safe-bottom) + 16px); }
+.cp-list section { margin-top: 12px; }
+.cp-list .cap { display: block; margin: 0 0 6px 4px; }
+.cp-list ul { list-style: none; margin: 0; padding: 0; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.cp-list li + li { border-top: 1px solid var(--hairline); }
+.cp-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 14px; background: none; border: 0; font: inherit; font-size: 16px; color: var(--text); text-align: left; }
+.cp-row:active { background: var(--surface-2); }
+.cp-row[aria-current] { color: var(--accent-bright); }
+.cp-row .tick { flex: none; width: 16px; height: 16px; color: var(--accent-bright); }
+.cp-use { color: var(--accent-bright); }
+.cp-empty { padding: 14px; font-size: 15px; color: var(--text-2); }

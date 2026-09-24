@@ -30,7 +30,9 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await expect(page.getByLabel('Name')).toHaveValue('Gelato 41 OG');
   await page.getByLabel('Source').fill('cookies');
   await page.getByLabel('Strain type').selectOption('hybrid');
-  await page.getByLabel('Country').selectOption('US');
+  await page.getByLabel('Country', { exact: true }).click();
+  await page.keyboard.type('usa');
+  await page.getByRole('dialog', { name: 'Choose a country' }).getByRole('button', { name: 'United States' }).click();
 
   await rate(page, 'Look', '9.2');
   await rate(page, 'Smell', '9');
