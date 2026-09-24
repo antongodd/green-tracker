@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.10.2 (all phases done; searchable country picker)
+**Current version:** 0.10.3 (all phases done; searchable country picker)
 
 ---
 
@@ -323,7 +323,18 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     nothing behind can be tapped. Focus returns to the Country field on close.
   - *Search box wording*: placeholder and label are just "Search" (no "country"), to
     stop Safari guessing it's an address form and offering AutoFill Contact. Safari
-    decides that itself, so this is best effort.
+    decides that itself, so this is best effort — and it didn't work (see below).
+  - *Safari's "AutoFill Contact" button — known, left as is (owner decision,
+    2026-09-24).* On iPhone, Safari offers AutoFill Contact in the bar above the keyboard
+    on text boxes across the app (seen on the picker's search and the editor's Name), to
+    fill in the owner's own contact card. It's Safari's feature, not the app's: Safari
+    ignores `autocomplete="off"`, and there is no supported way for a page to turn it
+    off. The only app-side workaround (replacing text inputs with `contenteditable`
+    areas) would mean rebuilding every text box for a harmless button that Safari could
+    change again, so it was declined. The bar itself (⌃ ⌄ ✓) is shown by iOS for every
+    web text box and can't be removed. To hide the button on a device: Settings → Apps →
+    Safari → AutoFill → Use Contact Info off (affects every site). Don't spend time on
+    this without asking the owner.
 
 - **Deployment.**
   - *Automatic* (`.github/workflows/ci.yml`): every pull request runs typecheck,
@@ -348,6 +359,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.10.3 — spec note
+- Recorded that Safari's AutoFill Contact button on iPhone is Safari's own feature, why
+  the app leaves it alone, and how to turn it off on a device (§4 *Country picker*).
+  No app changes.
 
 ### 0.10.2 — country picker on iPhone (owner report)
 - **Fixed:** with the keyboard up, the editor showed through the see-through keyboard
