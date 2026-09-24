@@ -193,6 +193,25 @@ export function Cropper(p: { original: string | Blob; crop: Crop | null; onCance
     if (drag.current?.id === e.pointerId) drag.current = null;
   }
 
+  /** Keyboard: arrows move the box; Shift + arrows resize it (keeping Square square). */
+  function keyMove(e: KeyboardEvent) {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const step = 0.02;
+    setBox((b) => {
+      if (!e.shiftKey) return { ...b, x: Math.min(1 - b.w, Math.max(0, b.x + d[0]! * step)), y: Math.min(1 - b.h, Math.max(0, b.y + d[1]! * step)) };
+      let w = Math.max(MIN, Math.min(1 - b.x, b.w + (d[0] || d[1])! * step));
+      let h = Math.max(MIN, Math.min(1 - b.y, b.h + (d[1] || d[0])! * step));
+      if (square) {
+        const side = Math.min(w * aspect, h, (1 - b.x) * aspect, 1 - b.y);
+        w = side / aspect;
+        h = side;
+      }
+      return { ...b, w, h };
+    });
+  }
+
   function reset() {
     setSquare(false);
     setBox({ x: 0, y: 0, w: 1, h: 1 });
@@ -233,7 +252,16 @@ export function Cropper(p: { original: string | Blob; crop: Crop | null; onCance
               onError={() => setError('The original photo couldn’t be loaded.')}
             />
             {natural && (
-              <div class="crop-box" style={{ left: pct(box.x), top: pct(box.y), width: pct(box.w), height: pct(box.h) }} onPointerDown={(e) => down(e, 'move')} aria-label="Crop area">
+              <div
+                class="crop-box"
+                style={{ left: pct(box.x), top: pct(box.y), width: pct(box.w), height: pct(box.h) }}
+                onPointerDown={(e) => down(e, 'move')}
+                role="group"
+                aria-label="Crop area"
+                aria-describedby="crop-help"
+                tabIndex={0}
+                onKeyDown={keyMove}
+              >
                 {(['nw', 'ne', 'sw', 'se'] as const).map((c) => (
                   <span key={c} class={`handle ${c}`} onPointerDown={(e) => down(e, c)} aria-hidden="true" />
                 ))}
@@ -243,6 +271,7 @@ export function Cropper(p: { original: string | Blob; crop: Crop | null; onCance
         )}
         {error && <p class="error">{error}</p>}
       </div>
+      <p id="crop-help" class="visually-hidden">Drag the box or its corners. With a keyboard, arrow keys move it and Shift with arrow keys resizes it.</p>
       <div class="cropper-bottom">
         <button type="button" class="btn text" onClick={reset}>
           Reset to original

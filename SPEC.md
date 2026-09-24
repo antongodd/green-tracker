@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.8.0 (Phase 8 — your data and account)
+**Current version:** 0.9.0 (Phase 9 — PWA & hardening; all phases done)
 
 ---
 
@@ -56,7 +56,7 @@ this document records how they were implemented and every decision made on top.
 | 6 | Log: loose entries, projections, grouping, promotion | **Done** |
 | 7 | Social: follows, requests, blocks, search, follower view, privacy suite | **Done** |
 | 8 | Data & account: export, restore, delete account, More/About | **Done** |
-| 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | Next |
+| 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | **Done** |
 
 ## 3. Owner decisions (on top of the briefs)
 
@@ -254,11 +254,54 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     (`signalUnknownCredential`) so the device can offer to remove it.
   - *More* is grouped Account · Data · Products · About · Danger zone.
 
+- **PWA & hardening (Phase 9).**
+  - *Install*: `manifest.webmanifest` (standalone, `start_url /`, theme and
+    background `#050807`), 180/192/512 PNG icons plus a maskable 512 and an SVG
+    favicon, all rendered from the leaf mark by `scripts/make-icons.mjs`. iPhone:
+    Safari → Share → Add to Home Screen; the status bar is `black-translucent`.
+  - *Service worker* (`client/public/sw.js`, registered as `/sw.js?v=<version>`):
+    on install it fetches `/`, reads the `/assets/…` files out of it and caches them
+    with the manifest and icon in `gt-shell-<version>`; activation deletes every
+    other cache. Pages are **network-first** (so an online launch always gets the
+    newest build), hashed assets cache-first, `/api/` and photos never cached. An
+    offline launch opens the cached shell.
+  - *Offline*: a banner says “You’re offline — changes can’t be saved”; screens that
+    can’t load show the usual “Can’t reach Green Tracker” with Try again; Save, Save to
+    log and Add to leaderboard are disabled while offline. No offline editing or
+    queued writes (not in the brief) *(builder)*.
+  - *Security headers*: pages get a strict CSP (`default-src 'none'`, self-only
+    scripts, styles, images incl. `blob:`/`data:` for the cropper, `frame-ancestors
+    'none'`), `nosniff`, `Referrer-Policy: no-referrer`, a restrictive
+    `Permissions-Policy`, COOP and HSTS — from `client/public/_headers`, which the
+    embedded deploy also applies. API responses get `no-store`, `nosniff`,
+    `no-referrer` and `default-src 'none'`.
+  - *Accessibility*: axe (WCAG 2.1 A/AA) finds no violations on every screen,
+    signed in and out, plus the photo viewer, cropper and empty filter. Fixes: the
+    crop box is a labelled, focusable group — arrow keys move it, Shift+arrows resize;
+    the sign-up step dots are a labelled image.
+  - *Product saves are set-based*: ratings and purchases are written with
+    `json_each` (one statement each) instead of one per row, so a product with many
+    purchases stays within D1's per-request query limit.
+  - *§17 checks* are all automated; one note: promotion's “forced failure mid-save”
+    is covered by validation-failure rollback plus D1 batch atomicity, not by
+    injecting a failure inside a batch.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.9.0 — Phase 9: PWA & hardening
+- Installable app (manifest, icons, Home Screen meta), service worker with an
+  offline shell, offline banner and disabled saving, security headers, keyboard
+  cropping, set-based product saves.
+- Found while testing: the first service-worker install didn't cache the app's
+  scripts, so an offline launch right after install was blank — fixed by precaching
+  the assets named in the page.
+- Tests: new `quality.spec.ts` (axe on 22 screens/states, CSP violations, headers,
+  manifest/icons, offline and back online), §17 re-rate scroll test, 60-purchase
+  API test. Totals: 205 Vitest, 43 Playwright, run twice.
 
 ### 0.8.0 — Phase 8: your data and account
 - Export (all data, photos embedded, share sheet), Restore (checked, summarised,

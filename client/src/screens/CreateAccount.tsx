@@ -10,7 +10,7 @@ type Availability = { state: 'idle' | 'checking' } | { state: 'ok' } | { state: 
 
 function Steps(p: { step: 1 | 2 | 3 }) {
   return (
-    <div class="steps" aria-label={`Step ${p.step} of 3`}>
+    <div class="steps" role="img" aria-label={`Step ${p.step} of 3`}>
       {[1, 2, 3].map((n) => (
         <i key={n} class={n <= p.step ? 'on' : ''} />
       ))}

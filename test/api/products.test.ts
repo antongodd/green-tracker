@@ -91,6 +91,16 @@ describe('products', () => {
     expect(list[0]!.id).toBe(second!.id);
   });
 
+  it('saves a product with many purchases and ratings (set-based writes)', async () => {
+    const purchases = Array.from({ length: 60 }, (_, i) => ({ date: '2026-01-01', amount: i + 1, totalPaid: 1, supplier: `S${i}` }));
+    const p = await create(me, { purchases, ratings: { look: 5, smell: 6, taste: 7, burn: 8, high: 9 } });
+    expect(p.purchases).toHaveLength(60);
+    expect(p.purchases.map((x) => x.seq)).toEqual(Array.from({ length: 60 }, (_, i) => i + 1));
+    const res = await put(me, p.id, input({ purchases: p.purchases.slice(10).map(({ seq: _s, ...x }) => x), ratings: { look: null, taste: 9 } }));
+    expect(res.json.product.purchases.map((x: { seq: number }) => x.seq)[0]).toBe(11);
+    expect(res.json.product.ratings).toEqual({ smell: 6, taste: 9, burn: 8, high: 9 });
+  });
+
   it('archives and un-archives; lists split by archive state', async () => {
     const b = new Browser();
     await signUp(b);

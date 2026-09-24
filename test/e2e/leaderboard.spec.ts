@@ -179,3 +179,24 @@ test('coming back from a product lands on the tapped row; tab switches start at 
   await expect(rows()).toHaveCount(15);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
+
+test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at its new position', async () => {
+  await page.goto('/');
+  const eighth = rows().nth(7);
+  await expect(eighth.locator('.rk')).toHaveText('8');
+  const name = (await eighth.locator('.name').textContent())!;
+  await eighth.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await eighth.evaluate((el: HTMLElement) => el.click());
+  await page.getByRole('link', { name: 'Edit' }).first().click();
+  // 8.7 puts it second, behind Gelato 41's 8.9.
+  await page.getByRole('button', { name: /^Look: .*Tap to type/ }).click();
+  await page.getByLabel('Look (1 to 10)').fill('8.7');
+  await page.getByLabel('Look (1 to 10)').press('Enter');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+  await page.getByRole('link', { name: 'Back' }).click();
+
+  const row = page.locator('.row', { hasText: name });
+  await expect(row.locator('.rk')).toHaveText('2');
+  await expect(row).toBeInViewport();
+});

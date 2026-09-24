@@ -124,29 +124,45 @@ export function parseProduct(body: unknown): ProductInput {
 
 /** Statements that write the product's ratings and purchases for `input`. */
 async function childWrites(db: D1Database, userId: string, productId: string, input: ProductInput): Promise<D1PreparedStatement[]> {
+  // Set-based (json_each), so a product costs the same few queries however many
+  // ratings or purchases it has.
   const out: D1PreparedStatement[] = [];
   // Ratings: set or clear only what the editor mentioned; everything else is kept.
-  for (const [category, value] of Object.entries(input.ratings)) {
+  const entries = Object.entries(input.ratings);
+  const cleared = entries.filter(([, v]) => v === null).map(([k]) => k);
+  const set = entries.filter(([, v]) => v !== null).map(([c, v]) => ({ c, v }));
+  if (cleared.length) {
+    out.push(db.prepare('DELETE FROM ratings WHERE product_id = ?1 AND user_id = ?2 AND category IN (SELECT value FROM json_each(?3))').bind(productId, userId, JSON.stringify(cleared)));
+  }
+  if (set.length) {
     out.push(
-      value === null
-        ? db.prepare('DELETE FROM ratings WHERE product_id = ?1 AND category = ?2 AND user_id = ?3').bind(productId, category, userId)
-        : db
-            .prepare('INSERT INTO ratings (product_id, user_id, category, value) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (product_id, category) DO UPDATE SET value = excluded.value')
-            .bind(productId, userId, category, value),
+      db
+        .prepare(
+          `INSERT INTO ratings (product_id, user_id, category, value)
+           SELECT ?1, ?2, json_extract(value, '$.c'), json_extract(value, '$.v') FROM json_each(?3) WHERE true
+           ON CONFLICT (product_id, category) DO UPDATE SET value = excluded.value`,
+        )
+        .bind(productId, userId, JSON.stringify(set)),
     );
   }
   // Purchases: the list is replaced. Existing ones keep their entry order (seq); new ones go after.
   const { results: existing } = await db.prepare('SELECT id, seq FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId).all<{ id: string; seq: number }>();
   const seqById = new Map(existing.map((e) => [e.id, e.seq]));
   let next = existing.reduce((n, e) => Math.max(n, e.seq), 0);
-  out.push(db.prepare('DELETE FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId));
-  for (const p of input.purchases) {
+  const rows = input.purchases.map((p) => {
     const known = p.id !== undefined && seqById.has(p.id);
-    const seq = known ? seqById.get(p.id!)! : ++next;
+    return { id: known ? p.id! : randomId(), seq: known ? seqById.get(p.id!)! : ++next, date: p.date, amount: p.amount, paid: p.totalPaid, supplier: p.supplier };
+  });
+  out.push(db.prepare('DELETE FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId));
+  if (rows.length) {
     out.push(
       db
-        .prepare('INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)')
-        .bind(known ? p.id! : randomId(), productId, userId, seq, p.date, p.amount, p.totalPaid, p.supplier),
+        .prepare(
+          `INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier)
+           SELECT json_extract(value, '$.id'), ?1, ?2, json_extract(value, '$.seq'), json_extract(value, '$.date'), json_extract(value, '$.amount'),
+                  json_extract(value, '$.paid'), json_extract(value, '$.supplier') FROM json_each(?3)`,
+        )
+        .bind(productId, userId, JSON.stringify(rows)),
     );
   }
   return out;

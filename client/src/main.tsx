@@ -4,6 +4,7 @@ import './styles.css';
 import { api, type Me } from './api';
 import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
+import { registerServiceWorker, useOnline } from './online';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
@@ -156,4 +157,22 @@ function App() {
   return <SessionContext.Provider value={{ me, refresh }}>{screen}</SessionContext.Provider>;
 }
 
-render(<App />, document.getElementById('app')!);
+/** Design §6.12: a slim banner under the header while offline. */
+function OfflineBanner() {
+  const online = useOnline();
+  if (online) return null;
+  return (
+    <div class="offline" role="status">
+      You’re offline — changes can’t be saved
+    </div>
+  );
+}
+
+render(
+  <>
+    <App />
+    <OfflineBanner />
+  </>,
+  document.getElementById('app')!,
+);
+registerServiceWorker();

@@ -36,10 +36,27 @@ function walk(dir) {
   });
 }
 
+// The same security headers as client/public/_headers (its `/*` block).
+function securityHeaders() {
+  const text = readFileSync(join(root, 'client/public/_headers'), 'utf8');
+  const headers = {};
+  let inAll = false;
+  for (const line of text.split('\n')) {
+    if (line.startsWith('#') || !line.trim()) continue;
+    if (!/^\s/.test(line)) inAll = line.trim() === '/*';
+    else if (inAll) {
+      const i = line.indexOf(':');
+      headers[line.slice(0, i).trim().toLowerCase()] = line.slice(i + 1).trim();
+    }
+  }
+  if (!headers['content-security-policy']) throw new Error('No CSP found in client/public/_headers');
+  return headers;
+}
+
 const files = {};
 for (const p of walk(clientDir)) {
   const path = '/' + relative(clientDir, p);
-  if (path === '/.assetsignore') continue;
+  if (path === '/.assetsignore' || path === '/_headers') continue;
   const type = TYPES[extname(p)];
   if (!type) throw new Error(`No content type for ${path}; add it to TYPES`);
   files[path] = { type, b64: readFileSync(p).toString('base64') };
@@ -52,6 +69,8 @@ writeFileSync(
   join(outDir, 'entry.js'),
   `import app from '../green_tracker/index.js';
 import { FILES } from './files.js';
+
+const SECURITY = ${JSON.stringify(securityHeaders())};
 
 const decoded = new Map();
 function body(path) {
@@ -69,6 +88,7 @@ function serveStatic(request) {
   const immutable = path.startsWith('/assets/');
   return new Response(request.method === 'HEAD' ? null : body(path), {
     headers: {
+      ...SECURITY,
       'content-type': FILES[path].type,
       'cache-control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
     },

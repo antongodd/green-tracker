@@ -21,6 +21,9 @@ const app = new Hono<AppEnv>().basePath('/api');
 app.use('*', async (c, next) => {
   await next();
   if (!c.res.headers.has('cache-control')) c.header('cache-control', 'no-store');
+  c.header('x-content-type-options', 'nosniff');
+  c.header('referrer-policy', 'no-referrer');
+  c.header('content-security-policy', "default-src 'none'; frame-ancestors 'none'");
 });
 
 // Cross-site request forgery: every state-changing request must come from the app's own origin.

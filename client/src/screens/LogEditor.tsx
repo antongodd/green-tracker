@@ -10,6 +10,7 @@ import { CONCENTRATE_OPTIONS, COUNTRY_OPTIONS, TYPE_OPTIONS } from '../component
 import { Select, TextField } from '../components/inputs';
 import { cachedEntry, deleteEntry, fetchEntry, saveEntry } from '../logEntries';
 import { startPromotion } from '../promotion';
+import { useOnline } from '../online';
 import { back, navigate } from '../router';
 
 interface Form extends Omit<LogEntryInput, 'amount' | 'photos'> {
@@ -39,6 +40,7 @@ export function LogEditor(p: { id: string | null }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const online = useOnline();
   // Set when the pending uploads belong elsewhere now (saved, or handed to promotion).
   const handedOff = useRef(false);
   const loaded = useRef(!!form);
@@ -174,11 +176,11 @@ export function LogEditor(p: { id: string | null }) {
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={save} disabled={busy || uploading}>
+          <button class="btn primary" onClick={save} disabled={busy || uploading || !online}>
             {busy ? 'Saving…' : uploading ? 'Uploading photo…' : 'Save to log'}
           </button>
           {p.id && (
-            <button class="btn secondary" onClick={addToLeaderboard} disabled={busy || uploading}>
+            <button class="btn secondary" onClick={addToLeaderboard} disabled={busy || uploading || !online}>
               Add to leaderboard
             </button>
           )}

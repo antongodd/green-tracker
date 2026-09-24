@@ -14,6 +14,7 @@ import { HitTimeInput, RatingInput, Select, TextField } from '../components/inpu
 import { todayIso } from '../components/ProductRow';
 import { PlusIcon } from '../icons';
 import { cachedProduct, fetchProduct, saveProduct } from '../products';
+import { useOnline } from '../online';
 import { back, navigate, replaceHistory } from '../router';
 import { promoteEntry } from '../logEntries';
 import { takePromotion } from '../promotion';
@@ -83,6 +84,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const online = useOnline();
   const saved = useRef(false);
   const loaded = useRef(!!form);
 
@@ -269,7 +271,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={save} disabled={saving || drafts.some((d) => d.status === 'uploading')}>
+          <button class="btn primary" onClick={save} disabled={saving || drafts.some((d) => d.status === 'uploading') || !online}>
             {saving ? 'Saving…' : drafts.some((d) => d.status === 'uploading') ? 'Uploading photos…' : 'Save'}
           </button>
         </div>
