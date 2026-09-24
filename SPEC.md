@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.10.0 (all phases done; searchable country picker)
+**Current version:** 0.10.1 (all phases done; searchable country picker)
 
 ---
 
@@ -340,6 +340,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.10.1 — test fix
+- The new country test read the saved product before Save had finished (its wait for
+  the profile's address also matched `/products/new`), so CI on `main` failed and 0.10.0
+  was never deployed. It now waits for the real profile. No app changes.
 
 ### 0.10.0 — searchable country picker (owner request)
 - Country, in the product and Log entry editors, opens a full-screen list with flags
