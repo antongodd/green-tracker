@@ -56,6 +56,21 @@ test.beforeAll(async ({ browser }) => {
   entryId = (await post('/api/log', { ...emptyLogEntryInput(), name: 'Gary Payton', country: 'US', amount: 3.5 })).entry.id;
 });
 test.afterAll(() => context.close());
+// This file's page is shared, so Playwright's own failure capture doesn't cover it.
+test.afterEach(async ({}, info) => {
+  if (info.status === info.expectedStatus || page.isClosed()) return;
+  await info.attach('screenshot', { body: await page.screenshot(), contentType: 'image/png' }).catch(() => {});
+  const state = await page
+    .evaluate(async () => ({
+      url: location.href,
+      onLine: navigator.onLine,
+      controller: navigator.serviceWorker?.controller?.scriptURL ?? null,
+      caches: await caches.keys(),
+      html: document.documentElement.outerHTML.slice(0, 4000),
+    }))
+    .catch((e) => ({ error: String(e) }));
+  await info.attach('page-state', { body: JSON.stringify(state, null, 2), contentType: 'application/json' });
+});
 
 async function axe(path: string, setup?: () => Promise<void>) {
   await page.goto(path);

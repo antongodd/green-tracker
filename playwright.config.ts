@@ -12,6 +12,9 @@ export default defineConfig({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
     hasTouch: true,
+    // Kept for failed tests only (uploaded by CI).
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
     launchOptions: process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : undefined,
   },
   webServer: {
