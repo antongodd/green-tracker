@@ -1,17 +1,56 @@
 import { useEffect, useState } from 'preact/hooks';
 
-/** Online or not, following the browser's online/offline events. */
+// Online = the browser says so AND the server was reachable last time we tried.
+// navigator.onLine alone isn't enough: it stays true on Wi-Fi with no internet,
+// behind a hotel login page, and in some browsers' offline emulation. So a request
+// that fails to reach the server also counts as offline, and while it does, the
+// server is checked every few seconds so the app notices when it's back.
+let reachable = true;
+let probe: ReturnType<typeof setInterval> | undefined;
+const listeners = new Set<() => void>();
+const PROBE_MS = 5_000;
+
+const isOnline = () => navigator.onLine && reachable;
+
+/** Called by the API client: did this request reach the server? */
+export function reportNetwork(reached: boolean): void {
+  if (reached === reachable) return;
+  reachable = reached;
+  if (reached) {
+    clearInterval(probe);
+    probe = undefined;
+  } else {
+    probe ??= setInterval(checkServer, PROBE_MS);
+  }
+  listeners.forEach((l) => l());
+}
+
+async function checkServer(): Promise<void> {
+  if (!navigator.onLine) return;
+  try {
+    await fetch('/api/version', { cache: 'no-store', credentials: 'same-origin' });
+    reportNetwork(true);
+  } catch {
+    // still unreachable
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    listeners.forEach((l) => l());
+    if (!reachable) void checkServer();
+  });
+  window.addEventListener('offline', () => listeners.forEach((l) => l()));
+}
+
+/** Online or not: the browser's online/offline events plus whether the server answers. */
 export function useOnline(): boolean {
-  const [online, setOnline] = useState(() => navigator.onLine);
+  const [online, setOnline] = useState(isOnline);
   useEffect(() => {
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener('online', up);
-    window.addEventListener('offline', down);
-    return () => {
-      window.removeEventListener('online', up);
-      window.removeEventListener('offline', down);
-    };
+    const update = () => setOnline(isOnline());
+    listeners.add(update);
+    update();
+    return () => void listeners.delete(update);
   }, []);
   return online;
 }

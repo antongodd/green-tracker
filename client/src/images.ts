@@ -2,6 +2,7 @@
 // resize to 1600px / JPEG 0.82, crop from the original, ~320px thumbnails.
 import { PHOTO_MAX_EDGE, PHOTO_QUALITY, THUMB_SHORT_EDGE, type Crop } from '../../shared/domain/photo';
 import { api, ApiError } from './api';
+import { reportNetwork } from './online';
 
 /** Decodes an image. Drawing an <img> to a canvas applies its EXIF orientation, so output is upright. */
 export async function loadImage(src: Blob | string): Promise<HTMLImageElement> {
@@ -69,8 +70,10 @@ export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: 
   try {
     res = await fetch('/api/uploads', { method: 'POST', body: form, credentials: 'same-origin' });
   } catch {
+    reportNetwork(false);
     throw new ApiError(0, 'offline', 'You’re offline. Check your connection and try again.');
   }
+  reportNetwork(true);
   const data = (await res.json().catch(() => null)) as { upload?: string; error?: string; message?: string } | null;
   if (!res.ok || !data?.upload) throw new ApiError(res.status, data?.error ?? 'upload_failed', data?.message ?? 'The photo couldn’t be uploaded. Please try again.');
   return data.upload;

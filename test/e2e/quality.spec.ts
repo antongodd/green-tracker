@@ -134,32 +134,64 @@ test('the app can be installed: manifest and icons', async () => {
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/icons/apple-touch-icon.png');
 });
 
-test('offline: the app still opens, says it is offline, and can’t save; back online it recovers', async () => {
-  await page.goto('/');
+/**
+ * The offline scenario, for one signed-in page with a product to edit: the app opens
+ * from the service worker, says it's offline, can't save, and recovers.
+ */
+async function offlineScenario(ctx: BrowserContext, pg: Page, product: string) {
+  await pg.goto('/');
   // One cache, named for this build: old builds' caches are gone.
-  const version = await page.evaluate(async () => {
+  const version = await pg.evaluate(async () => {
     await navigator.serviceWorker.ready;
     return ((await (await fetch('/api/version')).json()) as { version: string }).version;
   });
-  await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`gt-shell-${version}`]);
+  await expect.poll(() => pg.evaluate(() => caches.keys())).toEqual([`gt-shell-${version}`]);
   // The worker has taken control of the page (it claims clients just after activating).
-  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await expect.poll(() => pg.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
 
-  await context.setOffline(true);
-  const reloaded = await page.reload();
+  const banner = pg.getByRole('status').filter({ hasText: 'You’re offline — changes can’t be saved' });
+  await ctx.setOffline(true);
+  const reloaded = await pg.reload();
   lastReload = { status: reloaded?.status() ?? null, fromServiceWorker: reloaded?.fromServiceWorker() ?? null };
-  await expect(page.getByRole('status').filter({ hasText: 'You’re offline — changes can’t be saved' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Can’t reach Green Tracker' })).toBeVisible();
-  await context.setOffline(false);
-  await page.getByRole('button', { name: 'Try again' }).click();
-  await expect(page.locator('.row').first()).toBeVisible();
+  await expect(banner).toBeVisible();
+  await expect(pg.getByRole('heading', { name: 'Can’t reach Green Tracker' })).toBeVisible();
+  await ctx.setOffline(false);
+  await pg.getByRole('button', { name: 'Try again' }).click();
+  await expect(pg.locator('.row').first()).toBeVisible();
+  await expect(banner).toHaveCount(0);
 
-  // Going offline while editing disables Save.
-  await page.goto(`/products/${productId}/edit`);
-  const save = page.getByRole('button', { name: 'Save' });
+  // Going offline while editing disables Save. A browser that notices at once
+  // disables it straight away; otherwise the app finds out when Save can't get through.
+  await pg.goto(`/products/${product}/edit`);
+  const save = pg.getByRole('button', { name: 'Save' });
   await expect(save).toBeEnabled();
-  await context.setOffline(true);
+  await ctx.setOffline(true);
+  if (await save.isEnabled()) await save.click();
   await expect(save).toBeDisabled();
-  await context.setOffline(false);
-  await expect(save).toBeEnabled();
+  await expect(banner).toBeVisible();
+  // Back online, the app notices by itself (browser event or its own check) and Save returns.
+  await ctx.setOffline(false);
+  await expect(save).toBeEnabled({ timeout: 10_000 });
+  await expect(banner).toHaveCount(0);
+}
+
+test('offline: the app still opens, says it is offline, and can’t save; back online it recovers', async () => {
+  await offlineScenario(context, page, productId);
+});
+
+test('offline is noticed even when the browser still claims to be online (Wi-Fi without internet)', async ({ browser }) => {
+  const ctx = await browser.newContext();
+  try {
+    // The browser never reports going offline: onLine stays true and no events fire.
+    await ctx.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, 'onLine', { get: () => true });
+      for (const type of ['online', 'offline']) window.addEventListener(type, (e) => e.stopImmediatePropagation(), { capture: true });
+    });
+    const pg = await ctx.newPage();
+    await signUp(pg);
+    const made = await pg.evaluate(async (body) => (await (await fetch('/api/products', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json()) as { product: { id: string } }, { ...emptyProductInput(), name: 'Wifi Test' });
+    await offlineScenario(ctx, pg, made.product.id);
+  } finally {
+    await ctx.close();
+  }
 });

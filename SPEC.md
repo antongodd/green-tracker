@@ -267,7 +267,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     offline launch opens the cached shell.
   - *Offline*: a banner says “You’re offline — changes can’t be saved”; screens that
     can’t load show the usual “Can’t reach Green Tracker” with Try again; Save, Save to
-    log and Add to leaderboard are disabled while offline. No offline editing or
+    log and Add to leaderboard are disabled while offline. “Offline” means the browser
+    says so **or** a request just failed to reach the server (onLine stays true on
+    Wi-Fi with no internet); while unreachable the app checks `/api/version` every 5s
+    and clears the banner by itself when the server answers. No offline editing or
     queued writes (not in the brief) *(builder)*.
   - *Security headers*: pages get a strict CSP (`default-src 'none'`, self-only
     scripts, styles, images incl. `blob:`/`data:` for the cropper, `frame-ancestors
@@ -312,7 +315,11 @@ None.
 
 ### 0.9.1 — automatic deploys
 - GitHub Actions: tests on every pull request; on `main`, tests → deploy → check the
-  live site serves the new build. Branch merged to `main`.
+  live site serves the new build. Cloudflare Workers Builds (a second, broken
+  auto-deploy) turned off.
+- Offline detection no longer trusts `navigator.onLine` alone (found by CI's newer
+  Chromium): a failed request also counts, with a test for a browser that never
+  reports going offline.
 
 ### 0.9.0 — Phase 9: PWA & hardening
 - Installable app (manifest, icons, Home Screen meta), service worker with an

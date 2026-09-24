@@ -1,3 +1,5 @@
+import { reportNetwork } from './online';
+
 /** A failed API call. `message` is written for the person using the app and can be shown as-is. */
 export class ApiError extends Error {
   constructor(
@@ -21,8 +23,10 @@ export async function api<T = unknown>(method: 'GET' | 'POST' | 'PUT' | 'DELETE'
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
+    reportNetwork(false);
     throw new ApiError(0, 'offline', OFFLINE);
   }
+  reportNetwork(true);
   const data = (await res.json().catch(() => null)) as (T & { error?: string; message?: string }) | null;
   if (!res.ok) {
     throw new ApiError(res.status, data?.error ?? 'server_error', data?.message ?? 'Something went wrong. Please try again.');
