@@ -73,7 +73,7 @@ export interface SheetOption {
 }
 
 /** Action / confirmation sheet (P6). Cancel is always last and bold. */
-export function Sheet(p: { title?: string; message?: string; options: SheetOption[]; onCancel: () => void }) {
+export function Sheet(p: { title?: string; message?: string; options: SheetOption[]; onCancel: () => void; cancelLabel?: string }) {
   return (
     <>
       <div class="scrim" onClick={p.onCancel} />
@@ -93,7 +93,7 @@ export function Sheet(p: { title?: string; message?: string; options: SheetOptio
         </div>
         <div class="grp">
           <button type="button" class="opt bold" onClick={p.onCancel} autoFocus>
-            Cancel
+            {p.cancelLabel ?? 'Cancel'}
           </button>
         </div>
       </div>

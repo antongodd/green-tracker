@@ -39,7 +39,8 @@ export function photosToInput(drafts: PhotoDraft[]): PhotoInput[] | string {
  * crops upload straight away as pending sets, and only Save attaches them
  * (brief §11). Unsaved sets are discarded when the editor closes without saving.
  */
-export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean } }) {
+export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean }; max?: number }) {
+  const max = p.max ?? Infinity;
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
   const latest = useRef(p.drafts);
@@ -67,7 +68,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
   }
 
   async function add(files: FileList | null) {
-    for (const file of Array.from(files ?? [])) {
+    for (const file of Array.from(files ?? []).slice(0, Math.max(0, max - latest.current.length))) {
       const key = `ph${++draftKey}`;
       const preview = blobUrl(file);
       p.setDrafts((list) => [...list, { key, thumb: preview, image: preview, original: file, crop: null, status: 'uploading', isNew: true }]);
@@ -107,7 +108,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
 
   return (
     <section class="fgroup" aria-label="Photos">
-      <span class="cap">Photos</span>
+      <span class="cap">{max === 1 ? 'Photo' : 'Photos'}</span>
       <PhotoGrid
         photos={p.drafts}
         onOpen={setViewing}
@@ -117,11 +118,13 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
           return d.status === 'uploading' ? 'Uploading…' : d.status === 'error' ? '!Failed' : null;
         }}
       >
-        <label class="add-cell">
-          <CameraIcon />
-          Add photos
-          <input type="file" accept="image/*" multiple aria-label="Add photos" onChange={(e) => (add(e.currentTarget.files), (e.currentTarget.value = ''))} />
-        </label>
+        {p.drafts.length < max && (
+          <label class="add-cell">
+            <CameraIcon />
+            {max === 1 ? 'Add photo' : 'Add photos'}
+            <input type="file" accept="image/*" multiple={max > 1} aria-label={max === 1 ? 'Add photo' : 'Add photos'} onChange={(e) => (add(e.currentTarget.files), (e.currentTarget.value = ''))} />
+          </label>
+        )}
       </PhotoGrid>
       {p.drafts.some((d) => d.status === 'error') && (
         <p class="error" role="alert">

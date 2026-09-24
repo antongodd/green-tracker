@@ -1,4 +1,3 @@
-import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';

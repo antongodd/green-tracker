@@ -26,6 +26,11 @@ export function navigate(path: string, opts: { replace?: boolean } = {}): void {
   changed(from);
 }
 
+/** Rewrites the current history entry's path without showing a new screen. */
+export function replaceHistory(path: string): void {
+  history.replaceState({ depth: depth() }, '', path);
+}
+
 /** Back within the app when possible; otherwise replace with `fallback`. */
 export function back(fallback: string): void {
   if (depth() > 0) {

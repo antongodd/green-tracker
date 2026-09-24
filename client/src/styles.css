@@ -410,3 +410,19 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .handle.se::after { right: 19px; bottom: 19px; border-left: 0; border-top: 0; }
 .cropper-bottom { display: flex; justify-content: center; padding: 4px 16px 12px; }
 .cropper-bottom .btn.text { width: auto; }
+
+/* ---------- Log (brief §6.2; P4: sticky country headers) ---------- */
+.lgroup { max-width: 720px; margin: 0 auto; }
+.group-h { position: sticky; top: calc(var(--header-h) + 58px); z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 16px 8px; background: var(--bg); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
+.group-h .flag { font-size: 15px; letter-spacing: 0; }
+.group-h .gname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-h .n { margin-left: auto; }
+.lrows { margin: 0 16px; background: var(--surface-1); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.lrow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 14px; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-top: 1px solid var(--hairline); color: var(--text); text-decoration: none; }
+.lrow:first-child { border-top: 0; }
+.lrow:active { background: var(--surface-2); }
+.lrow .thumb { width: 40px; height: 40px; border-radius: 8px; }
+.lrow .name { font-size: 16px; font-weight: 500; }
+.lrow .mk { width: 15px; height: 15px; color: var(--accent-bright); }
+.lrow .chev { width: 14px; height: 14px; color: var(--text-3); }
+.footnote { max-width: 720px; margin: 0 auto; padding: 20px 24px 8px; text-align: center; color: var(--text-2); font-size: 13px; }

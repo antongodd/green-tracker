@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.5.0 (Phase 5 — photos)
+**Current version:** 0.6.0 (Phase 6 — the Log)
 
 ---
 
@@ -53,8 +53,8 @@ this document records how they were implemented and every decision made on top.
 | 3 | Products: editor, profile, archive, private | **Done** |
 | 4 | Leaderboard: ranking, filter, Rank by, tiles, empty states, scroll return | **Done** |
 | 5 | Photos: upload, thumbnails, authorised serving, viewer, cropper | **Done** |
-| 6 | Log: loose entries, projections, grouping, promotion | Next |
-| 7 | Social: follows, requests, blocks, search, follower view, privacy suite | |
+| 6 | Log: loose entries, projections, grouping, promotion | **Done** |
+| 7 | Social: follows, requests, blocks, search, follower view, privacy suite | Next |
 | 8 | Data & account: export, restore, delete account, More/About | |
 | 9 | PWA & hardening: manifest, service worker, offline, a11y, production deploy | |
 
@@ -156,6 +156,32 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     photos (P8, native scroll-snap), `n / N` counter, Crop this photo. *Cropper*:
     Cancel · Free | Square · Apply, corner handles with 44px touch areas, drag to
     move, dimmed surround, Reset to original (→ no crop).
+- **The Log (Phase 6).**
+  - *Two kinds of row*: product rows are drawn from your non-archived products when
+    the Log renders (never stored copies), next to loose entries. Grouping, order
+    and tiles come from `shared/domain/log.ts` (tested since Phase 0).
+  - *Loose entries* (`shared/domain/logEntry.ts`): name, type (+ concentrate type,
+    Other pattern), country, amount, one photo. Validation reuses the product
+    validator for the shared fields, so the rules can't drift. Hard delete behind a
+    confirmation removes the photo files too.
+  - *Rows*: product rows show the type mark (= has a full profile) and open the
+    profile; loose rows have no mark and open the entry editor; the whole row is the
+    tap target. The thumbnail shows the photo, else the type mark (both kinds).
+  - *The Type filter is the one stored setting shared with the Leaderboard*;
+    changing it on the Log may drop the Leaderboard's Rank by back to Overall if the
+    new type lacks it (same fallback rule). Tiles `0 / 0 / 0g` show even when empty.
+    Country headers are sticky (P4). Empty Log and filtered-empty cards *(builder
+    copy)*. Returning from a row lands on it (same mechanism as the Leaderboard).
+  - *A profile opened from the Log returns to the Log*, with the Log tab active.
+  - *Promotion*: "Add to leaderboard" (saved entries only) commits nothing. It hands
+    the entry's **live** form — unsaved edits and any pending photo upload included —
+    to the product editor, pre-filling name, country, photo, product type and
+    concentrate type; the amount is dropped. Cancel asks **Keep editing / Discard**;
+    Discard returns to the entry, untouched. Save calls `POST /api/log/:id/promote`,
+    which in one D1 batch creates the product, re-points the entry's photo to it
+    (same row and files — moved, not copied, original included) and deletes the
+    entry. Afterwards Back goes to the Log, not the deleted entry. Reloading the
+    promotion screen (nothing to promote) returns to the entry *(builder)*.
 - **Export/restore run in the browser.** The Workers free plan allows ~10ms CPU
   per request, too little to build a JSON with embedded photos on the server.
   Restore uploads photos first, then replaces data in one D1 batch; photos
@@ -166,6 +192,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.6.0 — Phase 6: the Log
+- Log screen: country groups (sticky headers, counts), product projections and
+  loose entries interleaved, PRODUCTS / COUNTRIES / TOTAL tiles, shared Type filter,
+  empty states, footnote, + button, return to the tapped row.
+- Loose entry editor: Save to log, Add to leaderboard, Delete (confirmed); one photo.
+- Promotion: pre-filled product editor from the live form, Keep editing / Discard,
+  atomic create + photo move + entry delete.
+- Tests: 9 API tests (entries, one photo, hard delete, atomic promotion, failed
+  promotion changes nothing, photo removed or re-cropped during promotion,
+  cross-user isolation), 4 domain tests, 7 Playwright tests on a seeded Log matching
+  the approved mockup (groups, order, tiles, filter sharing, editing, deleting,
+  adding, the full promotion flow).
 
 ### 0.5.0 — Phase 5: photos
 - Add photos in the editor (several at once), resized in the browser; ~320px

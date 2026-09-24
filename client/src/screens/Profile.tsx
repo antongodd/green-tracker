@@ -90,7 +90,16 @@ function PriceHistory(p: { product: Product }) {
   );
 }
 
+/** Which list a profile was opened from, so its tab and Back fallback match (brief §10.2). */
+const origin = new Map<string, 'log' | 'leaderboard'>();
+
 export function Profile(p: { id: string }) {
+  const [from] = useState(() => {
+    const came = cameFrom();
+    if (came === '/log') origin.set(p.id, 'log');
+    else if (came === '/' || came === '/products/new') origin.set(p.id, 'leaderboard');
+    return origin.get(p.id) ?? 'leaderboard';
+  });
   const [product, setProduct] = useState<Product | undefined>(cachedProduct(p.id));
   const [error, setError] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
@@ -163,7 +172,7 @@ export function Profile(p: { id: string }) {
             </div>
           )}
         </main>
-        <TabBar active="leaderboard" />
+        <TabBar active={from} />
       </>
     );
   }
@@ -184,7 +193,7 @@ export function Profile(p: { id: string }) {
     ['Date tried', product.dateTried ? formatIsoDate(product.dateTried) : ''],
   ];
   const shown = details.filter(([, v]) => v);
-  const back = product.archived ? '/more/archive' : '/';
+  const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
   return (
     <>
@@ -285,7 +294,7 @@ export function Profile(p: { id: string }) {
           )}
         </section>
       </main>
-      <TabBar active={product.archived ? 'more' : 'leaderboard'} />
+      <TabBar active={product.archived ? 'more' : from} />
       {viewing !== null && (
         <PhotoViewer
           photos={product.photos.map(shownFromRecord)}

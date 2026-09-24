@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { autoCapitalise } from '../../../shared/domain/capitalise';
-import { COUNTRIES, OTHER_COUNTRY } from '../../../shared/domain/countries';
+import { OTHER_COUNTRY } from '../../../shared/domain/countries';
 import { formatScore, formatUnitPrice } from '../../../shared/domain/format';
 import { unitPrice } from '../../../shared/domain/money';
 import { emptyProductInput, productToInput, validateProductInput, type Product, type ProductInput } from '../../../shared/domain/product';
-import { CONCENTRATE_SUBTYPES, PRODUCT_TYPES, RATING_LABELS, STRAIN_TYPES, productType, unitFor, type ProductTypeKey, type RatingKey } from '../../../shared/domain/productTypes';
+import { RATING_LABELS, productType, unitFor, type ProductTypeKey, type RatingKey } from '../../../shared/domain/productTypes';
 import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
 import { errorText } from '../api';
 import { Header } from '../components/chrome';
+import { CONCENTRATE_OPTIONS, COUNTRY_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { todayIso } from '../components/ProductRow';
 import { PlusIcon } from '../icons';
 import { cachedProduct, fetchProduct, saveProduct } from '../products';
-import { back, navigate } from '../router';
+import { back, navigate, replaceHistory } from '../router';
+import { promoteEntry } from '../logEntries';
+import { takePromotion } from '../promotion';
+import { Sheet } from '../components/chrome';
 
 interface PurchaseDraft {
   key: string;
@@ -64,19 +68,28 @@ function toInput(f: Form, drafts: PhotoDraft[]): ProductInput | string {
   return { ...f, ratings, purchases, photos };
 }
 
-const TYPE_OPTIONS = PRODUCT_TYPES.map((t) => ({ value: t.key, label: t.label }));
-const CONCENTRATE_OPTIONS = CONCENTRATE_SUBTYPES.map((s) => ({ value: s.key, label: s.label }));
-const STRAIN_OPTIONS = [{ value: '', label: 'Not set' }, ...STRAIN_TYPES.map((s) => ({ value: s.key, label: s.label }))];
-const COUNTRY_OPTIONS = [{ value: '', label: 'Not set' }, ...COUNTRIES.map((c) => ({ value: c.code, label: c.name })), { value: OTHER_COUNTRY, label: 'Other' }];
-
-export function Editor(p: { id: string | null }) {
+/**
+ * The product editor. With `promoteFrom`, it's the promotion editor (brief §10.2):
+ * pre-filled from the log entry's live form, nothing committed until Save, and
+ * Cancel asks first (Keep editing / Discard).
+ */
+export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const existing = p.id ? cachedProduct(p.id) : undefined;
-  const [form, setForm] = useState<Form | null>(() => (p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : toForm(emptyProductInput(), {})));
+  const [promotion] = useState(() => (p.promoteFrom ? takePromotion(p.promoteFrom) : null));
+  const [form, setForm] = useState<Form | null>(() =>
+    promotion ? toForm(promotion.input, {}) : p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : p.promoteFrom ? null : toForm(emptyProductInput(), {}),
+  );
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (existing ? draftsFromRecords(existing.photos) : []));
+  const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const saved = useRef(false);
   const loaded = useRef(!!form);
+
+  // A reload of the promotion screen has nothing to promote: go back to the entry.
+  useEffect(() => {
+    if (p.promoteFrom && !promotion) navigate(`/log/${p.promoteFrom}`, { replace: true });
+  }, []);
 
   useEffect(() => {
     if (!p.id || loaded.current) return;
@@ -90,7 +103,7 @@ export function Editor(p: { id: string | null }) {
   }, [p.id]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
-  const cancel = () => back(p.id ? `/products/${p.id}` : '/');
+  const cancel = () => (p.promoteFrom ? setConfirmLeave(true) : back(p.id ? `/products/${p.id}` : '/'));
 
   if (!form) {
     return (
@@ -124,9 +137,14 @@ export function Editor(p: { id: string | null }) {
     if (!checked.ok) return setError(checked.message);
     setSaving(true);
     try {
-      const product = await saveProduct(p.id, checked.value);
+      const product = p.promoteFrom ? await promoteEntry(p.promoteFrom, checked.value) : await saveProduct(p.id, checked.value);
       saved.current = true; // the pending uploads now belong to the product
       if (p.id) back(`/products/${product.id}`);
+      else if (p.promoteFrom) {
+        // The entry is gone: drop its editor from history, then open the new product.
+        replaceHistory('/log');
+        navigate(`/products/${product.id}`);
+      }
       else navigate(`/products/${product.id}`, { replace: true });
     } catch (e) {
       setError(errorText(e));
@@ -136,7 +154,7 @@ export function Editor(p: { id: string | null }) {
 
   return (
     <>
-      <Header title={p.id ? form.name || 'Edit product' : 'New product'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
+      <Header title={p.promoteFrom ? 'Add to leaderboard' : p.id ? form.name || 'Edit product' : 'New product'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
       <main class="screen has-savebar">
         <form
           class="editor"
@@ -256,6 +274,15 @@ export function Editor(p: { id: string | null }) {
           </button>
         </div>
       </div>
+      {confirmLeave && (
+        <Sheet
+          title="Leave without adding it?"
+          message="Nothing has been added to your Leaderboard yet. Your log entry stays as it was."
+          cancelLabel="Keep editing"
+          options={[{ label: 'Discard', danger: true, onSelect: () => back(`/log/${p.promoteFrom}`) }]}
+          onCancel={() => setConfirmLeave(false)}
+        />
+      )}
     </>
   );
 }
