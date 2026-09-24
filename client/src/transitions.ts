@@ -43,6 +43,11 @@ function run(direction: 'open' | 'back', update: () => Promise<void>): void {
   root.classList.add('vt-photo', `vt-${direction}`);
   const t = (document as ViewTransitionDoc).startViewTransition!(update);
   t.finished.finally(() => {
+    // The screen that just arrived has been seen fading in already. While .vt-photo is
+    // on, its entrance fade is off; removing the class would switch the fade back on
+    // and restart it, so the page dipped dark and faded in again right after the photo
+    // landed (0.14.0, owner's recording). Turn it off on that element for good first.
+    document.querySelectorAll<HTMLElement>('.screen, .fullscreen').forEach((el) => (el.style.animation = 'none'));
     root.classList.remove('vt-photo', `vt-${direction}`);
     document.querySelectorAll<HTMLElement>('.thumb, .hero-photo').forEach((el) => name(el, false));
   });
