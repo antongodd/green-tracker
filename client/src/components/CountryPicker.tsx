@@ -1,3 +1,4 @@
+import { createPortal } from 'preact/compat';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay, flagEmoji, OTHER_COUNTRY, searchCountries, usedCountries } from '../../../shared/domain/countries';
 import { CheckIcon, ChevronDown, SearchIcon } from '../icons';
@@ -37,10 +38,13 @@ export function CountryField(p: { id: string; label: string; value: string | nul
   const keyboard = useRef<HTMLInputElement | null>(null);
   const shown = p.value === OTHER_COUNTRY ? null : countryDisplay(p.value, null);
 
-  function close() {
-    setOpen(false);
-    button.current?.focus();
-  }
+  // Back to the field once the panel has gone (the page is inert until then).
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !open) button.current?.focus();
+    wasOpen.current = open;
+  }, [open]);
+  const close = () => setOpen(false);
 
   return (
     <div class="field">
@@ -84,7 +88,8 @@ export function CountryField(p: { id: string; label: string; value: string | nul
 function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputElement | null }; onPick: (country: string | null, otherText?: string) => void; onCancel: () => void }) {
   const [q, setQ] = useState('');
   const [used, setUsed] = useState<{ code: string; name: string }[]>([]);
-  const [height, setHeight] = useState<number | null>(null);
+  const [keyboardGap, setKeyboardGap] = useState(0);
+  const panel = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
 
   useLayoutEffect(() => {
@@ -93,14 +98,31 @@ function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputE
     p.keyboard.current = null;
   }, []);
 
-  // Fit the panel above the iPhone keyboard, so the end of the list can be reached.
+  // Everything behind the panel is inert while it's open: the iPhone keyboard's
+  // ⌃ ⌄ arrows can't reach the editor's fields, and nothing behind can be tapped.
+  useLayoutEffect(() => {
+    const app = document.getElementById('app');
+    app?.setAttribute('inert', '');
+    return () => app?.removeAttribute('inert');
+  }, []);
+
+  // The panel always covers the whole screen — the iPhone keyboard is see-through,
+  // so a panel shortened to sit above it let the editor show through below. Instead
+  // the list gets bottom padding the height of the keyboard, so its end can be reached.
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const fit = () => setHeight(vv.height);
+    const fit = () => {
+      const bottom = panel.current?.getBoundingClientRect().bottom ?? vv.height;
+      setKeyboardGap(Math.max(0, Math.round(bottom - (vv.offsetTop + vv.height))));
+    };
     fit();
     vv.addEventListener('resize', fit);
-    return () => vv.removeEventListener('resize', fit);
+    vv.addEventListener('scroll', fit);
+    return () => {
+      vv.removeEventListener('resize', fit);
+      vv.removeEventListener('scroll', fit);
+    };
   }, []);
 
   useEffect(() => {
@@ -149,8 +171,9 @@ function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputE
     );
   };
 
-  return (
-    <div class="cpicker" role="dialog" aria-modal="true" aria-label="Choose a country" style={height ? { height: `${height}px` } : undefined}>
+  // Drawn at the end of <body>, outside #app, so it isn't inert with the rest.
+  return createPortal(
+    <div ref={panel} class="cpicker" role="dialog" aria-modal="true" aria-label="Choose a country">
       <div class="cp-top">
         <button type="button" class="hbtn" onClick={p.onCancel}>
           Cancel
@@ -161,14 +184,15 @@ function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputE
       <div class="cp-search">
         <label class="search">
           <SearchIcon />
-          <span class="visually-hidden">Search countries</span>
+          <span class="visually-hidden">Search</span>
           <input
             ref={input}
             type="search"
             value={q}
             onInput={(e) => setQ(e.currentTarget.value)}
             onKeyDown={onEnter}
-            placeholder="Search countries"
+            placeholder="Search"
+            name="gt-list-search"
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
@@ -177,7 +201,7 @@ function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputE
           />
         </label>
       </div>
-      <div class="cp-list">
+      <div class="cp-list" style={keyboardGap ? { paddingBottom: `${keyboardGap + 16}px` } : undefined}>
         {!typed && used.length > 0 && (
           <section aria-label="Used">
             <h2 class="cap">Used</h2>
@@ -203,6 +227,7 @@ function CountryPanel(p: { value: string | null; keyboard: { current: HTMLInputE
           </ul>
         </section>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

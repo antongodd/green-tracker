@@ -31,7 +31,7 @@ test.afterAll(() => context.close());
 
 const field = () => page.getByLabel('Country', { exact: true });
 const picker = () => page.getByRole('dialog', { name: 'Choose a country' });
-const search = () => picker().getByRole('searchbox', { name: 'Search countries' });
+const search = () => picker().getByRole('searchbox', { name: 'Search', exact: true });
 const rows = (section: string) => picker().getByRole('region', { name: section, exact: true }).getByRole('button');
 
 test('flags beside every country, a Used section, and typing filters the list', async () => {
@@ -41,6 +41,15 @@ test('flags beside every country, a Used section, and typing filters the list', 
   await expect(picker()).toBeVisible();
   // The search box has focus, so typing starts straight away.
   await expect(search()).toBeFocused();
+  // It covers the whole screen (nothing behind shows through the iPhone's see-through
+  // keyboard), and everything behind is inert (the keyboard's ⌃ ⌄ can't reach it).
+  expect(await picker().boundingBox()).toEqual({ x: 0, y: 0, width: 390, height: 844 });
+  await expect(page.locator('#app')).toHaveAttribute('inert', '');
+  expect(await page.evaluate(() => {
+    const name = document.getElementById('name') as HTMLInputElement;
+    name.focus();
+    return document.activeElement === name;
+  })).toBe(false);
 
   // Used: most used first, archived and Other left out.
   await expect(rows('Used')).toHaveText(['🇪🇸Spain', '🇨🇦Canada', '🇲🇦Morocco']);
@@ -58,6 +67,7 @@ test('flags beside every country, a Used section, and typing filters the list', 
   await rows('Matching countries').first().click();
 
   await expect(picker()).toHaveCount(0);
+  await expect(page.locator('#app')).not.toHaveAttribute('inert');
   await expect(field()).toHaveText('🇬🇧United Kingdom');
   await expect(field()).toBeFocused();
   await shot(page, 'country-field');
@@ -122,4 +132,22 @@ test('Not set and Other can be picked from the list', async () => {
   await page.keyboard.press('Escape');
   await expect(picker()).toHaveCount(0);
   await expect(field()).toHaveText('Not set');
+});
+
+test('with the keyboard up, the list leaves room for it instead of shrinking the picker', async () => {
+  await page.goto('/log/new');
+  // Stand in for the iPhone keyboard: the visible area is the top 500px of 844.
+  await page.evaluate(() => {
+    const vv = Object.assign(new EventTarget(), { height: 500, offsetTop: 0, width: 390 });
+    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
+  });
+  await field().click();
+  expect(await picker().boundingBox()).toEqual({ x: 0, y: 0, width: 390, height: 844 });
+  await expect(picker().locator('.cp-list')).toHaveCSS('padding-bottom', '360px'); // 344 + 16
+  // The end of the list can be scrolled into the visible area.
+  const other = rows('All countries').last();
+  await other.scrollIntoViewIfNeeded();
+  await picker().locator('.cp-list').evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  const box = await other.boundingBox();
+  expect(box!.y + box!.height).toBeLessThanOrEqual(500);
 });

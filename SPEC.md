@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.10.1 (all phases done; searchable country picker)
+**Current version:** 0.10.2 (all phases done; searchable country picker)
 
 ---
 
@@ -314,8 +314,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     the first match (or that Other). Cancel and Escape change nothing.
   - *iPhone keyboard*: iOS only opens the keyboard for a focus made during the tap, so
     the tap focuses a throwaway input and the panel moves focus on to its search box.
-    The panel sizes itself to the visual viewport so the list's end sits above the
-    keyboard. Body scrolling is untouched (brief §11).
+    The panel always covers the whole screen, because the keyboard is see-through (a
+    panel shortened to sit above it let the editor show through, 0.10.2). The list gets
+    bottom padding the height of the keyboard instead (from `visualViewport`), so its
+    end can be reached. Body scrolling is untouched (brief §11).
+  - *Modal*: the panel is drawn at the end of `<body>` (a portal) and `#app` is `inert`
+    while it's open, so the keyboard's ⌃ ⌄ arrows can't move to the editor's fields and
+    nothing behind can be tapped. Focus returns to the Country field on close.
+  - *Search box wording*: placeholder and label are just "Search" (no "country"), to
+    stop Safari guessing it's an address form and offering AutoFill Contact. Safari
+    decides that itself, so this is best effort.
 
 - **Deployment.**
   - *Automatic* (`.github/workflows/ci.yml`): every pull request runs typecheck,
@@ -340,6 +348,17 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.10.2 — country picker on iPhone (owner report)
+- **Fixed:** with the keyboard up, the editor showed through the see-through keyboard
+  as garbled text behind its AutoFill bar. The picker now always covers the whole
+  screen and pads the list above the keyboard instead of shortening itself.
+- The page behind the picker is inert while it's open, so the keyboard's ⌃ ⌄ arrows no
+  longer move to fields hidden behind it.
+- The search box says "Search" (no "country"), to discourage Safari's AutoFill Contact.
+- Tests: the picker covers the full viewport (also with a simulated keyboard, where the
+  list is padded so its end scrolls above it), the page behind is inert and can't take
+  focus, and stops being inert on close.
 
 ### 0.10.1 — test fix
 - The new country test read the saved product before Save had finished (its wait for
