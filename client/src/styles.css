@@ -74,6 +74,8 @@ button { cursor: pointer; }
   .screen, .fullscreen { animation: fade 0.2s ease-out; }
   @keyframes fade { from { opacity: 0; } }
 }
+/* After a swipe back the phone has already animated the change (router.ts, 0.19.1). */
+html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 
 /* ---------- header (glass) ---------- */
 .hdr {
@@ -707,6 +709,10 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
    client/src/transitions.ts names the row's thumbnail and the product's big photo
    gt-photo; the browser flies one into the other. The rest of the screen fades. */
 html.vt-photo .screen { animation: none; } /* the usual screen entrance would fight it */
+/* Nothing scrolls during the flight (transitions.ts, 0.19.1): the new screen is drawn lower
+   by the distance the list was scrolled, which puts it at the top of the screen. */
+html.vt-hold { overflow-anchor: none; }
+html.vt-hold .screen { margin-top: var(--vt-hold, 0px); }
 ::view-transition-group(gt-photo) { animation-duration: 0.44s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 12px; overflow: hidden; }
 ::view-transition-old(gt-photo), ::view-transition-new(gt-photo) { height: 100%; object-fit: cover; animation-duration: 0.3s; }
 html.vt-open::view-transition-old(root) { animation: gt-vt-out 0.15s ease-out both; }

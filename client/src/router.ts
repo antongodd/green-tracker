@@ -16,14 +16,22 @@ function changed(from: string) {
   listeners.forEach((l) => l());
 }
 
-export function navigate(path: string, opts: { replace?: boolean } = {}): void {
+/** Adds (or replaces) the history entry for `path` without showing it yet. Returns the path we left, or null if already there. */
+function record(path: string, replace = false): string | null {
   const from = location.pathname;
-  if (path === from) return;
+  if (path === from) return null;
   scrollByPath.set(from, window.scrollY);
-  if (opts.replace) history.replaceState({ depth: depth() }, '', path);
+  if (replace) history.replaceState({ depth: depth() }, '', path);
   else history.pushState({ depth: depth() + 1 }, '', path);
+  return from;
+}
+
+export function navigate(path: string, opts: { replace?: boolean } = {}): void {
+  const from = record(path, opts.replace);
+  if (from === null) return;
   // New screens and tab switches start at the top (brief §10.1).
   window.scrollTo(0, 0);
+  arrived();
   changed(from);
 }
 
@@ -36,8 +44,25 @@ export function replaceHistory(path: string): void {
 export function back(fallback: string): void {
   if (depth() > 0) {
     scrollByPath.set(location.pathname, window.scrollY);
+    ownBack = true;
     if (!backToRowWithPhoto(() => history.back())) history.back();
   } else navigate(fallback, { replace: true });
+}
+
+// A swipe from the screen's edge (or the browser's own Back) is animated by the phone
+// itself, so the screen it lands on appears as it is, without the usual entrance fade
+// (0.19.1: after the phone's slide, the fade showed as a dark flash). The app's own
+// Back button, and every other change of screen, keep the fade.
+let ownBack = false;
+function arrivedStill(): void {
+  document.documentElement.classList.add('arrived-still');
+}
+/** Puts the entrance fade back for the next screen, without restarting it on the one showing. */
+function arrived(): void {
+  const root = document.documentElement;
+  if (!root.classList.contains('arrived-still')) return;
+  document.querySelectorAll<HTMLElement>('.screen, .fullscreen').forEach((el) => (el.style.animation = 'none'));
+  root.classList.remove('arrived-still');
 }
 
 // The app decides where each screen starts (top, or a restored position), not the browser.
@@ -47,6 +72,9 @@ let lastPath = location.pathname;
 window.addEventListener('popstate', () => {
   const from = lastPath;
   lastPath = location.pathname;
+  if (ownBack) arrived();
+  else arrivedStill();
+  ownBack = false;
   window.scrollTo(0, 0);
   changed(from);
 });
@@ -72,7 +100,15 @@ export const savedScroll = (path: string): number | undefined => scrollByPath.ge
 export function openRow(e: MouseEvent, path: string): void {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
-  if (!openProductWithPhoto(e.currentTarget as HTMLElement, () => navigate(path))) navigate(path);
+  const shown = openProductWithPhoto(
+    e.currentTarget as HTMLElement,
+    () => record(path),
+    (from) => {
+      arrived();
+      changed(from);
+    },
+  );
+  if (!shown) navigate(path);
 }
 
 /** Click handler for in-app links: keeps modifier-clicks and new tabs working. */

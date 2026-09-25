@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.19.0 (all phases done; remove background)
+**Current version:** 0.19.1 (all phases done; smoother swipe-back)
 
 ---
 
@@ -463,6 +463,20 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     switched off during the flight, and stays off on the screen that arrived (0.14.1:
     switching it back on restarted it, so the page dipped dark and faded in again just
     after the photo landed).
+  - *Safari fixes (0.19.1, owner's recording)*: the product's history entry is added, and two
+    ordinary frames shown, **before** the flight starts, because the phone takes its picture of
+    the list for swipe-back when the entry is added, and one taken mid-flight was the darkened
+    screen (swiping back then showed black behind the page, then black for ~0.6s). **Nothing
+    scrolls during the flight**: Safari moved the frozen list by the distance scrolled when the
+    page jumped to the top mid-transition (the whole screen dropped ~32px for half a second).
+    Instead `html.vt-hold` draws the new screen lower by that distance (`--vt-hold`, so it sits
+    at the top of the screen with the page unscrolled), and the real scroll to the top happens
+    once the flight ends, invisibly. The Back flight is unchanged (the owner saw no problem there).
+    **After a swipe back** (or the browser's own Back) the screen appears without its entrance
+    fade (`html.arrived-still`), since the phone has already animated it; the fade after its
+    slide showed as a dark flash. The app's own Back button and every other change keep the
+    fade. None of this can be seen in Chromium; the tests check the causes (entry before the
+    flight, no scroll during it, the product already where it ends up, no fade after Back).
   - *Big photo loading*: the product page shows the row's thumbnail (already on the
     device) under the full photo until it arrives, so the flight never lands in an
     empty frame (and the page never shows a blank photo box while loading).
@@ -593,6 +607,21 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.19.1 — smoother swipe-back (owner report, with a screen recording)
+- **Fixed:** swiping back from a product sometimes showed black behind the page, then a black
+  screen for about half a second. The phone keeps a picture of the Leaderboard to show while
+  you swipe, and it could take that picture in the middle of the photo animation, when the
+  screen is dark. The app now records the move to the product just before the animation starts.
+- **Fixed:** tapping a row with the list scrolled down made the whole screen, header and tab
+  bar included, drop by the distance scrolled and freeze there before the photo flew. The page
+  no longer scrolls while the photo is flying (it scrolls to the top once it has landed, where
+  you can't see it).
+- **Fixed:** after a swipe back, the Leaderboard dipped dark and faded in again. After a swipe
+  it now just appears, since the phone has already animated the change; other screens still
+  fade in as before.
+- Found by measuring the brightness of every frame of the recording (60 a second). Tests: 2 new
+  Playwright tests (`motion.spec.ts`), each checked to fail with the old code.
 
 ### 0.19.0 — remove background (owner request)
 - Photos can have their background removed (decision D26): tap the new button on a photo
