@@ -709,8 +709,8 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
    client/src/transitions.ts names the row's thumbnail and the product's big photo
    gt-photo; the browser flies one into the other. The rest of the screen fades. */
 html.vt-photo .screen { animation: none; } /* the usual screen entrance would fight it */
-/* Nothing scrolls during the flight (transitions.ts, 0.19.1): the new screen is drawn lower
-   by the distance the list was scrolled, which puts it at the top of the screen. */
+/* Nothing scrolls during the flight (scrollHold.ts, 0.19.1–0.19.2): the screen is drawn lower
+   or higher by a margin instead, so it looks scrolled while the page itself stays put. */
 html.vt-hold { overflow-anchor: none; }
 html.vt-hold .screen { margin-top: var(--vt-hold, 0px); }
 ::view-transition-group(gt-photo) { animation-duration: 0.44s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 12px; overflow: hidden; }

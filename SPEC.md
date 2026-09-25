@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.19.1 (all phases done; smoother swipe-back)
+**Current version:** 0.19.2 (all phases done; swipe-back shows the list)
 
 ---
 
@@ -463,20 +463,30 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     switched off during the flight, and stays off on the screen that arrived (0.14.1:
     switching it back on restarted it, so the page dipped dark and faded in again just
     after the photo landed).
-  - *Safari fixes (0.19.1, owner's recording)*: the product's history entry is added, and two
-    ordinary frames shown, **before** the flight starts, because the phone takes its picture of
-    the list for swipe-back when the entry is added, and one taken mid-flight was the darkened
-    screen (swiping back then showed black behind the page, then black for ~0.6s). **Nothing
-    scrolls during the flight**: Safari moved the frozen list by the distance scrolled when the
-    page jumped to the top mid-transition (the whole screen dropped ~32px for half a second).
-    Instead `html.vt-hold` draws the new screen lower by that distance (`--vt-hold`, so it sits
-    at the top of the screen with the page unscrolled), and the real scroll to the top happens
-    once the flight ends, invisibly. The Back flight is unchanged (the owner saw no problem there).
+  - *Safari fixes (0.19.1–0.19.2, owner's recordings)*.
+    **Swipe-back picture:** swiping back on iPhone shows the phone's picture of the list only
+    when the list's history entry restores its own scroll, or the page happens to be scrolled
+    exactly as the list was; otherwise it shows the page colour (black), then ~0.5s of black.
+    That's why it went black only when the list had been scrolled. So the entry a product is
+    opened from, from a list row (`openRow`), has `history.scrollRestoration = 'auto'`; every
+    other entry stays `manual` (the app decides where screens start). On Back the browser puts
+    the list's page back where it was, which is where the app's return to the tapped row
+    lands anyway. (0.19.1 guessed it was the picture being taken mid-flight and added the
+    entry before the flight; that stays, but wasn't the cause.)
+    **Nothing scrolls during a flight** (`client/src/scrollHold.ts`): Safari draws the frozen
+    old screen in the wrong place when the page scrolls mid-transition. Opening from a scrolled
+    list dropped the whole screen by the scroll distance, and Back threw the product page up by
+    it. During a flight the page stays where it is and the screen is drawn lower or higher
+    instead (`html.vt-hold`, a margin on `.screen`); the router's and the list's scrolls go
+    through `scrollPage`, which moves that margin; the real scroll happens when the flight
+    ends, invisibly. Back first moves the page to where the browser will put the list,
+    invisibly, so the browser's own restore doesn't scroll mid-flight either.
     **After a swipe back** (or the browser's own Back) the screen appears without its entrance
-    fade (`html.arrived-still`), since the phone has already animated it; the fade after its
-    slide showed as a dark flash. The app's own Back button and every other change keep the
-    fade. None of this can be seen in Chromium; the tests check the causes (entry before the
-    flight, no scroll during it, the product already where it ends up, no fade after Back).
+    fade (`html.arrived-still`), since the phone has already animated it. The app's own Back
+    button and every other change keep the fade.
+    Chromium shows none of these, so the tests check the causes (entry before the flight and
+    marked to restore its scroll, no scroll during either flight, the product unmoved as Back
+    starts, landing on the row after Back and after the browser's Back, no fade after Back).
   - *Big photo loading*: the product page shows the row's thumbnail (already on the
     device) under the full photo until it arrives, so the flight never lands in an
     empty frame (and the page never shows a blank photo box while loading).
@@ -607,6 +617,21 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.19.2 — swipe-back shows the list, smooth Back (owner report, with a screen recording)
+- **Fixed:** swiping back from a product still showed black behind it when the list had been
+  scrolled. The iPhone only uses its picture of the Leaderboard or Log for the swipe when that
+  screen's history entry says it restores its own scroll position, or when the page happens to
+  be scrolled exactly as the list was. It was black every time the list had been scrolled, and
+  fine at the top, in both recordings. The list's entry now restores its scroll, so the swipe
+  should show your list as it was.
+- **Fixed:** the Back button made the product page jump up just as the photo started flying
+  home (the same Safari quirk as the jump on opening, fixed in 0.19.1, the other way round).
+  Nothing scrolls during the flight now in either direction.
+- 0.19.1's other fixes (no jump on opening, no dark flash after a swipe) were confirmed in the
+  recording.
+- Tests: the scrolled-list Photo grows test now also covers Back and the browser's Back; each
+  new check fails with the old code.
 
 ### 0.19.1 — smoother swipe-back (owner report, with a screen recording)
 - **Fixed:** swiping back from a product sometimes showed black behind the page, then a black

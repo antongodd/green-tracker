@@ -208,15 +208,17 @@ test('opening from a scrolled list: the history entry comes first, and nothing s
   const scrolled = await page.evaluate(() => window.scrollY);
   expect(scrolled).toBeGreaterThan(100);
   await page.evaluate(() => {
-    const w = window as unknown as { __pathAtStart: string[]; __yAtStart: number[]; __during: { y: number; hero: number | null }[] };
+    const w = window as unknown as { __pathAtStart: string[]; __yAtStart: number[]; __heroAtStart: (number | null)[]; __during: { y: number; hero: number | null }[] };
     w.__pathAtStart = [];
     w.__yAtStart = [];
+    w.__heroAtStart = [];
     w.__during = [];
     const doc = document as Document & { startViewTransition: (cb: () => Promise<void>) => unknown };
     const original = doc.startViewTransition.bind(doc);
     doc.startViewTransition = (cb) => {
       w.__pathAtStart.push(location.pathname);
       w.__yAtStart.push(window.scrollY);
+      w.__heroAtStart.push(document.querySelector('.hero-photo')?.getBoundingClientRect().top ?? null);
       return original(cb);
     };
     // Timers keep running while a transition prepares the new screen (frames don't).
@@ -252,9 +254,47 @@ test('opening from a scrolled list: the history entry comes first, and nothing s
   expect(r.during.some((d) => d.hero !== null)).toBe(true);
   expect(r).toMatchObject({ y: 0, hold: '', margin: '0px' });
 
-  // Back still returns to the row, where it was (to the pixel: positions can be fractional).
+  // The list's history entry restores its own scroll, so the phone uses its picture of
+  // the list when swiping back (0.19.2: without it the swipe showed black). This page's
+  // entry doesn't: the app decides where screens start.
+  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual');
+
+  // Back flies home without scrolling mid-flight either (0.19.2: the product page was
+  // thrown up by the list's scroll distance). Scroll the product a little first.
+  await page.evaluate(() => window.scrollTo(0, 60));
+  const productY = await page.evaluate(() => window.scrollY);
+  const heroBefore = await page.evaluate(() => document.querySelector('.hero-photo')!.getBoundingClientRect().top);
+  await page.evaluate(() => {
+    const w = window as unknown as { __yAtStart: number[]; __heroAtStart: number[]; __during: { y: number; hero: number | null }[] };
+    w.__yAtStart = [];
+    w.__heroAtStart = [];
+    w.__during = []; // the recorder installed above keeps filling these
+  });
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo|vt-hold/);
+  const b = await page.evaluate(() => {
+    const w = window as unknown as { __yAtStart: number[]; __heroAtStart: number[]; __during: { y: number; hero: number | null }[] };
+    return { yAtStart: w.__yAtStart, heroAtStart: w.__heroAtStart, ys: w.__during.map((d) => d.y), y: window.scrollY, mode: history.scrollRestoration };
+  });
+  expect(b.yAtStart).toHaveLength(1);
+  // Before the flight the page is already where the list will be, and the product looks unmoved.
+  expect(Math.abs(b.yAtStart[0]! - r.yAtStart[0]!)).toBeLessThanOrEqual(1); // the list, as it was left
+  expect(productY).toBeGreaterThan(0);
+  expect(Math.abs(b.heroAtStart[0]! - heroBefore)).toBeLessThanOrEqual(1);
+  expect(b.ys.length).toBeGreaterThan(3);
+  expect(new Set(b.ys)).toEqual(new Set(b.yAtStart)); // never scrolled mid-flight
+  expect(b.mode).toBe('auto');
+  // …and it lands on the row, where it was (to the pixel: positions can be fractional).
+  await expect.poll(async () => Math.abs((await row('Row 6').boundingBox())!.y - box.y)).toBeLessThanOrEqual(1);
+
+  // Swiping back (the browser's Back) lands exactly where the list was too.
+  const again = (await row('Row 6').boundingBox())!;
+  await page.mouse.click(again.x + again.width / 2, again.y + again.height / 2);
+  await expect(page.getByRole('heading', { name: 'Row 6' })).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo|vt-hold/);
+  await page.goBack();
+  await expect(row('Row 6')).toBeVisible();
   await expect.poll(async () => Math.abs((await row('Row 6').boundingBox())!.y - box.y)).toBeLessThanOrEqual(1);
   await page.setViewportSize({ width: 390, height: 844 });
 });
