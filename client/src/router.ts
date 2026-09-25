@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { scrollPage } from './scrollHold';
 import { backToRowWithPhoto, openProductWithPhoto } from './transitions';
 
 // A small history router: the app has a handful of flat paths.
@@ -16,13 +17,18 @@ function changed(from: string) {
   listeners.forEach((l) => l());
 }
 
-/** Adds (or replaces) the history entry for `path` without showing it yet. Returns the path we left, or null if already there. */
-function record(path: string, replace = false): string | null {
+/**
+ * Adds (or replaces) the history entry for `path` without showing it yet. Returns the path
+ * we left, or null if already there. `keepPicture`: see openRow.
+ */
+function record(path: string, replace = false, keepPicture = false): string | null {
   const from = location.pathname;
   if (path === from) return null;
   scrollByPath.set(from, window.scrollY);
+  history.scrollRestoration = keepPicture ? 'auto' : 'manual'; // for the entry we're leaving
   if (replace) history.replaceState({ depth: depth() }, '', path);
   else history.pushState({ depth: depth() + 1 }, '', path);
+  history.scrollRestoration = 'manual'; // the new entry
   return from;
 }
 
@@ -75,7 +81,7 @@ window.addEventListener('popstate', () => {
   if (ownBack) arrived();
   else arrivedStill();
   ownBack = false;
-  window.scrollTo(0, 0);
+  scrollPage(0);
   changed(from);
 });
 
@@ -100,15 +106,27 @@ export const savedScroll = (path: string): number | undefined => scrollByPath.ge
 export function openRow(e: MouseEvent, path: string): void {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
+  // The list's own history entry restores its scroll (scrollRestoration 'auto'): on
+  // iPhone, swiping back only shows the phone's picture of the list when its entry
+  // restores its scroll or the page happens to be scrolled exactly as the list was;
+  // otherwise the swipe showed black (0.19.2, owner's recordings). Everywhere else the
+  // app decides where screens start (below), and the list's own return to the tapped
+  // row lands at the same place.
   const shown = openProductWithPhoto(
     e.currentTarget as HTMLElement,
-    () => record(path),
+    () => record(path, false, true),
     (from) => {
       arrived();
       changed(from);
     },
   );
-  if (!shown) navigate(path);
+  if (!shown) {
+    const from = record(path, false, true);
+    if (from === null) return;
+    window.scrollTo(0, 0);
+    arrived();
+    changed(from);
+  }
 }
 
 /** Click handler for in-app links: keeps modifier-clicks and new tabs working. */

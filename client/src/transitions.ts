@@ -3,6 +3,7 @@
 // home to the row. Built on Safari's view transitions (iOS 18+). Where they're
 // missing, or Reduce Motion is on, navigation is exactly as before.
 
+import { holdScroll, releaseScroll, scrollPage } from './scrollHold';
 import { pendingReturn } from './scrollReturn';
 
 const NAME = 'gt-photo';
@@ -38,40 +39,12 @@ function name(el: Element | null | undefined, on: boolean) {
   if (el instanceof HTMLElement) el.style.viewTransitionName = on ? NAME : '';
 }
 
-// Safari draws the frozen old screen in the wrong place if the page scrolls while a view
-// transition is running: opening a product from a scrolled list jumped the whole screen
-// down by the distance scrolled (0.19.1, owner's recording). So nothing scrolls during
-// the flight: the new screen is drawn lower by that distance (html.vt-hold), which puts it
-// at the top of the screen with the page still where it was, and the real scroll to the
-// top happens once the flight is over, when it can't be seen.
-function hold(y: number): void {
-  const root = document.documentElement;
-  root.style.setProperty('--vt-hold', `${y}px`);
-  root.classList.add('vt-hold');
-}
-function release(): void {
-  const root = document.documentElement;
-  if (!root.classList.contains('vt-hold')) return;
-  root.classList.remove('vt-hold');
-  root.style.removeProperty('--vt-hold');
-  window.scrollTo(0, 0);
-}
-
-/** Two ordinary frames (or 100ms, if frames aren't coming). */
-const settle = () =>
-  Promise.race([
-    new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
-    new Promise<void>((r) => setTimeout(r, 100)),
-  ]);
-
-let opening = false;
-
 function run(direction: 'open' | 'back', update: () => Promise<void>): void {
   const root = document.documentElement;
   root.classList.add('vt-photo', `vt-${direction}`);
   const t = (document as ViewTransitionDoc).startViewTransition!(update);
   t.finished.finally(() => {
-    release();
+    releaseScroll();
     // The screen that just arrived has been seen fading in already. While .vt-photo is
     // on, its entrance fade is off; removing the class would switch the fade back on
     // and restart it, so the page dipped dark and faded in again right after the photo
@@ -84,35 +57,26 @@ function run(direction: 'open' | 'back', update: () => Promise<void>): void {
 
 /**
  * Opens a product from a list row. Returns false (and does nothing) when the
- * animation isn't available, so the caller navigates as usual.
- *
- * `record` adds the product's history entry (returning the path left, or null if
- * already there) and `show` then draws it. The entry is added first, and two ordinary
- * frames shown, before the flight starts: the phone keeps its picture of the list for
- * swipe-back when the entry is added, and one taken mid-flight could be the darkened
- * screen (0.19.1: swiping back showed black behind the page, owner's recording).
+ * animation isn't available, so the caller navigates as usual. `record` adds the
+ * product's history entry (returning the path left, or null if already there) and
+ * `show` then draws it.
  */
 export function openProductWithPhoto(row: HTMLElement, record: () => string | null, show: (from: string) => void): boolean {
   if (!available()) return false;
-  if (opening) return true; // a second tap while the first is starting
   const from = record();
   if (from === null) return true;
-  opening = true;
   const thumb = row.querySelector('.thumb');
-  void settle().then(() => {
-    opening = false;
-    if (location.pathname === from) return; // went back again before the flight started
-    name(thumb, true);
-    run('open', async () => {
-      name(thumb, false);
-      hold(window.scrollY); // where the frozen list is
-      show(from);
-      const deadline = performance.now() + WAIT_MS;
-      const hero = await waitFor(() => document.querySelector('.hero-photo'), deadline);
-      if (!hero) return; // not rendered in time: an ordinary fade instead
-      await photoReady(hero, deadline);
-      name(hero, true);
-    });
+  name(thumb, true);
+  run('open', async () => {
+    name(thumb, false);
+    holdScroll(); // the product is drawn at the top without the page scrolling (scrollHold.ts)
+    scrollPage(0);
+    show(from);
+    const deadline = performance.now() + WAIT_MS;
+    const hero = await waitFor(() => document.querySelector('.hero-photo'), deadline);
+    if (!hero) return; // not rendered in time: an ordinary fade instead
+    await photoReady(hero, deadline);
+    name(hero, true);
   });
   return true;
 }
@@ -126,6 +90,10 @@ export function backToRowWithPhoto(goBack: () => void): boolean {
   const hero = document.querySelector('.hero-photo');
   if (!available() || !target || !hero) return false;
   name(hero, true);
+  // Going back, the browser puts the list's page back where it was (the list's history
+  // entry restores its scroll, router.ts). Move the page there now, invisibly, so that
+  // nothing scrolls once the transition has started.
+  holdScroll(target.scroll);
   run('back', async () => {
     name(hero, false);
     const popped = new Promise<void>((r) => addEventListener('popstate', () => r(), { once: true }));
