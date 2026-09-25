@@ -11,7 +11,7 @@ import { ApiError, errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
-import { Cluster, formatRankValue, Score, StrainTag, Thumb } from '../components/ProductRow';
+import { Cluster, formatRankValue, Glints, Score, StrainTag, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
 import { LeafOutline, MoreIcon, TypeMark } from '../icons';
 import * as api from '../people';
@@ -34,6 +34,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
   };
   return (
     <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
+      <Glints podium={p.podium} />
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
       <div class="mid">

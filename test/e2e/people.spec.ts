@@ -60,9 +60,10 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.tile')).toHaveCount(2);
   await expect(fan.locator('.tile', { hasText: 'Total' })).toHaveCount(0);
   await expectTilesCentredAndWashed(fan);
-  // Their podium uses the same four tiers (D19): Wedding Cake 9.1 → rainbow, Hash Rosin 8.8 → gold.
+  // Their podium uses the same four tiers (D19): Wedding Cake 9.1 → rainbow, Hash Rosin 8.8 → Diamond (D21).
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' })).toHaveClass(/\btier p1\b/);
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier p2\b/);
+  await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.glint')).toHaveCount(3); // Diamond twinkles on their board too (D21)
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' }).locator('.meta')).toHaveText('Jungle Boys');
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);
   await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(0);
