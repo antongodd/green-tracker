@@ -25,8 +25,23 @@ function toJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   );
 }
 
+/** A cut-out (D26) keeps its transparency, so it's a PNG. */
+export function toPng(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b && b.type === 'image/png' ? resolve(b) : reject(new ApiError(0, 'bad_image', 'The cut-out couldn’t be processed.'))), 'image/png'),
+  );
+}
+
+/** A ~320px thumbnail of an image (D8); PNG for a cut-out, so its background stays clear. */
+export async function renderThumb(img: CanvasImageSource & { width: number; height: number }, png: boolean): Promise<Blob> {
+  const w = img instanceof HTMLImageElement ? img.naturalWidth : img.width;
+  const h = img instanceof HTMLImageElement ? img.naturalHeight : img.height;
+  const thumb = draw(img, 0, 0, w, h, Math.min(1, THUMB_SHORT_EDGE / Math.min(w, h)));
+  return png ? toPng(thumb) : toJpeg(thumb);
+}
+
 /** Draws a source rectangle of `img` scaled by `scale` onto a new canvas. */
-function draw(img: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, scale: number): HTMLCanvasElement {
+export function draw(img: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, scale: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(sw * scale));
   canvas.height = Math.max(1, Math.round(sh * scale));
@@ -65,12 +80,17 @@ export async function prepareNewPhoto(file: Blob): Promise<{ original: Blob; cro
   return { original, ...(await renderCrop(resized, null)) };
 }
 
-/** Uploads a set; returns its id. Attached to a record only by a later Save (or a profile crop). */
-export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: Blob }): Promise<string> {
+/**
+ * Uploads a set; returns its id. Attached to a record only by a later Save (or a profile crop).
+ * A cut-out's set (D26) has PNG `cropped` and `thumb`.
+ */
+export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: Blob; cutout?: boolean }): Promise<string> {
   const form = new FormData();
+  const ext = parts.cutout ? 'png' : 'jpg';
   if (parts.original) form.append('original', parts.original, 'original.jpg');
-  form.append('cropped', parts.cropped, 'cropped.jpg');
-  form.append('thumb', parts.thumb, 'thumb.jpg');
+  form.append('cropped', parts.cropped, `cropped.${ext}`);
+  form.append('thumb', parts.thumb, `thumb.${ext}`);
+  if (parts.cutout) form.append('cutout', '1');
   let res: Response;
   try {
     res = await fetch('/api/uploads', { method: 'POST', body: form, credentials: 'same-origin' });

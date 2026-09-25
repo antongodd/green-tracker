@@ -48,7 +48,7 @@ function Row(p: { row: LogRow; source: Source }) {
   return (
     // The whole row is the tap target — the thumbnail opens the row, not a viewer.
     <a class="lrow" href={href} onClick={open} data-return={`log:${key}`}>
-      <div class="thumb">{photo ? <img src={photoUrl(photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+      <div class={`thumb${photo?.cutout ? ' cut' : ''}`}>{photo ? <img src={photoUrl(photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
       <span class="name">{p.row.name}</span>
       {/* The type mark means "has a full profile": product rows only (Other / Not set have none). */}
       {p.row.kind === 'product' && def.icon ? <TypeMark icon={def.icon} label={`${def.label} product`} class="mk" /> : <span />}

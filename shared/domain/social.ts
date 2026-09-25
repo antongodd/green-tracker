@@ -43,8 +43,8 @@ export interface SharedProduct {
   hitTimeMinutes: number | null;
   /** Only the categories in the product's current rating set. */
   ratings: Ratings;
-  /** Cropped images only; the follower never gets originals. */
-  photos: { id: string; version: string }[];
+  /** Cropped images only; the follower never gets originals. `cutout` (D26): shown without a background. */
+  photos: { id: string; version: string; cutout: boolean }[];
   /**
    * D3: date tried is never sent, so the server passes the owner's tie-break
    * order (most recent date tried first, undated last, then name) as an opaque rank.

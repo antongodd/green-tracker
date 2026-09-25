@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { MAX_IMAGE_BYTES, MAX_THUMB_BYTES, parseCrop, PHOTO_VARIANTS, type PhotoVariant } from '../../shared/domain/photo';
 import { fail, jsonBody, str } from '../lib/http';
-import { deleteLater, imageKeys, isJpeg, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
+import { deleteLater, imageKeys, isJpeg, isPng, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
 import { canView } from '../lib/social';
 
@@ -16,6 +16,8 @@ uploads.use('*', requireUser());
 /**
  * Stores a set: `cropped` and `thumb` always; `original` for a new photo (a re-crop
  * reuses the photo's original). The browser has already resized and cropped them.
+ * With `cutout=1` (D26) the set is a cut-out: `cropped` and `thumb` are transparent
+ * PNGs (the original, if any, is still the JPEG photo).
  */
 uploads.post('/', async (c) => {
   const userId = c.var.user!.id;
@@ -33,24 +35,28 @@ uploads.post('/', async (c) => {
   const cropped = part('cropped');
   const thumb = part('thumb');
   if (!cropped || !thumb) fail(400, 'bad_upload', 'The photo could not be read.');
-  for (const [file, max] of [
-    [original, MAX_IMAGE_BYTES],
-    [cropped, MAX_IMAGE_BYTES],
-    [thumb, MAX_THUMB_BYTES],
+  const cutout = form.get('cutout') === '1';
+  for (const [file, max, png] of [
+    [original, MAX_IMAGE_BYTES, false],
+    [cropped, MAX_IMAGE_BYTES, cutout],
+    [thumb, MAX_THUMB_BYTES, cutout],
   ] as const) {
     if (!file) continue;
     if (file.size === 0 || file.size > max) fail(400, 'bad_upload', 'That photo is too large.');
-    if (!(await isJpeg(file))) fail(400, 'bad_upload', 'Photos must be JPEG images.');
+    if (png ? !(await isPng(file)) : !(await isJpeg(file))) fail(400, 'bad_upload', png ? 'A cut-out must be a PNG image.' : 'Photos must be JPEG images.');
   }
 
   const set = newSetId();
-  const meta = { httpMetadata: { contentType: 'image/jpeg' } };
+  const jpeg = { httpMetadata: { contentType: 'image/jpeg' } };
+  const image = cutout ? { httpMetadata: { contentType: 'image/png' } } : jpeg;
   await Promise.all([
-    original && c.env.PHOTOS.put(photoKey(userId, set, 'original'), original.stream(), meta),
-    c.env.PHOTOS.put(photoKey(userId, set, 'cropped'), cropped.stream(), meta),
-    c.env.PHOTOS.put(photoKey(userId, set, 'thumb'), thumb.stream(), meta),
+    original && c.env.PHOTOS.put(photoKey(userId, set, 'original'), original.stream(), jpeg),
+    c.env.PHOTOS.put(photoKey(userId, set, 'cropped'), cropped.stream(), image),
+    c.env.PHOTOS.put(photoKey(userId, set, 'thumb'), thumb.stream(), image),
   ]);
-  await c.env.DB.prepare('INSERT INTO uploads (id, user_id, has_original, created_at) VALUES (?1, ?2, ?3, ?4)').bind(set, userId, original ? 1 : 0, Date.now()).run();
+  await c.env.DB.prepare('INSERT INTO uploads (id, user_id, has_original, created_at, cutout) VALUES (?1, ?2, ?3, ?4, ?5)')
+    .bind(set, userId, original ? 1 : 0, Date.now(), cutout ? 1 : 0)
+    .run();
 
   // Sweep this user's abandoned uploads (older than a day).
   const { results: stale } = await c.env.DB.prepare('DELETE FROM uploads WHERE user_id = ?1 AND created_at < ?2 RETURNING id').bind(userId, Date.now() - DAY).all<{ id: string }>();
@@ -101,7 +107,11 @@ photos.get('/:id/:variant', async (c) => {
   return serveImage(c.env.PHOTOS, c.req.header('if-none-match'), row.user_id, set, variant);
 });
 
-/** A crop made on the profile is saved straight away (brief §11), with a re-crop set. */
+/**
+ * A crop made on the profile is saved straight away (brief §11), with a re-crop set.
+ * So is a cut-out made there (D26): its set is a cut-out, and `crop` is the crop it was
+ * made from; Restore background is an ordinary crop that isn't.
+ */
 photos.post('/:id/crop', async (c) => {
   const userId = c.var.user!.id;
   const id = c.req.param('id');
@@ -112,16 +122,16 @@ photos.post('/:id/crop', async (c) => {
   const db = c.env.DB;
   const row = await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE id = ?1 AND user_id = ?2`).bind(id, userId).first<PhotoRow>();
   if (!row) fail(404, 'not_found', 'That photo no longer exists.');
-  const up = await db.prepare('SELECT has_original FROM uploads WHERE id = ?1 AND user_id = ?2').bind(upload, userId).first<{ has_original: number }>();
+  const up = await db.prepare('SELECT has_original, cutout FROM uploads WHERE id = ?1 AND user_id = ?2').bind(upload, userId).first<{ has_original: number; cutout: number }>();
   if (!up) fail(400, 'photo_upload_missing', 'The crop upload has expired. Please try again.');
   if (up.has_original !== 0) fail(400, 'invalid_photos', 'A crop reuses the photo’s original.');
   const c0 = crop;
   await db.batch([
     db
-      .prepare('UPDATE photos SET image_set = ?1, crop_x = ?2, crop_y = ?3, crop_w = ?4, crop_h = ?5, crop_square = ?6, updated_at = ?7 WHERE id = ?8 AND user_id = ?9')
-      .bind(upload, c0?.x ?? null, c0?.y ?? null, c0?.w ?? null, c0?.h ?? null, c0?.square ? 1 : 0, Date.now(), id, userId),
+      .prepare('UPDATE photos SET image_set = ?1, crop_x = ?2, crop_y = ?3, crop_w = ?4, crop_h = ?5, crop_square = ?6, updated_at = ?7, cutout = ?10 WHERE id = ?8 AND user_id = ?9')
+      .bind(upload, c0?.x ?? null, c0?.y ?? null, c0?.w ?? null, c0?.h ?? null, c0?.square ? 1 : 0, Date.now(), id, userId, up.cutout),
     db.prepare('DELETE FROM uploads WHERE id = ?1 AND user_id = ?2').bind(upload, userId),
   ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, imageKeys(userId, row.image_set));
-  return c.json({ photo: toPhotoRecord({ ...row, image_set: upload, crop_x: c0?.x ?? null, crop_y: c0?.y ?? null, crop_w: c0?.w ?? null, crop_h: c0?.h ?? null, crop_square: c0?.square ? 1 : 0 }) });
+  return c.json({ photo: toPhotoRecord({ ...row, image_set: upload, crop_x: c0?.x ?? null, crop_y: c0?.y ?? null, crop_w: c0?.w ?? null, crop_h: c0?.h ?? null, crop_square: c0?.square ? 1 : 0, cutout: up.cutout }) });
 });

@@ -5,6 +5,7 @@ import { CameraIcon } from '../icons';
 import { discardUpload, loadImage, prepareNewPhoto, renderCrop, uploadSet } from '../images';
 import { PhotoGrid, shownFromRecord } from './PhotoGrid';
 import { Cropper, PhotoViewer, type ShownPhoto } from './PhotoViewer';
+import { CutoutFlow, type CutoutResult } from './CutoutFlow';
 
 /** A photo in the editor: saved (id), new (upload with its original), or saved with an unsaved crop. */
 export interface PhotoDraft extends ShownPhoto {
@@ -39,10 +40,11 @@ export function photosToInput(drafts: PhotoDraft[]): PhotoInput[] | string {
  * crops upload straight away as pending sets, and only Save attaches them
  * (brief §11). Unsaved sets are discarded when the editor closes without saving.
  */
-export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean }; max?: number }) {
+export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean }; max?: number; name?: string }) {
   const max = p.max ?? Infinity;
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
+  const [cuttingOut, setCuttingOut] = useState<number | null>(null);
   const latest = useRef(p.drafts);
   latest.current = p.drafts;
 
@@ -82,6 +84,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
     }
   }
 
+  /** A new crop — also how Restore background (D26) works: the same crop, rendered from the original again. */
   async function crop(index: number, next: Crop | null) {
     setCropping(null);
     const draft = p.drafts[index];
@@ -92,10 +95,19 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
       const { cropped, thumb } = await renderCrop(original, next);
       // A new photo's set must include its original; a saved photo keeps the one it has.
       const upload = await uploadSet(draft.isNew ? { original: draft.original as Blob, cropped, thumb } : { cropped, thumb });
-      settle(draft.key, upload, { thumb: blobUrl(thumb), image: blobUrl(cropped), crop: next });
+      settle(draft.key, upload, { thumb: blobUrl(thumb), image: blobUrl(cropped), crop: next, cutout: false });
     } catch (e) {
       update(draft.key, { status: 'error', error: errorText(e), crop: draft.crop });
     }
+  }
+
+  /** A cut-out (D26): uploaded now as a pending set like a crop, attached by Save. Errors stay in the flow. */
+  async function cutout(index: number, r: CutoutResult) {
+    const draft = p.drafts[index];
+    if (!draft) return;
+    const upload = await uploadSet(draft.isNew ? { original: draft.original as Blob, ...r, cutout: true } : { ...r, cutout: true });
+    settle(draft.key, upload, { thumb: blobUrl(r.thumb), image: blobUrl(r.cropped), cutout: true });
+    setCuttingOut(null);
   }
 
   function remove(index: number) {
@@ -113,6 +125,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
         photos={p.drafts}
         onOpen={setViewing}
         onCrop={setCropping}
+        onCutout={setCuttingOut}
         status={(i) => {
           const d = p.drafts[i]!;
           return d.status === 'uploading' ? 'Uploading…' : d.status === 'error' ? '!Failed' : null;
@@ -141,7 +154,18 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
             setCropping(i);
           }}
           onRemove={remove}
+          onCutout={(i) => {
+            setViewing(null);
+            setCuttingOut(i);
+          }}
+          onRestore={(i) => {
+            setViewing(null);
+            crop(i, p.drafts[i]!.crop);
+          }}
         />
+      )}
+      {cuttingOut !== null && p.drafts[cuttingOut] && (
+        <CutoutFlow source={p.drafts[cuttingOut]!.image} name={p.name} onCancel={() => setCuttingOut(null)} onApply={(r) => cutout(cuttingOut, r)} />
       )}
       {cropping !== null && p.drafts[cropping] && (
         <Cropper original={p.drafts[cropping]!.original} crop={p.drafts[cropping]!.crop} onCancel={() => setCropping(null)} onApply={(c) => crop(cropping, c)} />

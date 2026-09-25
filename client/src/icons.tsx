@@ -137,3 +137,14 @@ export const ExternalIcon = icon('M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3a1 1 0 0
 export const CropIcon = icon('M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4', { stroke: 1.6, viewBox: '0 0 16 16' });
 export const CameraIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5ZM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', { stroke: 1.6 });
 export const SearchIcon = icon('M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM15.5 15.5l5 5', { stroke: 2.2 });
+
+/** Remove background (D26): a small leaf inside a dashed cut line (unlike Crop's corners). */
+export function CutoutIcon(p: P) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" class={p.class} {...a11y(p.label)}>
+      <rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 2" />
+      <path d="M8 12.2C6.1 11.3 5 9.4 5 7.4c1.2.3 2.4 1.2 3 2.7.6-1.5 1.8-2.4 3-2.7 0 2-1.1 3.9-3 4.8Z" fill="currentColor" />
+      <path d="M8 10.6c-.9-1.6-.7-3.8 0-5.1.7 1.3.9 3.5 0 5.1Z" fill="currentColor" />
+    </svg>
+  );
+}

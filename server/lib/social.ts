@@ -103,7 +103,7 @@ export function shareProduct(p: Product, tieRank: number): SharedProduct {
     source: p.source,
     hitTimeMinutes: p.productType === 'edibles' ? p.hitTimeMinutes : null,
     ratings,
-    photos: p.photos.map((ph) => ({ id: ph.id, version: ph.version })),
+    photos: p.photos.map((ph) => ({ id: ph.id, version: ph.version, cutout: ph.cutout })),
     tieRank,
   };
 }

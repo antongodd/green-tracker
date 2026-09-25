@@ -31,7 +31,7 @@ export function StrainTag(p: { strain: string | null }) {
 
 /** What a row needs to draw a product — your own, or one shared with you by someone you follow. */
 export type RowProduct = Pick<Product, 'id' | 'name' | 'productType' | 'strainType' | 'country' | 'countryOther'> & {
-  photos: { id: string; version: string }[];
+  photos: { id: string; version: string; cutout?: boolean }[];
   private?: boolean;
 };
 
@@ -40,7 +40,7 @@ export function Thumb(p: { product: RowProduct; class?: string }) {
   const first = p.product.photos[0];
   // The first photo's thumbnail; no photo → the type mark in accent; Other / Not set → empty.
   return (
-    <div class={`thumb ${p.class ?? ''}`}>
+    <div class={`thumb${first?.cutout ? ' cut' : ''} ${p.class ?? ''}`}>
       {first ? <img src={photoUrl(first, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}
     </div>
   );

@@ -1,10 +1,12 @@
 {
   "name": "green-tracker",
-  "version": "0.18.1",
+  "version": "0.19.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-ai-engine.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-ai-engine.mjs",
     "build": "vite build",
     "preview": "npm run build && wrangler dev --config dist/green_tracker/wrangler.json",
     "deploy": "npm run build && wrangler d1 migrations apply green-tracker --remote && wrangler deploy --config dist/green_tracker/wrangler.json",
@@ -19,6 +21,7 @@
     "@simplewebauthn/browser": "^14.0.0",
     "@simplewebauthn/server": "^14.0.2",
     "hono": "^4.13.8",
+    "onnxruntime-web": "1.17.3",
     "preact": "^10.29.8"
   },
   "devDependencies": {

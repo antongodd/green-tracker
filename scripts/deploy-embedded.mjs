@@ -57,6 +57,9 @@ const files = {};
 for (const p of walk(clientDir)) {
   const path = '/' + relative(clientDir, p);
   if (path === '/.assetsignore' || path === '/_headers') continue;
+  // The background remover (D26, ~57 MB) can't fit in a Worker bundle: this fallback
+  // deploy leaves it out, so Remove background can't download there.
+  if (path.startsWith('/ai/')) continue;
   const type = TYPES[extname(p)];
   if (!type) throw new Error(`No content type for ${path}; add it to TYPES`);
   files[path] = { type, b64: readFileSync(p).toString('base64') };

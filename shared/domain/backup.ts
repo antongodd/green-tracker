@@ -15,7 +15,10 @@ export const EXPORT_VERSION = 1;
 export interface ExportPhoto {
   crop: Crop | null;
   original: string;
+  /** JPEG, or for a cut-out a transparent PNG. */
   cropped: string;
+  /** D26 (since 0.19.0): the background was removed; `cropped` is the cut-out. Absent = false. */
+  cutout?: boolean;
 }
 
 export interface ExportProduct extends Omit<ProductInput, 'photos' | 'ratings' | 'purchases'> {
@@ -82,7 +85,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
   const photoOk = (p: unknown) => {
     if (!p || typeof p !== 'object') return false;
     const ph = p as Record<string, unknown>;
-    return parseCrop(ph.crop) !== undefined && isB64(ph.original) && isB64(ph.cropped);
+    return parseCrop(ph.crop) !== undefined && isB64(ph.original) && isB64(ph.cropped) && (ph.cutout === undefined || typeof ph.cutout === 'boolean');
   };
   for (const p of f.products as Record<string, unknown>[]) {
     if (!p || typeof p !== 'object' || !Array.isArray(p.photos) || !p.photos.every(photoOk) || !isTime(p.createdAt)) return bad('A product in the file couldn’t be read.');

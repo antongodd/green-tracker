@@ -2,7 +2,10 @@ import { fail } from './http';
 import { randomId } from './crypto';
 import type { Crop, PhotoInput, PhotoRecord, PhotoVariant } from '../../shared/domain/photo';
 
-/** R2 key for one file of an image set. Keys depend only on user and set, never on the parent record. */
+/**
+ * R2 key for one file of an image set. Keys depend only on user and set, never on the parent record.
+ * A cut-out's PNGs (D26) keep the same `.jpg` names; what they are is in their stored content type.
+ */
 export const photoKey = (userId: string, set: string, variant: PhotoVariant) => `u/${userId}/s/${set}/${variant}.jpg`;
 
 /** Every key a set can hold (a re-crop set has no original; deleting a missing key is harmless). */
@@ -22,14 +25,15 @@ export interface PhotoRow {
   crop_w: number | null;
   crop_h: number | null;
   crop_square: number;
+  cutout: number;
 }
 
-export const PHOTO_COLUMNS = 'id, product_id, log_entry_id, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square';
+export const PHOTO_COLUMNS = 'id, product_id, log_entry_id, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square, cutout';
 
 export function toPhotoRecord(row: PhotoRow): PhotoRecord {
   const crop: Crop | null =
     row.crop_x === null ? null : { x: row.crop_x, y: row.crop_y!, w: row.crop_w!, h: row.crop_h!, square: row.crop_square === 1 };
-  return { id: row.id, version: row.image_set, crop };
+  return { id: row.id, version: row.image_set, crop, cutout: row.cutout === 1 };
 }
 
 const cropArgs = (c: Crop | null) => (c ? [c.x, c.y, c.w, c.h, c.square ? 1 : 0] : [null, null, null, null, 0]);
@@ -62,12 +66,12 @@ export async function planPhotoWrites(
   const ids = inputs.map((i) => i.id).filter((u): u is string => !!u);
   if (new Set(ids).size !== ids.length) fail(400, 'invalid_photos', 'A photo was listed twice.');
 
-  const uploads = new Map<string, { has_original: number }>();
+  const uploads = new Map<string, { has_original: number; cutout: number }>();
   if (uploadIds.length) {
     const { results } = await db
-      .prepare(`SELECT id, has_original FROM uploads WHERE user_id = ?1 AND id IN (${uploadIds.map((_, i) => `?${i + 2}`).join(', ')})`)
+      .prepare(`SELECT id, has_original, cutout FROM uploads WHERE user_id = ?1 AND id IN (${uploadIds.map((_, i) => `?${i + 2}`).join(', ')})`)
       .bind(userId, ...uploadIds)
-      .all<{ id: string; has_original: number }>();
+      .all<{ id: string; has_original: number; cutout: number }>();
     for (const r of results) uploads.set(r.id, r);
   }
   const gone: () => never = () => fail(400, 'photo_upload_missing', 'A photo upload has expired. Please add the photo again.');
@@ -88,12 +92,13 @@ export async function planPhotoWrites(
         );
       }
       if (input.upload) {
-        if (!uploads.has(input.upload)) gone();
-        // A new crop: point at the new set; the old cropped + thumb become unused.
+        const up = uploads.get(input.upload);
+        if (!up) gone();
+        // A new crop or cut-out (D26: the set says which): point at the new set; the old cropped + thumb become unused.
         statements.push(
           db
-            .prepare('UPDATE photos SET image_set = ?1, crop_x = ?2, crop_y = ?3, crop_w = ?4, crop_h = ?5, crop_square = ?6, position = ?7, updated_at = ?8 WHERE id = ?9 AND user_id = ?10')
-            .bind(input.upload, ...cropArgs(input.crop), position, now, row.id, userId),
+            .prepare('UPDATE photos SET image_set = ?1, crop_x = ?2, crop_y = ?3, crop_w = ?4, crop_h = ?5, crop_square = ?6, position = ?7, updated_at = ?8, cutout = ?11 WHERE id = ?9 AND user_id = ?10')
+            .bind(input.upload, ...cropArgs(input.crop), position, now, row.id, userId, up.cutout),
           db.prepare('DELETE FROM uploads WHERE id = ?1 AND user_id = ?2').bind(input.upload, userId),
         );
         unusedKeys.push(...imageKeys(userId, row.image_set));
@@ -107,10 +112,10 @@ export async function planPhotoWrites(
       statements.push(
         db
           .prepare(
-            `INSERT INTO photos (id, user_id, ${col}, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11)`,
+            `INSERT INTO photos (id, user_id, ${col}, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square, created_at, updated_at, cutout)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11, ?12)`,
           )
-          .bind(randomId(), userId, ownerId, position, input.upload!, ...cropArgs(input.crop), now),
+          .bind(randomId(), userId, ownerId, position, input.upload!, ...cropArgs(input.crop), now, up.cutout),
         db.prepare('DELETE FROM uploads WHERE id = ?1 AND user_id = ?2').bind(input.upload!, userId),
       );
     }
@@ -136,10 +141,16 @@ export function deleteLater(ctx: { waitUntil(p: Promise<unknown>): void }, bucke
   );
 }
 
-/** Is this a JPEG? (FF D8 FF) — the client always uploads JPEG. */
+/** Is this a JPEG? (FF D8 FF) — every photo image except a cut-out's. */
 export async function isJpeg(file: Blob): Promise<boolean> {
   const head = new Uint8Array(await file.slice(0, 3).arrayBuffer());
   return head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+}
+
+/** Is this a PNG? (89 50 4E 47 0D 0A 1A 0A) — a cut-out's image and thumbnail (D26). */
+export async function isPng(file: Blob): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((b, i) => head[i] === b);
 }
 
 export const newSetId = randomId;
@@ -151,9 +162,11 @@ export const newSetId = randomId;
  */
 export async function serveImage(bucket: R2Bucket, ifNoneMatch: string | undefined, userId: string, set: string, variant: PhotoVariant): Promise<Response> {
   const etag = `"${set}-${variant}"`;
-  const headers = { 'cache-control': 'private, no-cache', etag, 'content-type': 'image/jpeg' };
+  const headers = { 'cache-control': 'private, no-cache', etag };
   if (ifNoneMatch === etag) return new Response(null, { status: 304, headers });
   const obj = await bucket.get(photoKey(userId, set, variant));
   if (!obj) fail(404, 'not_found', 'Not found.');
-  return new Response(obj.body, { headers: { ...headers, 'content-length': String(obj.size) } });
+  // JPEG, or PNG for a cut-out (D26): whatever the upload stored.
+  const type = obj.httpMetadata?.contentType === 'image/png' ? 'image/png' : 'image/jpeg';
+  return new Response(obj.body, { headers: { ...headers, 'content-type': type, 'content-length': String(obj.size) } });
 }

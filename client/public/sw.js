@@ -5,7 +5,10 @@
 //    which takes over at once and deletes every other version's cache;
 //  - pages are fetched network-first: online, you always get the latest build;
 //    the cached copy is only used when the network fails;
-//  - the API is never touched (always live, never cached here).
+//  - the API is never touched (always live, never cached here);
+//  - the background remover (D26) lives in its own `gt-ai-<model>` cache, filled by the
+//    app after asking (client/src/cutout/): it survives new builds (its files are
+//    named by version) and /ai/ files are served from it, so it's downloaded once.
 const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
 const CACHE = `gt-shell-${VERSION}`;
 
@@ -29,7 +32,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && !k.startsWith('gt-ai-')).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -51,6 +54,12 @@ self.addEventListener('fetch', (event) => {
           }),
       ),
     );
+    return;
+  }
+
+  // The background remover's files: from its cache when it's on the phone, else the network (not cached here).
+  if (url.pathname.startsWith('/ai/')) {
+    event.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
     return;
   }
 
