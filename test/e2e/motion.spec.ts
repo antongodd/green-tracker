@@ -196,6 +196,106 @@ test('a product without a photo flies its placeholder; the Log does it too, loos
   expect((await transitions()).length).toBe(2); // the entry editor opens as before
 });
 
+test('opening from a scrolled list: the history entry comes first, and nothing scrolls during the flight', async () => {
+  // 0.19.1, owner's recording: with the list scrolled, tapping a row jumped the whole screen
+  // down by the distance scrolled (Safari moves the frozen old screen when the page scrolls
+  // mid-transition), and swiping back later showed black (the phone's picture of the list
+  // was taken mid-flight). Chromium shows neither, so this checks the causes are gone.
+  await page.setViewportSize({ width: 390, height: 520 });
+  await page.goto('/');
+  await expect(row('Row 7')).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const scrolled = await page.evaluate(() => window.scrollY);
+  expect(scrolled).toBeGreaterThan(100);
+  await page.evaluate(() => {
+    const w = window as unknown as { __pathAtStart: string[]; __yAtStart: number[]; __during: { y: number; hero: number | null }[] };
+    w.__pathAtStart = [];
+    w.__yAtStart = [];
+    w.__during = [];
+    const doc = document as Document & { startViewTransition: (cb: () => Promise<void>) => unknown };
+    const original = doc.startViewTransition.bind(doc);
+    doc.startViewTransition = (cb) => {
+      w.__pathAtStart.push(location.pathname);
+      w.__yAtStart.push(window.scrollY);
+      return original(cb);
+    };
+    // Timers keep running while a transition prepares the new screen (frames don't).
+    setInterval(() => {
+      if (!document.documentElement.classList.contains('vt-photo')) return;
+      const hero = document.querySelector('.hero-photo');
+      w.__during.push({ y: window.scrollY, hero: hero ? Math.round(hero.getBoundingClientRect().top) : null });
+    }, 4);
+  });
+  // Tap where the row is, as a finger does (click() may scroll the page first).
+  const box = (await row('Row 6').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.getByRole('heading', { name: 'Row 6' })).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo|vt-hold/);
+  const r = await page.evaluate(() => {
+    const w = window as unknown as { __pathAtStart: string[]; __yAtStart: number[]; __during: { y: number; hero: number | null }[] };
+    return {
+      pathAtStart: w.__pathAtStart,
+      yAtStart: w.__yAtStart,
+      during: w.__during,
+      y: window.scrollY,
+      hero: Math.round(document.querySelector('.hero-photo')!.getBoundingClientRect().top),
+      hold: document.documentElement.style.getPropertyValue('--vt-hold'),
+      margin: getComputedStyle(document.querySelector('main')!).marginTop,
+    };
+  });
+  expect(r.pathAtStart).toEqual([expect.stringMatching(/^\/products\/[^/]+$/)]); // the entry existed before the flight
+  expect(r.during.length).toBeGreaterThan(3);
+  expect(r.yAtStart[0]).toBeGreaterThan(100);
+  expect(new Set(r.during.map((d) => d.y))).toEqual(new Set(r.yAtStart)); // never scrolled mid-flight
+  // The product sat exactly where it ends up, so the scroll afterwards can't be seen.
+  for (const d of r.during) if (d.hero !== null) expect(Math.abs(d.hero - r.hero)).toBeLessThanOrEqual(1);
+  expect(r.during.some((d) => d.hero !== null)).toBe(true);
+  expect(r).toMatchObject({ y: 0, hold: '', margin: '0px' });
+
+  // Back still returns to the row, where it was.
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(async () => Math.round((await row('Row 6').boundingBox())!.y)).toBe(Math.round(box.y));
+  await page.setViewportSize({ width: 390, height: 844 });
+});
+
+test('swiping back (the browser’s Back) shows the list without its entrance fade; other changes keep it', async () => {
+  await page.goto('/');
+  await expect(row('Photo Kush')).toBeVisible();
+  await page.evaluate(() => {
+    const w = window as unknown as { __fades: string[] };
+    w.__fades = [];
+    document.addEventListener('animationstart', (e) => e.animationName === 'enter' && w.__fades.push(location.pathname), true);
+  });
+  const fades = () => page.evaluate(() => (window as unknown as { __fades: string[] }).__fades);
+  await row('Row 2').click();
+  await expect(page.getByRole('heading', { name: 'Row 2' })).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
+  await page.waitForTimeout(300);
+  expect(await fades()).toEqual([]); // the flight replaces the fade, as before
+
+  await page.goBack(); // what a swipe from the edge does
+  await expect(row('Row 2')).toBeVisible();
+  await page.waitForTimeout(400);
+  expect(await fades()).toEqual([]);
+  expect(await page.locator('main.screen').evaluate((el) => el.getAnimations().length)).toBe(0);
+
+  // The next change of screen fades in as usual, and the list it leaves doesn't replay.
+  await page.locator('.nav a', { hasText: 'Log' }).click();
+  await expect(page).toHaveURL(/\/log$/);
+  await expect.poll(fades).toEqual(['/log']);
+  await page.waitForTimeout(300);
+  expect(await fades()).toEqual(['/log']);
+
+  // The app's own Back (no photo to fly here) keeps its fade too.
+  await page.locator('.nav a', { hasText: 'More' }).click();
+  await page.getByRole('link', { name: /Passkeys/ }).click();
+  await expect(page).toHaveURL(/passkeys/);
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/more$/);
+  await expect.poll(async () => (await fades()).at(-1)).toBe('/more');
+});
+
 test('Reduce Motion: presses light up without growing, and products open without the animation', async () => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
