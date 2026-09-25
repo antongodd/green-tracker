@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.17.0 (all phases done; profile photos, People opens on Following)
+**Current version:** 0.18.0 (all phases done; your photo in the header)
 
 ---
 
@@ -88,6 +88,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D22 | **Podium product pages** (2026-09-25; "Everything" from https://claude.ai/artifact/7HHY6WSp9xCciStfcxtZqk and option B "Descending" from https://claude.ai/artifact/UcTvzvgN1rpSmdevDe5bPo). The "rainbow for #1 beyond its row" parked at D19, extended to all four places. A product in the top four carries its tier onto its own page, following **the same Type and Rank by as the Leaderboard** (so the page always matches the row you tapped, also when opened from the Log), and on a friend's product page too (their places come only from what you can see). Nothing new anywhere else (the Log stays as it is). | Descending shine, like the rows: **1st** a badge with a crown ("#1 on your Leaderboard", or "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste"), a flowing rainbow photo frame, rainbow score, the name and score on the row's holo card, and one rainbow sweep across the photo as the page opens; **Diamond** all of that in ice blue plus glints; **Platinum** frame, silver score, badge; **Pewter** a calm frame (half speed) and badge. Unrated and archived products never get it. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *Podium product pages*. |
 | D23 | **Profile photos** (2026-09-25; option A "a card for you at the top of People" and "People connected to you" from https://claude.ai/artifact/AAdP8jbTiuB4HV8jRwX9Cq). Each account can add one photo, framed by moving and zooming it inside a circle. A deliberate addition to design brief §9 (monogram avatars, "there are no profile photos"). | **Who sees it:** you; people you follow or have asked to follow (you reached out to them); your approved followers. **Never:** someone whose request you haven't approved (a request alone reveals nothing), strangers (search shows your letter, so brief §5's "username and a Follow button, nothing else" still holds for them), anyone blocked either way. Others only ever get the square crop, never the original. **Where:** your card on People; the Following, Followers and Requests lists, search results, the page of someone you don't follow yet, and next to @username at the top of a friend's Leaderboard. Everywhere else the letter stays. **Export/restore:** included (original and crop); restoring a file from before 0.17.0 leaves your photo alone. See §4 *Profile photos*. |
 | D24 | **People opens on Following** (2026-09-25). The order is now Following · Followers · Requests, and People opens on Following every time the app starts, even with requests waiting (the Requests badge and the tab-bar badge show them). Within a visit it remembers the list you last chose, as before. | Look and order only; no data change. |
+| D25 | **Your photo in the header** (2026-09-25; all the recommended options of https://claude.ai/artifact/KmRLwSVfdv5fmD5eJ7dMRt). A step away from design brief §6.4 / §8 ("the header holds only the title" on the main screens). | Top right on the **four main tabs only** (Leaderboard, Log, People, More): your profile photo in a 30px circle with a faint green edge, or your letter until you add one. Tapping it opens People with your card; on People it goes back to the top and clears the search. The title stays centred (equal side slots). Screens further in keep Back, Edit and ⋯ in their corners, and a friend's pages keep their photo beside @username. Only you see it; nothing new is stored or sent. See §4 *Your photo in the header*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -520,11 +521,34 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 - **People opens on Following (D24, 0.17.0).** `lastSegment` starts as `following`; it lives
   in memory, so a relaunch (or reload) opens on Following and a visit keeps your last choice.
 
+- **Your photo in the header (D25, 0.18.0).** `client/src/components/MeButton.tsx`, passed as
+  the header's right slot by the four main screens (a `.hbtn`, so it gets the header buttons'
+  Lift). It uses the session's photo version (`/api/auth/me`, D23). The header is rebuilt on
+  every tab switch, and photos are served `no-cache` (revalidated each time), so the thumbnail
+  is fetched once per version and kept on the device as a blob URL with a decoded copy held in
+  memory: each new header shows it on its first frame instead of flashing the letter while it
+  revalidates. (Chromium already reuses the image between tabs, so a flicker couldn't be
+  reproduced here; the blob is for Safari, which can't be tested here.) If the fetch fails
+  (offline, refused) it falls back to the ordinary URL, and from there to the letter.
+  Accessible name "Your profile (@username)". Tested (`test/e2e/header.spec.ts`): letter then
+  photo on all four tabs and absent on seven other screens, title centred to 1px, 44px tap
+  target, the photo kept on the device, every header built during six tab switches already
+  showing the decoded photo, a new photo replacing it and removal bringing the letter back, and
+  the tap opening People at your card (and on People: top, search cleared).
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.18.0 — your photo in the header (owner request)
+- Your profile photo (or your letter, until you add one) now sits in the top-right corner of
+  Leaderboard, Log, People and More (decision D25). Tap it to open People at your card; on People
+  it takes you back to the top.
+- Only on the four main tabs: screens further in keep Back, Edit and ⋯ in their corners.
+- Tests: 4 new Playwright tests (`header.spec.ts`), including a check that switching tabs never
+  shows the letter before the photo.
 
 ### 0.17.0 — profile photos, and People opens on Following (owner request)
 - You can add a profile photo (decision D23): tap your photo in the new card at the top of

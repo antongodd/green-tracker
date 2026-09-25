@@ -8,6 +8,7 @@ import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
 import { Header, TabBar } from '../components/chrome';
+import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ChevronRight, LeafOutline, PlusIcon, TypeMark } from '../icons';
 import { cachedEntries, fetchEntries } from '../logEntries';
@@ -92,7 +93,7 @@ export function Log() {
 
   return (
     <>
-      <Header />
+      <Header right={<MeButton />} />
       <main class="screen">
         {error && !ready && (
           <div class="empty">

@@ -585,6 +585,9 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .av.has-photo { box-shadow: var(--photo-edge); }
 .av.xl { width: 72px; height: 72px; font-size: 30px; }
 .av.hd { width: 28px; height: 28px; font-size: 13px; }
+/* You, top right on the main tabs (D25): 30px with a faint green edge, photo or letter. */
+.me-btn { justify-content: center; }
+.me-btn .av.hd { width: 30px; height: 30px; font-size: 14px; color: var(--text); box-shadow: 0 0 0 1px rgba(88, 224, 140, 0.3); }
 .me-card { display: flex; align-items: center; gap: 14px; padding: 14px; }
 .me-photo { position: relative; flex: none; padding: 0; border: 0; background: none; border-radius: 50%; }
 .me-photo .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); border: 2px solid var(--surface-1); display: flex; align-items: center; justify-content: center; }

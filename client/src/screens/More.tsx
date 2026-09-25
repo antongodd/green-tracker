@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, errorText, type Passkey } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
+import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ChevronRight } from '../icons';
 import { addPasskey } from '../passkey';
@@ -62,7 +63,7 @@ export function More() {
   const codes = me.recoveryCodesLeft ?? 0;
   return (
     <>
-      <Header />
+      <Header right={<MeButton />} />
       <main class="screen">
         <div class="lh cap">Account</div>
         <div class="wrap">

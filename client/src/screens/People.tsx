@@ -6,6 +6,7 @@ import { ownProfilePhotoUrl, personPhotoUrl, type Crop } from '../../../shared/d
 import { AvatarCropper } from '../components/AvatarCropper';
 import { Avatar } from '../components/Avatar';
 import { BackButton, Header, Sheet, TabBar, type SheetOption } from '../components/chrome';
+import { MeButton } from '../components/MeButton';
 import { CameraIcon, MoreIcon, SearchIcon } from '../icons';
 import * as api from '../people';
 import { ownOriginalUrl, prepareOriginal, removeProfilePhoto, saveProfilePhoto } from '../profilePhoto';
@@ -265,7 +266,16 @@ export function People() {
   const pending = me.pendingRequests ?? requests?.length ?? 0;
   return (
     <>
-      <Header />
+      <Header
+        right={
+          <MeButton
+            onHere={() => {
+              setQ('');
+              window.scrollTo(0, 0);
+            }}
+          />
+        }
+      />
       <main class="screen">
         <div class="wrap" style={{ paddingTop: '12px' }}>
           <label class="search">
