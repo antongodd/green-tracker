@@ -134,6 +134,55 @@ test('podium tiers: motion, Reduce Motion, and readable text throughout', async 
   await expect(tiers).toHaveCount(4);
 });
 
+// Cool metals (D21, 0.15.0): Diamond (ice blue), Platinum, Pewter under the rainbow;
+// no gold or bronze anywhere; the shine drops tier by tier; only Diamond twinkles,
+// and its glints never touch any text.
+test('cool podium: Diamond, Platinum, Pewter; descending shine; glints clear of text', async () => {
+  await page.goto('/');
+  const tiers = page.locator('.row.tier');
+  await expect(tiers).toHaveCount(4);
+  const info = await tiers.evaluateAll((els) => els.map((el) => {
+    const cs = getComputedStyle(el);
+    const edge = el.getAnimations().find((a) => (a as CSSAnimation).animationName.startsWith('tier-flow'));
+    return { cls: el.className, bg: cs.backgroundImage, wash: parseFloat(cs.getPropertyValue('--wash')), sheen: parseFloat(cs.getPropertyValue('--sheen')), edgeMs: Number(edge?.effect?.getTiming().duration), glints: el.querySelectorAll('.glint').length };
+  }));
+  expect(info.map((i) => i.cls.match(/p\d/)![0])).toEqual(['p1', 'p2', 'p3', 'p4']);
+  expect(info[1]!.bg).toContain('rgb(158, 220, 255)'); // Diamond, ice blue #9edcff
+  expect(info[2]!.bg).toContain('rgb(207, 215, 226)'); // Platinum #cfd7e2
+  expect(info[3]!.bg).toContain('rgb(135, 146, 160)'); // Pewter #8792a0
+  // No gold or bronze left, on the rows or anywhere in the styles.
+  const warm = /rgb\(226, 183, 96\)|rgb\(198, 130, 84\)|rgba\(226, 183, 96|rgba\(198, 130, 84|e2b760|c68254/i;
+  for (const i of info) expect(i.bg).not.toMatch(warm);
+  expect(await page.evaluate(() => [...document.styleSheets].flatMap((sh) => [...sh.cssRules].map((r) => r.cssText)).join('\n'))).not.toMatch(warm);
+  // Descending shine: each metal's wash and shimmer weaker than the one above; Pewter's edge flows at half speed.
+  expect(info[1]!.wash).toBeGreaterThan(info[2]!.wash);
+  expect(info[2]!.wash).toBeGreaterThan(info[3]!.wash);
+  expect(info[1]!.sheen).toBeGreaterThan(info[2]!.sheen);
+  expect(info[2]!.sheen).toBeGreaterThan(info[3]!.sheen);
+  expect(info[3]!.edgeMs).toBe(2 * info[2]!.edgeMs);
+  // Only Diamond twinkles, and every glint stays clear of every piece of text in its row.
+  expect(info.map((i) => i.glints)).toEqual([0, 3, 0, 0]);
+  expect(await page.locator('.glint').count()).toBe(3);
+  const overlaps = await tiers.nth(1).evaluate((row) => {
+    const boxes = [...row.querySelectorAll<HTMLElement>('.rk, .name, .cluster > *, .meta, .score b, .score .cap')].map((t) => {
+      const range = document.createRange();
+      range.selectNodeContents(t);
+      return { what: t.className || t.tagName, r: range.getBoundingClientRect() };
+    });
+    return [...row.querySelectorAll<HTMLElement>('.glint')].flatMap((g) => {
+      const a = g.getBoundingClientRect();
+      return boxes.filter(({ r }) => r.width > 0 && a.left < r.right && a.right > r.left && a.top < r.bottom && a.bottom > r.top).map(({ what }) => `${g.className} × ${what}`);
+    });
+  });
+  expect(overlaps).toEqual([]);
+  // The glints really twinkle (their own rhythms), and Reduce Motion hides them.
+  expect(await page.locator('.glint').evaluateAll((gs) => gs.map((g) => Number(g.getAnimations()[0]?.effect?.getTiming().duration)))).toEqual([2900, 3700, 4300]);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.glint').first()).toBeHidden();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await shot(page, '23-cool-podium');
+});
+
 test('filter to Edibles: ranks renumber, podium follows, tiles recalculate, TOTAL 0g', async () => {
   await pill('Type').selectOption('edibles');
   await expect(pillBox('Type')).toHaveClass(/active/);

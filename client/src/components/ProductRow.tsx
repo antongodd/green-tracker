@@ -106,6 +106,18 @@ export function Score(p: { value: number | null; label?: string; text?: string }
   );
 }
 
+/** Diamond (2nd place) twinkles now and then (D21): three glints in the row's corners, styled in styles.css. */
+export function Glints(p: { podium: Podium | null }) {
+  if (p.podium !== 2) return null;
+  return (
+    <>
+      <span class="glint g1" aria-hidden="true" />
+      <span class="glint g2" aria-hidden="true" />
+      <span class="glint g3" aria-hidden="true" />
+    </>
+  );
+}
+
 /**
  * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
  * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
@@ -120,6 +132,7 @@ export function ProductRow(p: { product: Product; rank: number; podium: Podium |
   };
   return (
     <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
+      <Glints podium={p.podium} />
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
       <div class="mid">

@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.14.1 (all phases done; Lift press and Photo grows)
+**Current version:** 0.15.0 (all phases done; cool podium: rainbow, Diamond, Platinum, Pewter)
 
 ---
 
@@ -84,6 +84,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
 | D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later. See §4 *Podium tiers*. |
 | D20 | **Tap feel: "Lift" and "Photo grows"** (2026-09-24; interactive mockup https://claude.ai/artifact/MbxQoAaWhAjdrifnM8kdy3). Everything you can tap lifts under your finger; opening a product from a list (your Leaderboard, the Log, a friend's Leaderboard) flies the row's photo into the product's big photo, and Back flies it home. Other screen changes are unchanged, for now. | Stand-alone things grow slightly (rows 3%, buttons 3%, pills 5%, tab icons and header buttons 12%) with a soft shadow on rows; rows packed inside a card (Log, More, People, country list, action sheets) light up green instead. Reduce Motion: colour only, and products open without the flight. Needs iOS 18+ for the flight (owner on iOS 26.6.2); elsewhere it simply opens as before. See §4 *Tap feel*. |
+| D21 | **Cool metals under the rainbow** (2026-09-25; option C "Descending shine" with the Ice blue Diamond, https://claude.ai/artifact/H7DwUgMSVzYrmYWnKysBXc). Replaces D19's gold, silver and bronze, which looked out of place next to the green: **2nd Diamond, 3rd Platinum, 4th Pewter**, all cool tones, no gold. 1st stays the rainbow holo; the tier rules (rated only, follows filter and Rank by, friends' boards) are unchanged. | Each metal shines less than the one above: Diamond has the strongest wash and shimmer and twinkles (three glints in the row's corners, clear of all text); Platinum is medium; Pewter is calm and matte with its edge flowing at half speed. Same cascade timing. Reduce Motion: colours only, no glints. See §4 *Podium tiers*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -381,7 +382,14 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   and bar on nine screens (your Leaderboard, Log, People, More, a product, its editor,
   a Log entry, Passkeys, Archive), and axe finds no contrast problems.
 
-- **Podium tiers (D19, 0.13.0).** `rankProducts` gives `podium` 1–4 to the first four
+- **Podium tiers (D19, 0.13.0; cool metals D21, 0.15.0).** *Since 0.15.0 the metals are
+  Diamond (ice blue: #e6f7ff–#7cc8f2, wash 30%, shimmer 26%), Platinum (cool silver,
+  wash 17%, shimmer 16%) and Pewter (blue-grey, wash 12%, shimmer 7%, edge and number
+  flowing every 10s instead of 5s) — the "descending shine". Diamond's three `.glint`
+  stars (top-left, top-right, under the photo) each twinkle on their own rhythm (2.9s,
+  3.7s, 4.3s); a test checks they never overlap any text and that no gold or bronze
+  colour remains anywhere in the styles. What follows describes 0.13.0; its gold,
+  silver and bronze are replaced as above.* `rankProducts` gives `podium` 1–4 to the first four
   rows **with a value**, so an unrated product (Overall only; other Rank bys hide them)
   never gets one. Rows carry `tier p1`…`tier p4`. Styles in `client/src/styles.css`:
   each tier has six colours (pastel rainbow; light-to-dark shades of gold, silver,
@@ -434,6 +442,17 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.15.0 — cool podium (owner request)
+- 2nd–4th place are now **Diamond** (ice blue), **Platinum** and **Pewter** instead
+  of gold, silver and bronze (decision D21). 1st stays the rainbow holo.
+- "Descending shine": each metal shines a little less than the one above, and only
+  Diamond twinkles, with tiny star glints in the row's corners. Same on a friend's
+  Leaderboard. Reduce Motion: colours only, no glints.
+- Tests: the right colours on each tier and no gold or bronze left anywhere, the shine
+  dropping tier by tier, the glints only on Diamond, clear of all text and hidden with
+  Reduce Motion, and the pixel-measured readability check across the animation (it
+  passes with the brighter Diamond).
 
 ### 0.14.1 — smoother Photo grows (owner report, with a screen recording)
 - **Fixed:** just after the photo landed, opening or leaving a product, the page below
