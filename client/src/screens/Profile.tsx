@@ -10,7 +10,10 @@ import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate, StrainTag } from '../components/ProductRow';
 import { ExternalIcon, LockIcon, TypeMark } from '../icons';
-import { cacheProduct, cachedProduct, fetchProduct, setFlag } from '../products';
+import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
+import { podiumPlace } from '../../../shared/domain/leaderboard';
+import { CardGlint, PhotoGlints, PodiumBadge, podiumClass } from '../components/Podium';
+import { loadView } from '../viewState';
 import { api } from '../api';
 import { loadImage, renderCrop, uploadSet } from '../images';
 import { PhotoGrid, shownFromRecord } from '../components/PhotoGrid';
@@ -109,6 +112,12 @@ export function Profile(p: { id: string }) {
   const [cropping, setCropping] = useState<number | null>(null);
   const [savingCrop, setSavingCrop] = useState(false);
   const path = `/products/${p.id}`;
+  // Its podium place (D22) comes from the same list and view as the Leaderboard.
+  const [list, setList] = useState(cachedProducts);
+  const [view] = useState(loadView);
+  useEffect(() => {
+    if (!list) fetchProducts().then(setList).catch(() => {});
+  }, []);
 
   /** A crop made on the profile is saved straight away (brief §11), rendered from the original. */
   async function saveCrop(index: number, crop: Crop | null) {
@@ -194,22 +203,29 @@ export function Profile(p: { id: string }) {
     ['Date tried', product.dateTried ? formatIsoDate(product.dateTried) : ''],
   ];
   const shown = details.filter(([, v]) => v);
+  const podium = list && !product.archived ? podiumPlace([...list.filter((x) => x.id !== product.id), product], product.id, view) : null;
   const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
   return (
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
-      <main class="screen">
+      <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
         {product.photos[0] ? (
           <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
             {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
             <span class="hero-under" style={{ backgroundImage: `url("${shownFromRecord(product.photos[0]).thumb}")` }} />
             <img src={shownFromRecord(product.photos[0]).image} alt="" />
+            <PhotoGlints podium={podium} />
           </button>
         ) : (
-          <div class="hero-photo">{def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+          <div class="hero-photo">
+            {def.icon && <TypeMark icon={def.icon} label={def.label} />}
+            <PhotoGlints podium={podium} />
+          </div>
         )}
         <div class="hero">
+          <CardGlint podium={podium} />
+          <PodiumBadge podium={podium} view={view} whose="your" />
           <h1>{product.name}</h1>
           <div class={`hero-score${o === null ? ' unrated' : ''}`}>
             <b>{o === null ? '–' : formatScore(o)}</b>
