@@ -24,7 +24,7 @@ import { photoOf } from './People';
 import { Ratings } from './Profile';
 
 const enc = encodeURIComponent;
-const shown = (ph: { id: string; version: string }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null });
+const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null, cutout: ph.cutout });
 
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
 function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: Podium | null; value: number | null; rankBy: ViewState['rankBy'] }) {
@@ -284,7 +284,7 @@ export function SharedProfile(p: { username: string; id: string }) {
       <Header title={`@${p.username} / ${product.name}`} leaf={false} left={<BackButton to={backTo} />} />
       <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
         {photos[0] ? (
-          <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
+          <button class={`hero-photo${photos[0].cutout ? ' cut' : ''}`} onClick={() => setViewing(0)} aria-label="Open photos">
             <span class="hero-under" style={{ backgroundImage: `url("${photos[0].thumb}")` }} />
             <img src={photos[0].image} alt="" />
             <PhotoGlints podium={podium} />

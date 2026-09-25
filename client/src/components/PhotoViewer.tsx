@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Crop } from '../../../shared/domain/photo';
-import { BackIcon, CropIcon } from '../icons';
+import { BackIcon, CropIcon, CutoutIcon } from '../icons';
 
 /** A photo as the screens show it: server URLs, or local previews for unsaved edits. */
 export interface ShownPhoto {
@@ -11,6 +11,8 @@ export interface ShownPhoto {
   original: string | Blob;
   crop: Crop | null;
   uploading?: boolean;
+  /** D26: the background has been removed (the image and thumbnail are transparent PNGs). */
+  cutout?: boolean;
 }
 
 /** Stops the page behind an overlay from scrolling while it's open. */
@@ -31,9 +33,18 @@ export function useLockScroll() {
 
 /**
  * Full-screen viewer (brief §6.9): full-bleed black over header and tabs, close
- * top-left, swipe between photos (P8), "Crop this photo" at the bottom.
+ * top-left, swipe between photos (P8), "Crop this photo" at the bottom, with
+ * Remove background above it (D26) — Restore background on a photo already cut out.
  */
-export function PhotoViewer(p: { photos: ShownPhoto[]; start: number; onClose: () => void; onCrop?: (i: number) => void; onRemove?: (i: number) => void }) {
+export function PhotoViewer(p: {
+  photos: ShownPhoto[];
+  start: number;
+  onClose: () => void;
+  onCrop?: (i: number) => void;
+  onRemove?: (i: number) => void;
+  onCutout?: (i: number) => void;
+  onRestore?: (i: number) => void;
+}) {
   useLockScroll();
   const strip = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(p.start);
@@ -77,12 +88,22 @@ export function PhotoViewer(p: { photos: ShownPhoto[]; start: number; onClose: (
       <div class="viewer-strip" ref={strip} onScroll={onScroll}>
         {p.photos.map((ph, i) => (
           <div class="viewer-slide" key={ph.key}>
-            <img src={ph.image} alt={`Photo ${i + 1} of ${p.photos.length}`} draggable={false} />
+            <img src={ph.image} alt={`Photo ${i + 1} of ${p.photos.length}${ph.cutout ? ', background removed' : ''}`} draggable={false} />
           </div>
         ))}
       </div>
       <div class="viewer-bottom">
-        {/* Someone else's photos are read-only: no crop (brief §5). */}
+        {/* Someone else's photos are read-only: no crop, no cut-out (brief §5). */}
+        {p.onCutout && current && !current.cutout && (
+          <button type="button" class="btn secondary" onClick={() => p.onCutout!(index)} disabled={current.uploading}>
+            <CutoutIcon /> Remove background
+          </button>
+        )}
+        {p.onRestore && current?.cutout && (
+          <button type="button" class="btn secondary" onClick={() => p.onRestore!(index)} disabled={current.uploading}>
+            <CutoutIcon /> Restore background
+          </button>
+        )}
         {p.onCrop && (
           <button type="button" class="btn secondary" onClick={() => p.onCrop!(index)} disabled={!current || current.uploading}>
             <CropIcon /> Crop this photo

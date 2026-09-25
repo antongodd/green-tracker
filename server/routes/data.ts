@@ -51,14 +51,18 @@ data.post('/restore', async (c) => {
   if (!v.ok) fail(400, 'invalid_restore', v.message);
   const { products, logEntries, profilePhoto } = v.value;
 
-  // Every photo must be a fresh upload of yours that includes its original.
+  // Every photo must be a fresh upload of yours that includes its original. Which are
+  // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
   const uploadIds = [...products.flatMap((p) => p.photos), ...logEntries.flatMap((e) => e.photos), ...(profilePhoto ? [profilePhoto] : [])].map((ph) => ph.upload!);
+  const cutouts = new Set<string>();
   if (uploadIds.length) {
-    const row = await db
-      .prepare('SELECT COUNT(*) AS n FROM uploads WHERE user_id = ?1 AND has_original = 1 AND id IN (SELECT value FROM json_each(?2))')
+    const { results } = await db
+      .prepare('SELECT id, cutout FROM uploads WHERE user_id = ?1 AND has_original = 1 AND id IN (SELECT value FROM json_each(?2))')
       .bind(userId, JSON.stringify(uploadIds))
-      .first<{ n: number }>();
-    if (row?.n !== uploadIds.length) fail(400, 'photo_upload_missing', 'Some photos didn’t finish uploading. Please try the restore again.');
+      .all<{ id: string; cutout: number }>();
+    if (results.length !== uploadIds.length) fail(400, 'photo_upload_missing', 'Some photos didn’t finish uploading. Please try the restore again.');
+    for (const r of results) if (r.cutout === 1) cutouts.add(r.id);
+    if (profilePhoto && cutouts.has(profilePhoto.upload!)) fail(400, 'invalid_restore', 'The profile photo in the file couldn’t be read.');
   }
 
   const now = Date.now();
@@ -93,7 +97,7 @@ data.post('/restore', async (c) => {
     });
     for (const [category, value] of Object.entries(p.ratings)) ratingRows.push({ p: id, c: category, v: value });
     p.purchases.forEach((pu, i) => purchaseRows.push({ id: randomId(), p: id, seq: i + 1, date: pu.date, amount: pu.amount, paid: pu.totalPaid, supplier: pu.supplier }));
-    p.photos.forEach((ph, i) => photoRows.push({ id: randomId(), p: id, e: null, pos: i, set: ph.upload, ...crop(ph) }));
+    p.photos.forEach((ph, i) => photoRows.push({ id: randomId(), p: id, e: null, pos: i, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 }));
   }
   for (const e of logEntries) {
     const id = randomId();
@@ -109,7 +113,7 @@ data.post('/restore', async (c) => {
       amount: e.amount,
       created: e.createdAt,
     });
-    for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph) });
+    for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 });
   }
 
   // Files of the photos being replaced, deleted once the batch has committed.
@@ -163,8 +167,8 @@ data.post('/restore', async (c) => {
     statements.push(
       db
         .prepare(
-          `INSERT INTO photos (id, user_id, product_id, log_entry_id, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square, created_at, updated_at)
-           SELECT ${j('id')}, ?1, ${j('p')}, ${j('e')}, ${j('pos')}, ${j('set')}, ${j('set')}, ${j('cx')}, ${j('cy')}, ${j('cw')}, ${j('ch')}, ${j('cs')}, ?3, ?3 FROM json_each(?2)`,
+          `INSERT INTO photos (id, user_id, product_id, log_entry_id, position, original_set, image_set, crop_x, crop_y, crop_w, crop_h, crop_square, created_at, updated_at, cutout)
+           SELECT ${j('id')}, ?1, ${j('p')}, ${j('e')}, ${j('pos')}, ${j('set')}, ${j('set')}, ${j('cx')}, ${j('cy')}, ${j('cw')}, ${j('ch')}, ${j('cs')}, ?3, ?3, ${j('cut')} FROM json_each(?2)`,
         )
         .bind(userId, chunk, now),
     );

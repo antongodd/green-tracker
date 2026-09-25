@@ -18,6 +18,7 @@ import { api } from '../api';
 import { loadImage, renderCrop, uploadSet } from '../images';
 import { PhotoGrid, shownFromRecord } from '../components/PhotoGrid';
 import { Cropper, PhotoViewer } from '../components/PhotoViewer';
+import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 
@@ -110,7 +111,8 @@ export function Profile(p: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
-  const [savingCrop, setSavingCrop] = useState(false);
+  const [savingCrop, setSavingCrop] = useState<string | null>(null);
+  const [cuttingOut, setCuttingOut] = useState<number | null>(null);
   const path = `/products/${p.id}`;
   // Its podium place (D22) comes from the same list and view as the Leaderboard.
   const [list, setList] = useState(cachedProducts);
@@ -120,12 +122,12 @@ export function Profile(p: { id: string }) {
   }, []);
 
   /** A crop made on the profile is saved straight away (brief §11), rendered from the original. */
-  async function saveCrop(index: number, crop: Crop | null) {
+  async function saveCrop(index: number, crop: Crop | null, note = 'Saving crop…') {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
     setCropping(null);
-    setSavingCrop(true);
+    setSavingCrop(note);
     setError('');
     try {
       const original = await loadImage(shownFromRecord(photo).original as string);
@@ -136,7 +138,21 @@ export function Profile(p: { id: string }) {
     } catch (e) {
       setError(errorText(e));
     }
-    setSavingCrop(false);
+    setSavingCrop(null);
+  }
+
+  /**
+   * A cut-out made on the profile is saved straight away too (D26), like a crop: its
+   * set is a cut-out and the photo keeps the crop it was made from. Errors stay in the flow.
+   */
+  async function saveCutout(index: number, r: CutoutResult) {
+    const current = product;
+    const photo = current?.photos[index];
+    if (!current || !photo) return;
+    const upload = await uploadSet({ ...r, cutout: true });
+    const res = await api<{ photo: PhotoRecord }>('POST', `/photos/${encodeURIComponent(photo.id)}/crop`, { upload, crop: photo.crop });
+    setProduct(cacheProduct({ ...current, photos: current.photos.map((x) => (x.id === photo.id ? res.photo : x)) }));
+    setCuttingOut(null);
   }
 
   useEffect(() => {
@@ -211,7 +227,7 @@ export function Profile(p: { id: string }) {
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
       <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
         {product.photos[0] ? (
-          <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
+          <button class={`hero-photo${product.photos[0].cutout ? ' cut' : ''}`} onClick={() => setViewing(0)} aria-label="Open photos">
             {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
             <span class="hero-under" style={{ backgroundImage: `url("${shownFromRecord(product.photos[0]).thumb}")` }} />
             <img src={shownFromRecord(product.photos[0]).image} alt="" />
@@ -259,8 +275,8 @@ export function Profile(p: { id: string }) {
         {product.photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
-            <PhotoGrid photos={product.photos.map(shownFromRecord)} onOpen={setViewing} onCrop={setCropping} />
-            {savingCrop && <p class="small">Saving crop…</p>}
+            <PhotoGrid photos={product.photos.map(shownFromRecord)} onOpen={setViewing} onCrop={setCropping} onCutout={setCuttingOut} />
+            {savingCrop && <p class="small">{savingCrop}</p>}
           </section>
         )}
         <PriceHistory product={product} />
@@ -323,10 +339,22 @@ export function Profile(p: { id: string }) {
             setViewing(null);
             setCropping(i);
           }}
+          onCutout={(i) => {
+            setViewing(null);
+            setCuttingOut(i);
+          }}
+          // Restore background (D26): the photo's crop, rendered from the original again.
+          onRestore={(i) => {
+            setViewing(null);
+            saveCrop(i, product.photos[i]!.crop, 'Restoring background…');
+          }}
         />
       )}
       {cropping !== null && product.photos[cropping] && (
         <Cropper original={shownFromRecord(product.photos[cropping]!).original} crop={product.photos[cropping]!.crop} onCancel={() => setCropping(null)} onApply={(crop) => saveCrop(cropping, crop)} />
+      )}
+      {cuttingOut !== null && product.photos[cuttingOut] && (
+        <CutoutFlow source={shownFromRecord(product.photos[cuttingOut]!).image} name={product.name} onCancel={() => setCuttingOut(null)} onApply={(r) => saveCutout(cuttingOut, r)} />
       )}
       {confirmArchive && (
         <Sheet

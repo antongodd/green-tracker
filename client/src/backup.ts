@@ -5,7 +5,7 @@ import type { LogEntry } from '../../shared/domain/logEntry';
 import { ownProfilePhotoUrl, photoUrl, type PhotoRecord } from '../../shared/domain/photo';
 import type { Product } from '../../shared/domain/product';
 import { api, ApiError, type Me } from './api';
-import { discardUpload, loadImage, renderCrop, uploadSet } from './images';
+import { discardUpload, loadImage, renderThumb, uploadSet } from './images';
 import { clearEntryCache, fetchEntries } from './logEntries';
 import { clearProductCache, fetchArchived, fetchProducts } from './products';
 
@@ -27,11 +27,11 @@ const toBase64 = (b: Blob) =>
     r.readAsDataURL(b);
   });
 
-const fromBase64 = (s: string) => {
+const fromBase64 = (s: string, type = 'image/jpeg') => {
   const bin = atob(s);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new Blob([bytes], { type: 'image/jpeg' });
+  return new Blob([bytes], { type });
 };
 
 /** Builds the export: all your data, photos embedded (cropped and originals). */
@@ -44,7 +44,8 @@ export async function buildExport(username: string, progress: Progress): Promise
   progress(0, photos);
   const embed = async (ph: PhotoRecord, url = (v: 'original' | 'cropped') => photoUrl(ph, v)): Promise<ExportPhoto> => {
     const [original, cropped] = await Promise.all([fetchBlob(url('original')), fetchBlob(url('cropped'))]);
-    const out = { crop: ph.crop, original: await toBase64(original), cropped: await toBase64(cropped) };
+    // D26: a cut-out's cropped image is its transparent PNG, marked so restore keeps it one.
+    const out: ExportPhoto = { crop: ph.crop, original: await toBase64(original), cropped: await toBase64(cropped), ...(ph.cutout ? { cutout: true } : {}) };
     progress(++done, photos);
     return out;
   };
@@ -100,7 +101,7 @@ export async function buildExport(username: string, progress: Progress): Promise
     products: exportProducts,
     logEntries: exportEntries,
     // D23: your profile photo, original and crop; null when you have none.
-    profilePhoto: profile ? await embed({ id: 'profile', ...profile }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
+    profilePhoto: profile ? await embed({ id: 'profile', ...profile, cutout: false }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
   return new File([JSON.stringify(file)], `green-tracker-${username}-${date}.json`, { type: 'application/json' });
@@ -168,9 +169,10 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
   const total = summary.photos + (summary.profilePhoto === 'included' ? 1 : 0);
   progress(0, total);
   const upload = async (ph: ExportPhoto) => {
-    const cropped = fromBase64(ph.cropped);
-    const { thumb } = await renderCrop(await loadImage(cropped), null);
-    const id = await uploadSet({ original: fromBase64(ph.original), cropped, thumb });
+    const cutout = ph.cutout === true;
+    const cropped = fromBase64(ph.cropped, cutout ? 'image/png' : 'image/jpeg');
+    const thumb = await renderThumb(await loadImage(cropped), cutout);
+    const id = await uploadSet({ original: fromBase64(ph.original), cropped, thumb, cutout });
     uploads.push(id);
     progress(++done, total);
     return { upload: id, crop: ph.crop };

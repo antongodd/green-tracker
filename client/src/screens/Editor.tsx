@@ -241,7 +241,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             </button>
           </section>
 
-          <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} />
+          <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} name={form.name || undefined} />
 
           <section class="fgroup" aria-label="Notes">
             <label class="cap" for="notes">

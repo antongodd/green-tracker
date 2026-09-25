@@ -29,7 +29,8 @@ export class Browser {
   /** multipart/form-data POST (photo uploads). */
   async upload(path: string, parts: Record<string, Uint8Array | string>) {
     const form = new FormData();
-    for (const [k, v] of Object.entries(parts)) form.append(k, new Blob([v as BlobPart], { type: 'image/jpeg' }), `${k}.jpg`);
+    // Bytes are files; a string is a plain form field (e.g. cutout=1).
+    for (const [k, v] of Object.entries(parts)) typeof v === 'string' ? form.append(k, v) : form.append(k, new Blob([v as BlobPart], { type: 'image/jpeg' }), `${k}.jpg`);
     const headers: Record<string, string> = { 'cf-connecting-ip': this.ip, origin: 'http://localhost' };
     if (this.cookies.size) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
     const res = await fetch(inject('apiBase') + path, { method: 'POST', headers, body: form });

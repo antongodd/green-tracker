@@ -40,7 +40,8 @@ profile.put('/photo', async (c) => {
   const upload = str(body, 'upload');
   const crop = parseCrop(body.crop);
   if (!crop) fail(400, 'invalid_photos', 'The photo’s framing could not be read.');
-  const up = await db.prepare('SELECT has_original FROM uploads WHERE id = ?1 AND user_id = ?2').bind(upload, userId).first<{ has_original: number }>();
+  // A cut-out set (D26) is never a profile photo: profile photos stay JPEG.
+  const up = await db.prepare('SELECT has_original FROM uploads WHERE id = ?1 AND user_id = ?2 AND cutout = 0').bind(upload, userId).first<{ has_original: number }>();
   if (!up) fail(400, 'photo_upload_missing', 'The photo upload has expired. Please try again.');
   const old = await db.prepare('SELECT original_set, image_set FROM profile_photos WHERE user_id = ?1').bind(userId).first<Row>();
   if (up.has_original !== 1 && !old) fail(400, 'invalid_photos', 'Choose a photo first.');

@@ -29,6 +29,12 @@ export interface PhotoRecord {
   /** Changes whenever the cropped image changes: part of the image URL and its ETag. */
   version: string;
   crop: Crop | null;
+  /**
+   * D26: the background has been removed. Its cropped image and thumbnail are then
+   * transparent PNGs, framed around the bud and made from `crop` (kept, so Restore
+   * background can put the photo back as it was). The original is never changed.
+   */
+  cutout: boolean;
 }
 
 /**

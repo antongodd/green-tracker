@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.18.1 (all phases done; your photo in the header)
+**Current version:** 0.19.0 (all phases done; remove background)
 
 ---
 
@@ -88,6 +88,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D22 | **Podium product pages** (2026-09-25; "Everything" from https://claude.ai/artifact/7HHY6WSp9xCciStfcxtZqk and option B "Descending" from https://claude.ai/artifact/UcTvzvgN1rpSmdevDe5bPo). The "rainbow for #1 beyond its row" parked at D19, extended to all four places. A product in the top four carries its tier onto its own page, following **the same Type and Rank by as the Leaderboard** (so the page always matches the row you tapped, also when opened from the Log), and on a friend's product page too (their places come only from what you can see). Nothing new anywhere else (the Log stays as it is). | Descending shine, like the rows: **1st** a badge with a crown ("#1 on your Leaderboard", or "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste"), a flowing rainbow photo frame, rainbow score, the name and score on the row's holo card, and one rainbow sweep across the photo as the page opens; **Diamond** all of that in ice blue plus glints; **Platinum** frame, silver score, badge; **Pewter** a calm frame (half speed) and badge. Unrated and archived products never get it. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *Podium product pages*. |
 | D23 | **Profile photos** (2026-09-25; option A "a card for you at the top of People" and "People connected to you" from https://claude.ai/artifact/AAdP8jbTiuB4HV8jRwX9Cq). Each account can add one photo, framed by moving and zooming it inside a circle. A deliberate addition to design brief §9 (monogram avatars, "there are no profile photos"). | **Who sees it:** you; people you follow or have asked to follow (you reached out to them); your approved followers. **Never:** someone whose request you haven't approved (a request alone reveals nothing), strangers (search shows your letter, so brief §5's "username and a Follow button, nothing else" still holds for them), anyone blocked either way. Others only ever get the square crop, never the original. **Where:** your card on People; the Following, Followers and Requests lists, search results, the page of someone you don't follow yet, and next to @username at the top of a friend's Leaderboard. Everywhere else the letter stays. **Export/restore:** included (original and crop); restoring a file from before 0.17.0 leaves your photo alone. See §4 *Profile photos*. |
 | D24 | **People opens on Following** (2026-09-25). The order is now Following · Followers · Requests, and People opens on Following every time the app starts, even with requests waiting (the Requests badge and the tab-bar badge show them). Within a visit it remembers the list you last chose, as before. | Look and order only; no data change. |
+| D26 | **Remove background** (2026-09-25; tested on the owner's iPhone with https://claude.ai/artifact/AEGTDuvTmwcJfQyVwa6Pfm, screens approved in https://claude.ai/artifact/WX3RJFQaZkFirJ1S6cjyX2). A button on a photo cuts the bud out of its background, so every photo can look consistent: only the bud, on nothing. An AI runs **on the phone** (never a web service: photos never leave it), about 4 seconds a photo on the owner's iPhone. | **Where:** a button bottom-left of every photo in the grid (Crop stays bottom-right) and **Remove background** in the viewer, above Crop this photo; product and Log entry photos, new and existing; never on a friend's photos; profile photos stay as they are. **Flow:** the first time on a phone it asks before a one-off 47 MB download; cutting out shows a green line sweeping the photo; several separate things (a bag, a lighter) → **Tap the bud** (tap more for several buds; Next); a bud lying on a tray or bag → **Not right? Tap the bud in your photo** zooms in round the tap and cuts again; **Preview** (framed and centred, as a 1st-place row) → **Apply**, saved at once from a product page, on Save from an editor. **Result:** a see-through cut-out that sits straight on rows with no box, shown whole on the product page, grid and viewer, and on the podium pages. **Undo:** the original is never changed; the viewer's **Restore background** puts the photo back exactly as it was (same crop). Crop this photo on a cut-out crops the original again (the background comes back). **Followers** see the cut-out (they only ever get the framed version; never originals). **Export/restore** keep cut-outs. See §4 *Remove background*. |
 | D25 | **Your photo in the header** (2026-09-25; all the recommended options of https://claude.ai/artifact/KmRLwSVfdv5fmD5eJ7dMRt). A step away from design brief §6.4 / §8 ("the header holds only the title" on the main screens). | Top right on the **four main tabs only** (Leaderboard, Log, People, More): your profile photo in a 30px circle with a faint green edge, or your letter until you add one. Tapping it opens People with your card; on People it goes back to the top and clears the search. The title stays centred (equal side slots). Screens further in keep Back, Edit and ⋯ in their corners, and a friend's pages keep their photo beside @username. Only you see it; nothing new is stored or sent. See §4 *Your photo in the header*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
@@ -157,7 +158,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     only (followers: cropped/thumb of visible products, Phase 7), with
     `Cache-Control: private, no-cache` and an ETag, so phones revalidate (cheap 304s)
     and revoked access can't keep showing cached photos. Uploads must be JPEG
-    (checked by signature), ≤ 8MB per image and ≤ 1MB per thumbnail.
+    (checked by signature), ≤ 8MB per image and ≤ 1MB per thumbnail. *(Since 0.19.0 a
+    cut-out's image and thumbnail are PNG instead, D26.)*
   - *Removing photos* happens in the editor (viewer → Remove photo), applied on Save
     *(builder: the brief doesn't mention deletion)*. There's no reordering: photos
     keep the order they were added, and the first is the hero and list thumbnail
@@ -536,11 +538,72 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   showing the decoded photo, a new photo replacing it and removal bringing the letter back, and
   the tap opening People at your card (and on People: top, search cleared).
 
+- **Remove background (D26, 0.19.0).**
+  - *The AI*: ISNet "general use" (IS-Net, Apache-2.0; ONNX export from the rembg project,
+    MIT), made phone-sized by `scripts/make-cutout-model.py` (output committed in
+    `client/public/ai/`, four 12 MB parts named by hash; the script records every step).
+    Found while testing on the owner's phone: at its full 1024 size one cut-out needed about
+    1 GB of memory and iOS closed the page, so it runs at 768 (same accuracy on the test
+    scenes, ~40% of the memory; 640 started cutting out the hand instead of the bud), with
+    8-bit weights except the first 3 and last 12 layers (quantising those too left speckles
+    and bits of background). Run by onnxruntime-web 1.17.3 (MIT; its engine file is copied
+    from `node_modules` at build by `scripts/copy-ai-engine.mjs`) in a **worker**
+    (`client/src/cutout/worker.ts`), so the screen keeps moving (tested: longest pause
+    ~0.25s) and all its memory is handed back when the flow closes. Measured: 4.0–4.1s a
+    cut-out on the owner's iPhone (iOS 18.7 in the Claude app), 7–10s on their PC.
+  - *On the phone*: downloaded once, after asking, into its own cache
+    (`gt-ai-<model>`), which the service worker never deletes and serves `/ai/` files
+    from. A new model has a new name, so a new cache; the old one is deleted once the new
+    one works. Security headers gain `'wasm-unsafe-eval'` (lets WebAssembly compile; never
+    evaluates text as script). The fallback embedded deploy can't carry the 57 MB of AI
+    files, so Remove background can't download there.
+  - *The maths* (`shared/domain/cutout.ts`, unit-tested): the AI's mask is stretched to
+    0–1 with the faintest 10% dropped; split into separate things (specks under 0.2% of
+    the photo dropped, soft edges joined to the thing they touch); framed as a square
+    centred on the kept things with 16% room, ignoring the outermost 1% of their pixels
+    (stray hairs); the cut-out is at most 1024px, its thumbnail ~320px. Zoom: a square of
+    45% of the photo's short side round the tap, widened ×1.5 (up to 3 tries) while the
+    tapped thing still runs off its edge. The cut-out is made from the photo's **current
+    crop**, so cropping first also helps a crowded photo.
+  - *Storage*: a cut-out is a version of the photo like a crop (migration 0005: `cutout`
+    on `photos` and `uploads`). Its image set holds PNGs (keys keep their `.jpg` names;
+    the stored content type says PNG and is what's served); the crop columns keep the crop
+    it was made from and the original is untouched, so Restore background is an ordinary
+    re-crop. The upload says `cutout=1`: its image and thumbnail must be PNG (checked by
+    signature), an original with it still JPEG; PNGs are refused otherwise. A cut-out is
+    never a profile photo (refused on save and in a restore).
+  - *Shown*: `.thumb.cut` / `.pcell.cut` / `.hero-photo.cut` — no box, the whole bud
+    (contain); photos not cut out keep their square. Followers' photos carry `cutout`.
+    Export marks `cutout: true` with the PNG as `cropped` (format version unchanged: the
+    field is optional); restore uploads it as a cut-out again with a fresh PNG thumbnail.
+  - *Tests*: `test/domain/cutout.test.ts`; `test/api/cutout.test.ts` (PNG checks both
+    ways, profile save and restore background, editor saves, Log entries and promotion,
+    followers get the PNG and never the original — checked by deliberately breaking that
+    rule, which the test caught — restore, profile photo refused);
+    `test/e2e/cutout.spec.ts` with a quick stand-in AI (tap the bud, preview, apply,
+    restore, zoom on a tray, editor Cancel/Save, Log entry and promotion, export → restore,
+    the sweep and Reduce Motion, axe) and one test with the **real AI** (asks, downloads,
+    keeps its files on the phone, cuts out a bud-like clump, no security-policy errors, and
+    no second question).
+  - *Couldn't check here*: the Home Screen app's memory limit and download storage on the
+    owner's iPhone (the test page ran inside the Claude app), and how it feels by hand.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.19.0 — remove background (owner request)
+- Photos can have their background removed (decision D26): tap the new button on a photo
+  (bottom-left in the grid) or **Remove background** in the viewer. The bud is cut out and
+  centred, and shows with no box on your rows, product pages, a friend's view and the podium.
+- Works on your phone: the first time it asks before a one-off 47 MB download; each cut-out
+  takes about 4 seconds. Found several things (a bag, a lighter)? Tap the bud. A bud lying on
+  a tray? **Not right? Tap the bud in your photo** zooms in on it.
+- Your original is never changed: **Restore background** puts the photo back as it was.
+- Product and Log entry photos, new and existing; exports and restores keep cut-outs.
+- Tests: 13 unit tests, 7 API tests, 7 Playwright tests (one with the real AI).
 
 ### 0.18.1 — test fix
 - One full test run failed once: going back from a product's editor seemed to land 116px
