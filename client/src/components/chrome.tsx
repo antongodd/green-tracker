@@ -5,9 +5,10 @@ import { useSession } from '../session';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
- * Empty slots keep their space (visibility: hidden).
+ * Empty slots keep their space (visibility: hidden). `icon` replaces the leaf before
+ * the title (a friend's photo beside @username, D23); the main tabs put your own
+ * photo on the right (MeButton, D25).
  */
-/** `icon` replaces the leaf before the title (e.g. a friend's photo beside @username, D23). */
 export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChildren; left?: ComponentChildren; right?: ComponentChildren }) {
   return (
     <header class="hdr">

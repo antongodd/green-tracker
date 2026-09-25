@@ -5,6 +5,7 @@ import type { Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, type RatingKey } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
 import { BackButton, Header, TabBar } from '../components/chrome';
+import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ProductRow } from '../components/ProductRow';
 import { LeafOutline, PlusIcon } from '../icons';
@@ -97,7 +98,7 @@ export function Leaderboard() {
 
   return (
     <>
-      <Header />
+      <Header right={<MeButton />} />
       <main class="screen">
         {error && !products && (
           <div class="empty">
