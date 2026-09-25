@@ -19,7 +19,8 @@ import * as api from '../people';
 import { cameFrom, linkTo, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadOthersView, saveOthersView } from '../viewState';
-import { Avatar } from './People';
+import { Avatar } from '../components/Avatar';
+import { photoOf } from './People';
 import { Ratings } from './Profile';
 
 const enc = encodeURIComponent;
@@ -75,7 +76,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
       <Header title={`@${u}`} leaf={false} left={<BackButton to="/people" />} right={p.person.relation !== 'blocked' && <button class="hbtn" onClick={() => setMenu('menu')} aria-label={`Actions for @${u}`}><MoreIcon /></button>} />
       <main class="screen">
         <div class="stranger">
-          <Avatar username={u} large />
+          <Avatar username={u} src={photoOf(p.person)} size="lg" />
           <h1>@{u}</h1>
           {p.person.relation === 'blocked' ? (
             <>
@@ -174,7 +175,7 @@ export function Person(p: { username: string }) {
   // "@username" in the header is the signal you're viewing someone else's tracker (design §8).
   return (
     <>
-      <Header title={`@${person.username}`} leaf={false} left={<BackButton to="/people" />} />
+      <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to="/people" />} />
       <main class="screen">
         {products && products.length > 0 && (
           <>

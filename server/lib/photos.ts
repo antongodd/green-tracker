@@ -143,3 +143,17 @@ export async function isJpeg(file: Blob): Promise<boolean> {
 }
 
 export const newSetId = randomId;
+
+/**
+ * Serves one file of an image set with `private, no-cache` + an ETag: the device
+ * revalidates every time, so access that has ended can't keep showing a cached
+ * image, while an unchanged one costs only a 304.
+ */
+export async function serveImage(bucket: R2Bucket, ifNoneMatch: string | undefined, userId: string, set: string, variant: PhotoVariant): Promise<Response> {
+  const etag = `"${set}-${variant}"`;
+  const headers = { 'cache-control': 'private, no-cache', etag, 'content-type': 'image/jpeg' };
+  if (ifNoneMatch === etag) return new Response(null, { status: 304, headers });
+  const obj = await bucket.get(photoKey(userId, set, variant));
+  if (!obj) fail(404, 'not_found', 'Not found.');
+  return new Response(obj.body, { headers: { ...headers, 'content-length': String(obj.size) } });
+}

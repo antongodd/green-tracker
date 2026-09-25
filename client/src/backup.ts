@@ -2,9 +2,9 @@
 // small to build or unpack a file with embedded photos).
 import { checkExportFile, EXPORT_FORMAT, EXPORT_VERSION, type ExportFile, type ExportLogEntry, type ExportPhoto, type ExportProduct, type RestorePayload } from '../../shared/domain/backup';
 import type { LogEntry } from '../../shared/domain/logEntry';
-import { photoUrl, type PhotoRecord } from '../../shared/domain/photo';
+import { ownProfilePhotoUrl, photoUrl, type PhotoRecord } from '../../shared/domain/photo';
 import type { Product } from '../../shared/domain/product';
-import { api, ApiError } from './api';
+import { api, ApiError, type Me } from './api';
 import { discardUpload, loadImage, renderCrop, uploadSet } from './images';
 import { clearEntryCache, fetchEntries } from './logEntries';
 import { clearProductCache, fetchArchived, fetchProducts } from './products';
@@ -36,13 +36,14 @@ const fromBase64 = (s: string) => {
 
 /** Builds the export: all your data, photos embedded (cropped and originals). */
 export async function buildExport(username: string, progress: Progress): Promise<File> {
-  const [active, archived, entries] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries()]);
+  const [active, archived, entries, me] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me')]);
   const products: Product[] = [...active, ...archived];
-  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.filter((e) => e.photo).length;
+  const profile = me.user?.photo ?? null;
+  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.filter((e) => e.photo).length + (profile ? 1 : 0);
   let done = 0;
   progress(0, photos);
-  const embed = async (ph: PhotoRecord): Promise<ExportPhoto> => {
-    const [original, cropped] = await Promise.all([fetchBlob(photoUrl(ph, 'original')), fetchBlob(photoUrl(ph, 'cropped'))]);
+  const embed = async (ph: PhotoRecord, url = (v: 'original' | 'cropped') => photoUrl(ph, v)): Promise<ExportPhoto> => {
+    const [original, cropped] = await Promise.all([fetchBlob(url('original')), fetchBlob(url('cropped'))]);
     const out = { crop: ph.crop, original: await toBase64(original), cropped: await toBase64(cropped) };
     progress(++done, photos);
     return out;
@@ -98,6 +99,8 @@ export async function buildExport(username: string, progress: Progress): Promise
     username,
     products: exportProducts,
     logEntries: exportEntries,
+    // D23: your profile photo, original and crop; null when you have none.
+    profilePhoto: profile ? await embed({ id: 'profile', ...profile }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
   return new File([JSON.stringify(file)], `green-tracker-${username}-${date}.json`, { type: 'application/json' });
@@ -127,7 +130,10 @@ export interface ExportSummary {
   products: number;
   archived: number;
   logEntries: number;
+  /** Product and Log photos (the profile photo is counted separately). */
   photos: number;
+  /** D23: the file's profile photo; a file from before 0.17.0 has none and leaves yours alone. */
+  profilePhoto: 'included' | 'none' | 'not-in-file';
 }
 
 /** Reads and checks a chosen export file. Nothing is changed. */
@@ -147,6 +153,7 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
     archived: f.products.filter((p) => p.archived).length,
     logEntries: f.logEntries.length,
     photos: f.products.reduce((n, p) => n + p.photos.length, 0) + f.logEntries.filter((e) => e.photo).length,
+    profilePhoto: f.profilePhoto === undefined ? 'not-in-file' : f.profilePhoto ? 'included' : 'none',
   };
 }
 
@@ -158,13 +165,14 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
 export async function restore(summary: ExportSummary, progress: Progress): Promise<void> {
   const uploads: string[] = [];
   let done = 0;
-  progress(0, summary.photos);
+  const total = summary.photos + (summary.profilePhoto === 'included' ? 1 : 0);
+  progress(0, total);
   const upload = async (ph: ExportPhoto) => {
     const cropped = fromBase64(ph.cropped);
     const { thumb } = await renderCrop(await loadImage(cropped), null);
     const id = await uploadSet({ original: fromBase64(ph.original), cropped, thumb });
     uploads.push(id);
-    progress(++done, summary.photos);
+    progress(++done, total);
     return { upload: id, crop: ph.crop };
   };
   try {
@@ -178,6 +186,8 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
       const { photo, ...rest } = e;
       payload.logEntries.push({ ...rest, photos: photo ? [await upload(photo)] : [] });
     }
+    const pp = summary.file.profilePhoto;
+    if (pp !== undefined) payload.profilePhoto = pp ? { upload: (await upload(pp)).upload, crop: pp.crop! } : null;
     await api('POST', '/data/restore', payload);
   } catch (e) {
     uploads.forEach(discardUpload);

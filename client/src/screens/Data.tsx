@@ -57,6 +57,7 @@ export function ExportScreen() {
 
 /** More → Restore: pick a file, see what's in it, confirm, and everything is replaced at once. */
 export function RestoreScreen() {
+  const { refresh } = useSession();
   const [summary, setSummary] = useState<ExportSummary | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -82,6 +83,7 @@ export function RestoreScreen() {
     setError('');
     try {
       await restore(summary, (done, total) => setNote(done < total ? `Uploading photos: ${done} of ${total}` : 'Replacing your data…'));
+      await refresh().catch(() => {}); // the profile photo may have changed (D23)
       navigate('/', { replace: true });
     } catch (e) {
       setError(`${errorText(e)} Nothing was changed.`);
@@ -120,6 +122,8 @@ export function RestoreScreen() {
                 <dd class="num">{summary.logEntries}</dd>
                 <dt>Photos</dt>
                 <dd class="num">{summary.photos}</dd>
+                <dt>Profile photo</dt>
+                <dd>{summary.profilePhoto === 'included' ? 'Included' : summary.profilePhoto === 'none' ? 'None (yours will be removed)' : 'Not in this file (yours stays)'}</dd>
               </dl>
               <button class="btn danger" onClick={() => setConfirming(true)} disabled={busy}>
                 {busy ? 'Restoring…' : 'Replace my data with this file'}

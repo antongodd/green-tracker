@@ -43,7 +43,11 @@ test('the owner sees the request as a badge and approves it', async () => {
   const badge = owner.getByRole('link', { name: /People/ }).locator('.badge');
   await expect(badge).toHaveText('1');
   await owner.getByRole('link', { name: /People/ }).click();
-  await expect(owner.getByRole('tab', { name: /Requests/ })).toHaveAttribute('aria-selected', 'true');
+  // D24: People opens on Following; the badge on Requests shows what's waiting.
+  await expect(owner.getByRole('tab').first()).toHaveText(/^Following/);
+  await expect(owner.getByRole('tab', { name: /Following/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(owner.getByRole('tab', { name: /Requests/ }).locator('.c')).toHaveText('1');
+  await owner.getByRole('tab', { name: /Requests/ }).click();
   await expect(owner.locator('.prow', { hasText: `@${fanName}` })).toBeVisible();
   await shot(owner, '51-requests');
   await owner.locator('.prow', { hasText: `@${fanName}` }).getByRole('button', { name: 'Approve' }).click();
@@ -116,7 +120,8 @@ test('blocking hides the blocker; unblocking from More', async () => {
   await fan.reload();
   await expect(fan.getByRole('heading', { name: 'No one found' })).toBeVisible();
   await fan.goto('/people');
-  await fan.getByPlaceholder('Search usernames').fill(ownerName.slice(0, 6).toLowerCase());
+  // The full name: a shorter prefix can match another run's account when tests repeat in parallel.
+  await fan.getByPlaceholder('Search usernames').fill(ownerName.toLowerCase());
   await expect(fan.getByText(/No one found for/)).toBeVisible();
 
   await owner.getByRole('link', { name: 'More' }).click();

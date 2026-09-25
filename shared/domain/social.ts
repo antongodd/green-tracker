@@ -7,10 +7,16 @@ import type { Ratings } from './ratings';
 /** How the viewer relates to another person. */
 export type Relation = 'none' | 'requested' | 'following' | 'blocked';
 
-/** A person as others see them: the username, and your own relation to them. Nothing else. */
+/**
+ * A person as others see them: the username, your own relation to them, and —
+ * only when you're connected to them (D23, `canSeePhoto` on the server) — the
+ * version of their profile photo. Nothing else.
+ */
 export interface PersonCard {
   username: string;
   relation: Relation;
+  /** Their profile photo's version; absent when they have none or you may not see it. */
+  photo?: string;
 }
 
 /**

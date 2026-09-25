@@ -2,7 +2,7 @@ import type { Product } from '../../shared/domain/product';
 import { productType } from '../../shared/domain/productTypes';
 import type { Ratings } from '../../shared/domain/ratings';
 import { tieBreak } from '../../shared/domain/leaderboard';
-import type { Relation, SharedProduct } from '../../shared/domain/social';
+import type { PersonCard, Relation, SharedProduct } from '../../shared/domain/social';
 import { usernameKey } from '../../shared/domain/account';
 
 export interface UserRef {
@@ -45,6 +45,36 @@ export async function canView(db: D1Database, viewer: string, owner: string): Pr
     .bind(viewer, owner)
     .first();
   return row !== null;
+}
+
+/**
+ * SQL for THE profile-photo rule (D23): may `viewer` see `owner`'s profile photo?
+ * Yes for yourself; otherwise only when you're connected and neither has blocked
+ * the other: the owner follows you or has asked to (they reached out to you), or
+ * you're their approved follower. Sending someone a request doesn't reveal their
+ * photo until they approve it. Both arguments are SQL expressions (a parameter or
+ * a column), so lists and single checks share one definition.
+ */
+export const photoVisibleSql = (viewer: string, owner: string) => `(${owner} = ${viewer} OR (
+  (EXISTS (SELECT 1 FROM follows pf WHERE pf.follower_id = ${owner} AND pf.followed_id = ${viewer})
+    OR EXISTS (SELECT 1 FROM follows pf WHERE pf.follower_id = ${viewer} AND pf.followed_id = ${owner} AND pf.status = 'approved'))
+  AND NOT EXISTS (SELECT 1 FROM blocks pb WHERE (pb.blocker_id = ${viewer} AND pb.blocked_id = ${owner}) OR (pb.blocker_id = ${owner} AND pb.blocked_id = ${viewer}))))`;
+
+/** A list column: the owner's profile-photo version when the viewer may see it, else NULL. */
+export const photoColumnSql = (viewer: string, owner: string) =>
+  `(SELECT pp.image_set FROM profile_photos pp WHERE pp.user_id = ${owner} AND ${photoVisibleSql(viewer, owner)}) AS photo`;
+
+/** The owner's profile-photo sets, if the viewer may see the photo. */
+export async function visiblePhoto(db: D1Database, viewer: string, owner: string): Promise<{ original_set: string; image_set: string } | null> {
+  return db
+    .prepare(`SELECT pp.original_set, pp.image_set FROM profile_photos pp WHERE pp.user_id = ?2 AND ${photoVisibleSql('?1', '?2')}`)
+    .bind(viewer, owner)
+    .first<{ original_set: string; image_set: string }>();
+}
+
+/** Rows from a list query → cards; `photo` only when there is one to show. */
+export function toCards(rows: { username: string; relation: Relation; photo?: string | null }[]): PersonCard[] {
+  return rows.map((r) => (r.photo ? { username: r.username, relation: r.relation, photo: r.photo } : { username: r.username, relation: r.relation }));
 }
 
 /**

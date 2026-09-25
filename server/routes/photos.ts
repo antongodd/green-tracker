@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { MAX_IMAGE_BYTES, MAX_THUMB_BYTES, parseCrop, PHOTO_VARIANTS, type PhotoVariant } from '../../shared/domain/photo';
 import { fail, jsonBody, str } from '../lib/http';
-import { deleteLater, imageKeys, isJpeg, newSetId, PHOTO_COLUMNS, photoKey, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
+import { deleteLater, imageKeys, isJpeg, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
 import { canView } from '../lib/social';
 
@@ -78,9 +78,8 @@ photos.use('*', requireUser());
  * - An approved follower (lib/social.ts canView): cropped or thumb only, of a photo
  *   on a product that is neither private nor archived. Never originals, never Log photos.
  * - Anyone else, or anything else: 403, the same whether or not the photo exists.
- * `private, no-cache` + ETag: the device revalidates every time, so access that has
- * ended (unfollow, removal, block, private, archive) can't keep showing a cached
- * photo, while unchanged images cost only a 304.
+ * `private, no-cache` + ETag (lib/photos.ts serveImage), so access that has ended
+ * (unfollow, removal, block, private, archive) can't keep showing a cached photo.
  */
 photos.get('/:id/:variant', async (c) => {
   const variant = c.req.param('variant') as PhotoVariant;
@@ -99,12 +98,7 @@ photos.get('/:id/:variant', async (c) => {
     if (!shareable || !(await canView(c.env.DB, me, row.user_id))) denied();
   }
   const set = variant === 'original' ? row.original_set : row.image_set;
-  const etag = `"${set}-${variant}"`;
-  const headers = { 'cache-control': 'private, no-cache', etag, 'content-type': 'image/jpeg' };
-  if (c.req.header('if-none-match') === etag) return new Response(null, { status: 304, headers });
-  const obj = await c.env.PHOTOS.get(photoKey(row.user_id, set, variant));
-  if (!obj) fail(404, 'not_found', 'Not found.');
-  return new Response(obj.body, { headers: { ...headers, 'content-length': String(obj.size) } });
+  return serveImage(c.env.PHOTOS, c.req.header('if-none-match'), row.user_id, set, variant);
 });
 
 /** A crop made on the profile is saved straight away (brief §11), with a re-crop set. */

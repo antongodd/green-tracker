@@ -41,6 +41,11 @@ export interface ExportFile {
   username: string;
   products: ExportProduct[];
   logEntries: ExportLogEntry[];
+  /**
+   * Your profile photo (D23, since 0.17.0): null when you had none. Absent in files
+   * made before 0.17.0, and restoring such a file leaves your current photo alone.
+   */
+  profilePhoto?: ExportPhoto | null;
 }
 
 /** What the server receives for a restore: the file's records, with photos already uploaded as sets. */
@@ -54,6 +59,8 @@ export interface RestoreLogEntry extends LogEntryInput {
 export interface RestorePayload {
   products: RestoreProduct[];
   logEntries: RestoreLogEntry[];
+  /** Absent: leave the current profile photo. null: remove it. Otherwise: an uploaded set with its original. */
+  profilePhoto?: { upload: string; crop: Crop } | null;
 }
 
 export const RESTORE_LIMITS = { products: 5000, logEntries: 5000 } as const;
@@ -83,6 +90,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
   for (const e of f.logEntries as Record<string, unknown>[]) {
     if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt)) return bad('A log entry in the file couldn’t be read.');
   }
+  if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
   return { ok: true, value: raw as ExportFile };
 }
 
@@ -119,5 +127,10 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     if (!isTime(raw.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
     logEntries.push({ ...v.value, createdAt: raw.createdAt });
   }
-  return { ok: true, value: { products, logEntries } };
+  if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries } };
+  if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null } };
+  const pp = r.profilePhoto as Record<string, unknown>;
+  const crop = parseCrop(pp.crop);
+  if (typeof pp.upload !== 'string' || !pp.upload || uploads.has(pp.upload) || !crop) return bad('The profile photo could not be read.');
+  return { ok: true, value: { products, logEntries, profilePhoto: { upload: pp.upload, crop } } };
 }

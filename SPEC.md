@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.16.0 (all phases done; podium product pages)
+**Current version:** 0.17.0 (all phases done; profile photos, People opens on Following)
 
 ---
 
@@ -86,6 +86,8 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D20 | **Tap feel: "Lift" and "Photo grows"** (2026-09-24; interactive mockup https://claude.ai/artifact/MbxQoAaWhAjdrifnM8kdy3). Everything you can tap lifts under your finger; opening a product from a list (your Leaderboard, the Log, a friend's Leaderboard) flies the row's photo into the product's big photo, and Back flies it home. Other screen changes are unchanged, for now. | Stand-alone things grow slightly (rows 3%, buttons 3%, pills 5%, tab icons and header buttons 12%) with a soft shadow on rows; rows packed inside a card (Log, More, People, country list, action sheets) light up green instead. Reduce Motion: colour only, and products open without the flight. Needs iOS 18+ for the flight (owner on iOS 26.6.2); elsewhere it simply opens as before. See §4 *Tap feel*. |
 | D21 | **Cool metals under the rainbow** (2026-09-25; option C "Descending shine" with the Ice blue Diamond, https://claude.ai/artifact/H7DwUgMSVzYrmYWnKysBXc). Replaces D19's gold, silver and bronze, which looked out of place next to the green: **2nd Diamond, 3rd Platinum, 4th Pewter**, all cool tones, no gold. 1st stays the rainbow holo; the tier rules (rated only, follows filter and Rank by, friends' boards) are unchanged. | Each metal shines less than the one above: Diamond has the strongest wash and shimmer and twinkles (three glints in the row's corners, clear of all text); Platinum is medium; Pewter is calm and matte with its edge flowing at half speed. Same cascade timing. Reduce Motion: colours only, no glints. See §4 *Podium tiers*. |
 | D22 | **Podium product pages** (2026-09-25; "Everything" from https://claude.ai/artifact/7HHY6WSp9xCciStfcxtZqk and option B "Descending" from https://claude.ai/artifact/UcTvzvgN1rpSmdevDe5bPo). The "rainbow for #1 beyond its row" parked at D19, extended to all four places. A product in the top four carries its tier onto its own page, following **the same Type and Rank by as the Leaderboard** (so the page always matches the row you tapped, also when opened from the Log), and on a friend's product page too (their places come only from what you can see). Nothing new anywhere else (the Log stays as it is). | Descending shine, like the rows: **1st** a badge with a crown ("#1 on your Leaderboard", or "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste"), a flowing rainbow photo frame, rainbow score, the name and score on the row's holo card, and one rainbow sweep across the photo as the page opens; **Diamond** all of that in ice blue plus glints; **Platinum** frame, silver score, badge; **Pewter** a calm frame (half speed) and badge. Unrated and archived products never get it. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *Podium product pages*. |
+| D23 | **Profile photos** (2026-09-25; option A "a card for you at the top of People" and "People connected to you" from https://claude.ai/artifact/AAdP8jbTiuB4HV8jRwX9Cq). Each account can add one photo, framed by moving and zooming it inside a circle. A deliberate addition to design brief §9 (monogram avatars, "there are no profile photos"). | **Who sees it:** you; people you follow or have asked to follow (you reached out to them); your approved followers. **Never:** someone whose request you haven't approved (a request alone reveals nothing), strangers (search shows your letter, so brief §5's "username and a Follow button, nothing else" still holds for them), anyone blocked either way. Others only ever get the square crop, never the original. **Where:** your card on People; the Following, Followers and Requests lists, search results, the page of someone you don't follow yet, and next to @username at the top of a friend's Leaderboard. Everywhere else the letter stays. **Export/restore:** included (original and crop); restoring a file from before 0.17.0 leaves your photo alone. See §4 *Profile photos*. |
+| D24 | **People opens on Following** (2026-09-25). The order is now Following · Followers · Requests, and People opens on Following every time the app starts, even with requests waiting (the Requests badge and the tab-bar badge show them). Within a visit it remembers the list you last chose, as before. | Look and order only; no data change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -468,11 +470,79 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Profile photos (D23, 0.17.0).**
+  - *Storage*: `profile_photos` (migration 0004), one row per account: `original_set`, `image_set`
+    and the square crop as fractions. The files are ordinary image sets (§4 *Photos*): the
+    original, resized to 1600px, is kept so the photo can be re-framed without losing quality;
+    the crop and a ~320px thumbnail are rendered in the browser. A new photo deletes all of the
+    old one's files; re-framing uploads a crop-only set and deletes only the old crop. Removing
+    the photo deletes its row and files. Account deletion cascades the row and the R2 prefix
+    purge takes the files.
+  - *The rule* (`server/lib/social.ts` `photoVisibleSql`, one SQL definition used by every list
+    and by the photo route): the viewer is the owner; or, with no block either way, the owner
+    has a follow row towards the viewer (approved or pending: they reached out) or the viewer is
+    the owner's approved follower. Checked on every request.
+  - *API*: your own photo at `/api/profile/photo/{original|cropped|thumb}`, set with `PUT
+    /api/profile/photo` (`{ upload, crop }`; a set with an original is a new photo, one without
+    re-frames) and removed with `DELETE`. `/api/auth/me` carries your photo's version and crop.
+    Others' photos at `/api/people/u/<username>/photo/{thumb|cropped}`: anything not allowed
+    (unknown person, blocked, not connected, no photo, the original) gets one identical 403.
+    `PersonCard` gains `photo` (its version) only when the rule allows, so a stranger's card is
+    still exactly `{ username, relation }`. `/api/people/requests` adds a `photos` map beside
+    the usernames (the list's shape is unchanged for the previous build). Photos are
+    `private, no-cache` with an ETag, like product photos.
+  - *Move and zoom* (`client/src/components/AvatarCropper.tsx`, geometry in
+    `shared/domain/profilePhoto.ts`): full-bleed black like the cropper; Cancel · "Move and
+    zoom" · Apply; the photo slides under a fixed circle (at most 360px); drag to move, pinch or
+    the slider to zoom (1× = the short edge fills the circle, up to 5×, less on a small photo so
+    the crop keeps 80px). The circle can never be left partly empty. Keyboard: arrows move, + / −
+    zoom. Re-opening starts where you left it.
+  - *Your card* (top of People, hidden while searching): photo or letter (72px) with a camera
+    badge, @username, follower and following counts (the same numbers as the tabs), and "Add a
+    photo" / "Change photo". Without a photo a tap opens the picker straight away; with one it
+    offers Choose a new photo, Move and zoom, Remove photo (confirmed).
+  - *Avatars* (`client/src/components/Avatar.tsx`): the photo covers the letter, which stays
+    beneath, so a photo that can no longer load (access just ended) shows the letter.
+  - *Export/restore*: the file gains `profilePhoto` (original + crop, or null). Restore replaces
+    it only when the file has the field (null removes yours); a file from before 0.17.0 has no
+    field and leaves your photo alone. The Restore screen says which. The format version stays 1
+    (the field is optional, and the previous build ignores it).
+  - Tested: `test/api/profile.test.ts` (set / re-frame / remove and the files each leaves;
+    every relation in the rule, both block directions, approval revealing and unfollow ending
+    it; lists; originals never served to others; identical 403s; restore kept / restored /
+    removed; bad uploads refused), `test/domain/profilePhoto.test.ts` (framing is always a
+    square inside the photo; zoom limits; a crop reopens where it was; export-file checks),
+    account deletion in `data.test.ts`, and `test/e2e/profile.spec.ts` (the real flow with a
+    file chooser, drag and pinch, the pixels of the saved thumbnail, a follower and a
+    stranger in their own browsers, removal, export → restore both ways, axe on the framing
+    screen). The rule tests were checked by deliberately breaking the rule (both caught).
+
+- **People opens on Following (D24, 0.17.0).** `lastSegment` starts as `following`; it lives
+  in memory, so a relaunch (or reload) opens on Following and a visit keeps your last choice.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.17.0 — profile photos, and People opens on Following (owner request)
+- You can add a profile photo (decision D23): tap your photo in the new card at the top of
+  People, pick or take a photo, then move and zoom it into the circle. Change it, re-frame it
+  or remove it the same way.
+- Who sees it: people you follow or have asked to follow, and your approved followers. Someone
+  whose request you haven't approved, strangers searching, and anyone blocked see your letter.
+  Only the circle crop is ever sent to anyone else.
+- Photos show in the Following, Followers and Requests lists, search, the page of someone you
+  don't follow yet, and next to @username at the top of a friend's Leaderboard.
+- People now opens on **Following**, in the order Following · Followers · Requests (decision
+  D24). Waiting requests still show as the green number on Requests and the People tab.
+- Export includes your profile photo; restoring an older file leaves your photo alone.
+- Tests: 8 API tests (privacy rule on raw responses, deliberately broken twice to check they
+  catch it), 7 unit tests, 6 new Playwright tests; the People test now expects Following first.
+  Found while repeating the tests in parallel: People's blocking test searched with only the
+  first 6 letters of a name, which can match another run's account; it now searches the full
+  name (test only, no app change).
 
 ### 0.16.0 — podium product pages (owner request)
 - A product in the top four now carries its tier onto its own page (decision D22). 1st: a

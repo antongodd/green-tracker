@@ -40,8 +40,15 @@ auth.get('/me', async (c) => {
   )
     .bind(user.id)
     .first<{ passkeys: number; codes: number; requests: number }>();
+  // Your profile photo (D23): its version and framing, for the People card and export.
+  const photo = await c.env.DB.prepare('SELECT image_set, crop_x, crop_y, crop_w, crop_h FROM profile_photos WHERE user_id = ?1')
+    .bind(user.id)
+    .first<{ image_set: string; crop_x: number; crop_y: number; crop_w: number; crop_h: number }>();
   return c.json({
-    user: { username: user.username },
+    user: {
+      username: user.username,
+      ...(photo && { photo: { version: photo.image_set, crop: { x: photo.crop_x, y: photo.crop_y, w: photo.crop_w, h: photo.crop_h, square: true } } }),
+    },
     needsPasskey: c.var.session!.needsPasskey,
     passkeys: counts?.passkeys ?? 0,
     recoveryCodesLeft: counts?.codes ?? 0,

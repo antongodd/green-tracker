@@ -7,13 +7,14 @@ import { useSession } from '../session';
  * Header (brief §8): equal-width side slots keep the title optically centred.
  * Empty slots keep their space (visibility: hidden).
  */
-export function Header(p: { title?: string; leaf?: boolean; left?: ComponentChildren; right?: ComponentChildren }) {
+/** `icon` replaces the leaf before the title (e.g. a friend's photo beside @username, D23). */
+export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChildren; left?: ComponentChildren; right?: ComponentChildren }) {
   return (
     <header class="hdr">
       <div class="bar">
         <div class={`slot${p.left ? '' : ' hidden'}`}>{p.left}</div>
         <div class="title">
-          {p.leaf !== false && <LeafGlass />}
+          {p.icon ?? (p.leaf !== false && <LeafGlass />)}
           <span>{p.title ?? 'Green Tracker'}</span>
         </div>
         <div class={`slot r${p.right ? '' : ' hidden'}`}>{p.right}</div>

@@ -51,11 +51,16 @@ export async function renderCrop(original: HTMLImageElement, crop: Crop | null):
   return { cropped: await toJpeg(cropped), thumb: await toJpeg(thumb) };
 }
 
-/** A picked file → the resized original (1600px long edge) plus the uncropped image and thumbnail. */
-export async function prepareNewPhoto(file: Blob): Promise<{ original: Blob; cropped: Blob; thumb: Blob }> {
+/** A picked file → the resized original (1600px long edge). */
+export async function resizeOriginal(file: Blob): Promise<Blob> {
   const img = await loadImage(file);
   const { w, h } = size(img);
-  const original = await toJpeg(draw(img, 0, 0, w, h, Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h))));
+  return toJpeg(draw(img, 0, 0, w, h, Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h))));
+}
+
+/** A picked file → the resized original (1600px long edge) plus the uncropped image and thumbnail. */
+export async function prepareNewPhoto(file: Blob): Promise<{ original: Blob; cropped: Blob; thumb: Blob }> {
+  const original = await resizeOriginal(file);
   const resized = await loadImage(original);
   return { original, ...(await renderCrop(resized, null)) };
 }

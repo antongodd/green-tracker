@@ -49,10 +49,10 @@ data.post('/restore', async (c) => {
   const db = c.env.DB;
   const v = validateRestore(await jsonBody(c));
   if (!v.ok) fail(400, 'invalid_restore', v.message);
-  const { products, logEntries } = v.value;
+  const { products, logEntries, profilePhoto } = v.value;
 
   // Every photo must be a fresh upload of yours that includes its original.
-  const uploadIds = [...products.flatMap((p) => p.photos), ...logEntries.flatMap((e) => e.photos)].map((ph) => ph.upload!);
+  const uploadIds = [...products.flatMap((p) => p.photos), ...logEntries.flatMap((e) => e.photos), ...(profilePhoto ? [profilePhoto] : [])].map((ph) => ph.upload!);
   if (uploadIds.length) {
     const row = await db
       .prepare('SELECT COUNT(*) AS n FROM uploads WHERE user_id = ?1 AND has_original = 1 AND id IN (SELECT value FROM json_each(?2))')
@@ -114,6 +114,12 @@ data.post('/restore', async (c) => {
 
   // Files of the photos being replaced, deleted once the batch has committed.
   const { results: old } = await db.prepare('SELECT original_set, image_set FROM photos WHERE user_id = ?1').bind(userId).all<{ original_set: string; image_set: string }>();
+  // The profile photo is replaced only by a file that has one (or says there was none);
+  // a file from before 0.17.0 leaves it alone (D23).
+  if (profilePhoto !== undefined) {
+    const oldProfile = await db.prepare('SELECT original_set, image_set FROM profile_photos WHERE user_id = ?1').bind(userId).first<{ original_set: string; image_set: string }>();
+    if (oldProfile) old.push(oldProfile);
+  }
 
   const statements: D1PreparedStatement[] = [
     db.prepare('DELETE FROM photos WHERE user_id = ?1').bind(userId),
@@ -163,11 +169,20 @@ data.post('/restore', async (c) => {
         .bind(userId, chunk, now),
     );
   }
+  if (profilePhoto !== undefined) statements.push(db.prepare('DELETE FROM profile_photos WHERE user_id = ?1').bind(userId));
+  if (profilePhoto) {
+    const pc = profilePhoto.crop;
+    statements.push(
+      db
+        .prepare('INSERT INTO profile_photos (user_id, original_set, image_set, crop_x, crop_y, crop_w, crop_h, updated_at) VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7)')
+        .bind(userId, profilePhoto.upload, pc.x, pc.y, pc.w, pc.h, now),
+    );
+  }
   if (uploadIds.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(uploadIds)));
 
   await db.batch(statements);
   deleteLater(c.executionCtx, c.env.PHOTOS, old.flatMap((o) => [...setKeys(userId, o.original_set), ...(o.image_set !== o.original_set ? imageKeys(userId, o.image_set) : [])]));
-  return c.json({ products: productRows.length, logEntries: entryRows.length, photos: photoRows.length });
+  return c.json({ products: productRows.length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
 });
 
 // Delete account --------------------------------------------------------------
@@ -187,7 +202,7 @@ data.post('/delete/options', async (c) => {
 
 /**
  * Step 2: with the passkey check and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, photos,
+ * the user row cascades to products, ratings, purchases, log entries, photos, the profile photo,
  * uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */
