@@ -103,7 +103,7 @@ export interface RankedRow<P extends RankableProduct> {
   /** 1-based, renumbered over the visible list. */
   rank: number;
   value: number | null;
-  /** 1–4 for rainbow, gold, silver, bronze (D19) — follows the visible order.
+  /** 1–4 for rainbow, Diamond, Platinum, Pewter (D19, D21) — follows the visible order.
    *  Only rated rows get a tier: an unrated product never has one. */
   podium: Podium | null;
 }
@@ -150,6 +150,30 @@ export function rankProducts<P extends RankableProduct>(products: readonly P[], 
     return tieBreak(a.product, b.product);
   });
   return scored.map((r, i) => ({ ...r, rank: i + 1, podium: i < PODIUM_TIERS && r.value !== null ? ((i + 1) as Podium) : null }));
+}
+
+/**
+ * A product page's podium place (D22): the tier its row has on the Leaderboard under
+ * this view (same filter, same Rank by), so the page always matches the row. null when
+ * it isn't in the top four, is unrated or unrankable, or isn't in the list (archived).
+ */
+export function podiumPlace<P extends RankableProduct>(products: readonly P[], id: string, view: ViewState): Podium | null {
+  return rankProducts(products, view).find((r) => r.product.id === id)?.podium ?? null;
+}
+
+/**
+ * The badge on a podium product's page (D22): "#1 on your Leaderboard" under All and
+ * Overall, otherwise the list it tops — "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste".
+ */
+export function podiumBadge(podium: Podium, view: ViewState, whose: 'your' | 'their'): string {
+  if (view.filter === 'all' && view.rankBy === 'overall') return `#${podium} on ${whose} Leaderboard`;
+  const parts = [`#${podium}`];
+  if (view.filter !== 'all') parts.push(`in ${productType(view.filter).label}`);
+  if (view.rankBy !== 'overall') {
+    const label = rankByOptions(view.filter, { money: true }).find((o) => o.key === view.rankBy)?.label ?? RATING_LABELS[view.rankBy as RatingKey];
+    parts.push(`by ${label}`);
+  }
+  return parts.join(' ');
 }
 
 export interface LeaderboardTiles {

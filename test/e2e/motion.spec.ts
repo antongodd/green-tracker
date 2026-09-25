@@ -33,7 +33,7 @@ const upload = () =>
 /** Records every view transition the page starts, and which parts animate in it. */
 const recordTransitions = () =>
   page.evaluate(() => {
-    const w = window as unknown as { __vt: string[][]; __vtMs: number[]; __enter: string[] };
+    const w = window as unknown as { __vt: string[][]; __vtMs: number[]; __enter: string[]; __vtDone: number };
     w.__vt = [];
     w.__vtMs = [];
     w.__enter = [];
@@ -48,6 +48,7 @@ const recordTransitions = () =>
       const entry: string[] = [];
       w.__vt.push(entry);
       t.ready.then(() => w.__vtMs.push(performance.now() - started));
+      t.finished.then(() => (w.__vtDone = Number(document.timeline.currentTime)));
       t.ready.then(() => entry.push(...document.getAnimations().map((a) => (a.effect as KeyframeEffect).pseudoElement ?? '').filter(Boolean))).catch((err) => entry.push(`skipped: ${err}`));
       return t;
     };
@@ -147,6 +148,14 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   await expect(page.locator('.hero-photo img')).toBeVisible();
   await expect.poll(transitions).toEqual([expect.arrayContaining(['::view-transition-group(gt-photo)', '::view-transition-new(root)'])]);
   await expect(page.locator('html')).not.toHaveClass(/vt-photo/); // cleaned up afterwards
+  // Photo Kush is 1st, so its page is a podium page (D22): its one sweep across the photo
+  // waits for the flight to land instead of running underneath it.
+  await expect(page.locator('main')).toHaveAttribute('data-podium', '1');
+  const sweep = await page.evaluate(() => {
+    const a = document.getAnimations().find((x) => (x as CSSAnimation).animationName === 'podium-arrive')!;
+    return { started: Number(a.startTime), landed: (window as unknown as { __vtDone: number }).__vtDone };
+  });
+  expect(sweep.started).toBeGreaterThanOrEqual(sweep.landed - 20);
   // …and nothing replays once the photo lands: in 0.14.0 the screen's own entrance fade
   // restarted there, so the page dipped dark and faded in again (owner's recording).
   await page.waitForTimeout(400);

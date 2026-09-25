@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
-import { leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
+import { leaderboardEmptyState, leaderboardTiles, podiumPlace, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
+import { CardGlint, PhotoGlints, PodiumBadge, podiumClass } from '../components/Podium';
 import { photoUrl } from '../../../shared/domain/photo';
 import { productTypeLabel } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
@@ -236,12 +237,19 @@ export function SharedProfile(p: { username: string; id: string }) {
   const [product, setProduct] = useState<SharedProduct | null>(null);
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<number | null>(null);
+  // Its podium place on their board (D22), worked out only from what you can see.
+  const [list, setList] = useState<SharedProduct[] | null>(null);
+  const [view] = useState(loadOthersView);
 
   useEffect(() => {
     api
       .theirProduct(p.username, p.id)
       .then(setProduct)
       .catch((e) => setError(errorText(e)));
+    api
+      .theirProducts(p.username)
+      .then(setList)
+      .catch(() => {});
   }, [p.username, p.id]);
 
   const backTo = `/u/${enc(p.username)}`;
@@ -259,6 +267,7 @@ export function SharedProfile(p: { username: string; id: string }) {
   const country = countryDisplay(product.country, product.countryOther);
   const labels = productTypeLabel({ ...product, concentrateType: product.concentrateType ?? 'not_set' });
   const photos = product.photos.map(shown);
+  const podium = list ? podiumPlace(list, product.id, view) : null;
   const details: [string, string][] = (
     [
       ['Strain type', STRAIN_TYPES.find((s) => s.key === product.strainType)?.label ?? ''],
@@ -272,16 +281,22 @@ export function SharedProfile(p: { username: string; id: string }) {
   return (
     <>
       <Header title={`@${p.username} / ${product.name}`} leaf={false} left={<BackButton to={backTo} />} />
-      <main class="screen">
+      <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
         {photos[0] ? (
           <button class="hero-photo" onClick={() => setViewing(0)} aria-label="Open photos">
             <span class="hero-under" style={{ backgroundImage: `url("${photos[0].thumb}")` }} />
             <img src={photos[0].image} alt="" />
+            <PhotoGlints podium={podium} />
           </button>
         ) : (
-          <div class="hero-photo">{def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+          <div class="hero-photo">
+            {def.icon && <TypeMark icon={def.icon} label={def.label} />}
+            <PhotoGlints podium={podium} />
+          </div>
         )}
         <div class="hero">
+          <CardGlint podium={podium} />
+          <PodiumBadge podium={podium} view={view} whose="their" />
           <h1>{product.name}</h1>
           <div class={`hero-score${o === null ? ' unrated' : ''}`}>
             <b>{o === null ? '–' : formatScore(o)}</b>

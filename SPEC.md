@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.15.0 (all phases done; cool podium: rainbow, Diamond, Platinum, Pewter)
+**Current version:** 0.16.0 (all phases done; podium product pages)
 
 ---
 
@@ -82,9 +82,10 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
 | D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
 | D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
-| D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later. See §4 *Podium tiers*. |
+| D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later (done in D22). See §4 *Podium tiers*. |
 | D20 | **Tap feel: "Lift" and "Photo grows"** (2026-09-24; interactive mockup https://claude.ai/artifact/MbxQoAaWhAjdrifnM8kdy3). Everything you can tap lifts under your finger; opening a product from a list (your Leaderboard, the Log, a friend's Leaderboard) flies the row's photo into the product's big photo, and Back flies it home. Other screen changes are unchanged, for now. | Stand-alone things grow slightly (rows 3%, buttons 3%, pills 5%, tab icons and header buttons 12%) with a soft shadow on rows; rows packed inside a card (Log, More, People, country list, action sheets) light up green instead. Reduce Motion: colour only, and products open without the flight. Needs iOS 18+ for the flight (owner on iOS 26.6.2); elsewhere it simply opens as before. See §4 *Tap feel*. |
 | D21 | **Cool metals under the rainbow** (2026-09-25; option C "Descending shine" with the Ice blue Diamond, https://claude.ai/artifact/H7DwUgMSVzYrmYWnKysBXc). Replaces D19's gold, silver and bronze, which looked out of place next to the green: **2nd Diamond, 3rd Platinum, 4th Pewter**, all cool tones, no gold. 1st stays the rainbow holo; the tier rules (rated only, follows filter and Rank by, friends' boards) are unchanged. | Each metal shines less than the one above: Diamond has the strongest wash and shimmer and twinkles (three glints in the row's corners, clear of all text); Platinum is medium; Pewter is calm and matte with its edge flowing at half speed. Same cascade timing. Reduce Motion: colours only, no glints. See §4 *Podium tiers*. |
+| D22 | **Podium product pages** (2026-09-25; "Everything" from https://claude.ai/artifact/7HHY6WSp9xCciStfcxtZqk and option B "Descending" from https://claude.ai/artifact/UcTvzvgN1rpSmdevDe5bPo). The "rainbow for #1 beyond its row" parked at D19, extended to all four places. A product in the top four carries its tier onto its own page, following **the same Type and Rank by as the Leaderboard** (so the page always matches the row you tapped, also when opened from the Log), and on a friend's product page too (their places come only from what you can see). Nothing new anywhere else (the Log stays as it is). | Descending shine, like the rows: **1st** a badge with a crown ("#1 on your Leaderboard", or "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste"), a flowing rainbow photo frame, rainbow score, the name and score on the row's holo card, and one rainbow sweep across the photo as the page opens; **Diamond** all of that in ice blue plus glints; **Platinum** frame, silver score, badge; **Pewter** a calm frame (half speed) and badge. Unrated and archived products never get it. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *Podium product pages*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -406,7 +407,37 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the motion (≥ 4.5:1, 3:1 for the large score), since axe can't judge text over a
   gradient.
 
-- **Tap feel (D20, 0.14.0).**
+- **Podium product pages (D22, 0.16.0).**
+  - *The place*: `podiumPlace` (`shared/domain/leaderboard.ts`) ranks the same list with the
+    same view as the row (`rankProducts`), so a page and its row can never disagree. Your
+    page uses your list (the cached one, else fetched once) and your stored view (`gt.view`);
+    a friend's uses their list (fetched with the product, as the follower allow-list sends
+    it, so private and archived products never count) and your view of friends
+    (`gt.view.others`). Archived products never get a place. Worked out on the phone each
+    time the page opens; nothing is stored. `<main>` carries `data-podium` 1–4, or `none`
+    once the list has arrived.
+  - *The badge* (`podiumBadge`): "#N on your/their Leaderboard" under All and Overall;
+    otherwise the list it tops, "#N in <Type>", "#N by <Rank by>", or both. Only 1st has the
+    crown.
+  - *Styles* (`client/src/styles.css`, `.tiered.p1`…`p4` on `<main>`): the rows' own tier
+    colours, speeds and shimmer (shared custom properties). Frame: a 2px flowing tier edge on
+    the big photo, with the tier's shimmer across the photo. Score (1st–3rd): the tier colours
+    flowing through the number. Card (1st, Diamond): the hero sits on the row's holo card /
+    metal wash. Sweep (1st, Diamond): one band of the tier's colours across the photo 0.25s
+    after the page appears; it is held while Photo grows is flying, so it always runs just after
+    the photo lands. Glints (Diamond): the photo's top corners and the card's top-right corner.
+    Pewter's frame flows at half speed, and its badge number flows only through its lighter
+    shades (the darkest ones measured too dim for small text). 1st's badge sits on a darker holo
+    than its card, and the small grey text on the cards is brighter (84%), for the same reason.
+  - *Reduce Motion*: colours stay; no flow, shimmer, sweep or glints.
+  - Tested (`test/e2e/podium.spec.ts`): each place shows exactly its pieces (and 5th,
+    unrated and archived show none); the page follows Type and Rank by, also from the Log;
+    a friend's page counts only what they share; glints clear of text; axe; text contrast
+    measured from real pixels at 12 moments of the motion on all four pages (a shared
+    `contrastFailures` helper); Reduce Motion. `motion.spec.ts` checks the sweep waits for
+    Photo grows to land.
+
+
   - *Press* (`client/src/press.ts`): iPhone Safari barely shows `:active`, so the app
     marks the element under the finger with `.is-pressed` itself (links, buttons,
     filter pills, the country field). It shows after 60ms, so a scroll never lights
@@ -442,6 +473,20 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.16.0 — podium product pages (owner request)
+- A product in the top four now carries its tier onto its own page (decision D22). 1st: a
+  crown badge ("#1 on your Leaderboard"), a flowing rainbow frame round the photo, a
+  rainbow score, the holo card behind the name and score, and one rainbow sweep across
+  the photo as it opens. Diamond gets the same in ice blue plus glints; Platinum a frame,
+  silver score and badge; Pewter a calm frame and badge.
+- It follows your Type and Rank by, so the page matches the row you tapped, and the badge
+  says which list it tops ("#2 in Flower", "#1 by Taste"). Same on a friend's product pages.
+- Tests: 3 rule tests and 6 new Playwright tests (`podium.spec.ts`), plus a check that
+  the sweep waits for Photo grows to land. The pixel-measured readability check caught two
+  things before release: Pewter's "#4" was too dim in its darkest shade, and 1st place's
+  "#1" and "OVERALL" dipped just below the bar when the brightest rainbow passed behind them
+  (only now and then, so it passed on some runs). Both fixed and re-run many times.
 
 ### 0.15.0 — cool podium (owner request)
 - 2nd–4th place are now **Diamond** (ice blue), **Platinum** and **Pewter** instead

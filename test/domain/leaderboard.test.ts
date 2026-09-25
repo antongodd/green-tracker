@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   leaderboardEmptyState,
+  podiumBadge,
+  podiumPlace,
   rankByOptions,
   rankProducts,
   resolveViewState,
@@ -133,5 +135,45 @@ describe('Empty states (§10.1)', () => {
     expect(leaderboardEmptyState(3, 0, { filter: 'all', rankBy: 'consistency' })).toBe('rank-empty');
     expect(leaderboardEmptyState(3, 0, { filter: 'edibles', rankBy: 'taste' })).toBe('rank-empty');
     expect(leaderboardEmptyState(3, 2, { filter: 'all', rankBy: 'taste' })).toBeNull();
+  });
+});
+
+describe('Podium product pages (D22)', () => {
+  const list = [
+    p('a', 'flower', { look: 9 }),
+    p('b', 'flower', { look: 8, taste: 5 }),
+    p('c', 'edibles', { taste: 9.5, high: 9.5 }),
+    p('d', 'flower', { look: 7, taste: 9 }),
+    p('e', 'flower', { look: 6 }),
+    p('f', 'flower', { look: 5.5 }),
+    p('u', 'flower', {}),
+  ];
+
+  it('a page gets the place its row has, under the same filter and Rank by', () => {
+    const all = { filter: 'all', rankBy: 'overall' } as const;
+    expect(['c', 'a', 'd', 'b', 'e', 'f', 'u'].map((id) => podiumPlace(list, id, all))).toEqual([1, 2, 3, 4, null, null, null]);
+    // Filtered to Flower the edible drops out and the rest move up; Rank by Taste reorders.
+    expect(podiumPlace(list, 'a', { filter: 'flower', rankBy: 'overall' })).toBe(1);
+    expect(podiumPlace(list, 'e', { filter: 'flower', rankBy: 'overall' })).toBe(4);
+    expect(podiumPlace(list, 'c', { filter: 'flower', rankBy: 'overall' })).toBeNull();
+    expect(podiumPlace(list, 'd', { filter: 'all', rankBy: 'taste' })).toBe(2); // after the edible's 9.5
+    expect(podiumPlace(list, 'a', { filter: 'all', rankBy: 'taste' })).toBeNull(); // no Taste: hidden, so no place
+  });
+
+  it('an unrated product or one not in the list (archived) never gets a place', () => {
+    const few = [p('x', 'flower', { look: 8 }), p('u', 'flower', {})];
+    expect(podiumPlace(few, 'u', { filter: 'all', rankBy: 'overall' })).toBeNull();
+    expect(podiumPlace(few, 'gone', { filter: 'all', rankBy: 'overall' })).toBeNull();
+  });
+
+  it('the badge names the list it tops', () => {
+    expect(podiumBadge(1, { filter: 'all', rankBy: 'overall' }, 'your')).toBe('#1 on your Leaderboard');
+    expect(podiumBadge(3, { filter: 'all', rankBy: 'overall' }, 'their')).toBe('#3 on their Leaderboard');
+    expect(podiumBadge(2, { filter: 'flower', rankBy: 'overall' }, 'your')).toBe('#2 in Flower');
+    expect(podiumBadge(1, { filter: 'all', rankBy: 'taste' }, 'your')).toBe('#1 by Taste');
+    expect(podiumBadge(3, { filter: 'flower', rankBy: 'taste' }, 'their')).toBe('#3 in Flower by Taste');
+    expect(podiumBadge(4, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#4 in Edibles by Price per mg');
+    expect(podiumBadge(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
+    expect(podiumBadge(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
   });
 });
