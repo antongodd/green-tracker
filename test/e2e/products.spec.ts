@@ -94,9 +94,27 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   const before = await page.evaluate(() => window.scrollY);
   expect(before).toBeGreaterThan(200);
-  await page.locator('.sect').getByRole('link', { name: 'Edit' }).click();
+  // Record every scroll and page height on the way back, to explain a failure (0.18.1).
+  await page.evaluate(() => {
+    const w = window as unknown as { gtScrollLog: string[] };
+    w.gtScrollLog = [];
+    addEventListener('scroll', () => w.gtScrollLog.push(`${Math.round(performance.now())}ms y=${scrollY} h=${document.documentElement.scrollHeight} ${location.pathname}`));
+  });
+  // Tap it like a finger, at its spot on screen. Playwright's click() sometimes scrolls
+  // the page first (116px here), which the app then rightly remembers, so the check
+  // compared against a position the test itself had moved away from (0.18.1).
+  const edit = await page.locator('.sect').getByRole('link', { name: 'Edit' }).boundingBox();
+  expect(edit!.y).toBeGreaterThan(60);
+  expect(edit!.y + edit!.height).toBeLessThan(844 - 60);
+  await page.mouse.click(edit!.x + edit!.width / 2, edit!.y + edit!.height / 2);
+  await expect(page).toHaveURL(/\/edit$/);
   await page.getByRole('button', { name: 'Cancel' }).click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before - 12);
+  try {
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before - 12);
+  } catch (e) {
+    const log = await page.evaluate(() => (window as unknown as { gtScrollLog: string[] }).gtScrollLog.join('\n  '));
+    throw new Error(`${(e as Error).message}\nbefore=${before}; scrolls on the way back:\n  ${log}`);
+  }
 
   // Private: saved straight from the profile, shown as a lock on your own row.
   await page.getByRole('switch', { name: /Private/ }).check();

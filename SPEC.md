@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.18.0 (all phases done; your photo in the header)
+**Current version:** 0.18.1 (all phases done; your photo in the header)
 
 ---
 
@@ -541,6 +541,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.18.1 — test fix
+- One full test run failed once: going back from a product's editor seemed to land 116px
+  higher than where the product page had been. Traced by recording the page: it was the
+  test tool, not the app. Playwright's click() sometimes scrolls the page by 116px just before
+  tapping the Edit button, so the app correctly remembered the new spot while the test compared
+  against the old one. Tapping the same spot directly (as a finger does) landed exactly right
+  every time. The test now taps the button at its place on screen, and prints every scroll on
+  the way back if that check ever fails again. No app changes.
 
 ### 0.18.0 — your photo in the header (owner request)
 - Your profile photo (or your letter, until you add one) now sits in the top-right corner of
