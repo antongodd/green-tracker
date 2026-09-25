@@ -63,3 +63,16 @@ export function parseCrop(raw: unknown): Crop | null | undefined {
 export function photoUrl(p: Pick<PhotoRecord, 'id' | 'version'>, variant: PhotoVariant): string {
   return `/api/photos/${encodeURIComponent(p.id)}/${variant}?v=${encodeURIComponent(p.version)}`;
 }
+
+/** Profile photos (D23): one square crop per account. Others only ever get the crop. */
+export type ProfilePhotoVariant = Exclude<PhotoVariant, 'original'>;
+
+/** Your own profile photo: any variant (the original is for re-framing and export). */
+export function ownProfilePhotoUrl(version: string, variant: PhotoVariant): string {
+  return `/api/profile/photo/${variant}?v=${encodeURIComponent(version)}`;
+}
+
+/** Someone else's profile photo, served only while you're connected to them. */
+export function personPhotoUrl(username: string, version: string, variant: ProfilePhotoVariant): string {
+  return `/api/people/u/${encodeURIComponent(username)}/photo/${variant}?v=${encodeURIComponent(version)}`;
+}

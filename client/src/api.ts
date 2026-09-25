@@ -1,3 +1,4 @@
+import type { Crop } from '../../shared/domain/photo';
 import { reportNetwork } from './online';
 
 /** A failed API call. `message` is written for the person using the app and can be shown as-is. */
@@ -39,7 +40,8 @@ export const errorText = (e: unknown): string => (e instanceof Error ? e.message
 // Shapes returned by the server ------------------------------------------------
 
 export interface Me {
-  user: { username: string } | null;
+  /** `photo`: your profile photo's version and framing (D23), when you have one. */
+  user: { username: string; photo?: { version: string; crop: Crop } } | null;
   needsPasskey?: boolean;
   passkeys?: number;
   recoveryCodesLeft?: number;

@@ -62,7 +62,7 @@ describe('restore (brief §13)', () => {
     };
     const res = await b.post('/api/data/restore', payload);
     expect(res.status, JSON.stringify(res.json)).toBe(200);
-    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2 });
+    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, profilePhoto: 'kept' });
 
     const products = [...(await b.get('/api/products')).json.products, ...(await b.get('/api/products?archived=1')).json.products] as Product[];
     expect(products.map((p) => p.name).sort()).toEqual(['Restored Archived', 'Restored Flower']);
@@ -156,18 +156,20 @@ describe('delete account (brief §4, §17)', () => {
     ).json.product as Product;
     await b.post('/api/log', { ...emptyLogEntryInput(), name: 'Doomed Entry', photos: [{ upload: await newSet(b, 'doomedlog'), crop: null }] });
     await newSet(b, 'pending-upload'); // never saved
+    const profile = await newSet(b, 'profile');
+    expect((await b.req('PUT', '/api/profile/photo', { upload: profile, crop: { x: 0, y: 0, w: 1, h: 1, square: true } })).status).toBe(200);
     await fan.post(`/api/people/u/${username}/follow`);
     await b.post(`/api/people/requests/${fanName}/approve`);
     await b.post(`/api/people/u/${idolName}/follow`); // pending, outgoing
     await b.post(`/api/people/u/${blockedName}/block`);
-    expect(r2Keys(`u/${id}/`).length).toBe(9); // 3 sets × 3 files
+    expect(r2Keys(`u/${id}/`).length).toBe(12); // 4 sets × 3 files (one is the profile photo, D23)
 
     const res = await confirmDelete(b, passkey, username.toUpperCase());
     expect(res.status).toBe(200);
 
     // Signed out, and the passkey leads nowhere.
     expect((await b.get('/api/auth/me')).json.user).toBeNull();
-    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id']) {
+    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
       expect(d1(`SELECT COUNT(*) AS n FROM ${table} = ?`, id), table).toEqual([{ n: 0 }]);
     }
     expect(d1('SELECT COUNT(*) AS n FROM follows WHERE follower_id = ? OR followed_id = ?', id, id)).toEqual([{ n: 0 }]);
@@ -177,6 +179,7 @@ describe('delete account (brief §4, §17)', () => {
     // For everyone else, the account simply no longer exists.
     expect((await fan.get(`/api/people/u/${username}`)).status).toBe(404);
     expect((await fan.raw(photoUrl(product.photos[0]!, 'thumb'))).status).toBe(403);
+    expect((await fan.raw(`/api/people/u/${username}/photo/thumb`)).status).toBe(403);
     expect((await idol.get('/api/people/requests')).json.people).toEqual([]);
     expect((await new Browser().get(`/api/auth/username?u=${username}`)).json.available).toBe(true);
   });

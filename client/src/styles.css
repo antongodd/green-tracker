@@ -579,6 +579,26 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .prow .acts { display: flex; gap: 8px; align-items: center; flex: none; }
 .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface-3); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
 .av.lg { width: 88px; height: 88px; font-size: 36px; }
+/* Profile photos (D23): the photo covers the letter, which stays beneath as the fallback. */
+.av { position: relative; overflow: hidden; }
+.av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-select: none; }
+.av.has-photo { box-shadow: var(--photo-edge); }
+.av.xl { width: 72px; height: 72px; font-size: 30px; }
+.av.hd { width: 28px; height: 28px; font-size: 13px; }
+.me-card { display: flex; align-items: center; gap: 14px; padding: 14px; }
+.me-photo { position: relative; flex: none; padding: 0; border: 0; background: none; border-radius: 50%; }
+.me-photo .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); border: 2px solid var(--surface-1); display: flex; align-items: center; justify-content: center; }
+.me-photo .cam svg { width: 15px; height: 15px; }
+.me-text { min-width: 0; display: grid; justify-items: start; }
+.me-name { max-width: 100%; font-size: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-btn { min-height: 44px; margin: -8px 0 -12px; padding: 0; border: 0; background: none; color: var(--accent-bright); font-size: 15px; font-weight: 500; }
+/* Move and zoom: the photo slides under a fixed circle. */
+.avatar-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; cursor: grab; }
+.avatar-stage img { position: absolute; max-width: none; user-select: none; -webkit-user-select: none; pointer-events: none; }
+.avatar-ring { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62); outline: 1.5px solid rgba(255, 255, 255, 0.85); pointer-events: none; }
+.avatar-bottom { position: relative; z-index: 2; background: #000; display: grid; gap: 8px; justify-items: center; padding: 12px 24px 16px; font-size: 13px; color: rgba(255, 255, 255, 0.78); }
+.avatar-bottom input[type="range"] { width: 100%; max-width: 360px; height: 44px; accent-color: var(--accent); }
+.cropper-title { justify-self: center; font-size: 17px; font-weight: 600; }
 .btn.sm { width: auto; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 14px; }
 .btn.outline { background: none; border-color: var(--hairline-strong); color: var(--text-2); }
 .more-btn { width: 44px; height: 44px; border: 0; background: none; color: var(--text-2); display: flex; align-items: center; justify-content: center; }

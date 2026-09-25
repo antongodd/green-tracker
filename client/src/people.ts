@@ -5,7 +5,9 @@ import { api } from './api';
 const u = (username: string) => `/people/u/${encodeURIComponent(username)}`;
 
 export const searchPeople = (q: string) => api<{ people: PersonCard[] }>('GET', `/people/search?q=${encodeURIComponent(q)}`).then((r) => r.people);
-export const incomingRequests = () => api<{ people: string[] }>('GET', '/people/requests').then((r) => r.people);
+/** Incoming requests, newest first, each with the requester's photo version when they have one (D23). */
+export const incomingRequests = () =>
+  api<{ people: string[]; photos?: Record<string, string> }>('GET', '/people/requests').then((r) => r.people.map((username) => ({ username, photo: r.photos?.[username] })));
 export const followers = () => api<{ people: PersonCard[] }>('GET', '/people/followers').then((r) => r.people);
 export const following = () => api<{ people: PersonCard[] }>('GET', '/people/following').then((r) => r.people);
 export const blocked = () => api<{ people: string[] }>('GET', '/people/blocked').then((r) => r.people);
