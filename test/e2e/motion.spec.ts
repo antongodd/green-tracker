@@ -252,10 +252,10 @@ test('opening from a scrolled list: the history entry comes first, and nothing s
   expect(r.during.some((d) => d.hero !== null)).toBe(true);
   expect(r).toMatchObject({ y: 0, hold: '', margin: '0px' });
 
-  // Back still returns to the row, where it was.
+  // Back still returns to the row, where it was (to the pixel: positions can be fractional).
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect.poll(async () => Math.round((await row('Row 6').boundingBox())!.y)).toBe(Math.round(box.y));
+  await expect.poll(async () => Math.abs((await row('Row 6').boundingBox())!.y - box.y)).toBeLessThanOrEqual(1);
   await page.setViewportSize({ width: 390, height: 844 });
 });
 
