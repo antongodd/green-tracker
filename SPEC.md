@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.19.2 (all phases done; swipe-back shows the list)
+**Current version:** 0.19.3 (all phases done; swipe-back shows the list)
 
 ---
 
@@ -472,7 +472,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     other entry stays `manual` (the app decides where screens start). On Back the browser puts
     the list's page back where it was, which is where the app's return to the tapped row
     lands anyway. (0.19.1 guessed it was the picture being taken mid-flight and added the
-    entry before the flight; that stays, but wasn't the cause.)
+    entry before the flight; that stays, but wasn't the cause.) *Since 0.19.3* the return to
+    the tapped row agrees with that restore: it lands **exactly where you were** when you
+    tapped, as long as the row is still fully on screen there; if it moved (re-rated) it goes
+    to roughly its previous screen position, and if it's gone, to the top. The browser's
+    restore can land after the app (GitHub's machines caught it), so when the app chose
+    somewhere else it undoes that restore for a moment afterwards (never a finger's scroll,
+    never mid-flight).
     **Nothing scrolls during a flight** (`client/src/scrollHold.ts`): Safari draws the frozen
     old screen in the wrong place when the page scrolls mid-transition. Opening from a scrolled
     list dropped the whole screen by the scroll distance, and Back threw the product page up by
@@ -617,6 +623,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.19.3 — test fix before 0.19.2 went live
+- 0.19.2 merged but didn't go live: GitHub's tests on `main` failed. Coming back from a product
+  with the list scrolled, the browser now puts the list back where it was by itself (that's
+  what lets the swipe show your list), and on GitHub's faster machine it sometimes did so after
+  the app had chosen where to land. Where you were is usually the same place, but after
+  re-rating a product (so its row moved) or when a row had been tapped at the top, the two
+  disagreed.
+- Coming back now lands exactly where you were when you tapped, if the row is still on screen
+  there; otherwise as before (the row at roughly its old screen position, or the top if it's
+  gone). If the browser's restore lands afterwards somewhere else, the app undoes it.
+- Tests: the Leaderboard return test covers "exactly where you were", and the §17 re-rate test
+  makes the browser's restore land late on purpose (it fails without the undo).
 
 ### 0.19.2 — swipe-back shows the list, smooth Back (owner report, with a screen recording)
 - **Fixed:** swiping back from a product still showed black behind it when the list had been
