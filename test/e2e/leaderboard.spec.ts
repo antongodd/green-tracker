@@ -277,11 +277,29 @@ test('coming back from a product lands on the tapped row; tab switches start at 
   await page.goto('/');
   await expect(rows()).toHaveCount(16);
 
-  // A row already visible at the top: the page stays at the top.
-  await rows().nth(1).click();
+  // A row already visible at the top: the page stays at the top. Tap it where it is
+  // (Playwright's click may scroll the page first, and then that's where you were).
+  const first = (await rows().nth(1).boundingBox())!;
+  await page.mouse.click(first.x + first.width / 2, first.y + first.height / 2);
+  await expect(page.locator('main')).toHaveAttribute('data-podium', /.+/);
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(rows()).toHaveCount(16);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  // Scrolled a little, with the row still on screen: back lands exactly where you were
+  // (the same place the list's own history entry restores, router.ts).
+  await page.evaluate(() => window.scrollTo(0, 150));
+  const third = (await rows().nth(3).boundingBox())!;
+  await page.mouse.click(third.x + third.width / 2, third.y + third.height / 2);
+  await expect(page.locator('main')).toHaveAttribute('data-podium', /.+/);
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(rows()).toHaveCount(16);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(150);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(150);
+  await page.evaluate(() => window.scrollTo(0, 0));
 
   // A row further down: back puts it at roughly the same screen position.
   const target = rows().nth(12);
@@ -313,11 +331,14 @@ test('coming back from a product lands on the tapped row; tab switches start at 
 });
 
 test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at its new position', async () => {
+  await page.setViewportSize({ width: 390, height: 560 }); // short, so 2nd is off screen where 8th was
   await page.goto('/');
   const eighth = rows().nth(7);
   await expect(eighth.locator('.rk')).toHaveText('8');
   const name = (await eighth.locator('.name').textContent())!;
   await eighth.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const listScroll = await page.evaluate(() => window.scrollY);
+  expect(listScroll).toBeGreaterThan(0);
   await eighth.evaluate((el: HTMLElement) => el.click());
   await page.getByRole('link', { name: 'Edit' }).first().click();
   // 8.7 puts it second, behind Gelato 41's 8.9.
@@ -326,9 +347,19 @@ test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at 
   await page.getByLabel('Look (1 to 10)').press('Enter');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name })).toBeVisible();
+  // The list's history entry restores its own scroll (router.ts), and on a fast machine
+  // that can land after the app has put the row on screen: make it land late on purpose.
+  // (During the Back flight it can't matter: the flight ends by scrolling where the app says.)
+  await page.evaluate((y) =>
+    addEventListener('popstate', () => {
+      const late = () => (document.documentElement.classList.contains('vt-photo') ? setTimeout(late, 10) : setTimeout(() => window.scrollTo(0, y), 30));
+      setTimeout(late, 10);
+    }, { once: true }), listScroll);
   await page.getByRole('link', { name: 'Back' }).click();
 
   const row = page.locator('.row', { hasText: name });
   await expect(row.locator('.rk')).toHaveText('2');
+  await page.waitForTimeout(1000); // past the late restore, and the app undoing it
   await expect(row).toBeInViewport();
+  await page.setViewportSize({ width: 390, height: 844 });
 });

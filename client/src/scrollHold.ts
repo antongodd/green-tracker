@@ -14,6 +14,9 @@ function apply(): void {
   root.classList.add('vt-hold');
 }
 
+/** Whether a hold is on (a flight is running). */
+export const holding = (): boolean => held !== null;
+
 /** How far the screen is currently drawn down by a hold (0 without one). */
 export const holdOffset = (): number => (held ? held.at - held.to : 0);
 
