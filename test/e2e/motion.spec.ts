@@ -70,6 +70,12 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(() => context.close());
 
 const row = (name: string) => page.locator('.row', { hasText: name });
+/**
+ * Waits for the screen's entrance (a short fade and 6px rise) to finish, so positions
+ * measured afterwards are where things rest (0.19.4: a row measured mid-rise read 2.5px off
+ * after coming back, on GitHub's faster machines).
+ */
+const screenSettled = () => page.locator('main.screen').evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
 
 test('holding a row lifts it after a moment; a quick tap still flashes; moving never lifts', async () => {
   await page.goto('/');
@@ -204,6 +210,7 @@ test('opening from a scrolled list: the history entry comes first, and nothing s
   await page.setViewportSize({ width: 390, height: 520 });
   await page.goto('/');
   await expect(row('Row 7')).toBeVisible();
+  await screenSettled();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const scrolled = await page.evaluate(() => window.scrollY);
   expect(scrolled).toBeGreaterThan(100);
@@ -306,6 +313,7 @@ test('a loose Log entry opened from a scrolled Log keeps the phone’s picture o
   await page.goto('/log');
   const loose = page.locator('.lrow', { hasText: 'Loose One' });
   await expect(loose).toBeVisible();
+  await screenSettled();
   // Scrolled down, with the entry in the middle of the screen.
   await loose.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 220));
   const box = (await loose.boundingBox())!;

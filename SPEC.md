@@ -634,7 +634,11 @@ None.
   from the Log were already fine (the recording showed both).
 - The same can still happen leaving other screens while scrolled down (People lists, a product's
   editor, More's sub-screens); left for now at the owner's choice.
-- Tests: 1 new Playwright test (fails without the fix).
+- Tests: 1 new Playwright test (fails without the fix). GitHub's first run failed it by 2.5px:
+  the test measured the row while the Log was still doing its entrance rise (6px, 0.2s),
+  confirmed by measuring the screen at that moment (1.4–2.5px low). The motion tests now wait
+  for the entrance to finish before measuring; this is also the likely cause of the one
+  unexplained failure seen while testing 0.19.3 (same kind of measurement). Test-only.
 
 ### 0.19.3 — test fix before 0.19.2 went live
 - 0.19.2 merged but didn't go live: GitHub's tests on `main` failed. Coming back from a product
