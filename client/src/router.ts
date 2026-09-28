@@ -120,13 +120,26 @@ export function openRow(e: MouseEvent, path: string): void {
       changed(from);
     },
   );
-  if (!shown) {
-    const from = record(path, false, true);
-    if (from === null) return;
-    window.scrollTo(0, 0);
-    arrived();
-    changed(from);
-  }
+  if (!shown) openKeepingPicture(path);
+}
+
+/**
+ * Opens a list row without the photo animation (a loose Log entry), keeping the phone's
+ * picture of the list for swipe-back like openRow (0.19.4: swiping back from a loose entry
+ * with the Log scrolled showed black).
+ */
+export function openPlainRow(e: MouseEvent, path: string): void {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  openKeepingPicture(path);
+}
+
+function openKeepingPicture(path: string): void {
+  const from = record(path, false, true);
+  if (from === null) return;
+  window.scrollTo(0, 0);
+  arrived();
+  changed(from);
 }
 
 /** Click handler for in-app links: keeps modifier-clicks and new tabs working. */

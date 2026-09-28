@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.19.3 (all phases done; swipe-back shows the list)
+**Current version:** 0.19.4 (all phases done; swipe-back shows the list)
 
 ---
 
@@ -468,8 +468,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     when the list's history entry restores its own scroll, or the page happens to be scrolled
     exactly as the list was; otherwise it shows the page colour (black), then ~0.5s of black.
     That's why it went black only when the list had been scrolled. So the entry a product is
-    opened from, from a list row (`openRow`), has `history.scrollRestoration = 'auto'`; every
-    other entry stays `manual` (the app decides where screens start). On Back the browser puts
+    opened from, from a list row (`openRow`), has `history.scrollRestoration = 'auto'`, and
+    since 0.19.4 so does the Log when a loose entry is opened from it (`openPlainRow`); every
+    other entry stays `manual` (the app decides where screens start). Known, left for now
+    (owner's choice, 0.19.4): the same black swipe can happen leaving any other screen while
+    scrolled down (People lists → a person, a product → its editor, More's sub-screens). On Back the browser puts
     the list's page back where it was, which is where the app's return to the tapped row
     lands anyway. (0.19.1 guessed it was the picture being taken mid-flight and added the
     entry before the flight; that stays, but wasn't the cause.) *Since 0.19.3* the return to
@@ -623,6 +626,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.19.4 — swipe-back from a Log entry (owner report, with a screen recording)
+- **Fixed:** with the Log scrolled down, swiping back from a loose Log entry showed black behind
+  it. Loose entries open their editor without the photo animation, so they had missed the 0.19.2
+  setting that lets the iPhone show its picture of the list during the swipe. Products opened
+  from the Log were already fine (the recording showed both).
+- The same can still happen leaving other screens while scrolled down (People lists, a product's
+  editor, More's sub-screens); left for now at the owner's choice.
+- Tests: 1 new Playwright test (fails without the fix). GitHub's first run failed it by 2.5px:
+  the test measured the row while the Log was still doing its entrance rise (6px, 0.2s),
+  confirmed by measuring the screen at that moment (1.4–2.5px low). The motion tests now wait
+  for the entrance to finish before measuring; this is also the likely cause of the one
+  unexplained failure seen while testing 0.19.3 (same kind of measurement). Test-only.
 
 ### 0.19.3 — test fix before 0.19.2 went live
 - 0.19.2 merged but didn't go live: GitHub's tests on `main` failed. Coming back from a product
