@@ -115,8 +115,10 @@ export async function contrastFailures(page: Page, boxes: TextBox[], steps = 12)
  * CSP rightly refuses an injected <style>.
  */
 export const HERO_TEXT = '.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .podium-badge > span, .podium-badge .n';
-export const heroTextBoxes = (page: Page): Promise<TextBox[]> =>
-  page.locator('main').evaluate((main, selector) => {
+export const heroTextBoxes = (page: Page): Promise<TextBox[]> => textBoxes(page, HERO_TEXT);
+/** The same for any text on the page (the Aurora's section titles, D29). */
+export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
+  page.locator('body').evaluate((main, selector) => {
     const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
     const darkest = (t: HTMLElement) => (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)).reduce((a, b) => (lum(b) < lum(a) ? b : a));
     const els = [...main.querySelectorAll<HTMLElement>(selector)];
@@ -135,4 +137,4 @@ export const heroTextBoxes = (page: Page): Promise<TextBox[]> =>
       if (getComputedStyle(t).backgroundClip === 'text') t.style.setProperty('background-image', 'none');
     }
     return out;
-  }, HERO_TEXT);
+  }, selector);
