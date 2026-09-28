@@ -30,6 +30,9 @@
   --warning: #f0a93b;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Scores, ranks, tiles and badges (D28, 0.21.0): the iPhone's own SF Pro Rounded, built in, nothing
+     downloaded. Other devices don't know ui-rounded and use the usual font, as before. */
+  --num-font: ui-rounded, "SF Pro Rounded", var(--font);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: calc(44px + var(--safe-top));
@@ -61,6 +64,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--accent-soft); }
 .num { font-variant-numeric: tabular-nums; }
+/* The rounded numbers (D28): every score, rank, stats tile, podium badge number, rating value and
+   value for money. Prices, amounts, dates and words keep the usual font. */
+.row .rk, .score b, .tile b, .hero-score b, .podium-badge .n, .rbar .v, .vfm b, .rate-top .val { font-family: var(--num-font); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- screen + motion ---------- */

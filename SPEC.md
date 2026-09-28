@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.20.1 (all phases done; the Poster product page)
+**Current version:** 0.21.0 (all phases done; rounded numbers)
 
 ---
 
@@ -91,6 +91,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D25 | **Your photo in the header** (2026-09-25; all the recommended options of https://claude.ai/artifact/KmRLwSVfdv5fmD5eJ7dMRt). A step away from design brief §6.4 / §8 ("the header holds only the title" on the main screens). | Top right on the **four main tabs only** (Leaderboard, Log, People, More): your profile photo in a 30px circle with a faint green edge, or your letter until you add one. Tapping it opens People with your card; on People it goes back to the top and clears the search. The title stays centred (equal side slots). Screens further in keep Back, Edit and ⋯ in their corners, and a friend's pages keep their photo beside @username. Only you see it; nothing new is stored or sent. See §4 *Your photo in the header*. |
 | D26 | **Remove background** (2026-09-25; tested on the owner's iPhone with https://claude.ai/artifact/AEGTDuvTmwcJfQyVwa6Pfm, screens approved in https://claude.ai/artifact/WX3RJFQaZkFirJ1S6cjyX2). A button on a photo cuts the bud out of its background, so every photo can look consistent: only the bud, on nothing. An AI runs **on the phone** (never a web service: photos never leave it), about 4 seconds a photo on the owner's iPhone. | **Where:** a button bottom-left of every photo in the grid (Crop stays bottom-right) and **Remove background** in the viewer, above Crop this photo; product and Log entry photos, new and existing; never on a friend's photos; profile photos stay as they are. **Flow:** the first time on a phone it asks before a one-off 47 MB download; cutting out shows a green line sweeping the photo; several separate things (a bag, a lighter) → **Tap the bud** (tap more for several buds; Next); a bud lying on a tray or bag → **Not right? Tap the bud in your photo** zooms in round the tap and cuts again; **Preview** (framed and centred, as a 1st-place row) → **Apply**, saved at once from a product page, on Save from an editor. **Result:** a see-through cut-out that sits straight on rows with no box, shown whole on the product page, grid and viewer, and on the podium pages. **Undo:** the original is never changed; the viewer's **Restore background** puts the photo back exactly as it was (same crop). Crop this photo on a cut-out crops the original again (the background comes back). **Followers** see the cut-out (they only ever get the framed version; never originals). **Export/restore** keep cut-outs. See §4 *Remove background*. |
 | D27 | **The Poster: a new top for product pages** (2026-09-28; option A "Poster" of https://claude.ai/artifact/AjrLHCpYjZeRS7zjxhhf8j). The first of the owner's front-end polish series. Replaces the photo box with the name and score in a card beneath it (and, on podium pages, D22's photo frame and 1st/Diamond card). | **The photo fills the top of the page** edge to edge, running up behind the glass header (about 470 points tall on the owner's iPhone; a photo is filled edge to edge, so a square one loses a little at the sides, and tapping anywhere on it, details included, opens the viewer as before). **The details sit on its bottom** over a dark fade: podium badge, the name with the big score to its right, strain tag · type · country, price, Private / Archived. A long name wraps and the poster grows. **A cut-out** floats in the upper part on a soft glow, never under the text; **no photo**: the type mark on that glow. **Podium pages:** badge and flowing score as before; instead of the frame, a **tier-coloured haze** flows through the bottom behind the details (1st and Diamond strongest, Platinum faint, Pewter calm at half speed); the tier's shimmer and one sweep cross the photo; Diamond's three glints sit in the photo. **A friend's product page** gets the same, without the price. **Photo grows** flies into the full-width photo; the details fade in once it lands. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *The Poster*. |
+| D28 | **Rounded numbers** (2026-09-28; option B "Rounded", decimals the same size, from https://claude.ai/artifact/VikcX3VdJjJ7X8aSqd58Uh). Second of the front-end polish series. A small, approved step away from design brief §4 (one system font for everything): the numbers get the iPhone's own rounded version of it. Still no web fonts: nothing is downloaded. | Every **score** (Leaderboard rows, yours, a friend's and the Archive; the Poster's big score), **rank number**, **stats tile** (Leaderboard, Log, a friend's), the **podium badge's #N**, the **rating values** beside the bars, **value for money** and the editor's **rating value** use SF Pro Rounded (`ui-rounded`), same size, weight and colours (podium gradients flow through them as before). Prices, amounts, dates and all words keep the usual font. On a non-Apple device the numbers look as before. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -509,6 +510,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Rounded numbers (D28, 0.21.0).** One token, `--num-font` (`ui-rounded, "SF Pro Rounded", var(--font)`), and
+  one rule listing every number that uses it (`.row .rk, .score b, .tile b, .hero-score b, .podium-badge .n,
+  .rbar .v, .vfm b, .rate-top .val`). `ui-rounded` is built into iOS and macOS Safari; other browsers skip it
+  and fall through to the usual stack. Tested (`test/e2e/numbers.spec.ts`): each of those numbers asks for the
+  rounded font, and names, prices, captions and purchase amounts don't (fails without the rule). Chromium on
+  Linux has no rounded font, so how it looks is checked on the owner's iPhone.
+
 - **The Poster (D27, 0.20.0).**
   - *One component* (`client/src/components/ProductHero.tsx`) draws the top of your product page and
     a friend's (which passes no price or flags). `.poster` pulls itself up by the header's height
@@ -658,6 +666,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.21.0 — rounded numbers (owner request)
+- Scores, rank numbers, stats tiles, the podium badge's number, the rating numbers, value for money
+  and the editor's rating number now use the iPhone's own rounded font (decision D28, option B of the
+  mockups), same size as before. Prices and all other text are unchanged; nothing is downloaded.
+- Tests: 2 new Playwright tests (`numbers.spec.ts`), which fail without the change.
 
 ### 0.20.1 — one centred cut-out (owner report, with a screen recording)
 - **Fixed:** on a product whose photo is a cut-out, the top of the page showed the bud twice: the
