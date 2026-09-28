@@ -120,6 +120,11 @@ test('a cut-out and the type mark float above the details; a long name wraps and
   await open(LONG);
   await expect(page.locator('main')).toHaveAttribute('data-podium', '3');
   const img = await rect('.hero-photo img');
+  // The cut-out and the thumbnail shown under it while it loads share one box, centred
+  // (0.20.0 drew the image at its own width from the left edge: two buds, one off to the left).
+  const under = await rect('.hero-photo .hero-under');
+  for (const k of ['left', 'top', 'width', 'height'] as const) expect(Math.abs(img[k] - under[k]), k).toBeLessThan(1);
+  expect(Math.abs(img.left + img.width / 2 - 195)).toBeLessThan(1);
   const textTop = await page.locator('.hero').evaluate((h) => Math.min(...[...h.children].map((c) => c.getBoundingClientRect().top)));
   expect(img.bottom).toBeLessThanOrEqual(textTop);
   expect(img.top).toBeGreaterThanOrEqual((await rect('.hdr')).bottom);

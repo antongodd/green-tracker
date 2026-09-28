@@ -326,7 +326,8 @@ div.hero-photo { cursor: default; }
 .hero-photo img, .hero-photo .hero-under { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero-photo .hero-under { background: center / cover no-repeat; }
 .poster.cut .hero-photo, .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, rgba(88, 224, 140, 0.2), rgba(88, 224, 140, 0) 60%), var(--surface-1); }
-.poster.cut .hero-photo img, .poster.cut .hero-photo .hero-under { top: calc(var(--header-h) + 12px); bottom: auto; left: 32px; right: 32px; width: auto; height: 200px; object-fit: contain; background-size: contain; }
+/* An <img> doesn't stretch between left and right (it keeps its own width), so both get an explicit width: one box, centred (0.20.1). */
+.poster.cut .hero-photo img, .poster.cut .hero-photo .hero-under { top: calc(var(--header-h) + 12px); bottom: auto; left: 32px; right: auto; width: calc(100% - 64px); height: 200px; object-fit: contain; background-size: contain; }
 .poster.cut .hero-photo img { filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.55)); }
 .poster.plain .hero-photo svg { position: absolute; left: 50%; top: calc(var(--header-h) + 112px); width: 110px; height: 110px; translate: -50% -50%; }
 /* The text starts below the cut-out or mark; a long name makes the poster taller, never overlaps. */
