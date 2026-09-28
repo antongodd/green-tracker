@@ -13,7 +13,7 @@ import { ControlRow, Tiles } from '../components/Controls';
 import { ChevronRight, LeafOutline, PlusIcon, TypeMark } from '../icons';
 import { cachedEntries, fetchEntries } from '../logEntries';
 import { cachedProducts, fetchProducts } from '../products';
-import { cameFrom, linkTo, navigate, openRow } from '../router';
+import { cameFrom, linkTo, navigate, openPlainRow, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 
@@ -43,7 +43,7 @@ function Row(p: { row: LogRow; source: Source }) {
     rememberRow('log', key, e.currentTarget as HTMLElement);
     // Products fly their photo into the profile (D20); loose entries open their editor as before.
     if (p.row.kind === 'product') openRow(e, href);
-    else linkTo(href)(e);
+    else openPlainRow(e, href);
   };
   return (
     // The whole row is the tap target — the thumbnail opens the row, not a viewer.

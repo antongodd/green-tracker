@@ -299,6 +299,28 @@ test('opening from a scrolled list: the history entry comes first, and nothing s
   await page.setViewportSize({ width: 390, height: 844 });
 });
 
+test('a loose Log entry opened from a scrolled Log keeps the phone’s picture of the Log for swiping back', async () => {
+  // 0.19.4, owner's recording: loose entries open without the photo flight, and their
+  // Log entry didn't restore its own scroll, so swiping back from one showed black.
+  await page.setViewportSize({ width: 390, height: 460 });
+  await page.goto('/log');
+  const loose = page.locator('.lrow', { hasText: 'Loose One' });
+  await expect(loose).toBeVisible();
+  // Scrolled down, with the entry in the middle of the screen.
+  await loose.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 220));
+  const box = (await loose.boundingBox())!;
+  const scrolled = await page.evaluate(() => window.scrollY);
+  expect(scrolled).toBeGreaterThan(50);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page).toHaveURL(/\/log\/[^/]+$/);
+  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual'); // the editor's entry
+  await page.goBack(); // what a swipe from the edge does
+  await expect(page).toHaveURL(/\/log$/);
+  expect(await page.evaluate(() => history.scrollRestoration)).toBe('auto'); // the Log's entry
+  await expect.poll(async () => Math.abs((await loose.boundingBox())!.y - box.y)).toBeLessThanOrEqual(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+});
+
 test('swiping back (the browser’s Back) shows the list without its entrance fade; other changes keep it', async () => {
   await page.goto('/');
   await expect(row('Photo Kush')).toBeVisible();
