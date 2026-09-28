@@ -26,6 +26,18 @@
   --bar-line: rgba(88, 224, 140, 0.22);
   --photo-edge: 0 0 0 1px rgba(88, 224, 140, 0.14);
   --bar-fill: linear-gradient(90deg, var(--accent), var(--accent-bright));
+  /* The Aurora (D29, 0.22.0): two still lights at the top of every screen, green from the
+     top-left and teal from the top-right, drawn on the screen itself so they scroll away with
+     it; and a faint green haze at the bottom, on the fixed background, behind the tab bar. */
+  --aurora-top:
+    radial-gradient(70% 40% at 8% -4%, rgba(88, 224, 140, 0.2), transparent 70%),
+    radial-gradient(60% 38% at 100% 6%, rgba(64, 196, 196, 0.15), transparent 70%);
+  /* Rows that stick under the header (the Rank/Type row, the Log's country headers) are frosted
+     like it, so the Aurora shows through at the top instead of a black band (D29). */
+  --sticky-bg: rgba(5, 8, 7, 0.6);
+  --sticky-blur: blur(20px) saturate(140%);
+  --controls-bg: rgba(5, 8, 7, 0.3); /* the pills carry their own background; the blur hides what passes under */
+  --aurora-bottom: radial-gradient(90% 30% at 50% 100%, rgba(47, 184, 106, 0.06), transparent 70%);
   --danger: #ff6b6b;
   --warning: #f0a93b;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -57,7 +69,7 @@ body {
   font-size: 16px;
   line-height: 1.45;
 }
-.bg-layer { position: fixed; inset: 0; z-index: -1; background: var(--bg); }
+.bg-layer { position: fixed; inset: 0; z-index: -1; background: var(--aurora-bottom), var(--bg); }
 #app { min-height: 100dvh; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -71,6 +83,8 @@ button { cursor: pointer; }
 
 /* ---------- screen + motion ---------- */
 .screen { min-height: 100dvh; padding-top: var(--header-h); padding-bottom: calc(var(--nav-h) + 24px); }
+/* The Aurora's lights (D29) belong to the screen, so they scroll with it (a 900px-tall band at its top). */
+.screen, .fullscreen { background-image: var(--aurora-top); background-repeat: no-repeat; background-position: top center; background-size: 100% 900px; }
 .screen.no-nav { padding-bottom: calc(var(--safe-bottom) + 24px); }
 @media (prefers-reduced-motion: no-preference) {
   .screen, .fullscreen { animation: enter 0.2s ease-out; }
@@ -503,7 +517,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .screen.has-savebar { padding-bottom: calc(var(--safe-bottom) + 100px); }
 
 /* ---------- control row (brief §6.4, P4: sticky under the header) ---------- */
-.controls { position: sticky; top: var(--header-h); z-index: 10; display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--bg); max-width: 720px; margin: 0 auto; }
+.controls { position: sticky; top: var(--header-h); z-index: 10; display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--controls-bg); -webkit-backdrop-filter: var(--sticky-blur); backdrop-filter: var(--sticky-blur); max-width: 720px; margin: 0 auto; }
 .controls-right { margin-left: auto; min-width: 0; }
 .pill { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; background: linear-gradient(135deg, rgba(88, 224, 140, 0.10), rgba(88, 224, 140, 0) 70%), var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.26); color: var(--text); font-size: 15px; white-space: nowrap; flex: none; }
 .pill .k { color: var(--text-2); }
@@ -616,7 +630,7 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
 
 /* ---------- Log (brief §6.2; P4: sticky country headers) ---------- */
 .lgroup { max-width: 720px; margin: 0 auto; }
-.group-h { position: sticky; top: calc(var(--header-h) + 58px); z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 16px 8px; background: var(--bg); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent-bright); }
+.group-h { position: sticky; top: calc(var(--header-h) + 58px); z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 16px 8px; background: var(--sticky-bg); -webkit-backdrop-filter: var(--sticky-blur); backdrop-filter: var(--sticky-blur); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent-bright); }
 .group-h .flag { font-size: 15px; letter-spacing: 0; }
 .group-h .gname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .group-h .n { margin-left: auto; }
