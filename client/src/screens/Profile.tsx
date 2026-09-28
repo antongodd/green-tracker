@@ -8,11 +8,12 @@ import { productType, RATING_LABELS, STRAIN_TYPES } from '../../../shared/domain
 import { formatHitTime, overall, overallExplanation, ratedCount } from '../../../shared/domain/ratings';
 import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
-import { asPurchases, formatIsoDate, StrainTag } from '../components/ProductRow';
-import { ExternalIcon, LockIcon, TypeMark } from '../icons';
+import { asPurchases, formatIsoDate } from '../components/ProductRow';
+import { ExternalIcon, LockIcon } from '../icons';
 import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
 import { podiumPlace } from '../../../shared/domain/leaderboard';
-import { CardGlint, PhotoGlints, PodiumBadge, podiumClass } from '../components/Podium';
+import { podiumClass } from '../components/Podium';
+import { ProductHero } from '../components/ProductHero';
 import { loadView } from '../viewState';
 import { api } from '../api';
 import { loadImage, renderCrop, uploadSet } from '../images';
@@ -203,7 +204,6 @@ export function Profile(p: { id: string }) {
     );
   }
 
-  const def = productType(product.productType);
   const o = overall(product.productType, product.ratings);
   const price = headlinePrice(asPurchases(product));
   const country = countryDisplay(product.country, product.countryOther);
@@ -226,50 +226,33 @@ export function Profile(p: { id: string }) {
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
       <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
-        {product.photos[0] ? (
-          <button class={`hero-photo${product.photos[0].cutout ? ' cut' : ''}`} onClick={() => setViewing(0)} aria-label="Open photos">
-            {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
-            <span class="hero-under" style={{ backgroundImage: `url("${shownFromRecord(product.photos[0]).thumb}")` }} />
-            <img src={shownFromRecord(product.photos[0]).image} alt="" />
-            <PhotoGlints podium={podium} />
-          </button>
-        ) : (
-          <div class="hero-photo">
-            {def.icon && <TypeMark icon={def.icon} label={def.label} />}
-            <PhotoGlints podium={podium} />
-          </div>
-        )}
-        <div class="hero">
-          <CardGlint podium={podium} />
-          <PodiumBadge podium={podium} view={view} whose="your" />
-          <h1>{product.name}</h1>
-          <div class={`hero-score${o === null ? ' unrated' : ''}`}>
-            <b>{o === null ? '–' : formatScore(o)}</b>
-            <span class="cap">{o === null ? 'Unrated' : 'Overall'}</span>
-          </div>
-          <div class="hero-line">
-            <StrainTag strain={product.strainType} />
-            {labels.type && <span>{labels.type}</span>}
-            {product.productType === 'concentrate' && labels.concentrate && <span>· {labels.concentrate}</span>}
-            {country && (
-              <span>
-                · {country.flag ? `${country.flag} ` : ''}
-                {country.name}
-              </span>
-            )}
-          </div>
-          {price !== null && <div class="hero-price">{formatUnitPrice(product.productType, price)}</div>}
-          {(product.private || product.archived) && (
-            <div class="badge-line">
-              {product.private && (
-                <span class="pill-note">
-                  <LockIcon /> Private
-                </span>
-              )}
-              {product.archived && <span class="pill-note">Archived</span>}
-            </div>
-          )}
-        </div>
+        <ProductHero
+          name={product.name}
+          productType={product.productType}
+          strainType={product.strainType}
+          typeLabel={labels.type}
+          concentrateLabel={labels.concentrate}
+          country={country}
+          overall={o}
+          photo={product.photos[0] ? shownFromRecord(product.photos[0]) : null}
+          onOpenPhoto={() => setViewing(0)}
+          podium={podium}
+          view={view}
+          whose="your"
+          price={price !== null ? formatUnitPrice(product.productType, price) : null}
+          notes={
+            (product.private || product.archived) && (
+              <div class="badge-line">
+                {product.private && (
+                  <span class="pill-note">
+                    <LockIcon /> Private
+                  </span>
+                )}
+                {product.archived && <span class="pill-note">Archived</span>}
+              </div>
+            )
+          }
+        />
 
         <Ratings product={product} />
         {product.photos.length > 0 && (

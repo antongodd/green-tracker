@@ -1,7 +1,7 @@
 // Podium product pages (D22): a product in the top four of the Leaderboard (under the
 // current filter and Rank by) carries its row's tier onto its page, with a "descending
 // shine": 1st rainbow gets every piece, Diamond everything plus glints, Platinum a
-// frame, silver score and badge, Pewter a calm frame and badge. Styled in styles.css.
+// haze, silver score and badge, Pewter a calm haze and badge. Styled in styles.css.
 import { podiumBadge, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
 import { CrownIcon } from '../icons';
 
@@ -22,17 +22,14 @@ export function PodiumBadge(p: { podium: Podium | null; view: ViewState; whose: 
   );
 }
 
-/** Diamond's glints on its page: the big photo's top corners (the card's corner is in the hero). */
+/** Diamond's glints on its page (D27): three in the photo's upper part, clear of all text. */
 export function PhotoGlints(p: { podium: Podium | null }) {
   if (p.podium !== 2) return null;
   return (
     <>
       <span class="glint g1" aria-hidden="true" />
       <span class="glint g2" aria-hidden="true" />
+      <span class="glint g3" aria-hidden="true" />
     </>
   );
-}
-
-export function CardGlint(p: { podium: Podium | null }) {
-  return p.podium === 2 ? <span class="glint g3" aria-hidden="true" /> : null;
 }

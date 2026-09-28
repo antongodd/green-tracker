@@ -315,14 +315,40 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .archived-row .unarchive { justify-self: end; }
 
 /* ---------- product profile (brief §9) ---------- */
-.hero-photo { height: 240px; margin: 12px 16px 0; border-radius: 16px; box-shadow: var(--photo-edge); background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--accent-bright); }
-.hero-photo svg { width: 96px; height: 96px; }
-.hero { padding: 16px; display: grid; gap: 8px; }
-.hero h1 { margin: 0; font-size: 24px; line-height: 1.2; overflow-wrap: anywhere; }
-.hero-score { display: flex; align-items: baseline; gap: 10px; }
-.hero-score b { font-size: 52px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+/* The Poster (D27, 0.20.0): the first photo fills the top of the page edge to edge,
+   running up behind the glass header; the name, score, tags and price sit on its
+   bottom over a dark fade. A cut-out, or the type mark when there's no photo, floats
+   in the upper part on a soft glow, always above the text. .hero-photo is the Photo
+   grows target (transitions.ts). */
+.poster { position: relative; isolation: isolate; overflow: hidden; margin-top: calc(-1 * var(--header-h)); min-height: calc(var(--header-h) + 380px); display: flex; flex-direction: column; justify-content: flex-end; }
+.hero-photo { position: absolute; inset: 0; z-index: 0; display: block; margin: 0; padding: 0; border: 0; border-radius: 0; overflow: hidden; background: var(--surface-2); color: var(--accent-bright); cursor: zoom-in; }
+div.hero-photo { cursor: default; }
+.hero-photo img, .hero-photo .hero-under { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero-photo .hero-under { background: center / cover no-repeat; }
+.poster.cut .hero-photo, .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, rgba(88, 224, 140, 0.2), rgba(88, 224, 140, 0) 60%), var(--surface-1); }
+.poster.cut .hero-photo img, .poster.cut .hero-photo .hero-under { top: calc(var(--header-h) + 12px); bottom: auto; left: 32px; right: 32px; width: auto; height: 200px; object-fit: contain; background-size: contain; }
+.poster.cut .hero-photo img { filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.55)); }
+.poster.plain .hero-photo svg { position: absolute; left: 50%; top: calc(var(--header-h) + 112px); width: 110px; height: 110px; translate: -50% -50%; }
+/* The text starts below the cut-out or mark; a long name makes the poster taller, never overlaps. */
+.poster.cut .hero, .poster.plain .hero { margin-top: calc(var(--header-h) + 222px); }
+/* Taps pass through the text to the photo (it opens the viewer, as before). */
+.hero { position: relative; z-index: 1; padding: 0 16px 14px; display: grid; gap: 8px; pointer-events: none; }
+/* The dark fade belongs to the text block, so it always sits behind the words, however
+   long the name or bright the photo (measured by the readability tests). */
+.hero::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 8, 7, 0) 0, rgba(5, 8, 7, 0.55) 60px, rgba(5, 8, 7, 0.86) 130px, rgba(5, 8, 7, 0.94) 75%, var(--bg) 100%); }
+.hero-head { display: flex; align-items: flex-end; gap: 12px; }
+.hero h1 { margin: 0; flex: 1; min-width: 0; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em; overflow-wrap: anywhere; text-wrap: balance; }
+.hero-score { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
+.hero-score b { font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.hero-score .cap { color: rgba(238, 244, 240, 0.84); }
 .hero-score.unrated b { color: var(--text-3); }
-.hero-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--text-2); font-size: 14px; }
+.hero-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: rgba(238, 244, 240, 0.84); font-size: 14px; }
+/* Photo grows: the photo flies alone, then the details fade in over it. */
+@media (prefers-reduced-motion: no-preference) {
+  .poster .hero { transition: opacity 0.22s ease-out; }
+  html.vt-open .poster .hero { opacity: 0; transition: none; }
+}
 .hero-line svg { width: 14px; height: 14px; }
 .hero-price { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .badge-line { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -358,15 +384,19 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .switch:checked { background: var(--accent); border-color: var(--accent); }
 .switch:checked::after { left: 22px; }
 
-/* ---------- podium product pages (D22, 0.16.0) ----------
+/* ---------- podium product pages (D22, 0.16.0; the Poster, D27, 0.20.0) ----------
    A product in the top four (under the current filter and Rank by) carries its row's
-   tier onto its page, with the rows' "descending shine": 1st and Diamond get a flowing
-   photo frame, coloured score, badge, holo/metal card and one sweep across the photo
-   as it opens (Diamond also twinkles); Platinum a frame, silver score and badge; Pewter
-   a calm frame (half speed) and badge. Same colours, speeds and shimmer as the rows.
-   Reduce Motion keeps the colours; no motion, sweep or glints. */
-.tiered .hero-photo { border: 2px solid transparent; box-shadow: none;
-  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--tier-grad) border-box; background-size: 100% 100%, 200% 100%; }
+   tier onto its page, with the rows' "descending shine": a badge, a tier-coloured haze
+   flowing through the bottom of the photo behind the details (1st and Diamond strongest,
+   Platinum faint, Pewter calm at half speed), a coloured score (1st–3rd), the tier's
+   shimmer across the photo and one sweep as it opens (1st, Diamond), and Diamond's
+   glints. Same colours, speeds and shimmer as the rows. Reduce Motion keeps the
+   colours; no motion, sweep or glints. */
+.tiered .poster.cut .hero-photo, .tiered .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, color-mix(in srgb, var(--t2) 22%, transparent), transparent 60%), var(--surface-1); }
+.tiered.p1 { --haze: 0.14; } .tiered.p2 { --haze: 0.14; } .tiered.p3 { --haze: 0.08; } .tiered.p4 { --haze: 0.06; }
+.tiered .hero::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
+  background: var(--tier-grad); background-size: 200% 100%; opacity: var(--haze);
+  -webkit-mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); }
 .tiered .hero-photo::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
@@ -377,11 +407,8 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .podium-badge .n { font-weight: 800; color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 /* Pewter's darkest shades are too dim for small text (measured), so its badge number flows through the lighter ones. */
 .tiered.p4 .podium-badge .n { background-image: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
-/* 1st: the row's holo card; Diamond: its metal wash. Each badge matches its tier the same way. */
-.tiered.p1 .hero, .tiered.p2 .hero { margin: 12px 16px 0; padding: 14px 16px 16px; border-radius: 16px; position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
-/* The shimmer passes behind the small grey text on the cards, so it's brighter there (as on the rows). */
-.tiered.p1 .hero .hero-line, .tiered.p2 .hero .hero-line, .tiered.p1 .hero-score .cap, .tiered.p2 .hero-score .cap { color: rgba(238, 244, 240, 0.84); }
-.tiered.p1 .hero, .tiered.p1 .podium-badge {
+/* Each badge matches its tier: 1st the row's holo, the metals their wash. */
+.tiered.p1 .podium-badge {
   background:
     linear-gradient(115deg, rgba(12, 20, 16, 0.7), rgba(12, 20, 16, 0.86) 70%) padding-box,
     var(--tier-grad) padding-box,
@@ -390,27 +417,25 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 }
 /* The badge's small rainbow "#1" needs a darker holo behind it than the card (measured). */
 .tiered.p1 .podium-badge { background-image: linear-gradient(115deg, rgba(12, 20, 16, 0.84), rgba(12, 20, 16, 0.92) 70%), var(--tier-grad), var(--tier-grad); }
-.tiered.p2 .hero, .tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge {
+.tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge {
   background:
     linear-gradient(115deg, rgba(var(--metal), var(--wash)), rgba(var(--metal), 0) 55%) padding-box,
     linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
     var(--tier-grad) border-box;
   background-size: 100% 100%, 100% 100%, 200% 100%;
 }
-.tiered.p1 .hero::after, .tiered.p2 .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
-  background-size: 250% 100%; background-position: 120% 0; }
-/* Diamond's glints: the photo's top corners and the card's top-right corner, clear of all text. */
+.tiered .hero-photo::after { z-index: 1; }
+/* Diamond's glints: in the photo below the header, clear of all text. */
 .hero-photo .glint { z-index: 2; }
-.hero-photo .glint.g1 { left: 10px; top: 10px; }
-.hero-photo .glint.g2 { left: auto; right: 12px; top: 12px; }
-.hero .glint.g3 { left: auto; bottom: auto; right: 14px; top: 12px; }
+.hero-photo .glint.g1 { left: 16px; top: calc(var(--header-h) + 16px); }
+.hero-photo .glint.g2 { left: auto; right: 18px; top: calc(var(--header-h) + 24px); }
+.hero-photo .glint.g3 { left: auto; bottom: auto; right: 30px; top: calc(var(--header-h) + 150px); }
 @media (prefers-reduced-motion: no-preference) {
-  .tiered .hero-photo { animation: podium-frame var(--edge-speed) linear infinite; }
-  .tiered .hero-photo::after, .tiered.p1 .hero::after, .tiered.p2 .hero::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
+  .tiered .hero::after { animation: tier-flow-text var(--edge-speed) linear infinite; }
+  .tiered .hero-photo::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
   .tiered .hero-score b, .podium-badge .n { animation: tier-flow-text var(--edge-speed) linear infinite; }
-  .tiered.p1 .hero, .tiered.p1 .podium-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
-  .tiered.p2 .hero, .tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge { animation: tier-flow-edge var(--edge-speed) linear infinite; }
+  .tiered.p1 .podium-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
+  .tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge { animation: tier-flow-edge var(--edge-speed) linear infinite; }
   /* One sweep across the photo as the page opens, then still. */
   .tiered.p1 .hero-photo::before, .tiered.p2 .hero-photo::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
     background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--t1) 30%, transparent) 40%, color-mix(in srgb, var(--t3) 40%, transparent) 47%, rgba(255, 255, 255, 0.5) 50%, color-mix(in srgb, var(--t5) 40%, transparent) 53%, color-mix(in srgb, var(--t6) 30%, transparent) 60%, transparent 70%);
@@ -418,7 +443,6 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
   /* Held while Photo grows is flying (transitions.ts), so it always runs just after the photo lands. */
   .vt-photo .tiered .hero-photo::before { animation-play-state: paused; }
 }
-@keyframes podium-frame { from { background-position: 0 0, 0% 0; } to { background-position: 0 0, 100% 0; } }
 @keyframes podium-arrive { 0% { opacity: 1; background-position: 130% 0; } 85% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
 
 /* ---------- editor (brief §6.6, §6.7, §6.11; P5) ---------- */
@@ -491,12 +515,8 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .tile b { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ---------- photos (brief §6.9) ---------- */
-.thumb img, .hero-photo img, .pgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb img, .pgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lrow .thumb img { border-radius: 8px; }
-.hero-photo { position: relative; overflow: hidden; padding: 0; border: 0; cursor: zoom-in; width: calc(100% - 32px); }
-.hero-photo .hero-under { position: absolute; inset: 0; background: center / cover no-repeat; }
-.hero-photo img { position: relative; }
-.hero-photo:has(img) { height: 300px; }
 .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .pcell { position: relative; aspect-ratio: 1; border-radius: 8px; box-shadow: var(--photo-edge); overflow: hidden; background: var(--surface-2); border: 0; padding: 0; cursor: zoom-in; }
 .pcell.uploading img { opacity: 0.45; }
@@ -515,10 +535,6 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .thumb.cut, .pcell.cut { background: transparent; box-shadow: none; }
 .thumb.cut img, .pcell.cut img { object-fit: contain; }
 .pcell.cut { box-shadow: 0 0 0 1px var(--card-edge); }
-.hero-photo.cut { background: var(--card-bg); box-shadow: 0 0 0 1px var(--card-edge); }
-.tiered .hero-photo.cut { box-shadow: none; }
-.hero-photo.cut img { object-fit: contain; padding: 12px; }
-.hero-photo.cut .hero-under { inset: 12px; background-size: contain; }
 .cutout-btn { position: absolute; left: 6px; bottom: 6px; z-index: 1; width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--bar); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: #fff; display: flex; align-items: center; justify-content: center; }
 .cutout-btn svg { width: 17px; height: 17px; }
 .cutout-btn::before { content: ""; position: absolute; inset: -6px; } /* 44px tap target */

@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
 import { leaderboardEmptyState, leaderboardTiles, podiumPlace, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
-import { CardGlint, PhotoGlints, PodiumBadge, podiumClass } from '../components/Podium';
+import { podiumClass } from '../components/Podium';
+import { ProductHero } from '../components/ProductHero';
 import { photoUrl } from '../../../shared/domain/photo';
 import { productTypeLabel } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
@@ -12,9 +13,9 @@ import { ApiError, errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
-import { Cluster, formatRankValue, Glints, Score, StrainTag, Thumb } from '../components/ProductRow';
+import { Cluster, formatRankValue, Glints, Score, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
-import { LeafOutline, MoreIcon, TypeMark } from '../icons';
+import { LeafOutline, MoreIcon } from '../icons';
 import * as api from '../people';
 import { cameFrom, linkTo, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
@@ -263,7 +264,6 @@ export function SharedProfile(p: { username: string; id: string }) {
       </>
     );
   }
-  const def = productType(product.productType);
   const o = overall(product.productType, product.ratings);
   const country = countryDisplay(product.country, product.countryOther);
   const labels = productTypeLabel({ ...product, concentrateType: product.concentrateType ?? 'not_set' });
@@ -283,38 +283,20 @@ export function SharedProfile(p: { username: string; id: string }) {
     <>
       <Header title={`@${p.username} / ${product.name}`} leaf={false} left={<BackButton to={backTo} />} />
       <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
-        {photos[0] ? (
-          <button class={`hero-photo${photos[0].cutout ? ' cut' : ''}`} onClick={() => setViewing(0)} aria-label="Open photos">
-            <span class="hero-under" style={{ backgroundImage: `url("${photos[0].thumb}")` }} />
-            <img src={photos[0].image} alt="" />
-            <PhotoGlints podium={podium} />
-          </button>
-        ) : (
-          <div class="hero-photo">
-            {def.icon && <TypeMark icon={def.icon} label={def.label} />}
-            <PhotoGlints podium={podium} />
-          </div>
-        )}
-        <div class="hero">
-          <CardGlint podium={podium} />
-          <PodiumBadge podium={podium} view={view} whose="their" />
-          <h1>{product.name}</h1>
-          <div class={`hero-score${o === null ? ' unrated' : ''}`}>
-            <b>{o === null ? '–' : formatScore(o)}</b>
-            <span class="cap">{o === null ? 'Unrated' : 'Overall'}</span>
-          </div>
-          <div class="hero-line">
-            <StrainTag strain={product.strainType} />
-            {labels.type && <span>{labels.type}</span>}
-            {product.productType === 'concentrate' && labels.concentrate && <span>· {labels.concentrate}</span>}
-            {country && (
-              <span>
-                · {country.flag ? `${country.flag} ` : ''}
-                {country.name}
-              </span>
-            )}
-          </div>
-        </div>
+        <ProductHero
+          name={product.name}
+          productType={product.productType}
+          strainType={product.strainType}
+          typeLabel={labels.type}
+          concentrateLabel={labels.concentrate}
+          country={country}
+          overall={o}
+          photo={photos[0] ?? null}
+          onOpenPhoto={() => setViewing(0)}
+          podium={podium}
+          view={view}
+          whose="their"
+        />
         <Ratings product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">
