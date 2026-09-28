@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.19.5 (all phases done; swipe-back shows the list)
+**Current version:** 0.20.0 (all phases done; the Poster product page)
 
 ---
 
@@ -90,6 +90,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D24 | **People opens on Following** (2026-09-25). The order is now Following · Followers · Requests, and People opens on Following every time the app starts, even with requests waiting (the Requests badge and the tab-bar badge show them). Within a visit it remembers the list you last chose, as before. | Look and order only; no data change. |
 | D25 | **Your photo in the header** (2026-09-25; all the recommended options of https://claude.ai/artifact/KmRLwSVfdv5fmD5eJ7dMRt). A step away from design brief §6.4 / §8 ("the header holds only the title" on the main screens). | Top right on the **four main tabs only** (Leaderboard, Log, People, More): your profile photo in a 30px circle with a faint green edge, or your letter until you add one. Tapping it opens People with your card; on People it goes back to the top and clears the search. The title stays centred (equal side slots). Screens further in keep Back, Edit and ⋯ in their corners, and a friend's pages keep their photo beside @username. Only you see it; nothing new is stored or sent. See §4 *Your photo in the header*. |
 | D26 | **Remove background** (2026-09-25; tested on the owner's iPhone with https://claude.ai/artifact/AEGTDuvTmwcJfQyVwa6Pfm, screens approved in https://claude.ai/artifact/WX3RJFQaZkFirJ1S6cjyX2). A button on a photo cuts the bud out of its background, so every photo can look consistent: only the bud, on nothing. An AI runs **on the phone** (never a web service: photos never leave it), about 4 seconds a photo on the owner's iPhone. | **Where:** a button bottom-left of every photo in the grid (Crop stays bottom-right) and **Remove background** in the viewer, above Crop this photo; product and Log entry photos, new and existing; never on a friend's photos; profile photos stay as they are. **Flow:** the first time on a phone it asks before a one-off 47 MB download; cutting out shows a green line sweeping the photo; several separate things (a bag, a lighter) → **Tap the bud** (tap more for several buds; Next); a bud lying on a tray or bag → **Not right? Tap the bud in your photo** zooms in round the tap and cuts again; **Preview** (framed and centred, as a 1st-place row) → **Apply**, saved at once from a product page, on Save from an editor. **Result:** a see-through cut-out that sits straight on rows with no box, shown whole on the product page, grid and viewer, and on the podium pages. **Undo:** the original is never changed; the viewer's **Restore background** puts the photo back exactly as it was (same crop). Crop this photo on a cut-out crops the original again (the background comes back). **Followers** see the cut-out (they only ever get the framed version; never originals). **Export/restore** keep cut-outs. See §4 *Remove background*. |
+| D27 | **The Poster: a new top for product pages** (2026-09-28; option A "Poster" of https://claude.ai/artifact/AjrLHCpYjZeRS7zjxhhf8j). The first of the owner's front-end polish series. Replaces the photo box with the name and score in a card beneath it (and, on podium pages, D22's photo frame and 1st/Diamond card). | **The photo fills the top of the page** edge to edge, running up behind the glass header (about 470 points tall on the owner's iPhone; a photo is filled edge to edge, so a square one loses a little at the sides, and tapping anywhere on it, details included, opens the viewer as before). **The details sit on its bottom** over a dark fade: podium badge, the name with the big score to its right, strain tag · type · country, price, Private / Archived. A long name wraps and the poster grows. **A cut-out** floats in the upper part on a soft glow, never under the text; **no photo**: the type mark on that glow. **Podium pages:** badge and flowing score as before; instead of the frame, a **tier-coloured haze** flows through the bottom behind the details (1st and Diamond strongest, Platinum faint, Pewter calm at half speed); the tier's shimmer and one sweep cross the photo; Diamond's three glints sit in the photo. **A friend's product page** gets the same, without the price. **Photo grows** flies into the full-width photo; the details fade in once it lands. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *The Poster*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -412,7 +413,9 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the motion (≥ 4.5:1, 3:1 for the large score), since axe can't judge text over a
   gradient.
 
-- **Podium product pages (D22, 0.16.0).**
+- **Podium product pages (D22, 0.16.0).** *Since 0.20.0 (D27) the page is the Poster: the photo
+  frame and the 1st/Diamond card below are replaced by a tier-coloured haze behind the details, and
+  the glints sit in the photo; see §4 The Poster. The rest below still applies.*
   - *The place*: `podiumPlace` (`shared/domain/leaderboard.ts`) ranks the same list with the
     same view as the row (`rankProducts`), so a page and its row can never disagree. Your
     page uses your list (the cached one, else fetched once) and your stored view (`gt.view`);
@@ -505,6 +508,33 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     Leaderboard, Log, a product without a photo), never for loose entries, cleans up
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
+
+- **The Poster (D27, 0.20.0).**
+  - *One component* (`client/src/components/ProductHero.tsx`) draws the top of your product page and
+    a friend's (which passes no price or flags). `.poster` pulls itself up by the header's height
+    (`margin-top: calc(-1 * var(--header-h))`), so the photo runs behind the glass header; it's at
+    least the header plus 380px tall and grows with its text. `.hero-photo` (still the Photo grows
+    target and the button that opens the viewer) fills it, `object-fit: cover`, with the thumbnail
+    underneath until the full photo arrives. `.hero` (the details) sits at the bottom with
+    `pointer-events: none`, so a tap anywhere reaches the photo.
+  - *The dark fade belongs to the text block* (`.hero::before`, from 130px above it to the bottom:
+    0 → 55% → 86% → 94% → the page colour), so it's always behind the words however long the name,
+    and the page continues seamlessly below. The small grey text (type, country, "Overall") is 84%
+    white there.
+  - *Cut-out / no photo* (`.poster.cut` / `.plain`): a green radial glow (the tier's colour on podium
+    pages); the cut-out is drawn in a 200px band just below the header, the type mark centred in it;
+    the details start below that band, so they can never cover it.
+  - *Podium* (styles.css *podium product pages*): `.tiered .hero::after` is the haze, the tier's six
+    colours flowing (`tier-flow-text`) at `--haze` 0.14 / 0.14 / 0.08 / 0.06, masked to fade at both
+    ends; the shimmer and sweep stay on the photo (under the fade); glints below the header.
+  - *Photo grows*: the photo flies alone; `html.vt-open` hides the details for the flight and they
+    fade in (0.22s) once it lands. Back flies the whole poster photo home as before.
+  - Tested (`test/e2e/hero.spec.ts`): edge to edge from the very top (behind the header), details on
+    the photo's bottom, name and score side by side, a tap on the name opening the viewer, a cut-out and
+    the type mark above the details, a long name wrapping without overflowing, and readability measured
+    from real pixels across the podium motion over **an all-white photo and a busy bright one** (checked
+    by deliberately weakening the fade: caught). `podium.spec.ts` checks each place's haze strength and
+    speed and a friend's poster without a price; the motion tests pass unchanged.
 
 - **Profile photos (D23, 0.17.0).**
   - *Storage*: `profile_photos` (migration 0004), one row per account: `original_set`, `image_set`
@@ -626,6 +656,20 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.20.0 — the Poster (owner request)
+- The top of every product page is new (decision D27, option A of the mockups): the photo fills the
+  top of the page edge to edge, running up behind the header, and the name, score, tags and price
+  sit on its bottom over a dark fade, so they're always readable. The ratings now start on the first
+  screen.
+- A cut-out floats in the upper part on a soft glow; without a photo, the type icon sits there.
+- Podium pages keep their badge and flowing score; the frame round the photo becomes a tier-coloured
+  haze flowing behind the details, strongest for 1st and Diamond. The sweep still crosses the photo
+  as it opens, and Diamond still twinkles.
+- A friend's product pages get the same, without the price.
+- Photo grows flies into the new big photo, and the details fade in once it lands.
+- Tests: 3 new Playwright tests (`hero.spec.ts`), including readability over an all-white photo and
+  a busy one (checked by deliberately weakening the fade); the podium tests now check the haze.
 
 ### 0.19.5 — spec tidy-up
 - §4: restored the *Tap feel (D20, 0.14.0)* heading, lost in 0.16.0, above *Press*, *Photo grows*

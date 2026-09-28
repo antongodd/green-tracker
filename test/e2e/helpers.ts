@@ -107,3 +107,32 @@ export async function contrastFailures(page: Page, boxes: TextBox[], steps = 12)
   }
   return worst;
 }
+
+/**
+ * The text boxes of a product page's hero (D22, D27), for contrastFailures. Gradient text
+ * is judged by the darkest colour it flows through. The text itself is then hidden (not
+ * its background), so only what's behind it is photographed. Through the DOM: the app's
+ * CSP rightly refuses an injected <style>.
+ */
+export const HERO_TEXT = '.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .podium-badge > span, .podium-badge .n';
+export const heroTextBoxes = (page: Page): Promise<TextBox[]> =>
+  page.locator('main').evaluate((main, selector) => {
+    const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    const darkest = (t: HTMLElement) => (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)).reduce((a, b) => (lum(b) < lum(a) ? b : a));
+    const els = [...main.querySelectorAll<HTMLElement>(selector)];
+    const out = els.map((t) => {
+      const range = document.createRange();
+      range.selectNodeContents(t);
+      const tr = range.getBoundingClientRect();
+      const b = t.getBoundingClientRect();
+      const x0 = Math.max(tr.left, b.left) + 1, x1 = Math.min(tr.right, b.right) - 1, y0 = Math.max(tr.top, b.top) + 1, y1 = Math.min(tr.bottom, b.bottom) - 1;
+      const gradient = getComputedStyle(t).backgroundClip === 'text';
+      return { label: `${t.tagName.toLowerCase()}.${t.className || ''} "${t.textContent?.slice(0, 20)}"`, x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0), color: gradient ? `rgb(${darkest(t).join(', ')})` : getComputedStyle(t).color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
+    });
+    for (const t of els) {
+      t.style.setProperty('color', 'transparent');
+      t.style.setProperty('-webkit-text-fill-color', 'transparent');
+      if (getComputedStyle(t).backgroundClip === 'text') t.style.setProperty('background-image', 'none');
+    }
+    return out;
+  }, HERO_TEXT);

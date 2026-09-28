@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, shot, signUp, type TextBox } from './helpers';
+import { contrastFailures, heroTextBoxes, shot, signUp } from './helpers';
 
 // D22 (0.16.0): a product in the top four carries its row's tier onto its own page,
 // with the rows' "descending shine", following the Leaderboard's filter and Rank by;
@@ -70,7 +70,7 @@ const pieces = (page: Page) =>
     const hero = main.querySelector<HTMLElement>('.hero')!;
     const photo = main.querySelector<HTMLElement>('.hero-photo')!;
     const score = main.querySelector<HTMLElement>('.hero-score b')!;
-    const frame = getComputedStyle(photo);
+    const haze = getComputedStyle(hero, '::after');
     const anim = (el: Element, name: string, pseudo?: string) =>
       // Pseudo-element animations are only listed with subtree: true.
       el.getAnimations({ subtree: true }).find((a) => (a as CSSAnimation).animationName === name && (a.effect as KeyframeEffect).target === el && ((a.effect as KeyframeEffect).pseudoElement ?? undefined) === pseudo);
@@ -78,10 +78,10 @@ const pieces = (page: Page) =>
       podium: main.getAttribute('data-podium'),
       badge: main.querySelector('.podium-badge')?.textContent ?? null,
       crown: !!main.querySelector('.podium-badge svg'),
-      frame: frame.backgroundImage.includes('linear-gradient') && frame.borderTopWidth === '2px',
-      frameMs: Number(anim(photo, 'podium-frame')?.effect?.getTiming().duration ?? 0),
+      // The tier haze behind the details (D27): stronger the higher the place, Pewter's at half speed.
+      haze: haze.content !== 'none' && haze.backgroundImage.includes('linear-gradient') ? haze.opacity : null,
+      hazeMs: Number(anim(hero, 'tier-flow-text', '::after')?.effect?.getTiming().duration ?? 0),
       score: getComputedStyle(score).backgroundClip === 'text',
-      card: getComputedStyle(hero).borderRadius === '16px' && getComputedStyle(hero).backgroundImage.includes('linear-gradient'),
       sweep: getComputedStyle(photo, '::before').content !== 'none',
       sweepDelay: Number(anim(photo, 'podium-arrive', '::before')?.effect?.getTiming().delay ?? 0),
       glints: main.querySelectorAll('.glint').length,
@@ -95,10 +95,10 @@ const open = async (page: Page, path: string) => {
 
 test('each podium place carries its tier onto its page, with the descending shine', async () => {
   const expected = [
-    ['Secret', { podium: '1', badge: '#1 on your Leaderboard', crown: true, frame: true, frameMs: 5000, score: true, card: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Alpha', { podium: '2', badge: '#2 on your Leaderboard', crown: false, frame: true, frameMs: 5000, score: true, card: true, sweep: true, sweepDelay: 250, glints: 3 }],
-    ['Bravo', { podium: '3', badge: '#3 on your Leaderboard', crown: false, frame: true, frameMs: 5000, score: true, card: false, sweep: false, sweepDelay: 0, glints: 0 }],
-    ['Charlie', { podium: '4', badge: '#4 on your Leaderboard', crown: false, frame: true, frameMs: 10000, score: false, card: false, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Secret', { podium: '1', badge: '#1 on your Leaderboard', crown: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
+    ['Alpha', { podium: '2', badge: '#2 on your Leaderboard', crown: false, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 3 }],
+    ['Bravo', { podium: '3', badge: '#3 on your Leaderboard', crown: false, haze: '0.08', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Charlie', { podium: '4', badge: '#4 on your Leaderboard', crown: false, haze: '0.06', hazeMs: 10000, score: false, sweep: false, sweepDelay: 0, glints: 0 }],
   ] as const;
   for (const [name, want] of expected) {
     await open(owner, `/products/${ids[name]}`);
@@ -112,7 +112,7 @@ test('each podium place carries its tier onto its page, with the descending shin
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('main')).toHaveAttribute('data-podium', 'none'); // the list has arrived
     const got = await pieces(owner);
-    expect({ badge: got.badge, frame: got.frame, glints: got.glints }, name).toEqual({ badge: null, frame: false, glints: 0 });
+    expect({ badge: got.badge, haze: got.haze, glints: got.glints }, name).toEqual({ badge: null, haze: null, glints: 0 });
   }
 });
 
@@ -168,29 +168,7 @@ test('text stays readable on every podium page throughout the motion', async () 
   for (const name of ['Secret', 'Alpha', 'Bravo', 'Charlie']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();
-    const boxes: TextBox[] = await owner.locator('main').evaluate((main) => {
-      // Gradient text is judged by the darkest colour it flows through.
-      const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
-      const darkest = (t: HTMLElement) => (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)).reduce((a, b) => (lum(b) < lum(a) ? b : a));
-      const els = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .podium-badge > span, .podium-badge .n')];
-      const out = els.map((t) => {
-        const range = document.createRange();
-        range.selectNodeContents(t);
-        const tr = range.getBoundingClientRect();
-        const b = t.getBoundingClientRect();
-        const x0 = Math.max(tr.left, b.left) + 1, x1 = Math.min(tr.right, b.right) - 1, y0 = Math.max(tr.top, b.top) + 1, y1 = Math.min(tr.bottom, b.bottom) - 1;
-        const gradient = getComputedStyle(t).backgroundClip === 'text';
-        return { label: `${t.tagName.toLowerCase()}.${t.className || ''} "${t.textContent?.slice(0, 20)}"`, x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0), color: gradient ? `rgb(${darkest(t).join(', ')})` : getComputedStyle(t).color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
-      });
-      // Hide the text (not its background) so only what's behind it is photographed.
-      // (Through the DOM: the app's CSP rightly refuses an injected <style>.)
-      for (const t of els) {
-        t.style.setProperty('color', 'transparent');
-        t.style.setProperty('-webkit-text-fill-color', 'transparent');
-        if (getComputedStyle(t).backgroundClip === 'text') t.style.setProperty('background-image', 'none');
-      }
-      return out;
-    });
+    const boxes = await heroTextBoxes(owner);
     const worst = await contrastFailures(owner, boxes);
     expect(worst, `${name}:\n${worst.join('\n')}`).toEqual([]);
   }
@@ -202,7 +180,7 @@ test('Reduce Motion keeps the colours but nothing moves, sweeps or twinkles', as
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();
     const got = await pieces(owner);
-    expect({ frame: got.frame, score: got.score, card: got.card, frameMs: got.frameMs, sweep: got.sweep }).toEqual({ frame: true, score: true, card: true, frameMs: 0, sweep: false });
+    expect({ haze: got.haze, score: got.score, hazeMs: got.hazeMs, sweep: got.sweep }).toEqual({ haze: '0.14', score: true, hazeMs: 0, sweep: false });
     // (The screen's own entrance fade is kept under Reduce Motion; only the podium's motion stops.)
     expect(await owner.locator('main').evaluate((m) => m.getAnimations({ subtree: true }).map((a) => (a as CSSAnimation).animationName).filter((n) => /^(tier|podium)-/.test(n)))).toEqual([]);
     if (name === 'Alpha') await expect(owner.locator('.glint').first()).toBeHidden();
@@ -216,7 +194,10 @@ test('a friend’s product page gets its place on their board, worked out only f
   await fan.locator('.row', { hasText: 'Alpha' }).click();
   await expect(fan.locator('.podium-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('data-podium', '1');
-  expect(await pieces(fan)).toMatchObject({ crown: true, frame: true, score: true, card: true, sweep: true, glints: 0 });
+  expect(await pieces(fan)).toMatchObject({ crown: true, haze: '0.14', score: true, sweep: true, glints: 0 });
+  // The Poster (D27) on their page too, without a price.
+  await expect(fan.locator('.poster .hero-photo')).toBeVisible();
+  await expect(fan.locator('.hero-price')).toHaveCount(0);
   await shot(fan, '91-podium-friend-page');
 
   await open(fan, `/u/${ownerName}/p/${ids.Delta}`);
