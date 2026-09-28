@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.20.0 (all phases done; the Poster product page)
+**Current version:** 0.20.1 (all phases done; the Poster product page)
 
 ---
 
@@ -522,7 +522,9 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     and the page continues seamlessly below. The small grey text (type, country, "Overall") is 84%
     white there.
   - *Cut-out / no photo* (`.poster.cut` / `.plain`): a green radial glow (the tier's colour on podium
-    pages); the cut-out is drawn in a 200px band just below the header, the type mark centred in it;
+    pages); the cut-out is drawn in a 200px band just below the header (image and loading thumbnail
+    in one box, `width: calc(100% - 64px)`: an `<img>` keeps its own width rather than stretching
+    between `left` and `right`, 0.20.1), the type mark centred in it;
     the details start below that band, so they can never cover it.
   - *Podium* (styles.css *podium product pages*): `.tiered .hero::after` is the haze, the tier's six
     colours flowing (`tier-flow-text`) at `--haze` 0.14 / 0.14 / 0.08 / 0.06, masked to fade at both
@@ -531,7 +533,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     fade in (0.22s) once it lands. Back flies the whole poster photo home as before.
   - Tested (`test/e2e/hero.spec.ts`): edge to edge from the very top (behind the header), details on
     the photo's bottom, name and score side by side, a tap on the name opening the viewer, a cut-out and
-    the type mark above the details, a long name wrapping without overflowing, and readability measured
+    the type mark above the details (the cut-out centred, in the same box as its thumbnail, since 0.20.1), a long name wrapping without overflowing, and readability measured
     from real pixels across the podium motion over **an all-white photo and a busy bright one** (checked
     by deliberately weakening the fade: caught). `podium.spec.ts` checks each place's haze strength and
     speed and a friend's poster without a price; the motion tests pass unchanged.
@@ -656,6 +658,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.20.1 — one centred cut-out (owner report, with a screen recording)
+- **Fixed:** on a product whose photo is a cut-out, the top of the page showed the bud twice: the
+  cut-out itself, too small and off to the left, and a larger copy in the middle. The copy is the
+  thumbnail shown under the photo while it loads; a normal photo covers it, but a cut-out is
+  see-through. The cut-out was drawn at its own width from the left edge instead of filling its
+  centred box. Both now share one centred box, so there's one bud in the middle. Normal photos were
+  never affected.
+- Tests: the Poster test now checks the cut-out and its thumbnail share one centred box (it fails on
+  0.20.0 by 126px).
 
 ### 0.20.0 — the Poster (owner request)
 - The top of every product page is new (decision D27, option A of the mockups): the photo fills the
