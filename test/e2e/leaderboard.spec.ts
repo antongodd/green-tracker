@@ -81,7 +81,11 @@ test('podium tiers: motion, Reduce Motion, and readable text throughout', async 
     const b = t.getBoundingClientRect();
     const x0 = Math.max(tr.left, b.left) + 1, x1 = Math.min(tr.right, b.right) - 1, y0 = Math.max(tr.top, b.top) + 1, y1 = Math.min(tr.bottom, b.bottom) - 1;
     const r = { left: x0, top: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
-    return { row: i + 1, part: t.className || t.tagName, x: r.left, y: r.top, w: r.width, h: r.height, color: getComputedStyle(t).color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
+    // Text drawn in a flowing gradient (the scores, D31) is judged by the darkest colour it flows through.
+    const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    const stops = getComputedStyle(t).backgroundClip === 'text' ? (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)) : [];
+    const color = stops.length ? `rgb(${stops.reduce((a, c) => (lum(c) < lum(a) ? c : a)).join(', ')})` : getComputedStyle(t).color;
+    return { row: i + 1, part: t.className || t.tagName, x: r.left, y: r.top, w: r.width, h: r.height, color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
   })));
   // (Set through the DOM: the app's CSP rightly refuses an injected <style>.)
   await tiers.evaluateAll((els) => els.forEach((el) => el.querySelectorAll<HTMLElement>('.mid, .score, .rk').forEach((t) => (t.style.visibility = 'hidden'))));
@@ -144,7 +148,8 @@ test('cool podium: Diamond, Platinum, Pewter; descending shine; glints clear of 
   const info = await tiers.evaluateAll((els) => els.map((el) => {
     const cs = getComputedStyle(el);
     const edge = el.getAnimations().find((a) => (a as CSSAnimation).animationName.startsWith('tier-flow'));
-    return { cls: el.className, bg: cs.backgroundImage, wash: parseFloat(cs.getPropertyValue('--wash')), sheen: parseFloat(cs.getPropertyValue('--sheen')), edgeMs: Number(edge?.effect?.getTiming().duration), glints: el.querySelectorAll('.glint').length };
+    const score = getComputedStyle(el.querySelector('.score b')!);
+    return { cls: el.className, bg: cs.backgroundImage, glow: parseFloat(cs.getPropertyValue('--glow')), sheen: parseFloat(cs.getPropertyValue('--sheen')), edgeMs: Number(edge?.effect?.getTiming().duration), glints: el.querySelectorAll('.glint').length, scoreFlows: score.backgroundClip === 'text' && score.backgroundImage.includes('linear-gradient') };
   }));
   expect(info.map((i) => i.cls.match(/p\d/)![0])).toEqual(['p1', 'p2', 'p3', 'p4']);
   expect(info[1]!.bg).toContain('rgb(158, 220, 255)'); // Diamond, ice blue #9edcff
@@ -154,9 +159,12 @@ test('cool podium: Diamond, Platinum, Pewter; descending shine; glints clear of 
   const warm = /rgb\(226, 183, 96\)|rgb\(198, 130, 84\)|rgba\(226, 183, 96|rgba\(198, 130, 84|e2b760|c68254/i;
   for (const i of info) expect(i.bg).not.toMatch(warm);
   expect(await page.evaluate(() => [...document.styleSheets].flatMap((sh) => [...sh.cssRules].map((r) => r.cssText)).join('\n'))).not.toMatch(warm);
-  // Descending shine: each metal's wash and shimmer weaker than the one above; Pewter's edge flows at half speed.
-  expect(info[1]!.wash).toBeGreaterThan(info[2]!.wash);
-  expect(info[2]!.wash).toBeGreaterThan(info[3]!.wash);
+  // D31: the metals glow from the right, like the heat rows below, and every top-four score flows.
+  for (const i of info.slice(1)) expect(i.bg.startsWith('linear-gradient(270deg, rgba('), i.cls).toBe(true);
+  expect(info.map((i) => i.scoreFlows)).toEqual([true, true, true, true]);
+  // Descending shine: each metal's glow and shimmer weaker than the one above; Pewter's edge flows at half speed.
+  expect(info[1]!.glow).toBeGreaterThan(info[2]!.glow);
+  expect(info[2]!.glow).toBeGreaterThan(info[3]!.glow);
   expect(info[1]!.sheen).toBeGreaterThan(info[2]!.sheen);
   expect(info[2]!.sheen).toBeGreaterThan(info[3]!.sheen);
   expect(info[3]!.edgeMs).toBe(2 * info[2]!.edgeMs);
