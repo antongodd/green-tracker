@@ -4,6 +4,7 @@ import { formatScore } from '../../../shared/domain/format';
 import { leaderboardEmptyState, leaderboardTiles, podiumPlace, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
 import { podiumClass } from '../components/Podium';
 import { ProductHero } from '../components/ProductHero';
+import { heatStyle } from '../heat';
 import { photoUrl } from '../../../shared/domain/photo';
 import { productTypeLabel } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
@@ -36,7 +37,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
     openRow(e, href);
   };
   return (
-    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
+    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} {...heatStyle(p.podium, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
       <Glints podium={p.podium} />
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />
