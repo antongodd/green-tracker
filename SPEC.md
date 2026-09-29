@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.24.0 (all phases done; podium metals mirror the heat)
+**Current version:** 0.25.0 (all phases done; rating bars in the heat colours)
 
 ---
 
@@ -95,6 +95,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D29 | **The Aurora: depth behind every screen** (2026-09-28; option B "Aurora", scrolling with the page, Medium, from https://claude.ai/artifact/4JBXGsJsKmN8zzGpGZ7oCB). Third of the front-end polish series. A step away from design brief §1.2 ("quiet surfaces") and §10 ("no ambient backgrounds"; the old orbs moved, these don't), and a small extension of §1 ("glass on the header and nav only"). | **Two still lights at the top of every screen** (green top-left, teal top-right) drawn on the screen itself, so they **scroll away** with the page; a **faint green haze** at the bottom that stays behind the tab bar. Every main and inner screen and the sign-in screens; full-screen overlays (viewer, cropper, Move and zoom, country picker, cut-out flow) stay black. Found while building: the sticky **Rank / Type row** and the **Log's country headers** had a solid black background that cut a band through the lights, so they're now **frosted glass** like the header (the row lighter, so the lights show through; the headers darker, for their small green titles). Nothing moves; no data, export or privacy change. |
 | D30 | **Leaderboard heat: rows below the podium glow by score** (2026-09-29; option D "Row glow" with the "Amber → green" scale, normal size, from https://claude.ai/artifact/XChuRbt4encp1Eh5iSZ5By). Fourth of the front-end polish series. A step further from design brief §1.2 (colour reserved for meaning): here colour carries the score. The compact size shown was declined. | Rows **5 and down** glow from the right in their score's colour, with a matching edge, and the score takes the colour: **amber at 4 and below → yellow-green around 6.8 → mint at 9 and above**, blended smoothly. It follows the **ranked value** (Overall or a rating category, out of 10); **price and value for money rankings stay plain** (higher isn't better), and so do **unrated** rows. The **podium rows** are unchanged. On your Leaderboard, a friend's and the Archive; the Log has no scores. No data, export or privacy change. |
 | D31 | **Podium metals glow from the right; top-four scores in colour** (2026-09-29; option A "Mirror" of https://claude.ai/artifact/QeQthDfqhQQtn8moTsnbVY, after the owner's screenshot showed 2nd–4th looking emptier than the heat rows below). Changes D21's metal wash (from the left) on the rows. | **Diamond, Platinum and Pewter glow from the right** in their metal colour, the same shape as the heat rows (D30), still a descending shine (glow 0.26 / 0.2 / 0.15; softer than the mockup's so the scores stay readable as the shimmer passes, measured). Flowing edges, rank numbers, glints and shimmer unchanged. **The scores on rows 1–4 flow through their tier's colours** (the owner liked this in the mockup): 1st the rainbow, the metals their lighter shades only (the darkest are too dim for text). The metals' "Overall" caption is full white on the glow. Rows only (your board and a friend's); podium product pages unchanged. No data, export or privacy change. |
+| D32 | **Rating bars in the heat colours** (2026-09-29; option A "Heat" of https://claude.ai/artifact/CMnFCgkKn9pbWuLYAsGcvi). Fifth of the front-end polish series; ties the product page to the Leaderboard's colours (D30). Replaces D18's single green fill on the bars. | On a product page (yours and a friend's) each **counting** rating's bar fades from a darker shade to its **score's colour** (amber at 4 and below → yellow-green → mint at 9 and above, the same scale as the rows), and its number takes the colour. **High where it doesn't count** (flower, concentrates, pre rolls) stays grey; on **edibles** High counts, so it's coloured. **Unrated** categories keep their dash and empty track. The editor's sliders are unchanged. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -513,6 +514,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Rating bars in the heat colours (D32, 0.25.0).** `Ratings` (Profile.tsx, also used by a friend's page) gives a
+  counting, rated bar `data-heat` and `--heat` from `scoreHeat(slot.key, value)` (the one colour rule, D30);
+  `.rbar[data-heat] .fill` is `linear-gradient(90deg, color-mix(--heat 55% with --surface-1), --heat)` and `.v` takes
+  `--heat`. Tested (`test/e2e/bars.spec.ts`): each bar's colour and number on a mixed flower, the grey High, an edible's
+  coloured High, a partly rated product's plain bars, a friend's page, and readability of the coloured numbers from
+  amber to mint (the first test fails without the change).
+
 - **Podium metals mirror the heat (D31, 0.24.0).** `.row.p2`–`.p4` draw `linear-gradient(270deg, rgba(var(--metal),
   var(--glow)), transparent 60%)` with `--glow` 0.26 / 0.2 / 0.15 (the product pages keep `--wash`). `.row.tier .score b`
   flows like the rank number (`tier-flow-text`); the metals' through `--t1`/`--t3`/`--t5` only. The metals' score
@@ -700,6 +708,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.25.0 — rating bars in the heat colours (owner request)
+- On a product page each rating bar and its number now take the score's colour, the same amber → mint as the
+  Leaderboard (decision D32, option A of the mockups), so a weak Burn stands out in amber at a glance.
+- High stays grey where it doesn't count; on edibles it counts, so it's coloured. Unrated categories stay plain.
+- Same on a friend's product pages.
+- Tests: 4 new Playwright tests (`bars.spec.ts`), including readability from amber to mint.
 
 ### 0.24.0 — podium metals mirror the heat (owner request, with a screenshot)
 - Diamond, Platinum and Pewter now glow from the right in their metal colour, like the rows below them, instead
