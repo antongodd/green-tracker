@@ -8,7 +8,8 @@ import { BackButton, Header, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ProductRow } from '../components/ProductRow';
-import { LeafOutline, PlusIcon } from '../icons';
+import { PlusIcon } from '../icons';
+import { EmptyCard } from '../components/EmptyCard';
 import { cachedProducts, fetchArchived, fetchProducts, setFlag } from '../products';
 import { cameFrom, linkTo, navigate } from '../router';
 import { restoreRow } from '../scrollReturn';
@@ -17,32 +18,29 @@ import { loadView, saveView } from '../viewState';
 const DEFAULT_VIEW: ViewState = { filter: 'all', rankBy: 'overall' };
 
 /** The three empty states (brief §10.1) — never claims the app is empty when it isn't. */
-function EmptyCard(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: ViewState; total: number; onAll: () => void; onOverall: () => void }) {
+function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: ViewState; total: number; onAll: () => void; onOverall: () => void }) {
   const typeLabel = p.view.filter === 'all' ? null : productType(p.view.filter).label;
   if (p.kind === 'empty') {
     return (
-      <div class="empty">
-        <LeafOutline />
-        <h2>Nothing ranked yet</h2>
+      <EmptyCard art="podium" title="Nothing ranked yet">
         <p>Add the first thing you’ve tried and it’ll appear here.</p>
-        <a class="btn secondary" style={{ width: 'auto' }} href="/products/new" onClick={linkTo('/products/new')}>
+        <a class="btn primary" style={{ width: 'auto' }} href="/products/new" onClick={linkTo('/products/new')}>
+          <PlusIcon />
           Add a product
         </a>
-      </div>
+      </EmptyCard>
     );
   }
   if (p.kind === 'filtered-empty') {
     return (
-      <div class="empty">
-        <LeafOutline />
-        <h2>No {typeLabel} yet</h2>
+      <EmptyCard art="filter" title={`No ${typeLabel} yet`}>
         <p>
           You have {p.total} {p.total === 1 ? 'product' : 'products'}, but none {p.total === 1 ? 'is' : 'are'} {typeLabel}.
         </p>
         <button class="btn secondary" style={{ width: 'auto' }} onClick={p.onAll}>
           Show all types
         </button>
-      </div>
+      </EmptyCard>
     );
   }
   const scope = typeLabel ? `${typeLabel} products` : 'products';
@@ -56,14 +54,12 @@ function EmptyCard(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: V
             body: `None of your ${scope} has a ${RATING_LABELS[p.view.rankBy as RatingKey]} rating yet.`,
           };
   return (
-    <div class="empty">
-      <LeafOutline />
-      <h2>{title}</h2>
+    <EmptyCard art="unrated" title={title}>
       <p>{body}</p>
       <button class="btn secondary" style={{ width: 'auto' }} onClick={p.onOverall}>
         Rank by Overall
       </button>
-    </div>
+    </EmptyCard>
   );
 }
 
@@ -119,7 +115,7 @@ export function Leaderboard() {
           </>
         )}
         {empty && products && (
-          <EmptyCard kind={empty} view={view} total={products.length} onAll={() => change({ ...view, filter: 'all' })} onOverall={() => change({ ...view, rankBy: 'overall' })} />
+          <BoardEmpty kind={empty} view={view} total={products.length} onAll={() => change({ ...view, filter: 'all' })} onOverall={() => change({ ...view, rankBy: 'overall' })} />
         )}
         {rows.length > 0 && (
           <div class="rows">
@@ -172,11 +168,9 @@ export function Archive() {
           )}
         </div>
         {products && products.length === 0 && (
-          <div class="empty">
-            <LeafOutline />
-            <h2>Nothing archived</h2>
+          <EmptyCard art="archive" title="Nothing archived">
             <p>Products you archive from their profile appear here.</p>
-          </div>
+          </EmptyCard>
         )}
         <div class="rows">
           {rows.map((r) => (

@@ -12,6 +12,7 @@ import * as api from '../people';
 import { ownOriginalUrl, prepareOriginal, removeProfilePhoto, saveProfilePhoto } from '../profilePhoto';
 import { linkTo, navigate } from '../router';
 import { useSession } from '../session';
+import { EmptyCard } from '../components/EmptyCard';
 
 type Segment = 'following' | 'followers' | 'requests';
 /** D24: People opens on Following each time the app starts; within a visit it remembers your last choice. */
@@ -339,7 +340,9 @@ export function People() {
                   ))}
                 </div>
               ) : (
-                <p class="lead empty-line">No follow requests. When someone asks to follow you, they’ll appear here.</p>
+                <EmptyCard art="requests" title="No requests" compact>
+                  <p>No follow requests. When someone asks to follow you, they’ll appear here.</p>
+                </EmptyCard>
               ))}
 
             {segment === 'followers' &&
@@ -374,7 +377,9 @@ export function People() {
                   ))}
                 </div>
               ) : (
-                <p class="lead empty-line">No followers yet. People who follow you see your leaderboard, never your Log, prices or notes.</p>
+                <EmptyCard art="followers" title="No followers yet" compact>
+                  <p>No followers yet. People who follow you see your leaderboard, never your Log, prices or notes.</p>
+                </EmptyCard>
               ))}
 
             {segment === 'following' &&
@@ -411,7 +416,9 @@ export function People() {
                   ))}
                 </div>
               ) : (
-                <p class="lead empty-line">You’re not following anyone yet. Search for a username above.</p>
+                <EmptyCard art="following" title="Not following anyone" compact>
+                  <p>You’re not following anyone yet. Search for a username above.</p>
+                </EmptyCard>
               ))}
           </div>
         )}
@@ -446,7 +453,11 @@ export function BlockedPeople() {
               {error}
             </p>
           )}
-          {list && list.length === 0 && <p class="lead empty-line">You haven’t blocked anyone.</p>}
+          {list && list.length === 0 && (
+            <EmptyCard art="blocked" title="No one blocked" compact>
+              <p>You haven’t blocked anyone.</p>
+            </EmptyCard>
+          )}
           {list && list.length > 0 && (
             <div class="list">
               {list.map((u) => (
