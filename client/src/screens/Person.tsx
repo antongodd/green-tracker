@@ -16,7 +16,8 @@ import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
 import { Cluster, formatRankValue, Glints, Score, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
-import { LeafOutline, MoreIcon } from '../icons';
+import { MoreIcon } from '../icons';
+import { EmptyCard } from '../components/EmptyCard';
 import * as api from '../people';
 import { cameFrom, linkTo, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
@@ -192,31 +193,25 @@ export function Person(p: { username: string }) {
           </>
         )}
         {empty === 'empty' && (
-          <div class="empty">
-            <LeafOutline />
-            <h2>Nothing to see yet</h2>
+          <EmptyCard art="shared" title="Nothing to see yet">
             <p>@{person.username} hasn’t shared any products.</p>
-          </div>
+          </EmptyCard>
         )}
         {empty === 'filtered-empty' && (
-          <div class="empty">
-            <LeafOutline />
-            <h2>No {typeLabel}</h2>
+          <EmptyCard art="filter" title={`No ${typeLabel}`}>
             <p>None of @{person.username}’s products are {typeLabel}.</p>
             <button class="btn secondary" style={{ width: 'auto' }} onClick={() => change({ ...view, filter: 'all' })}>
               Show all types
             </button>
-          </div>
+          </EmptyCard>
         )}
         {empty === 'rank-empty' && (
-          <div class="empty">
-            <LeafOutline />
-            <h2>Nothing rated on that</h2>
+          <EmptyCard art="unrated" title="Nothing rated on that">
             <p>None of these products has that rating yet.</p>
             <button class="btn secondary" style={{ width: 'auto' }} onClick={() => change({ ...view, rankBy: 'overall' })}>
               Rank by Overall
             </button>
-          </div>
+          </EmptyCard>
         )}
         {rows.length > 0 && (
           <div class="rows">

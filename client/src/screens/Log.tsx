@@ -10,7 +10,8 @@ import { errorText } from '../api';
 import { Header, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
-import { ChevronRight, LeafOutline, PlusIcon, TypeMark } from '../icons';
+import { ChevronRight, PlusIcon, TypeMark } from '../icons';
+import { EmptyCard } from '../components/EmptyCard';
 import { cachedEntries, fetchEntries } from '../logEntries';
 import { cachedProducts, fetchProducts } from '../products';
 import { cameFrom, linkTo, navigate, openPlainRow, openRow } from '../router';
@@ -113,25 +114,22 @@ export function Log() {
               ]}
             />
             {rows.length === 0 ? (
-              <div class="empty">
-                <LeafOutline />
-                <h2>Your Log is empty</h2>
+              <EmptyCard art="log" title="Your Log is empty">
                 <p>Everything you try goes here. Add a quick entry, or add a product to your Leaderboard.</p>
-                <a class="btn secondary" style={{ width: 'auto' }} href="/log/new" onClick={linkTo('/log/new')}>
+                <a class="btn primary" style={{ width: 'auto' }} href="/log/new" onClick={linkTo('/log/new')}>
+                  <PlusIcon />
                   Add a log entry
                 </a>
-              </div>
+              </EmptyCard>
             ) : groups.length === 0 ? (
-              <div class="empty">
-                <LeafOutline />
-                <h2>No {typeLabel} in your Log</h2>
+              <EmptyCard art="filter" title={`No ${typeLabel} in your Log`}>
                 <p>
                   Your Log has {rows.length} {rows.length === 1 ? 'row' : 'rows'}, but none {rows.length === 1 ? 'is' : 'are'} {typeLabel}.
                 </p>
                 <button class="btn secondary" style={{ width: 'auto' }} onClick={() => setFilter('all')}>
                   Show all types
                 </button>
-              </div>
+              </EmptyCard>
             ) : (
               <>
                 {groups.map((g) => (

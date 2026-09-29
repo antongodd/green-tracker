@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.25.0 (all phases done; rating bars in the heat colours)
+**Current version:** 0.26.0 (all phases done; drawings on the empty screens)
 
 ---
 
@@ -96,6 +96,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D30 | **Leaderboard heat: rows below the podium glow by score** (2026-09-29; option D "Row glow" with the "Amber → green" scale, normal size, from https://claude.ai/artifact/XChuRbt4encp1Eh5iSZ5By). Fourth of the front-end polish series. A step further from design brief §1.2 (colour reserved for meaning): here colour carries the score. The compact size shown was declined. | Rows **5 and down** glow from the right in their score's colour, with a matching edge, and the score takes the colour: **amber at 4 and below → yellow-green around 6.8 → mint at 9 and above**, blended smoothly. It follows the **ranked value** (Overall or a rating category, out of 10); **price and value for money rankings stay plain** (higher isn't better), and so do **unrated** rows. The **podium rows** are unchanged. On your Leaderboard, a friend's and the Archive; the Log has no scores. No data, export or privacy change. |
 | D31 | **Podium metals glow from the right; top-four scores in colour** (2026-09-29; option A "Mirror" of https://claude.ai/artifact/QeQthDfqhQQtn8moTsnbVY, after the owner's screenshot showed 2nd–4th looking emptier than the heat rows below). Changes D21's metal wash (from the left) on the rows. | **Diamond, Platinum and Pewter glow from the right** in their metal colour, the same shape as the heat rows (D30), still a descending shine (glow 0.26 / 0.2 / 0.15; softer than the mockup's so the scores stay readable as the shimmer passes, measured). Flowing edges, rank numbers, glints and shimmer unchanged. **The scores on rows 1–4 flow through their tier's colours** (the owner liked this in the mockup): 1st the rainbow, the metals their lighter shades only (the darkest are too dim for text). The metals' "Overall" caption is full white on the glow. Rows only (your board and a friend's); podium product pages unchanged. No data, export or privacy change. |
 | D32 | **Rating bars in the heat colours** (2026-09-29; option A "Heat" of https://claude.ai/artifact/CMnFCgkKn9pbWuLYAsGcvi). Fifth of the front-end polish series; ties the product page to the Leaderboard's colours (D30). Replaces D18's single green fill on the bars. | On a product page (yours and a friend's) each **counting** rating's bar fades from a darker shade to its **score's colour** (amber at 4 and below → yellow-green → mint at 9 and above, the same scale as the rows), and its number takes the colour. **High where it doesn't count** (flower, concentrates, pre rolls) stays grey; on **edibles** High counts, so it's coloured. **Unrated** categories keep their dash and empty track. The editor's sliders are unchanged. No data, export or privacy change. |
+| D33 | **Drawings on the empty screens** (2026-09-29; option B "Drawings" of https://claude.ai/artifact/51HkyFqhtqTPX5aHCFQucK). Sixth of the front-end polish series. Replaces the faint outlined leaf of brief §6.10. | Every empty screen keeps its card and words, with a **small green line drawing** for its kind in place of the leaf: a podium (new Leaderboard), a funnel (a type filter with nothing in it: Leaderboard, Log, a friend's board), rating bars with the top one empty (ranking by a rating nothing has), a notebook (empty Log), a box (Archive), a dashed podium with an @ (a friend who's shared nothing), an inbox (no requests), people (no followers; not following anyone) and a crossed-out circle (no one blocked). **Add a product** and **Add a log entry** become the green button with a +; other buttons stay grey. The People lists and Blocked, a plain line before, get a smaller card with a short title above their sentence. Error cards stay plain. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -514,6 +515,17 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Drawings on the empty screens (D33, 0.26.0).** `EmptyCard` (components/EmptyCard.tsx) renders every empty state:
+  `<div class="empty" data-art>` with an inline `svg.empty-art` (168×104, `aria-hidden`), the title and the caller's text and
+  button. Ten drawings (`podium`, `filter`, `unrated`, `log`, `archive`, `shared`, `requests`, `followers`, `following`,
+  `blocked`), drawn in `--accent-bright` lines 1.6 wide with a faint green fill (`.soft`), dimmer or dashed where something
+  is missing (`.dim`, `.dash`); the leaf is the header's `FLOWER` path. The People lists and Blocked use `compact` (smaller
+  card, no side margin; not `.small`, which is grey caption text). Add buttons are `.btn.primary` with `PlusIcon`. Error
+  cards don't use `EmptyCard`, so they keep no drawing. `LeafOutline` and `.empty-line` are gone. Tested
+  (`test/e2e/empty.spec.ts`): each empty screen shows its own visible green drawing, a white title (fails with the grey
+  `.small` class), green + buttons only for adding, grey buttons elsewhere, a friend's board without Add, readability, and
+  error cards without a drawing.
+
 - **Rating bars in the heat colours (D32, 0.25.0).** `Ratings` (Profile.tsx, also used by a friend's page) gives a
   counting, rated bar `data-heat` and `--heat` from `scoreHeat(slot.key, value)` (the one colour rule, D30);
   `.rbar[data-heat] .fill` is `linear-gradient(90deg, color-mix(--heat 55% with --surface-1), --heat)` and `.v` takes
@@ -708,6 +720,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.26.0 — drawings on the empty screens (owner request)
+- Every empty screen now has its own small green line drawing instead of the faint leaf (decision D33, option B
+  of the mockups): a podium on a new Leaderboard, a notebook on an empty Log, a box in the Archive, a funnel when
+  a filter shows nothing, rating bars when nothing has the rating you rank by, an empty podium on a friend's
+  board, and people, an inbox and a crossed-out circle on the People lists and Blocked.
+- **Add a product** and **Add a log entry** are green buttons with a +.
+- The People lists and Blocked, a plain line before, get a smaller card with a short title.
+- Tests: 10 new Playwright tests (`empty.spec.ts`).
 
 ### 0.25.0 — rating bars in the heat colours (owner request)
 - On a product page each rating bar and its number now take the score's colour, the same amber → mint as the

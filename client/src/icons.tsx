@@ -37,22 +37,13 @@ export function LeafGlass(p: P) {
   );
 }
 
-const FLOWER =
+export const FLOWER =
   'M12 18.35C8.95 19.21 5.61 18.16 4.12 16.96C5.93 16.35 9.42 16.51 12 18.35Z M12 18.35C14.58 16.51 18.07 16.35 19.88 16.96C18.39 18.16 15.05 19.21 12 18.35Z M12 18.35C7.69 16.49 4.83 12.17 4.22 9.4C6.87 10.39 10.76 13.82 12 18.35Z M12 18.35C13.24 13.82 17.13 10.39 19.78 9.4C19.17 12.17 16.31 16.49 12 18.35Z M12 18.35C9.46 13.06 10.31 6.64 12 3.53C13.69 6.64 14.54 13.06 12 18.35Z M11.45 18.35H12.55V21.46H11.45Z';
 
 export function FlowerMark(p: P) {
   return (
     <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
       <path fill="currentColor" d={FLOWER} />
-    </svg>
-  );
-}
-
-/** Outlined leaf for empty states (brief §6.10). */
-export function LeafOutline(p: P) {
-  return (
-    <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
-      <path fill="none" stroke="currentColor" stroke-width="0.9" stroke-linejoin="round" d={FLOWER} />
     </svg>
   );
 }
