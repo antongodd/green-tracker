@@ -1,5 +1,6 @@
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
+import { heatStyle } from '../heat';
 import { rankByCaption, type Podium, type RankBy } from '../../../shared/domain/leaderboard';
 import { headlinePrice, type Purchase } from '../../../shared/domain/money';
 import { photoUrl } from '../../../shared/domain/photo';
@@ -131,7 +132,7 @@ export function ProductRow(p: { product: Product; rank: number; podium: Podium |
     openRow(e, href);
   };
   return (
-    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
+    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} {...heatStyle(p.podium, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
       <Glints podium={p.podium} />
       <span class="rk">{p.rank}</span>
       <Thumb product={p.product} />

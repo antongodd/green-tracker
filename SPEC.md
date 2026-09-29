@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.22.0 (all phases done; the Aurora)
+**Current version:** 0.23.0 (all phases done; Leaderboard heat)
 
 ---
 
@@ -93,6 +93,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D27 | **The Poster: a new top for product pages** (2026-09-28; option A "Poster" of https://claude.ai/artifact/AjrLHCpYjZeRS7zjxhhf8j). The first of the owner's front-end polish series. Replaces the photo box with the name and score in a card beneath it (and, on podium pages, D22's photo frame and 1st/Diamond card). | **The photo fills the top of the page** edge to edge, running up behind the glass header (about 470 points tall on the owner's iPhone; a photo is filled edge to edge, so a square one loses a little at the sides, and tapping anywhere on it, details included, opens the viewer as before). **The details sit on its bottom** over a dark fade: podium badge, the name with the big score to its right, strain tag · type · country, price, Private / Archived. A long name wraps and the poster grows. **A cut-out** floats in the upper part on a soft glow, never under the text; **no photo**: the type mark on that glow. **Podium pages:** badge and flowing score as before; instead of the frame, a **tier-coloured haze** flows through the bottom behind the details (1st and Diamond strongest, Platinum faint, Pewter calm at half speed); the tier's shimmer and one sweep cross the photo; Diamond's three glints sit in the photo. **A friend's product page** gets the same, without the price. **Photo grows** flies into the full-width photo; the details fade in once it lands. Reduce Motion: colours only. Nothing stored: no data, export or privacy change. See §4 *The Poster*. |
 | D28 | **Rounded numbers** (2026-09-28; option B "Rounded", decimals the same size, from https://claude.ai/artifact/VikcX3VdJjJ7X8aSqd58Uh). Second of the front-end polish series. A small, approved step away from design brief §4 (one system font for everything): the numbers get the iPhone's own rounded version of it. Still no web fonts: nothing is downloaded. | Every **score** (Leaderboard rows, yours, a friend's and the Archive; the Poster's big score), **rank number**, **stats tile** (Leaderboard, Log, a friend's), the **podium badge's #N**, the **rating values** beside the bars, **value for money** and the editor's **rating value** use SF Pro Rounded (`ui-rounded`), same size, weight and colours (podium gradients flow through them as before). Prices, amounts, dates and all words keep the usual font. On a non-Apple device the numbers look as before. No data, export or privacy change. |
 | D29 | **The Aurora: depth behind every screen** (2026-09-28; option B "Aurora", scrolling with the page, Medium, from https://claude.ai/artifact/4JBXGsJsKmN8zzGpGZ7oCB). Third of the front-end polish series. A step away from design brief §1.2 ("quiet surfaces") and §10 ("no ambient backgrounds"; the old orbs moved, these don't), and a small extension of §1 ("glass on the header and nav only"). | **Two still lights at the top of every screen** (green top-left, teal top-right) drawn on the screen itself, so they **scroll away** with the page; a **faint green haze** at the bottom that stays behind the tab bar. Every main and inner screen and the sign-in screens; full-screen overlays (viewer, cropper, Move and zoom, country picker, cut-out flow) stay black. Found while building: the sticky **Rank / Type row** and the **Log's country headers** had a solid black background that cut a band through the lights, so they're now **frosted glass** like the header (the row lighter, so the lights show through; the headers darker, for their small green titles). Nothing moves; no data, export or privacy change. |
+| D30 | **Leaderboard heat: rows below the podium glow by score** (2026-09-29; option D "Row glow" with the "Amber → green" scale, normal size, from https://claude.ai/artifact/XChuRbt4encp1Eh5iSZ5By). Fourth of the front-end polish series. A step further from design brief §1.2 (colour reserved for meaning): here colour carries the score. The compact size shown was declined. | Rows **5 and down** glow from the right in their score's colour, with a matching edge, and the score takes the colour: **amber at 4 and below → yellow-green around 6.8 → mint at 9 and above**, blended smoothly. It follows the **ranked value** (Overall or a rating category, out of 10); **price and value for money rankings stay plain** (higher isn't better), and so do **unrated** rows. The **podium rows** are unchanged. On your Leaderboard, a friend's and the Archive; the Log has no scores. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -511,6 +512,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Leaderboard heat (D30, 0.23.0).** `scoreHeat(rankBy, value)` (`shared/domain/heat.ts`) returns the colour
+  from five stops (4 `#e0a35c`, 5.5 `#f0c46a`, 6.8 `#c8e46a`, 8 `#6fe39a`, 9 `#8df3b6`), blended linearly, or null for
+  price, VFM and unrated. `heatStyle` (`client/src/heat.ts`) puts it on a non-podium row as `data-heat` and `--heat`;
+  `.row[data-heat]` draws a 270° wash (22% of the colour, fading out by 60% of the row) over `--surface-1`, a 32%
+  edge, and the score in the colour. Used by `ProductRow` (your board, the Archive) and a friend's `SharedRow`.
+  Tested: `test/domain/heat.test.ts` (ends, stops, blending, hue never moving back towards amber, no colour for
+  price / VFM / unrated) and `test/e2e/heat.spec.ts` (which rows glow and in which colour, the podium and unrated
+  rows plain, price ranking plain, a rating ranking coloured, a friend's board and the Archive, and readability of
+  the coloured score and the text on the glow from amber to mint, measured from pixels; it fails with a harsh glow).
+
 - **The Aurora (D29, 0.22.0).** Tokens in `client/src/styles.css`: `--aurora-top` (two radial gradients:
   green `rgba(88,224,140,0.2)` at 8% / -4%, teal `rgba(64,196,196,0.15)` at 100% / 6%) is the background of
   `.screen` and `.fullscreen`, in a 900px band at their top, so it scrolls with the page; `--aurora-bottom`
@@ -679,6 +690,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.23.0 — Leaderboard heat (owner request)
+- Rows 5 and down now glow in a colour that says how good the score is (decision D30, option D of the
+  mockups): amber for low scores, through yellow-green, to mint for the best, with the score in the same
+  colour. The top four keep their podium looks.
+- Ranking by price or value for money leaves the rows plain; unrated rows stay plain too.
+- Same on a friend's Leaderboard and in the Archive.
+- Tests: 3 unit tests and 4 Playwright tests (`heat.spec.ts`), including readability from amber to mint.
+- The D18 "green look" test now leaves glowing rows to `heat.spec.ts` (they have their own colour and edge by
+  design).
 
 ### 0.22.0 — the Aurora (owner request)
 - Depth behind every screen (decision D29, option B of the mockups): two soft, still lights at the top,

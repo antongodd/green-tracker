@@ -240,6 +240,12 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
 .row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
 .row .rk { position: relative; }
+/* Heat (D30, 0.23.0): below the podium a row glows from the right in its score's colour
+   (amber at 4 and below → yellow-green → mint at 9 and above), with a matching edge, and the
+   score takes the colour. Set per row as --heat (client/src/heat.ts); never on price or value
+   for money rankings or unrated rows. */
+.row[data-heat] { background: linear-gradient(270deg, color-mix(in srgb, var(--heat) 22%, transparent), transparent 60%), var(--surface-1); border-color: color-mix(in srgb, var(--heat) 32%, transparent); }
+.row[data-heat] .score b { color: var(--heat); }
 
 /* ---------- podium tiers (D19 0.13.0; cool metals D21 0.15.0) ----------
    p1 rainbow (holo, pastel), p2 Diamond (ice blue), p3 Platinum, p4 Pewter. Rated
