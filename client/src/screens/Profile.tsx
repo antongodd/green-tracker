@@ -6,6 +6,7 @@ import { headlinePrice, purchasesNewestFirst, unitPrice, valueForMoney } from '.
 import { productTypeLabel, type Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { formatHitTime, overall, overallExplanation, ratedCount } from '../../../shared/domain/ratings';
+import { scoreHeat } from '../../../shared/domain/heat';
 import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
@@ -35,8 +36,11 @@ export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 
       </span>
       {def.ratingSet.map((slot) => {
         const v = ratings[slot.key];
+        // Heat (D32): a counting category's bar and number take its score's colour, the
+        // Leaderboard's scale (D30); High where it doesn't count stays grey.
+        const heat = slot.weight > 0 && v != null ? scoreHeat(slot.key, v) : null;
         return (
-          <div key={slot.key} class={`rbar${slot.weight === 0 ? ' muted' : ''}`}>
+          <div key={slot.key} class={`rbar${slot.weight === 0 ? ' muted' : ''}`} data-heat={heat ?? undefined} style={heat ? { '--heat': heat } : undefined}>
             <span>{RATING_LABELS[slot.key]}</span>
             <div class="track">{v != null && <div class="fill" style={{ width: `${v * 10}%` }} />}</div>
             <span class={`v${v == null ? ' none' : ''}`}>{v == null ? '—' : formatScore(v)}</span>

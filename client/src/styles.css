@@ -398,6 +398,11 @@ div.hero-photo { cursor: default; }
 .rbar .v.none { color: var(--text-3); font-weight: 400; }
 .rbar.muted { color: var(--text-2); }
 .rbar.muted .fill { background: rgba(238, 244, 240, 0.28); }
+/* Heat (D32, 0.25.0): a counting category's bar fades from a darker shade to its score's colour
+   (the Leaderboard's amber → mint, D30), and its number takes the colour. High where it doesn't
+   count stays grey (.muted); unrated stays plain. Set per bar as --heat (Profile.tsx Ratings). */
+.rbar[data-heat] .fill { background: linear-gradient(90deg, color-mix(in srgb, var(--heat) 55%, var(--surface-1)), var(--heat)); }
+.rbar[data-heat] .v { color: var(--heat); }
 .small { font-size: 13px; color: var(--text-2); }
 .purchase { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 14px; }
 .purchase:first-of-type { padding-top: 0; border-top: 0; }
