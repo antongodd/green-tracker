@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.23.0 (all phases done; Leaderboard heat)
+**Current version:** 0.24.0 (all phases done; podium metals mirror the heat)
 
 ---
 
@@ -94,6 +94,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D28 | **Rounded numbers** (2026-09-28; option B "Rounded", decimals the same size, from https://claude.ai/artifact/VikcX3VdJjJ7X8aSqd58Uh). Second of the front-end polish series. A small, approved step away from design brief §4 (one system font for everything): the numbers get the iPhone's own rounded version of it. Still no web fonts: nothing is downloaded. | Every **score** (Leaderboard rows, yours, a friend's and the Archive; the Poster's big score), **rank number**, **stats tile** (Leaderboard, Log, a friend's), the **podium badge's #N**, the **rating values** beside the bars, **value for money** and the editor's **rating value** use SF Pro Rounded (`ui-rounded`), same size, weight and colours (podium gradients flow through them as before). Prices, amounts, dates and all words keep the usual font. On a non-Apple device the numbers look as before. No data, export or privacy change. |
 | D29 | **The Aurora: depth behind every screen** (2026-09-28; option B "Aurora", scrolling with the page, Medium, from https://claude.ai/artifact/4JBXGsJsKmN8zzGpGZ7oCB). Third of the front-end polish series. A step away from design brief §1.2 ("quiet surfaces") and §10 ("no ambient backgrounds"; the old orbs moved, these don't), and a small extension of §1 ("glass on the header and nav only"). | **Two still lights at the top of every screen** (green top-left, teal top-right) drawn on the screen itself, so they **scroll away** with the page; a **faint green haze** at the bottom that stays behind the tab bar. Every main and inner screen and the sign-in screens; full-screen overlays (viewer, cropper, Move and zoom, country picker, cut-out flow) stay black. Found while building: the sticky **Rank / Type row** and the **Log's country headers** had a solid black background that cut a band through the lights, so they're now **frosted glass** like the header (the row lighter, so the lights show through; the headers darker, for their small green titles). Nothing moves; no data, export or privacy change. |
 | D30 | **Leaderboard heat: rows below the podium glow by score** (2026-09-29; option D "Row glow" with the "Amber → green" scale, normal size, from https://claude.ai/artifact/XChuRbt4encp1Eh5iSZ5By). Fourth of the front-end polish series. A step further from design brief §1.2 (colour reserved for meaning): here colour carries the score. The compact size shown was declined. | Rows **5 and down** glow from the right in their score's colour, with a matching edge, and the score takes the colour: **amber at 4 and below → yellow-green around 6.8 → mint at 9 and above**, blended smoothly. It follows the **ranked value** (Overall or a rating category, out of 10); **price and value for money rankings stay plain** (higher isn't better), and so do **unrated** rows. The **podium rows** are unchanged. On your Leaderboard, a friend's and the Archive; the Log has no scores. No data, export or privacy change. |
+| D31 | **Podium metals glow from the right; top-four scores in colour** (2026-09-29; option A "Mirror" of https://claude.ai/artifact/QeQthDfqhQQtn8moTsnbVY, after the owner's screenshot showed 2nd–4th looking emptier than the heat rows below). Changes D21's metal wash (from the left) on the rows. | **Diamond, Platinum and Pewter glow from the right** in their metal colour, the same shape as the heat rows (D30), still a descending shine (glow 0.26 / 0.2 / 0.15; softer than the mockup's so the scores stay readable as the shimmer passes, measured). Flowing edges, rank numbers, glints and shimmer unchanged. **The scores on rows 1–4 flow through their tier's colours** (the owner liked this in the mockup): 1st the rainbow, the metals their lighter shades only (the darkest are too dim for text). The metals' "Overall" caption is full white on the glow. Rows only (your board and a friend's); podium product pages unchanged. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -512,6 +513,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Podium metals mirror the heat (D31, 0.24.0).** `.row.p2`–`.p4` draw `linear-gradient(270deg, rgba(var(--metal),
+  var(--glow)), transparent 60%)` with `--glow` 0.26 / 0.2 / 0.15 (the product pages keep `--wash`). `.row.tier .score b`
+  flows like the rank number (`tier-flow-text`); the metals' through `--t1`/`--t3`/`--t5` only. The metals' score
+  caption is `--text`. The first mockup strength (0.42 / 0.32 / 0.25) and the full tier gradient in the score failed the
+  row readability test when the shimmer passed (Diamond's score 2.1 : 1, caption 2.9 : 1), hence the softer glow, the
+  lighter shades and the white caption. Tested (`leaderboard.spec.ts`): the metals' background starts with the 270°
+  glow, the glow descends tier by tier, all four scores flow, and readability at 12 moments of the motion now judges
+  gradient text by its darkest colour.
+
 - **Leaderboard heat (D30, 0.23.0).** `scoreHeat(rankBy, value)` (`shared/domain/heat.ts`) returns the colour
   from five stops (4 `#e0a35c`, 5.5 `#f0c46a`, 6.8 `#c8e46a`, 8 `#6fe39a`, 9 `#8df3b6`), blended linearly, or null for
   price, VFM and unrated. `heatStyle` (`client/src/heat.ts`) puts it on a non-podium row as `data-heat` and `--heat`;
@@ -690,6 +700,14 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.24.0 — podium metals mirror the heat (owner request, with a screenshot)
+- Diamond, Platinum and Pewter now glow from the right in their metal colour, like the rows below them, instead
+  of a faint wash from the left (decision D31, option A of the mockups). Still strongest for Diamond.
+- The scores on the top four flow through their colours: rainbow for 1st, ice blue, silver and pewter.
+- The readability test caught the mockup's stronger glow washing out Diamond's score when the shimmer passed; the
+  glow is a little softer and the scores use each metal's lighter shades, so it passes.
+- Tests: the podium row tests check the new glow and coloured scores.
 
 ### 0.23.0 — Leaderboard heat (owner request)
 - Rows 5 and down now glow in a colour that says how good the score is (decision D30, option D of the

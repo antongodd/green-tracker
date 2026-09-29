@@ -271,10 +271,12 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
     var(--tier-grad) border-box;
   background-size: 100% 100%, 200% 100%, 200% 100%;
 }
-/* Diamond, Platinum, Pewter: a metal wash (stronger the higher the tier) with a flowing edge. */
+/* Diamond, Platinum, Pewter: the metal glows from the right, the same shape as the heat rows
+   below (D31, 0.24.0; was a wash from the left), stronger the higher the tier, with a flowing edge. */
+.row.p2 { --glow: 0.26; } .row.p3 { --glow: 0.2; } .row.p4 { --glow: 0.15; }
 .row.p2, .row.p3, .row.p4 {
   background:
-    linear-gradient(115deg, rgba(var(--metal), var(--wash)), rgba(var(--metal), 0) 55%) padding-box,
+    linear-gradient(270deg, rgba(var(--metal), var(--glow)), rgba(var(--metal), 0) 60%) padding-box,
     linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
     var(--tier-grad) border-box;
   background-size: 100% 100%, 100% 100%, 200% 100%;
@@ -282,7 +284,13 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 /* The shimmer passes behind the small grey lines, so they're a little brighter here
    (measured by the podium readability test). */
 .row.tier .meta, .row.tier .score .cap { color: rgba(238, 244, 240, 0.84); }
-.row.tier .rk { font-size: 15px; color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+/* On the metals the caption sits on the glow itself (D31), so it's full white there (measured). */
+.row.p2 .score .cap, .row.p3 .score .cap, .row.p4 .score .cap { color: var(--text); }
+.row.tier .rk, .row.tier .score b { color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.row.tier .rk { font-size: 15px; }
+/* The scores on the top four flow through their tier's colours too (D31); the metals' through
+   their lighter shades only, so they stay readable on the glow as the shimmer passes (measured). */
+.row.p2 .score b, .row.p3 .score b, .row.p4 .score b { background-image: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
 .row.tier::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
@@ -298,7 +306,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 @media (prefers-reduced-motion: no-preference) {
   .row.p1 { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   .row.p2, .row.p3, .row.p4 { animation: tier-flow-edge var(--edge-speed) linear infinite; }
-  .row.tier .rk { animation: tier-flow-text var(--edge-speed) linear infinite; }
+  .row.tier .rk, .row.tier .score b { animation: tier-flow-text var(--edge-speed) linear infinite; }
   .row.tier::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
   .glint.g1 { animation: tier-glint 2.9s ease-in-out infinite; }
   .glint.g2 { animation: tier-glint 3.7s ease-in-out 1.1s infinite; }
