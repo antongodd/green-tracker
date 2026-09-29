@@ -1,8 +1,10 @@
-import type { ComponentChildren } from 'preact';
+import type { ComponentChildren, FunctionComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import { formatScore } from '../../../shared/domain/format';
 import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
-import { ChevronDown, CrossIcon } from '../icons';
+import { scoreHeat } from '../../../shared/domain/heat';
+import type { RatingKey } from '../../../shared/domain/productTypes';
+import { CalendarIcon, ChevronDown, CrossIcon } from '../icons';
 import { Slider } from './Slider';
 
 /** Native select (iOS shows its own picker), styled as an input. */
@@ -24,6 +26,44 @@ export function Select(p: { id: string; value: string; onChange: (v: string) => 
   );
 }
 
+/**
+ * A section heading in the editors (D34, 0.27.0): a small outline icon in a soft green square,
+ * the green caption, and anything to its right (the Ratings card's live Overall).
+ */
+export function GroupHead(p: { icon: FunctionComponent<{ class?: string }>; label: string; htmlFor?: string; children?: ComponentChildren }) {
+  const Icon = p.icon;
+  return (
+    <div class="gh">
+      <span class="gh-ic">
+        <Icon />
+      </span>
+      {p.htmlFor ? (
+        <label class="cap" for={p.htmlFor}>
+          {p.label}
+        </label>
+      ) : (
+        <span class="cap">{p.label}</span>
+      )}
+      {p.children}
+    </div>
+  );
+}
+
+const input = (p: Parameters<typeof TextField>[0]) => (
+  <input
+    id={p.id}
+    class="input"
+    type={p.type ?? 'text'}
+    inputMode={p.inputMode}
+    value={p.value}
+    placeholder={p.placeholder}
+    autoCapitalize={p.autoCapitalize}
+    autoComplete="off"
+    onInput={(e) => p.onInput(e.currentTarget.value)}
+    onBlur={p.onBlur}
+  />
+);
+
 export function TextField(p: {
   id: string;
   label: string;
@@ -39,18 +79,16 @@ export function TextField(p: {
   return (
     <div class="field">
       <label for={p.id}>{p.label}</label>
-      <input
-        id={p.id}
-        class="input"
-        type={p.type ?? 'text'}
-        inputMode={p.inputMode}
-        value={p.value}
-        placeholder={p.placeholder}
-        autoCapitalize={p.autoCapitalize}
-        autoComplete="off"
-        onInput={(e) => p.onInput(e.currentTarget.value)}
-        onBlur={p.onBlur}
-      />
+      {p.type === 'date' ? (
+        // D34: our own calendar icon on the left, inside the box, so it can never be cut off;
+        // the browser's own picker button is stretched invisibly over the whole box instead.
+        <div class="datebox">
+          <CalendarIcon />
+          {input(p)}
+        </div>
+      ) : (
+        input(p)
+      )}
       {p.children}
     </div>
   );
@@ -62,9 +100,11 @@ const clamp = (v: number) => Math.min(RATING_MAX, Math.max(RATING_MIN, v));
  * One rating (brief §6.6): label, value (tap to type), ✕ to clear, and a 0.1-step
  * slider. Unrated shows — and an empty track; moving the slider rates it.
  */
-export function RatingInput(p: { id: string; label: string; value: number | null; onChange: (v: number | null) => void }) {
+export function RatingInput(p: { id: string; rating: RatingKey; label: string; value: number | null; onChange: (v: number | null) => void; note?: string }) {
   const [typing, setTyping] = useState<string | null>(null);
   const v = p.value;
+  // D34: a counting, rated slider takes its score's colour (the Leaderboard's scale, D30).
+  const heat = p.note === undefined && v !== null ? scoreHeat(p.rating, v) : null;
 
   function commit() {
     if (typing === null) return;
@@ -75,10 +115,11 @@ export function RatingInput(p: { id: string; label: string; value: number | null
   }
 
   return (
-    <div class="rate">
+    <div class={`rate${p.note ? ' muted' : ''}`} data-heat={heat ?? undefined} style={heat ? { '--heat': heat } : undefined}>
       <div class="rate-top">
-        <span class="l" id={`${p.id}-label`}>
-          {p.label}
+        <span class="l">
+          <span id={`${p.id}-label`}>{p.label}</span>
+          {p.note && <small>{p.note}</small>}
         </span>
         {typing === null ? (
           <button type="button" class={`val${v === null ? ' none' : ''}`} onClick={() => setTyping(v === null ? '' : formatScore(v))} aria-label={`${p.label}: ${v === null ? 'unrated' : formatScore(v)}. Tap to type a value`}>

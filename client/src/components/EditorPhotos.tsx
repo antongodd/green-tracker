@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Crop, PhotoInput, PhotoRecord } from '../../../shared/domain/photo';
 import { errorText } from '../api';
-import { CameraIcon } from '../icons';
+import { CameraIcon, CameraLineIcon } from '../icons';
+import { GroupHead } from './inputs';
 import { discardUpload, loadImage, prepareNewPhoto, renderCrop, uploadSet } from '../images';
 import { PhotoGrid, shownFromRecord } from './PhotoGrid';
 import { Cropper, PhotoViewer, type ShownPhoto } from './PhotoViewer';
@@ -120,7 +121,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
 
   return (
     <section class="fgroup" aria-label="Photos">
-      <span class="cap">{max === 1 ? 'Photo' : 'Photos'}</span>
+      <GroupHead icon={CameraLineIcon} label={max === 1 ? 'Photo' : 'Photos'} />
       <PhotoGrid
         photos={p.drafts}
         onOpen={setViewing}

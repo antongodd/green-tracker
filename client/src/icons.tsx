@@ -139,3 +139,16 @@ export function CutoutIcon(p: P) {
     </svg>
   );
 }
+
+// Section headings in the editors (D34, 0.27.0): small outlines in a soft green square.
+export const PencilIcon = icon('M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5Z M13.5 7l3 3', { stroke: 2 });
+export const LeafLineIcon = icon('M5 19C5 10 10 5 19.5 4.5 19 14 14 19 5 19Z M5 19l8-8', { stroke: 2 });
+export const PinIcon = icon('M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21Z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z', { stroke: 2 });
+export const StarIcon = icon('M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z', { stroke: 2 });
+export const ReceiptIcon = icon('M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z M9 8.5h6M9 12.5h6', { stroke: 2 });
+export const NoteIcon = icon('M5.5 3.5h9l4 4v12a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z M14.5 3.5v4h4 M8 12h8M8 16h5', { stroke: 2 });
+export const LinkIcon = icon('M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1', { stroke: 2 });
+export const LockLineIcon = icon('M6 10.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z M8 10.5V7.5a4 4 0 0 1 8 0v3', { stroke: 2 });
+export const ScaleIcon = icon('M12 4v16 M7 20h10 M4 7.5h16 M6.5 7.5 3.5 14a3 3 0 0 0 6 0Z M17.5 7.5l-3 6.5a3 3 0 0 0 6 0Z', { stroke: 2 });
+export const CameraLineIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5ZM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', { stroke: 2 });
+export const CalendarIcon = icon('M5 5.5h14a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z M4 10h16 M8 3.5v4 M16 3.5v4', { stroke: 2 });

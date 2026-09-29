@@ -1,6 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot, signUp } from './helpers';
 
+// The editor's count line, and Overall live in the Ratings heading (D34, 0.27.0).
+async function expectRated(page: Page, count: string, overall: string) {
+  await expect(page.getByText(`Rated ${count}`, { exact: true })).toBeVisible();
+  await expect(page.locator('.gh-ov b')).toHaveText(overall);
+}
+
 /** Types a rating by tapping its value (brief §6.6). */
 async function rate(page: Page, label: string, value: string) {
   await page.getByRole('button', { name: new RegExp(`^${label}: .*Tap to type`) }).click();
@@ -39,7 +45,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await rate(page, 'Taste', '8.8');
   await rate(page, 'Burn', '8.6');
   await rate(page, 'High', '9.4');
-  await expect(page.getByText('Rated 5 of 5 · Overall 8.9')).toBeVisible();
+  await expectRated(page, '5 of 5', '8.9');
   await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn\'t count. Blank categories are left out.')).toBeVisible();
 
   // Purchases: date defaults to today; the per-unit price is derived live.
@@ -67,7 +73,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('link', { name: 'Edit' }).first().click();
   await page.getByLabel('Product type').selectOption('edibles');
   await expect(page.getByText('Look', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Rated 2 of 2 · Overall 9.2')).toBeVisible();
+  await expectRated(page, '2 of 2', '9.2');
   await expect(page.getByText('Hit time', { exact: true })).toBeVisible();
   // The old figure is relabelled in mg, never converted.
   await expect(page.getByLabel('Amount (mg THC)')).toHaveValue('3.5');
@@ -79,7 +85,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   // And back to Flower: every rating is still there.
   await page.getByRole('link', { name: 'Edit' }).first().click();
   await page.getByLabel('Product type').selectOption('flower');
-  await expect(page.getByText('Rated 5 of 5 · Overall 8.9')).toBeVisible();
+  await expectRated(page, '5 of 5', '8.9');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(hero(page).getByText('8.9')).toBeVisible();
 

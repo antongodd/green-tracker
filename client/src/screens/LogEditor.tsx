@@ -8,7 +8,8 @@ import { Header, Sheet } from '../components/chrome';
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { CONCENTRATE_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
-import { Select, TextField } from '../components/inputs';
+import { GroupHead, Select, TextField } from '../components/inputs';
+import { LeafLineIcon, PencilIcon, PinIcon, ScaleIcon } from '../icons';
 import { cachedEntry, deleteEntry, fetchEntry, saveEntry } from '../logEntries';
 import { startPromotion } from '../promotion';
 import { useOnline } from '../online';
@@ -135,12 +136,12 @@ export function LogEditor(p: { id: string | null }) {
           }}
         >
           <section class="fgroup" aria-label="Basics">
-            <span class="cap">Basics</span>
+            <GroupHead icon={PencilIcon} label="Basics" />
             <TextField id="name" label="Name" value={form.name} onInput={(v) => set('name', v)} onBlur={() => set('name', autoCapitalise(form.name))} autoCapitalize="words" />
           </section>
 
           <section class="fgroup" aria-label="Classification">
-            <span class="cap">Classification</span>
+            <GroupHead icon={LeafLineIcon} label="Classification" />
             <Select id="type" label="Product type" value={form.productType} options={TYPE_OPTIONS} onChange={(v) => set('productType', v as ProductTypeKey)} />
             {def.freeText && <TextField id="type-other" label="What type?" value={form.productTypeOther ?? ''} onInput={(v) => set('productTypeOther', v)} />}
             {def.subtypes && (
@@ -152,13 +153,13 @@ export function LogEditor(p: { id: string | null }) {
           </section>
 
           <section class="fgroup" aria-label="Origin">
-            <span class="cap">Origin</span>
+            <GroupHead icon={PinIcon} label="Origin" />
             <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
           </section>
 
           <section class="fgroup" aria-label="Amount">
-            <span class="cap">Amount</span>
+            <GroupHead icon={ScaleIcon} label="Amount" />
             <TextField id="amount" label={unit === 'mg' ? 'Amount (mg THC)' : 'Amount (g)'} inputMode="decimal" value={form.amount} onInput={(v) => set('amount', v)} />
           </section>
 

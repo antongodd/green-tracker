@@ -140,7 +140,17 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .stack { display: grid; gap: 12px; }
 .lh { padding: 20px 16px 8px; }
 /* Section titles are green (D18); tile and score captions stay grey. */
-.lh.cap, .fgroup > .cap, .sect > .cap, .cp-list .cap { color: var(--accent-bright); }
+.lh.cap, .fgroup > .cap, .gh > .cap, .sect > .cap, .cp-list .cap { color: var(--accent-bright); }
+/* Editor section headings (D34, 0.27.0): an outline icon in a soft green square before the caption. */
+.gh { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+.gh > .cap { font-size: 12px; }
+.gh-ic { width: 24px; height: 24px; flex: none; border-radius: 7px; background: rgba(88, 224, 140, 0.12); color: var(--accent-bright); display: grid; place-items: center; }
+.gh-ic svg { width: 15px; height: 15px; }
+.gh-ov { margin-left: auto; display: flex; align-items: baseline; gap: 6px; }
+.gh-ov > span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.gh-ov b { font-family: var(--num-font); font-size: 22px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.gh-ov b.none { color: var(--text-3); }
+.switch-row .gh-ic + span { flex: 1; }
 .lh.cap.dng { color: var(--danger); }
 .cap { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
 .lead { margin: 0; color: var(--text-2); font-size: 15px; }
@@ -507,17 +517,37 @@ div.hero-photo { cursor: default; }
 textarea.input { height: auto; min-height: 120px; padding: 12px 14px; resize: vertical; line-height: 1.45; }
 input[type="date"].input { appearance: none; -webkit-appearance: none; display: flex; align-items: center; min-width: 0; max-width: 100%; }
 input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
+/* The date box (D34): our calendar icon on the left, inside the box; the browser's picker button
+   is stretched invisibly over the whole box, so a tap anywhere still opens the picker. */
+.datebox { position: relative; min-width: 0; }
+.datebox > svg { position: absolute; z-index: 1; left: 11px; top: 50%; width: 17px; height: 17px; margin-top: -8.5px; color: var(--accent-bright); pointer-events: none; }
+.datebox input[type="date"].input { position: relative; padding-left: 36px; padding-right: 8px; }
+.datebox input[type="date"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .two-col > * { min-width: 0; }
-.rate { display: grid; gap: 6px; }
-.rate-top { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+/* Slim ratings (D34, 0.27.0): name and number on one line, a thinner slider right under it;
+   a counting, rated one takes its score's colour (D30's scale) in the fill, knob and number. */
+.rates { display: grid; gap: 4px; }
+.rate { display: grid; gap: 0; }
+.rate-top { display: flex; align-items: center; gap: 10px; min-height: 32px; }
 .rate-top .l { font-size: 16px; font-weight: 500; }
-.rate-top .val { margin-left: auto; min-width: 56px; height: 36px; padding: 0 8px; border-radius: 8px; border: 1px solid transparent; background: none; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.rate-top .l small { display: block; font-size: 12px; font-weight: 400; color: var(--text-2); }
+.rate.muted .rate-top .l { color: var(--text-2); }
+.rate-top .val { margin-left: auto; min-width: 56px; height: 32px; padding: 0 6px; border-radius: 8px; border: 1px solid transparent; background: none; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .rate-top .val.none { color: var(--text-3); }
 .rate-top input.val { width: 72px; border-color: var(--accent); background: var(--surface-2); outline: none; font-size: 17px; }
-.clr { width: 32px; height: 32px; flex: none; border-radius: 50%; border: 1px solid var(--hairline); background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+.clr { position: relative; width: 26px; height: 26px; flex: none; border-radius: 50%; border: 1px solid var(--hairline); background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
 .clr svg { width: 10px; height: 10px; }
 .clr.hidden { visibility: hidden; }
+.clr::before { content: ""; position: absolute; inset: -9px; } /* a 44px tap target around the smaller circle */
+.rate .slider { height: 28px; }
+.rate .slider-track, .rate .slider-fill { top: 12px; height: 4px; }
+.rate .slider-thumb { top: 3px; width: 22px; height: 22px; margin-left: -11px; }
+.rate[data-heat] .slider-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--heat) 55%, var(--surface-1)), var(--heat)); }
+.rate[data-heat] .slider-thumb { background: var(--heat); }
+.rate[data-heat] .rate-top .val:not(input) { color: var(--heat); }
+.rate.muted .slider-fill { background: rgba(238, 244, 240, 0.28); }
+.rate.muted .slider:not(.slider--unset) .slider-thumb { background: var(--text-3); }
 /* Custom slider (components/Slider.tsx). Class names are prefixed: a bare
    .empty / .thumb / .steps would pick up unrelated component styles. */
 .slider { position: relative; height: 32px; touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; outline: none; }

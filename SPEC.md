@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.26.0 (all phases done; drawings on the empty screens)
+**Current version:** 0.27.0 (all phases done; editor tidy-up)
 
 ---
 
@@ -97,6 +97,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D31 | **Podium metals glow from the right; top-four scores in colour** (2026-09-29; option A "Mirror" of https://claude.ai/artifact/QeQthDfqhQQtn8moTsnbVY, after the owner's screenshot showed 2nd–4th looking emptier than the heat rows below). Changes D21's metal wash (from the left) on the rows. | **Diamond, Platinum and Pewter glow from the right** in their metal colour, the same shape as the heat rows (D30), still a descending shine (glow 0.26 / 0.2 / 0.15; softer than the mockup's so the scores stay readable as the shimmer passes, measured). Flowing edges, rank numbers, glints and shimmer unchanged. **The scores on rows 1–4 flow through their tier's colours** (the owner liked this in the mockup): 1st the rainbow, the metals their lighter shades only (the darkest are too dim for text). The metals' "Overall" caption is full white on the glow. Rows only (your board and a friend's); podium product pages unchanged. No data, export or privacy change. |
 | D32 | **Rating bars in the heat colours** (2026-09-29; option A "Heat" of https://claude.ai/artifact/CMnFCgkKn9pbWuLYAsGcvi). Fifth of the front-end polish series; ties the product page to the Leaderboard's colours (D30). Replaces D18's single green fill on the bars. | On a product page (yours and a friend's) each **counting** rating's bar fades from a darker shade to its **score's colour** (amber at 4 and below → yellow-green → mint at 9 and above, the same scale as the rows), and its number takes the colour. **High where it doesn't count** (flower, concentrates, pre rolls) stays grey; on **edibles** High counts, so it's coloured. **Unrated** categories keep their dash and empty track. The editor's sliders are unchanged. No data, export or privacy change. |
 | D33 | **Drawings on the empty screens** (2026-09-29; option B "Drawings" of https://claude.ai/artifact/51HkyFqhtqTPX5aHCFQucK). Sixth of the front-end polish series. Replaces the faint outlined leaf of brief §6.10. | Every empty screen keeps its card and words, with a **small green line drawing** for its kind in place of the leaf: a podium (new Leaderboard), a funnel (a type filter with nothing in it: Leaderboard, Log, a friend's board), rating bars with the top one empty (ranking by a rating nothing has), a notebook (empty Log), a box (Archive), a dashed podium with an @ (a friend who's shared nothing), an inbox (no requests), people (no followers; not following anyone) and a crossed-out circle (no one blocked). **Add a product** and **Add a log entry** become the green button with a +; other buttons stay grey. The People lists and Blocked, a plain line before, get a smaller card with a short title above their sentence. Error cards stay plain. No data, export or privacy change. |
+| D34 | **Editor tidy-up** (2026-09-29; option A "Slim" with Overall "Live, in the heading" of https://claude.ai/artifact/8rSPSLwqN7gEdkDT7EZnMJ). Seventh of the front-end polish series. Replaces the editor's plain captions, D18's single-green sliders and the "· Overall" count line. | Every section heading in the product and Log editors has a small outline **icon** in a soft green square (Basics pencil, Classification leaf, Origin pin, Ratings star, Purchases receipt, Photos camera, Notes note, Leafly link, Private lock, Amount scales). Ratings are **slim**: name and number on one line, a thinner full-width slider under it (about a third shorter). A counting, rated slider's fill, knob and number take the **score's colour** (D30's amber → mint); unrated stays grey with a dash; a rating that doesn't count (High on flower, concentrates, pre rolls) is grey with the note "Doesn't count towards Overall". **Overall** shows live, in its colour, at the right of the Ratings heading (a dash until something counts); the line under the sliders says only "Rated N of M". The **date boxes** draw a calendar icon on the left, inside the box; the phone's own picker still opens on a tap. The ✕ is smaller but keeps a 44px target. Hit time unchanged. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -515,6 +516,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Editor tidy-up (D34, 0.27.0).** `GroupHead` (components/inputs.tsx) draws each editor heading: `.gh` with `.gh-ic` (a
+  24px soft-green square holding a 15px outline icon from icons.tsx) and the caption; the Ratings one carries `.gh-ov`
+  (Overall, `--num-font`, coloured by `scoreHeat('overall', o)`, `.none` for the dash). `RatingInput` takes the rating's key
+  and an optional `note`: a noted (weight 0) rating is `.muted` (grey fill and knob); otherwise a rated one gets `data-heat`
+  and `--heat`, which colour `.slider-fill` (a gradient from a darker shade), `.slider-thumb` and `.val`. The slim rows:
+  `.rate-top` 32px, slider 28px with a 4px track and a 22px knob (the 13px inset the drag maths uses is unchanged), `.clr`
+  26px with a `::before` that keeps a 44px target. `TextField type="date"` wraps the input in `.datebox`: `CalendarIcon` at
+  the left (above the input), 36px left padding, and the browser's `::-webkit-calendar-picker-indicator` stretched invisibly
+  over the box. Tested (`test/e2e/editor.spec.ts`): every heading's icon in both editors, row heights (at most 64px, High
+  with its note at most 72px, from 82px), the ✕'s 44px target, each rating's colour in number, knob and fill, the grey noted
+  High and a coloured edible High, a cleared rating going plain, the live Overall and its colour (and dash), the date icon
+  inside both date boxes, and readability; `products.spec.ts` reads Overall from the heading.
+
 - **Drawings on the empty screens (D33, 0.26.0).** `EmptyCard` (components/EmptyCard.tsx) renders every empty state:
   `<div class="empty" data-art>` with an inline `svg.empty-art` (168×104, `aria-hidden`), the title and the caller's text and
   button. Ten drawings (`podium`, `filter`, `unrated`, `log`, `archive`, `shared`, `requests`, `followers`, `following`,
@@ -720,6 +734,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.27.0 — editor tidy-up (owner request)
+- Every section in the product and Log editors has a small icon by its heading (decision D34).
+- Ratings are slimmer: the name and number on one line with a thinner slider under it, about a third shorter.
+- As you drag, each slider, its knob and its number take the score's colour, amber to mint, like the product page.
+  High, where it doesn't count, is grey with a short note.
+- Overall now shows live, in its colour, in the Ratings heading.
+- The date boxes show their calendar icon on the left, inside the box, so it can't be cut off.
+- Tests: 7 new Playwright tests (`editor.spec.ts`).
 
 ### 0.26.0 — drawings on the empty screens (owner request)
 - Every empty screen now has its own small green line drawing instead of the faint leaf (decision D33, option B
