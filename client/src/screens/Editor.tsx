@@ -11,9 +11,10 @@ import { Header } from '../components/chrome';
 import { CONCENTRATE_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
-import { HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
+import { GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { todayIso } from '../components/ProductRow';
-import { PlusIcon } from '../icons';
+import { LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon } from '../icons';
+import { scoreHeat } from '../../../shared/domain/heat';
 import { cachedProduct, fetchProduct, saveProduct } from '../products';
 import { useOnline } from '../online';
 import { back, navigate, replaceHistory } from '../router';
@@ -169,12 +170,12 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           }}
         >
           <section class="fgroup" aria-label="Basics">
-            <span class="cap">Basics</span>
+            <GroupHead icon={PencilIcon} label="Basics" />
             <TextField id="name" label="Name" value={form.name} onInput={(v) => set('name', v)} onBlur={() => set('name', autoCapitalise(form.name))} autoCapitalize="words" />
           </section>
 
           <section class="fgroup" aria-label="Classification">
-            <span class="cap">Classification</span>
+            <GroupHead icon={LeafLineIcon} label="Classification" />
             <div class="two-col">
               <Select id="type" label="Product type" value={form.productType} options={TYPE_OPTIONS} onChange={(v) => set('productType', v as ProductTypeKey)} />
               <Select id="strain" label="Strain type" value={form.strainType ?? ''} options={STRAIN_OPTIONS} onChange={(v) => set('strainType', (v || null) as Form['strainType'])} />
@@ -189,7 +190,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           </section>
 
           <section class="fgroup" aria-label="Origin">
-            <span class="cap">Origin</span>
+            <GroupHead icon={PinIcon} label="Origin" />
             <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
             <div class="two-col">
@@ -199,20 +200,37 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           </section>
 
           <section class="fgroup" aria-label="Ratings">
-            <span class="cap">Ratings</span>
-            {def.ratingSet.map((s) => (
-              <RatingInput key={s.key} id={`rate-${s.key}`} label={RATING_LABELS[s.key]} value={form.ratings[s.key] ?? null} onChange={(v) => setRating(s.key, v)} />
-            ))}
+            {/* D34: Overall, live and in its colour, at the right of the heading. */}
+            <GroupHead icon={StarIcon} label="Ratings">
+              <span class="gh-ov">
+                <span>Overall</span>
+                <b class={o === null ? 'none' : undefined} style={o === null ? undefined : { color: scoreHeat('overall', o) ?? undefined }}>
+                  {o === null ? '—' : formatScore(o)}
+                </b>
+              </span>
+            </GroupHead>
+            <div class="rates">
+              {def.ratingSet.map((s) => (
+                <RatingInput
+                  key={s.key}
+                  id={`rate-${s.key}`}
+                  rating={s.key}
+                  label={RATING_LABELS[s.key]}
+                  value={form.ratings[s.key] ?? null}
+                  onChange={(v) => setRating(s.key, v)}
+                  note={s.weight === 0 ? 'Doesn’t count towards Overall' : undefined}
+                />
+              ))}
+            </div>
             {form.productType === 'edibles' && <HitTimeInput value={form.hitTimeMinutes} onChange={(v) => set('hitTimeMinutes', v)} />}
             <p class="small">
               Rated {count.rated} of {count.of}
-              {o !== null && ` · Overall ${formatScore(o)}`}
             </p>
             <p class="small">{overallExplanation(form.productType)}</p>
           </section>
 
           <section class="fgroup" aria-label="Purchases">
-            <span class="cap">Purchases</span>
+            <GroupHead icon={ReceiptIcon} label="Purchases" />
             {form.purchases.map((d, i) => {
               const amount = parseNum(d.amount);
               const total = parseNum(d.totalPaid);
@@ -244,19 +262,20 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} name={form.name || undefined} />
 
           <section class="fgroup" aria-label="Notes">
-            <label class="cap" for="notes">
-              Notes
-            </label>
+            <GroupHead icon={NoteIcon} label="Notes" htmlFor="notes" />
             <textarea id="notes" class="input" value={form.notes ?? ''} onInput={(e) => set('notes', e.currentTarget.value)} />
           </section>
 
           <section class="fgroup" aria-label="Leafly">
-            <span class="cap">Leafly</span>
+            <GroupHead icon={LinkIcon} label="Leafly" />
             <TextField id="leafly" label="Leafly link" inputMode="url" autoCapitalize="none" placeholder="Paste a link, or leave empty to search by name" value={form.leaflyLink ?? ''} onInput={(v) => set('leaflyLink', v)} />
           </section>
 
           <section class="fgroup" aria-label="Private">
             <label class="switch-row">
+              <span class="gh-ic">
+                <LockLineIcon />
+              </span>
               <span>
                 Private
                 <span class="small">Hidden from your followers</span>

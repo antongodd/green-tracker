@@ -118,7 +118,7 @@ test('every main screen has the green look', async () => {
         const cs = getComputedStyle(el);
         if (!green(cs.borderTopColor) || !cs.backgroundImage.includes('linear-gradient')) out.push(`card .${el.className}: ${cs.borderTopColor} ${cs.backgroundImage.slice(0, 40)}`);
       });
-      document.querySelectorAll<HTMLElement>('.lh.cap:not(.dng), .fgroup > .cap, .sect > .cap, .group-h').forEach((el) => {
+      document.querySelectorAll<HTMLElement>('.lh.cap:not(.dng), .fgroup > .cap, .gh > .cap, .sect > .cap, .group-h').forEach((el) => {
         if (getComputedStyle(el).color !== 'rgb(88, 224, 140)') out.push(`title "${el.textContent}": ${getComputedStyle(el).color}`);
       });
       const dng = document.querySelector('.lh.cap.dng');
