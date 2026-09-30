@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
-import { shot, signUp } from './helpers';
+import { shot, signUp, settled } from './helpers';
 
 // Remove background (D26). Most tests use a quick stand-in for the AI (anything that
 // differs from the photo's border colour is a "thing"); the last test runs the real one.
@@ -109,6 +109,7 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   await expect(flow(page).getByText('Found 2 separate things')).toBeVisible();
   const next = flow(page).getByRole('button', { name: 'Next' });
   await expect(next).toBeDisabled();
+  await settled(page);
   expect(await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze().then((r) => r.violations.map((v) => v.id))).toEqual([]);
   await shot(page, '90-cutout-pick');
   // Tapping the lighter's empty surroundings far from anything picks nothing; the bud keeps it.
@@ -120,6 +121,7 @@ test('remove the background on a product page: tap the bud, apply, then restore 
 
   // Preview, then Apply saves at once (from a product page, like a crop).
   await expect(flow(page).getByRole('img', { name: 'The cut-out' })).toBeVisible();
+  await settled(page);
   expect(await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze().then((r) => r.violations.map((v) => v.id))).toEqual([]);
   await shot(page, '91-cutout-preview');
   await flow(page).getByRole('button', { name: 'Apply' }).click();

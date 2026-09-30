@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
-import { shot, signUp } from './helpers';
+import { shot, signUp, settled } from './helpers';
 
 // Profile photos (D23) and People opening on Following (D24), with three people in
 // three browsers: the owner, a follower and a stranger.
@@ -95,6 +95,7 @@ test('add a photo: choose it, move and zoom it into the circle, apply', async ()
   // Starts centred: the short edge (800) fills the circle.
   expect((await frame()).x).toBeCloseTo(200 / 1200, 3);
   await shot(owner, '70-move-and-zoom');
+  await settled(owner);
   const { violations } = await new AxeBuilder({ page: owner }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
 

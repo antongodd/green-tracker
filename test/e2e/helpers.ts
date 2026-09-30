@@ -138,3 +138,11 @@ export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
     }
     return out;
   }, selector);
+
+/**
+ * Waits for the screen's entrance fade (0.2s) to finish. axe measures colours as they are at that
+ * moment, so run mid-fade it read the half-faded buttons as low contrast (2.6 : 1) and failed now and
+ * then (0.28.0's deploy run). Call it before every axe check.
+ */
+export const settled = (page: Page) =>
+  page.evaluate(() => Promise.all(document.getAnimations().filter((a) => (a as CSSAnimation).animationName === 'enter').map((a) => a.finished)));
