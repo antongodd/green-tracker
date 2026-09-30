@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { signUp } from './helpers';
+import { signUp, settled } from './helpers';
 
 // Release checks (Phase 9): accessibility (WCAG 2.1 AA via axe), the Content
 // Security Policy blocking nothing the app needs, security headers, the install
@@ -80,6 +80,7 @@ async function axe(path: string, setup?: () => Promise<void>) {
   await page.waitForLoadState('networkidle');
   if (setup) await setup();
   await page.waitForTimeout(250); // entry animation
+  await settled(page);
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   return violations.map((v) => `${path}: ${v.id} (${v.impact}) — ${v.help}\n    ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join('\n    ')}`);
 }
@@ -144,6 +145,7 @@ test('the signed-out screens pass too', async ({ browser }) => {
   for (const path of ['/signin', '/signup', '/recover']) {
     await fresh.goto(path);
     await fresh.waitForTimeout(250);
+    await settled(fresh);
     const { violations } = await new AxeBuilder({ page: fresh }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     found.push(...violations.map((v) => `${path}: ${v.id} — ${v.help} ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`));
   }

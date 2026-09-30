@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, heroTextBoxes, shot, signUp } from './helpers';
+import { contrastFailures, heroTextBoxes, shot, signUp, settled } from './helpers';
 
 // D22 (0.16.0): a product in the top four carries its row's tier onto its own page,
 // with the rows' "descending shine", following the Leaderboard's filter and Rank by;
@@ -130,6 +130,7 @@ test('Diamond’s glints stay clear of every piece of text; axe finds nothing on
   for (const name of ['Secret', 'Alpha']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();
+    await settled(owner);
     const { violations } = await new AxeBuilder({ page: owner }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(violations.map((v) => v.id)).toEqual([]);
   }

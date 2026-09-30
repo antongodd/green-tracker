@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.28.0 (all phases done; tab bar glow)
+**Current version:** 0.28.1 (all phases done; tab bar glow; steadier accessibility checks)
 
 ---
 
@@ -748,6 +748,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.28.1 — steadier accessibility checks (tests only)
+- 0.28.0's deploy run stopped on the podium page's accessibility check (colour contrast). It wasn't the new tab
+  bar: the check had run during the screen's 0.2s fade-in, when the buttons are half-transparent (measured 2.6 : 1
+  half-way). Every axe check now waits for that fade to finish first (`settled` in `test/e2e/helpers.ts`). The app
+  is unchanged; this release puts 0.28.0's tab bar live.
 
 ### 0.28.0 — tab bar outlines and glow (owner request)
 - The tab bar's icons are slim outlines; the tab you're on shows its solid icon in green with a soft glow and a
