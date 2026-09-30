@@ -132,7 +132,12 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .tab svg { width: 26px; height: 26px; }
 .tab { isolation: isolate; }
 .tab[aria-current="page"] { color: var(--accent-bright); }
-.tab[aria-current="page"]::before { content: ""; position: absolute; top: 3px; left: 50%; width: 52px; height: 30px; margin-left: -26px; border-radius: 999px; background: rgba(88, 224, 140, 0.14); z-index: -1; }
+/* The tab you're on (D35, 0.28.0): its solid icon glows, with a short glowing line under its
+   name, in place of D18's bubble; the other tabs show slim outlines. */
+.tab { gap: 1px; padding-bottom: 4px; }
+.tab svg { width: 25px; height: 25px; }
+.tab[aria-current="page"] svg { filter: drop-shadow(0 0 8px rgba(88, 224, 140, 0.65)); }
+.tab[aria-current="page"]::after { content: ""; position: absolute; bottom: 1px; left: 50%; width: 18px; height: 3px; margin-left: -9px; border-radius: 3px; background: var(--accent-bright); box-shadow: 0 0 8px rgba(88, 224, 140, 0.8); }
 .badge { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bar-solid); }
 
 /* ---------- layout ---------- */

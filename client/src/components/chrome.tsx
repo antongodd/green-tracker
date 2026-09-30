@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { BackIcon, BoardIcon, LeafGlass, LogIcon, MoreIcon, PeopleIcon } from '../icons';
+import { BackIcon, BoardIcon, BoardLineIcon, LeafGlass, LogIcon, LogLineIcon, MoreIcon, MoreLineIcon, PeopleIcon, PeopleLineIcon } from '../icons';
 import { back, linkTo } from '../router';
 import { useSession } from '../session';
 
@@ -41,11 +41,12 @@ export function BackButton(p: { to: string; label?: string }) {
 
 export type Tab = 'leaderboard' | 'log' | 'people' | 'more';
 
-const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon }[] = [
-  { key: 'leaderboard', label: 'Leaderboard', path: '/', Icon: BoardIcon },
-  { key: 'log', label: 'Log', path: '/log', Icon: LogIcon },
-  { key: 'people', label: 'People', path: '/people', Icon: PeopleIcon },
-  { key: 'more', label: 'More', path: '/more', Icon: MoreIcon },
+/** Each tab: its solid icon (the tab you're on) and its outline (the others), D35. */
+const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Line: typeof BoardIcon }[] = [
+  { key: 'leaderboard', label: 'Leaderboard', path: '/', Icon: BoardIcon, Line: BoardLineIcon },
+  { key: 'log', label: 'Log', path: '/log', Icon: LogIcon, Line: LogLineIcon },
+  { key: 'people', label: 'People', path: '/people', Icon: PeopleIcon, Line: PeopleLineIcon },
+  { key: 'more', label: 'More', path: '/more', Icon: MoreIcon, Line: MoreLineIcon },
 ];
 
 /** Tab bar (D6, P1). The active tab is the only indicator of the main screen. */
@@ -54,10 +55,10 @@ export function TabBar(p: { active: Tab | null }) {
   return (
     <nav class="nav" aria-label="Main">
       <div class="tabs">
-        {TABS.map(({ key, label, path, Icon }) => (
+        {TABS.map(({ key, label, path, Icon, Line }) => (
           <a key={key} class="tab" href={path} onClick={linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
-            <Icon />
-            {label}
+            {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
+            <span class="tab-l">{label}</span>
             {key === 'people' && requests > 0 && (
               <span class="badge" aria-label={`${requests} follow ${requests === 1 ? 'request' : 'requests'}`}>
                 {requests}

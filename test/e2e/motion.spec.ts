@@ -157,8 +157,11 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   // Photo Kush is 1st, so its page is a podium page (D22): its one sweep across the photo
   // waits for the flight to land instead of running underneath it.
   await expect(page.locator('main')).toHaveAttribute('data-podium', '1');
-  const sweep = await page.evaluate(() => {
+  const sweep = await page.evaluate(async () => {
     const a = document.getAnimations().find((x) => (x as CSSAnimation).animationName === 'podium-arrive')!;
+    // Held (paused) during the flight, it resumes on the next frame after landing; until then its
+    // start time is empty. Wait for that frame (a.ready) rather than reading it early (0.28.0).
+    await a.ready;
     return { started: Number(a.startTime), landed: (window as unknown as { __vtDone: number }).__vtDone };
   });
   expect(sweep.started).toBeGreaterThanOrEqual(sweep.landed - 20);

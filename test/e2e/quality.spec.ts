@@ -99,7 +99,7 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
 
 // The green look (D18, 0.12.0): every card on every main screen carries the green
 // edge and wash, section titles are green, the bars have green lines, and the
-// active tab sits on its bubble. Tiles and podium rows keep their own styles.
+// active tab glows (D35; was its bubble). Tiles and podium rows keep their own styles.
 test('every main screen has the green look', async () => {
   // Rows that glow by score (D30) have their own colour and edge, checked in heat.spec.ts.
   const cards = '.row:not(.tier):not([data-heat]), .lrows, .sect, .fgroup, .list, .empty, .seg';
@@ -128,7 +128,9 @@ test('every main screen has the green look', async () => {
       const bar = document.querySelector('.nav, .savebar');
       if (bar && !green(getComputedStyle(bar).borderTopColor)) out.push('bottom bar line');
       const tab = document.querySelector('.tab[aria-current="page"]');
-      if (tab && !getComputedStyle(tab, '::before').backgroundColor.replace(/\s/g, '').startsWith('rgba(88,224,140')) out.push('active tab bubble');
+      // D35 (0.28.0): the active tab glows, with a green line under its name (was D18's bubble).
+      if (tab && getComputedStyle(tab, '::after').backgroundColor !== 'rgb(88, 224, 140)') out.push('active tab line');
+      if (tab && !getComputedStyle(tab.querySelector('svg')!).filter.includes('drop-shadow')) out.push('active tab glow');
       return out;
     }, cards);
     found.push(...bad.map((b) => `${path}: ${b}`));
