@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.27.1 (all phases done; cropper Square fix)
+**Current version:** 0.28.0 (all phases done; tab bar glow)
 
 ---
 
@@ -81,7 +81,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D13 | **Edible per-mg prices stay at 2dp** (2026-09-23), so a very cheap edible can read `£0.00/mg`. Accepted. | Ranking and VFM still use full precision. |
 | D16 | **Country uses a searchable picker with flags** (2026-09-24), in both editors. An approved exception to design brief §1.4 ("dropdowns stay native `<select>`"): iOS's native picker can't be searched. Every other picklist stays native. | Full-screen list: search (word starts, nicknames), Used section, flags, "Use '…' as Other". Stored values unchanged. See §4 *Country picker*. |
 | D17 | **Stats tiles are centred with a faint green wash** (2026-09-24; option D of the tile mockups, https://claude.ai/artifact/P3hJPK4HzSXvZVUCNKxu2U). A deliberate step away from design brief §1.2 ("quiet surfaces, one accent") and §6.3 (plain `--surface-1` tiles). Applies to every tile row: your Leaderboard, the Log and a followed person's Leaderboard. | Number and label centred; each tile gets a diagonal `--accent-bright` wash (16% → 0 by 70%, the podium rows' idea in green) and a green border at 28%. Look only: no data, export or privacy change. |
-| D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble; rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
+| D18 | **The green look on every screen** (2026-09-24; option 2 "Family" of https://claude.ai/artifact/TFjtWuPaQtJpynELn6JnFK). Makes the D17 tiles part of a set instead of the odd one out. Further step away from design brief §1.2 and §3 (grey hairlines). | Every card gets a quieter version of the tile wash and a green edge; tiles stay a little stronger; section titles green; header, tab bar and Save bar lines green; the active tab sits on a green bubble (0.28.0: a glow and line instead, D35); rating bars fade green → bright green; photos get a thin green outline. Inputs, action sheets, the photo viewer and the podium metals are unchanged. See §4 *The green look*. |
 | D19 | **Four podium tiers, and only rated products get one** (2026-09-24; mockups https://claude.ai/artifact/6Mq7ZyrLQVQc47bDWGX1Q3 and https://claude.ai/artifact/9cSrBysZbhVgGKx8QrmjBU). Overrides rebuild brief §10.1 ("the top three are gold, silver and bronze") and design brief §3 *Podium* ("no glow"). | 1st **rainbow** (holo style, pastel, medium speed), 2nd gold, 3rd silver, 4th bronze (classic metal wash with a flowing metal edge). A shimmer sweeps down the four rows in a cascade, 1st on the same beat. Unrated products never get a tier (before, a tier went purely by position). Same on a followed person's Leaderboard. Reduce Motion keeps the colours and stops the motion. Anything for #1 beyond the row (e.g. its product page) is to be discussed later (done in D22). See §4 *Podium tiers*. |
 | D20 | **Tap feel: "Lift" and "Photo grows"** (2026-09-24; interactive mockup https://claude.ai/artifact/MbxQoAaWhAjdrifnM8kdy3). Everything you can tap lifts under your finger; opening a product from a list (your Leaderboard, the Log, a friend's Leaderboard) flies the row's photo into the product's big photo, and Back flies it home. Other screen changes are unchanged, for now. | Stand-alone things grow slightly (rows 3%, buttons 3%, pills 5%, tab icons and header buttons 12%) with a soft shadow on rows; rows packed inside a card (Log, More, People, country list, action sheets) light up green instead. Reduce Motion: colour only, and products open without the flight. Needs iOS 18+ for the flight (owner on iOS 26.6.2); elsewhere it simply opens as before. See §4 *Tap feel*. |
 | D21 | **Cool metals under the rainbow** (2026-09-25; option C "Descending shine" with the Ice blue Diamond, https://claude.ai/artifact/H7DwUgMSVzYrmYWnKysBXc). Replaces D19's gold, silver and bronze, which looked out of place next to the green: **2nd Diamond, 3rd Platinum, 4th Pewter**, all cool tones, no gold. 1st stays the rainbow holo; the tier rules (rated only, follows filter and Rank by, friends' boards) are unchanged. | Each metal shines less than the one above: Diamond has the strongest wash and shimmer and twinkles (three glints in the row's corners, clear of all text); Platinum is medium; Pewter is calm and matte with its edge flowing at half speed. Same cascade timing. Reduce Motion: colours only, no glints. See §4 *Podium tiers*. |
@@ -98,6 +98,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D32 | **Rating bars in the heat colours** (2026-09-29; option A "Heat" of https://claude.ai/artifact/CMnFCgkKn9pbWuLYAsGcvi). Fifth of the front-end polish series; ties the product page to the Leaderboard's colours (D30). Replaces D18's single green fill on the bars. | On a product page (yours and a friend's) each **counting** rating's bar fades from a darker shade to its **score's colour** (amber at 4 and below → yellow-green → mint at 9 and above, the same scale as the rows), and its number takes the colour. **High where it doesn't count** (flower, concentrates, pre rolls) stays grey; on **edibles** High counts, so it's coloured. **Unrated** categories keep their dash and empty track. The editor's sliders are unchanged. No data, export or privacy change. |
 | D33 | **Drawings on the empty screens** (2026-09-29; option B "Drawings" of https://claude.ai/artifact/51HkyFqhtqTPX5aHCFQucK). Sixth of the front-end polish series. Replaces the faint outlined leaf of brief §6.10. | Every empty screen keeps its card and words, with a **small green line drawing** for its kind in place of the leaf: a podium (new Leaderboard), a funnel (a type filter with nothing in it: Leaderboard, Log, a friend's board), rating bars with the top one empty (ranking by a rating nothing has), a notebook (empty Log), a box (Archive), a dashed podium with an @ (a friend who's shared nothing), an inbox (no requests), people (no followers; not following anyone) and a crossed-out circle (no one blocked). **Add a product** and **Add a log entry** become the green button with a +; other buttons stay grey. The People lists and Blocked, a plain line before, get a smaller card with a short title above their sentence. Error cards stay plain. No data, export or privacy change. |
 | D34 | **Editor tidy-up** (2026-09-29; option A "Slim" with Overall "Live, in the heading" of https://claude.ai/artifact/8rSPSLwqN7gEdkDT7EZnMJ). Seventh of the front-end polish series. Replaces the editor's plain captions, D18's single-green sliders and the "· Overall" count line. | Every section heading in the product and Log editors has a small outline **icon** in a soft green square (Basics pencil, Classification leaf, Origin pin, Ratings star, Purchases receipt, Photos camera, Notes note, Leafly link, Private lock, Amount scales). Ratings are **slim**: name and number on one line, a thinner full-width slider under it (about a third shorter). A counting, rated slider's fill, knob and number take the **score's colour** (D30's amber → mint); unrated stays grey with a dash; a rating that doesn't count (High on flower, concentrates, pre rolls) is grey with the note "Doesn't count towards Overall". **Overall** shows live, in its colour, at the right of the Ratings heading (a dash until something counts); the line under the sliders says only "Rated N of M". The **date boxes** draw a calendar icon on the left, inside the box; the phone's own picker still opens on a tap. The ✕ is smaller but keeps a 44px target. Hit time unchanged. No data, export or privacy change. |
+| D35 | **Tab bar: outlines and a glow** (2026-09-30; option B "Glow" of https://claude.ai/artifact/YFtaLm4qrwn4thUUhWP6hb). Eighth of the front-end polish series. Keeps P1's four symbols; replaces D18's green bubble behind the active tab. | The tab bar's podium, notebook, people and dots are **slim outlines** on the tabs you're not on; the tab you're on shows its **solid** icon in green with a **soft green glow** and a **short glowing green line** under its name (no bubble). Bar, names, + button, press animation and the People badge unchanged. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -520,6 +521,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Tab bar outlines and glow (D35, 0.28.0).** `TabBar` (components/chrome.tsx) draws the current tab's solid icon (P1's
+  `BoardIcon` etc., class `tab-on`) and the others' outlines (`BoardLineIcon`, `LogLineIcon`, `PeopleLineIcon`,
+  `MoreLineIcon` in icons.tsx: the same shapes in 1.7px lines, the podium's star still solid; class `tab-off`); each name
+  sits in `.tab-l`. `.tab[aria-current="page"] svg` has `drop-shadow(0 0 8px rgba(88,224,140,0.65))` and `::after` is an
+  18×3px `--accent-bright` line with its own glow; D18's `::before` bubble is gone. Tested (`test/e2e/tabbar.spec.ts`): on
+  each of the four tabs only that tab is solid, glowing, underlined and green, the others outlines in grey, no bubble
+  anywhere; the People badge; readability of the names. `quality.spec.ts`'s green-look check now looks for the glow and
+  line instead of the bubble.
+
 - **Editor tidy-up (D34, 0.27.0).** `GroupHead` (components/inputs.tsx) draws each editor heading: `.gh` with `.gh-ic` (a
   24px soft-green square holding a 15px outline icon from icons.tsx) and the caption; the Ratings one carries `.gh-ov`
   (Overall, `--num-font`, coloured by `scoreHeat('overall', o)`, `.none` for the dash). `RatingInput` takes the rating's key
@@ -738,6 +748,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.28.0 — tab bar outlines and glow (owner request)
+- The tab bar's icons are slim outlines; the tab you're on shows its solid icon in green with a soft glow and a
+  short glowing line under its name, instead of the green bubble (decision D35, option B of the mockups).
+- Same four icons, same bar, same + button; the People request count is unchanged.
+- Tests: 6 new Playwright tests (`tabbar.spec.ts`); the green-look test checks the glow instead of the bubble.
+- Found while testing: the photo-flight test (`motion.spec.ts`) that failed now and then read the podium sweep's start
+  time in the frame before the sweep resumed after landing (it's paused during the flight), and got nothing. It now
+  waits for that frame; the app was right all along. 128/128 in repeated runs.
 
 ### 0.27.1 — cropper Square fix (found while testing 0.27.0)
 - Tapping **Square** in the cropper before the photo had finished loading (more likely on a slow

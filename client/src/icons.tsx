@@ -152,3 +152,26 @@ export const LockLineIcon = icon('M6 10.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1
 export const ScaleIcon = icon('M12 4v16 M7 20h10 M4 7.5h16 M6.5 7.5 3.5 14a3 3 0 0 0 6 0Z M17.5 7.5l-3 6.5a3 3 0 0 0 6 0Z', { stroke: 2 });
 export const CameraLineIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5ZM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', { stroke: 2 });
 export const CalendarIcon = icon('M5 5.5h14a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z M4 10h16 M8 3.5v4 M16 3.5v4', { stroke: 2 });
+
+// Tab bar outlines (D35, 0.28.0): the same four shapes as the solid tab icons (P1), drawn as slim
+// lines for the tabs you're not on; the current tab shows the solid one.
+const TAB_LINE = { fill: 'none', stroke: 'currentColor', 'stroke-width': 1.7, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' } as const;
+export function BoardLineIcon(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
+      <path {...TAB_LINE} d="M9.85 7.35h4.3V20h-4.3Z M3.35 11.85h6.5V20H4.1a.75.75 0 0 1-.75-.75Z M14.15 14.85h5.75a.75.75 0 0 1 .75.75V19.25a.75.75 0 0 1-.75.75h-5.75Z M2.5 20h19" />
+      <path fill="currentColor" d="M12 1.9l.8 1.6 1.8.26-1.3 1.27.3 1.78L12 5.97l-1.6.84.3-1.78-1.3-1.27 1.8-.26Z" />
+    </svg>
+  );
+}
+const tabLine = (d: string) =>
+  function TabLineIcon(p: P) {
+    return (
+      <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
+        <path {...TAB_LINE} d={d} />
+      </svg>
+    );
+  };
+export const LogLineIcon = tabLine('M6.3 3.35h11.2a1.65 1.65 0 0 1 1.65 1.65v14.5a1.65 1.65 0 0 1-1.65 1.65H6.3a1.45 1.45 0 0 1-1.45-1.45V4.8A1.45 1.45 0 0 1 6.3 3.35Z M8.85 8h7.3 M8.85 12h7.3 M8.85 16h4.3');
+export const PeopleLineIcon = tabLine('M9 11.1a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z M2.35 19.9c0-3.1 3-5.1 6.65-5.1s6.65 2 6.65 5.1Z M16.1 4.6a3.2 3.2 0 0 1 0 6.2 M17.7 14.9c2.3.5 4 2.1 4 4.4v.6h-2.9');
+export const MoreLineIcon = tabLine('M5 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M12 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M19 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z');
