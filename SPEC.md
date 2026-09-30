@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.27.0 (all phases done; editor tidy-up)
+**Current version:** 0.27.1 (all phases done; cropper Square fix)
 
 ---
 
@@ -176,6 +176,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     photos (P8, native scroll-snap), `n / N` counter, Crop this photo. *Cropper*:
     Cancel · Free | Square · Apply, corner handles with 44px touch areas, drag to
     move, dimmed surround, Reset to original (→ no crop).
+    Apply waits for the photo to load; Square tapped before then is squared again in the
+    photo's load handler, once its proportions are known (0.27.1: it used to stay full-frame,
+    marked square). Tested (`photos.spec.ts`): the original held back until Square is tapped
+    still gives a square box and a 960×960 crop (fails without the fix).
 - **The Log (Phase 6).**
   - *Two kinds of row*: product rows are drawn from your non-archived products when
     the Log renders (never stored copies), next to loose entries. Grouping, order
@@ -734,6 +738,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.27.1 — cropper Square fix (found while testing 0.27.0)
+- Tapping **Square** in the cropper before the photo had finished loading (more likely on a slow
+  connection) left the box full-frame, so **Apply** saved the whole photo marked as square. The box is
+  now squared as soon as the photo's size is known.
+- The first version of the fix squared it a moment later, which could undo a **Reset** tapped in that
+  moment (caught by repeating the photo tests 48 times); it now happens as the photo loads.
+- This was also the cause of the photo test that failed now and then (about 1 run in 12).
+- Tests: 1 new Playwright test (`photos.spec.ts`) that holds the photo back until Square is tapped.
 
 ### 0.27.0 — editor tidy-up (owner request)
 - Every section in the product and Log editors has a small icon by its heading (decision D34).
