@@ -127,3 +127,38 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   expect(await naturalSize(page, (await photoUrls(page, 'cropped'))[0]!)).toEqual({ w: 960, h: 960 });
   await shot(page, '32-profile-photos');
 });
+
+// Bug fix (0.27.1): Square tapped while the photo was still loading squared the box with the
+// wrong proportions (the photo's size wasn't known yet), so Apply saved the whole photo marked
+// "square". The box is now squared again as soon as the photo's size is known.
+test('Square tapped before the photo has loaded still crops a square', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/products/new');
+  await page.getByLabel('Name').fill('Slow crop');
+  await page.getByLabel('Add photos').setInputFiles([await makeJpeg(page, 2000, 1200, ['#2f6b3a', '#b9d36c'], 'SLOW')]);
+  await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
+
+  // Hold the original back until Square has been tapped, as on a slow connection.
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route('**/api/photos/*/original*', async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.getByRole('link', { name: 'Edit' }).first().click();
+  await page.getByRole('button', { name: 'Crop photo 1' }).click();
+  const cropper = page.getByRole('dialog', { name: 'Crop photo' });
+  await expect(cropper.getByRole('button', { name: 'Apply' })).toBeDisabled();
+  await cropper.getByRole('radio', { name: 'Square' }).click();
+  release();
+  await expect(cropper.getByRole('button', { name: 'Apply' })).toBeEnabled();
+  const box = (await cropper.locator('.crop-box').boundingBox())!;
+  expect(Math.abs(box.width - box.height)).toBeLessThanOrEqual(2);
+  await cropper.getByRole('button', { name: 'Apply' }).click();
+  await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page).not.toHaveURL(/\/edit$/);
+  expect(await naturalSize(page, (await photoUrls(page, 'cropped'))[0]!)).toEqual({ w: 960, h: 960 });
+});

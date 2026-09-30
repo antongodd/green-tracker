@@ -127,6 +127,13 @@ function frameSize(n: { w: number; h: number } | null, s: { w: number; h: number
   const scale = Math.min(s.w / n.w, s.h / n.h);
   return { width: `${Math.floor(n.w * scale)}px`, height: `${Math.floor(n.h * scale)}px` };
 }
+/** Largest square (in image pixels) centred in `b`, for an image `aspect` (width ÷ height) wide. */
+function squareIn(b: Box, aspect: number): Box {
+  const side = Math.min(b.w * aspect, b.h); // in units of image height
+  const w = side / aspect;
+  const h = side;
+  return { x: b.x + (b.w - w) / 2, y: b.y + (b.h - h) / 2, w, h };
+}
 type Drag = { mode: 'move' | 'nw' | 'ne' | 'sw' | 'se'; id: number; start: { x: number; y: number }; box: Box };
 const MIN = 0.08;
 
@@ -164,13 +171,7 @@ export function Cropper(p: { original: string | Blob; crop: Crop | null; onCance
   }, [p.original]);
 
   const aspect = natural ? natural.w / natural.h : 1;
-  /** Largest square (in image pixels) centred in `b`. */
-  const toSquare = (b: Box): Box => {
-    const side = Math.min(b.w * aspect, b.h); // in units of image height
-    const w = side / aspect;
-    const h = side;
-    return { x: b.x + (b.w - w) / 2, y: b.y + (b.h - h) / 2, w, h };
-  };
+  const toSquare = (b: Box): Box => squareIn(b, aspect);
 
   function setMode(sq: boolean) {
     setSquare(sq);
@@ -269,7 +270,14 @@ export function Cropper(p: { original: string | Blob; crop: Crop | null; onCance
               src={src}
               alt="Photo to crop"
               draggable={false}
-              onLoad={(e) => setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+              onLoad={(e) => {
+                const n = { w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight };
+                setNatural(n);
+                // Square tapped before the photo loaded was squared with the wrong proportions (the
+                // size wasn't known): square it again now, in the load itself, so a Reset or Free
+                // tapped a moment later can't be undone by it. Harmless on a box that's already square.
+                if (square) setBox((b) => squareIn(b, n.w / n.h));
+              }}
               onError={() => setError('The original photo couldn’t be loaded.')}
             />
             {natural && (
