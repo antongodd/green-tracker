@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { errorText } from '../api';
+import type { Podium } from '../../../shared/domain/leaderboard';
 import { Cluster, Glints, Score, Thumb, type RowProduct } from '../components/ProductRow';
-import { heatStyle } from '../heat';
 import { LeafGlass } from '../icons';
 import { passkeysSupported, signIn } from '../passkey';
 import { linkTo } from '../router';
@@ -20,10 +20,10 @@ function Showcase() {
     <figure class="showcase">
       <div class="fan" aria-hidden="true">
         {EXAMPLES.map(({ product, score }, i) => {
-          // 1st and 2nd in their podium looks (rainbow, Diamond); 3rd in its score's colour (D30).
-          const podium = i < 2 ? ((i + 1) as 1 | 2) : null;
+          // The podium's three looks: rainbow, Diamond, Gold (D39).
+          const podium = (i + 1) as Podium;
           return (
-            <div key={product.id} class={`row${podium ? ` tier p${podium}` : ''} eg eg${i + 1}`} {...heatStyle(podium, 'overall', score)}>
+            <div key={product.id} class={`row tier p${podium} eg eg${i + 1}`}>
               <Glints podium={podium} />
               <span class="rk">{i + 1}</span>
               <Thumb product={product} />

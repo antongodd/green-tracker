@@ -1,5 +1,4 @@
 import { expect, test, type Page } from '@playwright/test';
-import { scoreHeat } from '../../shared/domain/heat';
 import { contrastFailures, settled, shot, textBoxes } from './helpers';
 
 // D36 (0.29.0): the welcome (sign-in) screen shows the name small at the top, the headline
@@ -27,7 +26,9 @@ test('the headline and the example Leaderboard, in podium order', async ({ page 
   await expect(rows.nth(0)).toHaveClass(/\btier p1\b/);
   await expect(rows.nth(1)).toHaveClass(/\btier p2\b/);
   await expect(rows.nth(1).locator('.glint')).toHaveCount(3);
-  await expect(rows.nth(2)).toHaveAttribute('data-heat', scoreHeat('overall', 8.6)!);
+  // The full podium (D39): the third example is Gold, not a heat row.
+  await expect(rows.nth(2)).toHaveClass(/\btier p3\b/);
+  await expect(rows.nth(2)).not.toHaveAttribute('data-heat');
   await expect(page.locator('.showcase figcaption')).toHaveText('Example Leaderboard');
   await shot(page, '96-welcome');
 });

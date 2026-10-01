@@ -23,16 +23,16 @@ const p = (id: string, productType: string, ratings: RankableProduct['ratings'],
 });
 
 describe('Default ranking (§17 Leaderboard)', () => {
-  it('highest Overall first; unrated at the bottom; podium on the top four (D19)', () => {
+  it('highest Overall first; unrated at the bottom; podium on the top three (D19, D39)', () => {
     const rows = rankProducts(
       [p('low', 'flower', { look: 5 }), p('unrated', 'flower', {}), p('high', 'flower', { look: 9 }), p('mid', 'flower', { look: 7 }), p('x', 'flower', { look: 6 }), p('lowest', 'flower', { look: 2 })],
       { filter: 'all', rankBy: 'overall' },
     );
     expect(rows.map((r) => r.product.id)).toEqual(['high', 'mid', 'x', 'low', 'lowest', 'unrated']);
-    expect(rows.map((r) => r.podium)).toEqual([1, 2, 3, 4, null, null]);
+    expect(rows.map((r) => r.podium)).toEqual([1, 2, 3, null, null, null]); // 4th is an ordinary row (D39)
   });
 
-  it('an unrated product never gets a tier, even within the top four (D19)', () => {
+  it('an unrated product never gets a tier, even within the top three (D19)', () => {
     const rows = rankProducts([p('a', 'flower', { look: 8 }), p('b', 'flower', {}), p('c', 'flower', { look: 6 }), p('d', 'flower', {})], { filter: 'all', rankBy: 'overall' });
     expect(rows.map((r) => r.product.id)).toEqual(['a', 'c', 'b', 'd']);
     expect(rows.map((r) => r.podium)).toEqual([1, 2, null, null]);
@@ -54,12 +54,12 @@ describe('Default ranking (§17 Leaderboard)', () => {
     expect(rows[0]).toMatchObject({ rank: 1, podium: 1 });
   });
 
-  it('under another Rank by, the four tiers follow that order', () => {
+  it('under another Rank by, the three tiers follow that order', () => {
     const rows = rankProducts(
       [1, 2, 3, 4, 5].map((n) => p(`t${n}`, 'flower', { taste: n, look: 10 - n })),
       { filter: 'all', rankBy: 'taste' },
     );
-    expect(rows.map((r) => [r.product.id, r.podium])).toEqual([['t5', 1], ['t4', 2], ['t3', 3], ['t2', 4], ['t1', null]]);
+    expect(rows.map((r) => [r.product.id, r.podium])).toEqual([['t5', 1], ['t4', 2], ['t3', 3], ['t2', null], ['t1', null]]);
   });
 
   it('Other and Not set products appear under All', () => {
@@ -151,10 +151,11 @@ describe('Podium product pages (D22)', () => {
 
   it('a page gets the place its row has, under the same filter and Rank by', () => {
     const all = { filter: 'all', rankBy: 'overall' } as const;
-    expect(['c', 'a', 'd', 'b', 'e', 'f', 'u'].map((id) => podiumPlace(list, id, all))).toEqual([1, 2, 3, 4, null, null, null]);
+    expect(['c', 'a', 'd', 'b', 'e', 'f', 'u'].map((id) => podiumPlace(list, id, all))).toEqual([1, 2, 3, null, null, null, null]);
     // Filtered to Flower the edible drops out and the rest move up; Rank by Taste reorders.
     expect(podiumPlace(list, 'a', { filter: 'flower', rankBy: 'overall' })).toBe(1);
-    expect(podiumPlace(list, 'e', { filter: 'flower', rankBy: 'overall' })).toBe(4);
+    expect(podiumPlace(list, 'b', { filter: 'flower', rankBy: 'overall' })).toBe(3); // a 9 · d 8 · b 6.5 · e 6
+    expect(podiumPlace(list, 'e', { filter: 'flower', rankBy: 'overall' })).toBeNull(); // 4th: no place (D39)
     expect(podiumPlace(list, 'c', { filter: 'flower', rankBy: 'overall' })).toBeNull();
     expect(podiumPlace(list, 'd', { filter: 'all', rankBy: 'taste' })).toBe(2); // after the edible's 9.5
     expect(podiumPlace(list, 'a', { filter: 'all', rankBy: 'taste' })).toBeNull(); // no Taste: hidden, so no place
@@ -172,7 +173,7 @@ describe('Podium product pages (D22)', () => {
     expect(podiumBadge(2, { filter: 'flower', rankBy: 'overall' }, 'your')).toBe('#2 in Flower');
     expect(podiumBadge(1, { filter: 'all', rankBy: 'taste' }, 'your')).toBe('#1 by Taste');
     expect(podiumBadge(3, { filter: 'flower', rankBy: 'taste' }, 'their')).toBe('#3 in Flower by Taste');
-    expect(podiumBadge(4, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#4 in Edibles by Price per mg');
+    expect(podiumBadge(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edibles by Price per mg');
     expect(podiumBadge(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
     expect(podiumBadge(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
   });
