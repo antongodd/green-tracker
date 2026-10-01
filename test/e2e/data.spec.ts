@@ -37,9 +37,9 @@ test('export everything, restore it after changes, then delete the account', asy
   await post(page, `/api/products/${archived.product.id}/archived`, { value: true });
   await post(page, '/api/log', { ...emptyLogEntryInput(), name: 'Quick One', amount: 1, photos: [{ upload: await upload(page, '#8a3b6b'), crop: null }] });
 
-  // More is grouped as the brief says.
+  // More is grouped Account · Data · Danger zone (D38, 0.31.0: Archive moved into Data, the version to the footer).
   await page.getByRole('link', { name: 'More' }).click();
-  for (const group of ['Account', 'Data', 'Products', 'About', 'Danger zone']) await expect(page.locator('.lh', { hasText: group })).toBeVisible();
+  for (const group of ['Account', 'Data', 'Danger zone']) await expect(page.locator('.lh', { hasText: group })).toBeVisible();
   await shot(page, '60-more');
 
   // Export: one JSON file, photos embedded, no social or security data.
