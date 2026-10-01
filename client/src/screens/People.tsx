@@ -13,6 +13,7 @@ import { ownOriginalUrl, prepareOriginal, removeProfilePhoto, saveProfilePhoto }
 import { linkTo, navigate } from '../router';
 import { useSession } from '../session';
 import { EmptyCard } from '../components/EmptyCard';
+import { Skeleton } from '../components/Skeleton';
 
 type Segment = 'following' | 'followers' | 'requests';
 /** D24: People opens on Following each time the app starts; within a visit it remembers your last choice. */
@@ -324,6 +325,7 @@ export function People() {
               ))}
             </div>
 
+            {segment === 'requests' && !requests && !error && <Skeleton kind="people" />}
             {segment === 'requests' &&
               requests &&
               (requests.length ? (
@@ -345,6 +347,7 @@ export function People() {
                 </EmptyCard>
               ))}
 
+            {segment === 'followers' && !followerList && !error && <Skeleton kind="people" />}
             {segment === 'followers' &&
               followerList &&
               (followerList.length ? (
@@ -382,6 +385,7 @@ export function People() {
                 </EmptyCard>
               ))}
 
+            {segment === 'following' && !followingList && !error && <Skeleton kind="people" />}
             {segment === 'following' &&
               followingList &&
               (followingList.length ? (

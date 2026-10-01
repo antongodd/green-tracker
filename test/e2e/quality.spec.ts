@@ -86,6 +86,9 @@ async function axe(path: string, setup?: () => Promise<void>) {
 }
 
 test('every main screen passes WCAG 2.1 AA checks', async () => {
+  // 16 pages, each loaded, settled and checked: about 35s alone, so it reached the 60s limit with 4 workers
+  // busy (0.30.0's first full run). Same checks, more time.
+  test.slow();
   const found: string[] = [];
   for (const path of ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', `/log/${entryId}`, '/log/new', '/more/passkeys', '/more/recovery-codes', '/more/archive', '/more/export', '/more/restore', '/more/delete', '/more/blocked']) {
     found.push(...(await axe(path)));

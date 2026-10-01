@@ -853,3 +853,38 @@ html.vt-back::view-transition-old(root) { animation: gt-vt-out 0.22s ease-out bo
 html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out both; }
 @keyframes gt-vt-out { to { opacity: 0; } }
 @keyframes gt-vt-in { from { opacity: 0; } }
+
+/* ---------- loading placeholders (D37, 0.30.0) ----------
+   Faint shapes laid out like the screen that's coming; a soft green-white light sweeps across
+   them (still under Reduce Motion). components/Skeleton.tsx shows them after 250ms. */
+.skel { padding: 12px 16px; animation: sk-in 0.2s ease-out; }
+/* The real screen fades in over where the shapes were (Skeleton adds .sk-reveal as it goes). */
+.sk-reveal > * { animation: sk-in 0.25s ease-out; }
+@keyframes sk-in { from { opacity: 0; } }
+.skel-shapes { display: grid; gap: 10px; max-width: 720px; margin: 0 auto; }
+.sk { position: relative; overflow: hidden; display: block; background: rgba(238, 244, 240, 0.07); border-radius: 8px; }
+.sk::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(160, 255, 200, 0.1), transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .sk::after { animation: sk-sweep 1.4s ease-in-out infinite; }
+}
+@keyframes sk-sweep { to { transform: translateX(100%); } }
+.sk-pills { display: flex; justify-content: space-between; }
+.sk-pill { width: 120px; height: 34px; border-radius: 999px; }
+.sk-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sk-tile { height: 64px; border-radius: 12px; }
+.sk-row { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 10px 12px; border-radius: 12px; background: var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.08); }
+.sk-th { width: 54px; height: 54px; border-radius: 10px; flex: none; }
+.sk-th.round { width: 44px; height: 44px; border-radius: 50%; }
+.skel-people .sk-row { min-height: 64px; }
+.sk-lines { flex: 1; display: grid; gap: 8px; }
+.sk-l1 { height: 11px; width: 60%; }
+.sk-l2 { height: 9px; width: 36%; }
+.sk-sc { width: 40px; height: 22px; flex: none; }
+.sk-gh { height: 11px; width: 130px; margin: 6px 4px 0; }
+.skel-product { padding: 0 0 12px; margin-top: calc(-1 * var(--header-h)); }
+.skel-product .skel-shapes { gap: 16px; }
+.sk-hero { height: calc(var(--header-h) + 300px); border-radius: 0; }
+.skel-product .sk-card { margin: 0 16px; }
+.sk-card { border-radius: 12px; background: var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.08); padding: 14px 16px; display: grid; gap: 14px; }
+.sk-bar { display: grid; grid-template-columns: 70px 1fr 30px; gap: 10px; align-items: center; }
+.sk-bar .sk { height: 8px; }

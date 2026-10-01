@@ -14,6 +14,7 @@ import { cachedProducts, fetchArchived, fetchProducts, setFlag } from '../produc
 import { cameFrom, linkTo, navigate } from '../router';
 import { restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
+import { Skeleton } from '../components/Skeleton';
 
 const DEFAULT_VIEW: ViewState = { filter: 'all', rankBy: 'overall' };
 
@@ -96,6 +97,7 @@ export function Leaderboard() {
     <>
       <Header right={<MeButton />} />
       <main class="screen">
+        {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">
             <h2>Couldn’t load your products</h2>
