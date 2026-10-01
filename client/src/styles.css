@@ -888,3 +888,23 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .sk-card { border-radius: 12px; background: var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.08); padding: 14px 16px; display: grid; gap: 14px; }
 .sk-bar { display: grid; grid-template-columns: 70px 1fr 30px; gap: 10px; align-items: center; }
 .sk-bar .sk { height: 8px; }
+
+/* ---------- the More screen (D38, 0.31.0) ----------
+   You at the top (photo, @username, counts; opens People), then settings rows with small tinted
+   icon tiles like the iPhone's Settings, Sign out on its own, and the version in a footer. */
+.more-top { padding-top: 16px; }
+.more-me { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px; color: var(--text); text-decoration: none; background: linear-gradient(115deg, rgba(88, 224, 140, 0.14), rgba(64, 196, 196, 0.06) 60%, transparent), var(--surface-1); border: 1px solid var(--card-edge); }
+.more-me .av { width: 60px; height: 60px; font-size: 26px; box-shadow: 0 0 0 2px rgba(88, 224, 140, 0.4), 0 0 20px rgba(88, 224, 140, 0.25); }
+.more-me .who { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.more-me .who b { font-size: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.more-me .who span { font-size: 13px; color: var(--text-2); min-height: 1.4em; }
+.more-me .chev { width: 13px; height: 13px; color: var(--text-3); flex: none; }
+.li-ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.li-ic svg { width: 17px; height: 17px; }
+.li-ic.green { background: rgba(88, 224, 140, 0.14); color: var(--accent-bright); }
+.li-ic.amber { background: rgba(240, 196, 106, 0.14); color: #f0c46a; }
+.li-ic.teal { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }
+.li-ic.red { background: rgba(255, 107, 107, 0.14); color: var(--danger); }
+.more-gap { margin-top: 20px; }
+.more-foot { display: grid; justify-items: center; gap: 4px; padding: 24px 16px 8px; color: var(--text-2); font-size: 12px; }
+.more-foot svg { width: 22px; height: 22px; opacity: 0.75; }

@@ -175,3 +175,14 @@ const tabLine = (d: string) =>
 export const LogLineIcon = tabLine('M6.3 3.35h11.2a1.65 1.65 0 0 1 1.65 1.65v14.5a1.65 1.65 0 0 1-1.65 1.65H6.3a1.45 1.45 0 0 1-1.45-1.45V4.8A1.45 1.45 0 0 1 6.3 3.35Z M8.85 8h7.3 M8.85 12h7.3 M8.85 16h4.3');
 export const PeopleLineIcon = tabLine('M9 11.1a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z M2.35 19.9c0-3.1 3-5.1 6.65-5.1s6.65 2 6.65 5.1Z M16.1 4.6a3.2 3.2 0 0 1 0 6.2 M17.7 14.9c2.3.5 4 2.1 4 4.4v.6h-2.9');
 export const MoreLineIcon = tabLine('M5 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M12 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M19 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z');
+
+// More screen rows (D38, 0.31.0): outlines in the editors' heading style.
+export const KeyIcon = icon('M8 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z M12.5 12H21 M18 12v3 M21 12v2', { stroke: 2 });
+export const LifeRingIcon = icon('M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17Z M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z M6 6l3.5 3.5 M18 6l-3.5 3.5 M6 18l3.5-3.5 M18 18l-3.5-3.5', { stroke: 2 });
+export const BlockIcon = icon('M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17Z M6 18 18 6', { stroke: 2 });
+export const SignOutIcon = icon('M10 4.5H6A1.5 1.5 0 0 0 4.5 6v12A1.5 1.5 0 0 0 6 19.5h4 M15 16l4-4-4-4 M19 12H9.5', { stroke: 2 });
+export const DevicesIcon = icon('M4.5 5h10a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 3 13.5v-7A1.5 1.5 0 0 1 4.5 5Z M16.5 9h3A1.5 1.5 0 0 1 21 10.5v8a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 15 18.5 M7 19h6', { stroke: 2 });
+export const UploadIcon = icon('M12 15V4 M8 8l4-4 4 4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
+export const DownloadIcon = icon('M12 4v11 M8 11l4 4 4-4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
+export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9 M10 13h4', { stroke: 2 });
+export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5', { stroke: 2 });
