@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.30.0 (all phases done; loading placeholders)
+**Current version:** 0.31.0 (all phases done; More screen: profile and icons)
 
 ---
 
@@ -101,6 +101,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D35 | **Tab bar: outlines and a glow** (2026-09-30; option B "Glow" of https://claude.ai/artifact/YFtaLm4qrwn4thUUhWP6hb). Eighth of the front-end polish series. Keeps P1's four symbols; replaces D18's green bubble behind the active tab. | The tab bar's podium, notebook, people and dots are **slim outlines** on the tabs you're not on; the tab you're on shows its **solid** icon in green with a **soft green glow** and a **short glowing green line** under its name (no bubble). Bar, names, + button, press animation and the People badge unchanged. No data, export or privacy change. |
 | D36 | **Welcome screen: "Your stash, ranked."** (2026-10-01; option A "Showcase" of https://claude.ai/artifact/WDRNbeJWAGHw7X3f8YQXCZ). Ninth of the front-end polish series. | The sign-in screen shows the leaf and **Green Tracker** small at the top, the headline **"Your stash, ranked."** ("ranked." in the green gradient), today's line, and an **example Leaderboard**: three rows fanned like cards, drawn with the real row styles (Wedding Cake 9.4 in the rainbow 1st, Gelato 41 9.1 in Diamond, Zkittlez 8.6 in its score's colour), captioned "Example Leaderboard", hidden from screen readers and not tappable. The three buttons are unchanged and always fit without scrolling (slimmer rows on short iPhones). Create account (all three steps), Use a recovery code and Add a new passkey get a **glowing leaf tile** above the heading; the current step glows; the username sits in a green card. How signing in works is unchanged. |
 | D37 | **Loading placeholders: shimmer** (2026-10-01; option A "Shimmer" of https://claude.ai/artifact/G8GjVckCLnNnfkL2EYC1G7). Tenth and last item of the front-end polish series. | While a screen waits for its data, faint shapes laid out like it show with a soft green-white light sweeping across: the Leaderboard and a friend's board (Rank / Type, tiles, 6 rows), the Log (Type, tiles, country headings, rows), a product page (the big photo area, a card of 4 rating bars) and the People lists (3 person rows). Only after 250ms, so quick loads never flicker; still under Reduce Motion; "Loading" for screen readers; the real screen fades in where they were; an error replaces them if loading fails. No data or speed change. |
+| D38 | **More screen: profile card and icon rows** (2026-10-01; option A "Profile + icons" of https://claude.ai/artifact/TFPCqT2v7ufgM37siV6Ugc). | More opens with **you**: your photo (or letter) with a green ring, **@username**, and "N products · N followers · N following"; tapping it opens People (the Username row goes). Every row has a small **tinted icon tile** like the iPhone's Settings: **Account** (Passkeys key, Recovery codes amber life ring, Blocked people), **Data** (Export and Restore teal arrows, Archive box, moved here from Products), **Sign out** and **Sign out everywhere** on their own, **Danger zone** (Delete account, red bin). The **version** moves from About → Version to a footer under the leaf ("Green Tracker 0.31.0"). Every row does what it did; the counts are your own and only you see them. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -523,6 +524,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **More screen (D38, 0.31.0).** `More` (screens/More.tsx) starts with `a.more-me` (→ /people): `Avatar` size xl at 60px
+  with a green ring (your photo via `ownProfilePhotoUrl`), `@username`, and `summary()` of your product count (cached, then
+  `fetchProducts`) and follower / following counts (`people.followers()` / `following()`), each part once it has arrived.
+  `Row` takes an `icon` and a `tint` (green, amber, teal, red) drawn as a 30px `.li-ic` tile; icons are KeyIcon,
+  LifeRingIcon, BlockIcon, UploadIcon, DownloadIcon, BoxIcon, SignOutIcon, DevicesIcon and TrashIcon in icons.tsx.
+  Groups: Account, Data (with Archive), an unheaded Sign out card, Danger zone; `footer.more-foot` shows LeafGlass and
+  `Green Tracker {__APP_VERSION__}`. Tested (`test/e2e/more.spec.ts`): the card's letter, @username and counts, tap → People;
+  every row's icon, tint and destination in order, the headings, the red Delete account, Sign out everywhere still asks;
+  the footer version and no Version row; readability.
+
 - **Loading placeholders (D37, 0.30.0).** `Skeleton` (components/Skeleton.tsx) renders nothing for 250ms, then
   `div.skel.skel-{board|log|product|people}` (`role="status"`, `aria-label="Loading"`, shapes `aria-hidden`); each `.sk`
   carries a `::after` sweep (`sk-sweep`, 1.4s, only under `prefers-reduced-motion: no-preference`). On unmount after being
@@ -771,6 +782,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.31.0 — More screen: profile card and icon rows (owner request)
+- More now opens with you: your photo or initial, @username, and your products, followers and following; tap it for
+  People (decision D38, option A of the mockups).
+- Every row has a small coloured icon, like the iPhone's Settings; Archive moves into Data; Sign out sits on its own.
+- **The version number is now at the bottom of More** ("Green Tracker 0.31.0"), no longer under About.
+- Tests: 4 new Playwright tests (`more.spec.ts`).
 
 ### 0.30.0 — loading placeholders (owner request)
 - While a screen waits for its data you now see faint shapes laid out like it, with a soft light sweeping across,
