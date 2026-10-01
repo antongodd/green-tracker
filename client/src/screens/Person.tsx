@@ -25,6 +25,7 @@ import { loadOthersView, saveOthersView } from '../viewState';
 import { Avatar } from '../components/Avatar';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
+import { Skeleton } from '../components/Skeleton';
 
 const enc = encodeURIComponent;
 const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null, cutout: ph.cutout });
@@ -163,7 +164,7 @@ export function Person(p: { username: string }) {
       </>
     );
   }
-  if (!person) return <><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen" /><TabBar active="people" /></>;
+  if (!person) return <><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="people" /></>;
   if (person.relation !== 'following') return <Stranger person={person} onChange={setPerson} />;
 
   const rows = products ? rankProducts(products, view) : [];
@@ -180,6 +181,7 @@ export function Person(p: { username: string }) {
     <>
       <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to="/people" />} />
       <main class="screen">
+        {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
             <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
@@ -255,7 +257,7 @@ export function SharedProfile(p: { username: string; id: string }) {
     return (
       <>
         <Header title={`@${p.username}`} leaf={false} left={<BackButton to={backTo} />} />
-        <main class="screen">{error && <div class="empty"><h2>Not available</h2><p>{error}</p></div>}</main>
+        <main class="screen">{error ? <div class="empty"><h2>Not available</h2><p>{error}</p></div> : <Skeleton kind="product" />}</main>
         <TabBar active="people" />
       </>
     );

@@ -23,6 +23,7 @@ import { Cropper, PhotoViewer } from '../components/PhotoViewer';
 import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
+import { Skeleton } from '../components/Skeleton';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
 export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
@@ -196,11 +197,13 @@ export function Profile(p: { id: string }) {
       <>
         <Header title="" left={<BackButton to="/" />} />
         <main class="screen">
-          {error && (
+          {error ? (
             <div class="empty">
               <h2>Couldn’t open this product</h2>
               <p>{error}</p>
             </div>
+          ) : (
+            <Skeleton kind="product" />
           )}
         </main>
         <TabBar active={from} />

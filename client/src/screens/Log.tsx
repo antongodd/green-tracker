@@ -17,6 +17,7 @@ import { cachedProducts, fetchProducts } from '../products';
 import { cameFrom, linkTo, navigate, openPlainRow, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
+import { Skeleton } from '../components/Skeleton';
 
 type Source = { kind: 'product'; product: Product } | { kind: 'loose'; entry: LogEntry };
 
@@ -96,6 +97,7 @@ export function Log() {
     <>
       <Header right={<MeButton />} />
       <main class="screen">
+        {!ready && !error && <Skeleton kind="log" />}
         {error && !ready && (
           <div class="empty">
             <h2>Couldn’t load your Log</h2>

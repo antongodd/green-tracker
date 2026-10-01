@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.29.0 (all phases done; welcome screen showcase)
+**Current version:** 0.30.0 (all phases done; loading placeholders)
 
 ---
 
@@ -100,6 +100,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D34 | **Editor tidy-up** (2026-09-29; option A "Slim" with Overall "Live, in the heading" of https://claude.ai/artifact/8rSPSLwqN7gEdkDT7EZnMJ). Seventh of the front-end polish series. Replaces the editor's plain captions, D18's single-green sliders and the "· Overall" count line. | Every section heading in the product and Log editors has a small outline **icon** in a soft green square (Basics pencil, Classification leaf, Origin pin, Ratings star, Purchases receipt, Photos camera, Notes note, Leafly link, Private lock, Amount scales). Ratings are **slim**: name and number on one line, a thinner full-width slider under it (about a third shorter). A counting, rated slider's fill, knob and number take the **score's colour** (D30's amber → mint); unrated stays grey with a dash; a rating that doesn't count (High on flower, concentrates, pre rolls) is grey with the note "Doesn't count towards Overall". **Overall** shows live, in its colour, at the right of the Ratings heading (a dash until something counts); the line under the sliders says only "Rated N of M". The **date boxes** draw a calendar icon on the left, inside the box; the phone's own picker still opens on a tap. The ✕ is smaller but keeps a 44px target. Hit time unchanged. No data, export or privacy change. |
 | D35 | **Tab bar: outlines and a glow** (2026-09-30; option B "Glow" of https://claude.ai/artifact/YFtaLm4qrwn4thUUhWP6hb). Eighth of the front-end polish series. Keeps P1's four symbols; replaces D18's green bubble behind the active tab. | The tab bar's podium, notebook, people and dots are **slim outlines** on the tabs you're not on; the tab you're on shows its **solid** icon in green with a **soft green glow** and a **short glowing green line** under its name (no bubble). Bar, names, + button, press animation and the People badge unchanged. No data, export or privacy change. |
 | D36 | **Welcome screen: "Your stash, ranked."** (2026-10-01; option A "Showcase" of https://claude.ai/artifact/WDRNbeJWAGHw7X3f8YQXCZ). Ninth of the front-end polish series. | The sign-in screen shows the leaf and **Green Tracker** small at the top, the headline **"Your stash, ranked."** ("ranked." in the green gradient), today's line, and an **example Leaderboard**: three rows fanned like cards, drawn with the real row styles (Wedding Cake 9.4 in the rainbow 1st, Gelato 41 9.1 in Diamond, Zkittlez 8.6 in its score's colour), captioned "Example Leaderboard", hidden from screen readers and not tappable. The three buttons are unchanged and always fit without scrolling (slimmer rows on short iPhones). Create account (all three steps), Use a recovery code and Add a new passkey get a **glowing leaf tile** above the heading; the current step glows; the username sits in a green card. How signing in works is unchanged. |
+| D37 | **Loading placeholders: shimmer** (2026-10-01; option A "Shimmer" of https://claude.ai/artifact/G8GjVckCLnNnfkL2EYC1G7). Tenth and last item of the front-end polish series. | While a screen waits for its data, faint shapes laid out like it show with a soft green-white light sweeping across: the Leaderboard and a friend's board (Rank / Type, tiles, 6 rows), the Log (Type, tiles, country headings, rows), a product page (the big photo area, a card of 4 rating bars) and the People lists (3 person rows). Only after 250ms, so quick loads never flicker; still under Reduce Motion; "Loading" for screen readers; the real screen fades in where they were; an error replaces them if loading fails. No data or speed change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -522,6 +523,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Loading placeholders (D37, 0.30.0).** `Skeleton` (components/Skeleton.tsx) renders nothing for 250ms, then
+  `div.skel.skel-{board|log|product|people}` (`role="status"`, `aria-label="Loading"`, shapes `aria-hidden`); each `.sk`
+  carries a `::after` sweep (`sk-sweep`, 1.4s, only under `prefers-reduced-motion: no-preference`). On unmount after being
+  seen it puts `.sk-reveal` on `.screen` for 300ms, fading the real content in. Used while `products`/`entries`/`person`/
+  `product`/the People lists are still null and there's no error: Leaderboard, Log, Person (both before the card and before
+  the products), Profile and SharedProfile, People's three lists. Tested (`test/e2e/loading.spec.ts`, holding the request
+  back with `page.route`): the board's 6 rows and 3 tiles with the sweep, then the real rows; nothing in the first moment;
+  still under Reduce Motion; an error replaces the shapes; the Log, product page, People and a friend's board shapes.
+
 - **Welcome screen (D36, 0.29.0).** `SignIn` (screens/SignIn.tsx) is `main.fullscreen.welcome`: `.brand` (LeafGlass and the
   `h1`), `.headline` (its `em` in a green gradient), the lead, the deleted-account notice, then `Showcase`: a `figure` whose
   `.fan` (`aria-hidden`, `pointer-events: none` on the figure) holds three `div.row`s built from the real `Thumb`, `Cluster`,
@@ -761,6 +771,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.30.0 — loading placeholders (owner request)
+- While a screen waits for its data you now see faint shapes laid out like it, with a soft light sweeping across,
+  instead of a blank page (decision D37, option A of the mockups): Leaderboard, a friend's board, the Log, product pages
+  and the People lists. Only if loading takes more than a moment; still with Reduce Motion on.
+- Tests: 6 new Playwright tests (`loading.spec.ts`) that hold the data back on purpose.
 
 ### 0.29.0 — welcome screen: "Your stash, ranked." (owner request)
 - The sign-in screen now shows the name small at the top, the headline "Your stash, ranked.", and an example
