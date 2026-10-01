@@ -4,7 +4,7 @@ import { emptyProductInput, type ProductInput } from '../../shared/domain/produc
 import { contrastFailures, signUp, textBoxes } from './helpers';
 
 // D30 (0.23.0): below the podium, a row glows in its score's colour (amber → yellow-green →
-// mint). Never the podium rows, price or value for money rankings, or unrated rows. On your
+// mint); since D39 (0.32.0) the podium is three places, so 4th glows too. Never the podium rows, price or value for money rankings, or unrated rows. On your
 // board, a friend's, and the Archive. Two people in two browsers.
 test.describe.configure({ mode: 'serial' });
 let owner: Page, fan: Page;
@@ -45,7 +45,7 @@ test.afterAll(async () => {
 });
 
 const expected = [
-  { name: 'Top A', heat: null }, { name: 'Top B', heat: null }, { name: 'Top C', heat: null }, { name: 'Top D', heat: null },
+  { name: 'Top A', heat: null }, { name: 'Top B', heat: null }, { name: 'Top C', heat: null }, { name: 'Top D', heat: scoreHeat('overall', 9.6) },
   { name: 'Minty', heat: scoreHeat('overall', 9.2) }, { name: 'Middle', heat: scoreHeat('overall', 6.8) },
   { name: 'Lower', heat: scoreHeat('overall', 5.5) }, { name: 'Lowest', heat: scoreHeat('overall', 3) }, { name: 'Blank', heat: null },
 ];
@@ -71,7 +71,7 @@ test('ranking by price turns it off; ranking by a rating follows that rating', a
   await expect(owner.locator('.row[data-heat]')).toHaveCount(0);
   await owner.getByLabel('Rank by', { exact: true }).selectOption('look');
   await expect(owner.locator('.row')).toHaveCount(8); // Blank has no Look
-  await expect(owner.locator('.row[data-heat]')).toHaveCount(4);
+  await expect(owner.locator('.row[data-heat]')).toHaveCount(5);
   await owner.getByLabel('Type', { exact: true }).selectOption('all');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('overall');
 });
@@ -87,7 +87,7 @@ test('a friend’s board and the Archive glow too', async () => {
 
 test('the coloured scores and the text on the glow stay readable, from amber to mint', async () => {
   await owner.goto('/');
-  await expect(owner.locator('.row[data-heat]')).toHaveCount(4);
+  await expect(owner.locator('.row[data-heat]')).toHaveCount(5);
   await owner.locator('main').evaluate((m) => Promise.all(m.getAnimations().map((a) => a.finished)));
   // Bring the glowing rows into view below the sticky controls.
   await owner.evaluate(() => {

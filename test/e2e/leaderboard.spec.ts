@@ -42,9 +42,10 @@ test('default: Overall, all types; podium, tiles, unrated last', async () => {
   await page.goto('/');
   await expect(rows()).toHaveCount(16);
   await expect(rows().nth(0)).toContainText('Gelato 41');
-  // Four tiers (D19): rainbow, gold, silver, bronze; then ordinary rows.
-  for (let i = 0; i < 4; i++) await expect(rows().nth(i)).toHaveClass(new RegExp(`\\btier p${i + 1}\\b`));
-  await expect(rows().nth(4)).not.toHaveClass(/tier/);
+  // Three tiers (D19, D39): rainbow, Diamond, Gold; then ordinary rows, 4th glowing like the rest (D30).
+  for (let i = 0; i < 3; i++) await expect(rows().nth(i)).toHaveClass(new RegExp(`\\btier p${i + 1}\\b`));
+  await expect(rows().nth(3)).not.toHaveClass(/tier/);
+  await expect(rows().nth(3)).toHaveAttribute('data-heat');
   await expect(rows().nth(15)).toContainText('Mystery Sample');
   await expect(rows().nth(15)).toContainText('Unrated');
   await expect(tile('Products')).toHaveText('16');
@@ -56,12 +57,12 @@ test('default: Overall, all types; podium, tiles, unrated last', async () => {
   await shot(page, '20-leaderboard');
 });
 
-// The holo podium (D19): everything moves, the light cascades 1 → 4, Reduce Motion
+// The holo podium (D19, D39): everything moves, the light cascades 1 → 3, Reduce Motion
 // stops it, and the text on every tier stays readable at every moment of the motion
 // (measured from real pixels: axe can't judge text over a gradient).
 test('podium tiers: motion, Reduce Motion, and readable text throughout', async () => {
   const tiers = page.locator('.row.tier');
-  await expect(tiers).toHaveCount(4);
+  await expect(tiers).toHaveCount(3);
   const motion = () => tiers.evaluateAll((els) => els.map((el) => ({
     row: el.getAnimations().length,
     sheen: el.getAnimations({ subtree: true }).filter((a) => (a as CSSAnimation).animationName === 'tier-sheen').map((a) => String(a.effect!.getTiming().delay)),
@@ -69,7 +70,7 @@ test('podium tiers: motion, Reduce Motion, and readable text throughout', async 
   })));
   const moving = await motion();
   expect(moving.every((m) => m.row > 0 && m.edge)).toBe(true);
-  expect(moving.map((m) => m.sheen)).toEqual([['0'], ['350'], ['700'], ['1050']]); // cascade, 1st on the beat
+  expect(moving.map((m) => m.sheen)).toEqual([['0'], ['350'], ['700']]); // cascade, 1st on the beat
 
   // Readability: pause every animation at a spread of moments, hide the text, photograph
   // the rows, and compare each text colour with the brightest pixel behind it.
@@ -130,46 +131,46 @@ test('podium tiers: motion, Reduce Motion, and readable text throughout', async 
   // Reduce Motion: colours stay, nothing moves.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.reload();
-  await expect(tiers).toHaveCount(4);
+  await expect(tiers).toHaveCount(3);
   const still = await motion();
   expect(still.every((m) => m.row === 0 && m.sheen.length === 0 && m.edge)).toBe(true);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.reload();
-  await expect(tiers).toHaveCount(4);
+  await expect(tiers).toHaveCount(3);
 });
 
-// Cool metals (D21, 0.15.0): Diamond (ice blue), Platinum, Pewter under the rainbow;
-// no gold or bronze anywhere; the shine drops tier by tier; only Diamond twinkles,
-// and its glints never touch any text.
-test('cool podium: Diamond, Platinum, Pewter; descending shine; glints clear of text', async () => {
+// Three holo cards (D39, 0.32.0; replaces D21's cool metals): the rainbow, Diamond (ice blue and
+// lilac) and Gold, each filled edge to edge with its colours flowing under a dark layer, as first
+// place always was. No Platinum or Pewter left; only Diamond twinkles, and its glints never touch
+// any text.
+test('three holo cards: rainbow, Diamond, Gold; filled edge to edge; glints clear of text', async () => {
   await page.goto('/');
   const tiers = page.locator('.row.tier');
-  await expect(tiers).toHaveCount(4);
+  await expect(tiers).toHaveCount(3);
   const info = await tiers.evaluateAll((els) => els.map((el) => {
     const cs = getComputedStyle(el);
-    const edge = el.getAnimations().find((a) => (a as CSSAnimation).animationName.startsWith('tier-flow'));
+    const flow = el.getAnimations().find((a) => (a as CSSAnimation).animationName.startsWith('tier-flow'));
     const score = getComputedStyle(el.querySelector('.score b')!);
-    return { cls: el.className, bg: cs.backgroundImage, glow: parseFloat(cs.getPropertyValue('--glow')), sheen: parseFloat(cs.getPropertyValue('--sheen')), edgeMs: Number(edge?.effect?.getTiming().duration), glints: el.querySelectorAll('.glint').length, scoreFlows: score.backgroundClip === 'text' && score.backgroundImage.includes('linear-gradient') };
+    return { cls: el.className, bg: cs.backgroundImage, clip: cs.backgroundClip, flow: (flow as CSSAnimation | undefined)?.animationName, glints: el.querySelectorAll('.glint').length, scoreFlows: score.backgroundClip === 'text' && score.backgroundImage.includes('linear-gradient') };
   }));
-  expect(info.map((i) => i.cls.match(/p\d/)![0])).toEqual(['p1', 'p2', 'p3', 'p4']);
-  expect(info[1]!.bg).toContain('rgb(158, 220, 255)'); // Diamond, ice blue #9edcff
-  expect(info[2]!.bg).toContain('rgb(207, 215, 226)'); // Platinum #cfd7e2
-  expect(info[3]!.bg).toContain('rgb(135, 146, 160)'); // Pewter #8792a0
-  // No gold or bronze left, on the rows or anywhere in the styles.
-  const warm = /rgb\(226, 183, 96\)|rgb\(198, 130, 84\)|rgba\(226, 183, 96|rgba\(198, 130, 84|e2b760|c68254/i;
-  for (const i of info) expect(i.bg).not.toMatch(warm);
-  expect(await page.evaluate(() => [...document.styleSheets].flatMap((sh) => [...sh.cssRules].map((r) => r.cssText)).join('\n'))).not.toMatch(warm);
-  // D31: the metals glow from the right, like the heat rows below, and every top-four score flows.
-  for (const i of info.slice(1)) expect(i.bg.startsWith('linear-gradient(270deg, rgba('), i.cls).toBe(true);
-  expect(info.map((i) => i.scoreFlows)).toEqual([true, true, true, true]);
-  // Descending shine: each metal's glow and shimmer weaker than the one above; Pewter's edge flows at half speed.
-  expect(info[1]!.glow).toBeGreaterThan(info[2]!.glow);
-  expect(info[2]!.glow).toBeGreaterThan(info[3]!.glow);
-  expect(info[1]!.sheen).toBeGreaterThan(info[2]!.sheen);
-  expect(info[2]!.sheen).toBeGreaterThan(info[3]!.sheen);
-  expect(info[3]!.edgeMs).toBe(2 * info[2]!.edgeMs);
+  expect(info.map((i) => i.cls.match(/p\d/)![0])).toEqual(['p1', 'p2', 'p3']);
+  expect(info[0]!.bg).toContain('rgb(255, 154, 168)'); // the rainbow, unchanged
+  expect(info[1]!.bg).toContain('rgb(169, 220, 255)'); // Diamond, ice blue #a9dcff
+  expect(info[1]!.bg).toContain('rgb(233, 224, 255)'); // … with lilac #e9e0ff
+  expect(info[2]!.bg).toContain('rgb(245, 196, 81)'); // Gold #f5c451
+  // Every tier is a holo card: a dark layer over its colours across the whole row, its edge in them too, all flowing.
+  for (const i of info) {
+    expect(i.bg.startsWith('linear-gradient(115deg, rgba('), i.cls).toBe(true);
+    expect(i.clip, i.cls).toBe('padding-box, padding-box, border-box');
+    expect(i.flow, i.cls).toBe('tier-flow-holo');
+  }
+  expect(info.map((i) => i.scoreFlows)).toEqual([true, true, true]);
+  // No Platinum or Pewter left, on the rows or anywhere in the styles.
+  const gone = /rgb\(207, 215, 226\)|rgb\(135, 146, 160\)|cfd7e2|8792a0/i;
+  for (const i of info) expect(i.bg).not.toMatch(gone);
+  expect(await page.evaluate(() => [...document.styleSheets].flatMap((sh) => [...sh.cssRules].map((r) => r.cssText)).join('\n'))).not.toMatch(gone);
   // Only Diamond twinkles, and every glint stays clear of every piece of text in its row.
-  expect(info.map((i) => i.glints)).toEqual([0, 3, 0, 0]);
+  expect(info.map((i) => i.glints)).toEqual([0, 3, 0]);
   expect(await page.locator('.glint').count()).toBe(3);
   const overlaps = await tiers.nth(1).evaluate((row) => {
     const boxes = [...row.querySelectorAll<HTMLElement>('.rk, .name, .cluster > *, .meta, .score b, .score .cap')].map((t) => {
@@ -188,7 +189,7 @@ test('cool podium: Diamond, Platinum, Pewter; descending shine; glints clear of 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('.glint').first()).toBeHidden();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await shot(page, '23-cool-podium');
+  await shot(page, '23-holo-podium');
 });
 
 test('filter to Edibles: ranks renumber, podium follows, tiles recalculate, TOTAL 0g', async () => {
@@ -266,10 +267,10 @@ test('labels fit at 375px for every filter × Rank by combination; short forms o
       await pill('Rank by').selectOption(r);
       const m = await page.locator('.controls').evaluate((el) => ({ overflow: el.scrollWidth > el.clientWidth + 1, text: el.textContent }));
       expect(m.overflow, `${t} × ${r}`).toBe(false);
-      // Tiers go to the first four rated rows of whatever is shown, never an unrated one.
-      const got = await rows().evaluateAll((els) => els.map((e) => ({ tier: [...e.classList].find((c) => /^p[1-4]$/.test(c)) ?? null, unrated: !!e.querySelector('.score.unrated') })));
+      // Tiers go to the first three rated rows of whatever is shown, never an unrated one.
+      const got = await rows().evaluateAll((els) => els.map((e) => ({ tier: [...e.classList].find((c) => /^p[1-3]$/.test(c)) ?? null, unrated: !!e.querySelector('.score.unrated') })));
       const rated = got.filter((g) => !g.unrated).length;
-      expect(got.map((g) => g.tier), `${t} × ${r}`).toEqual(got.map((_, i) => (i < Math.min(4, rated) ? `p${i + 1}` : null)));
+      expect(got.map((g) => g.tier), `${t} × ${r}`).toEqual(got.map((_, i) => (i < Math.min(3, rated) ? `p${i + 1}` : null)));
       if (/VFM|Consis\.|Price\/|Conc\./.test(m.text ?? '')) compacted.push(`${t} × ${r}: ${m.text}`);
     }
   }

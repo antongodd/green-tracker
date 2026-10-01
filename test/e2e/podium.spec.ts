@@ -3,9 +3,10 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
 import { contrastFailures, heroTextBoxes, shot, signUp, settled } from './helpers';
 
-// D22 (0.16.0): a product in the top four carries its row's tier onto its own page,
-// with the rows' "descending shine", following the Leaderboard's filter and Rank by;
-// on a friend's board too. Two people in two browsers.
+// D22 (0.16.0): a product on the podium carries its row's tier onto its own page,
+// following the Leaderboard's filter and Rank by; on a friend's board too. Since D39
+// (0.32.0) the podium is three places (rainbow, Diamond, Gold), each page's badge a holo
+// card like its row; 4th is an ordinary page. Two people in two browsers.
 test.describe.configure({ mode: 'serial' });
 
 let owner: Page, fan: Page;
@@ -38,9 +39,9 @@ async function person(browser: Browser, prefix: string) {
   return { page, name };
 }
 
-// Your board (All · Overall): Secret 9.7 (private) · Alpha 9.5 · Bravo 9.0 · Charlie 8.87 (edible)
-// · Delta 8.5 · Echo 8.0 · Unrated. Gone 9.9 is archived. A follower never sees Secret, so
-// on their view Alpha is 1st and Delta 4th.
+// Your board (All · Overall): Secret 9.7 (private) · Alpha 9.5 · Charlie 9.3 (edible) · Bravo 9.0
+// · Delta 8.5 · Echo 8.0 · Unrated. Gone 9.9 is archived. Under Flower, Bravo moves up to 3rd.
+// A follower never sees Secret, so on their view Alpha is 1st and Bravo 3rd.
 test.beforeAll(async ({ browser }) => {
   ({ page: owner, name: ownerName } = await person(browser, 'Podi'));
   ({ page: fan, name: fanName } = await person(browser, 'fan'));
@@ -48,7 +49,7 @@ test.beforeAll(async ({ browser }) => {
     ['Secret', { private: true, ratings: { look: 9.7 } }],
     ['Alpha', { strainType: 'hybrid', country: 'US', ratings: { look: 9.5 }, purchases: [{ date: '2026-09-01', amount: 3.5, totalPaid: 35, supplier: null }], photos: [{ upload: await upload(owner), crop: null }] }],
     ['Bravo', { strainType: 'indica', country: 'CA', ratings: { look: 9 } }],
-    ['Charlie', { productType: 'edibles', strainType: 'sativa', country: 'NL', ratings: { taste: 9, high: 8.8 } }],
+    ['Charlie', { productType: 'edibles', strainType: 'sativa', country: 'NL', ratings: { taste: 9.3, high: 9.3 } }],
     ['Delta', { strainType: 'hybrid', country: 'GB', ratings: { look: 8, taste: 9 } }],
     ['Echo', { ratings: { look: 8 } }],
     ['Unrated', {}],
@@ -64,7 +65,7 @@ test.afterAll(async () => {
   await fan.context().close();
 });
 
-/** What the page shows for its podium place. data-podium is 1–4, or "none" once the list has arrived. */
+/** What the page shows for its podium place. data-podium is 1–3, or "none" once the list has arrived. */
 const pieces = (page: Page) =>
   page.locator('main').evaluate((main) => {
     const hero = main.querySelector<HTMLElement>('.hero')!;
@@ -78,7 +79,9 @@ const pieces = (page: Page) =>
       podium: main.getAttribute('data-podium'),
       badge: main.querySelector('.podium-badge')?.textContent ?? null,
       crown: !!main.querySelector('.podium-badge svg'),
-      // The tier haze behind the details (D27): stronger the higher the place, Pewter's at half speed.
+      // The badge is a holo card like its row (D39): a dark layer over the tier's colours, edge in them too.
+      holo: (() => { const b = main.querySelector<HTMLElement>('.podium-badge'); return b ? getComputedStyle(b).backgroundClip === 'padding-box, padding-box, border-box' : null; })(),
+      // The tier haze behind the details (D27).
       haze: haze.content !== 'none' && haze.backgroundImage.includes('linear-gradient') ? haze.opacity : null,
       hazeMs: Number(anim(hero, 'tier-flow-text', '::after')?.effect?.getTiming().duration ?? 0),
       score: getComputedStyle(score).backgroundClip === 'text',
@@ -93,12 +96,11 @@ const open = async (page: Page, path: string) => {
   await expect(page.locator('.hero h1')).toBeVisible();
 };
 
-test('each podium place carries its tier onto its page, with the descending shine', async () => {
+test('each podium place carries its tier onto its page: rainbow, Diamond, Gold', async () => {
   const expected = [
-    ['Secret', { podium: '1', badge: '#1 on your Leaderboard', crown: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Alpha', { podium: '2', badge: '#2 on your Leaderboard', crown: false, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 3 }],
-    ['Bravo', { podium: '3', badge: '#3 on your Leaderboard', crown: false, haze: '0.08', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
-    ['Charlie', { podium: '4', badge: '#4 on your Leaderboard', crown: false, haze: '0.06', hazeMs: 10000, score: false, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Secret', { podium: '1', badge: '#1 on your Leaderboard', crown: true, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
+    ['Alpha', { podium: '2', badge: '#2 on your Leaderboard', crown: false, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 3 }],
+    ['Charlie', { podium: '3', badge: '#3 on your Leaderboard', crown: false, holo: true, haze: '0.12', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
   ] as const;
   for (const [name, want] of expected) {
     await open(owner, `/products/${ids[name]}`);
@@ -107,8 +109,8 @@ test('each podium place carries its tier onto its page, with the descending shin
     expect(await pieces(owner), name).toEqual(want);
     await shot(owner, `90-podium-page-${want.podium}`);
   }
-  // Outside the top four, unrated or archived: an ordinary page.
-  for (const name of ['Delta', 'Echo', 'Unrated', 'Gone']) {
+  // Outside the top three (4th included, D39), unrated or archived: an ordinary page.
+  for (const name of ['Bravo', 'Delta', 'Echo', 'Unrated', 'Gone']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('main')).toHaveAttribute('data-podium', 'none'); // the list has arrived
     const got = await pieces(owner);
@@ -139,10 +141,14 @@ test('Diamond’s glints stay clear of every piece of text; axe finds nothing on
 test('the page follows your Type and Rank by, also when opened from the Log', async () => {
   await owner.goto('/');
   await owner.getByLabel('Type', { exact: true }).selectOption('flower');
-  await expect(owner.locator('.row.tier')).toHaveCount(4);
-  await owner.locator('.row', { hasText: 'Delta' }).click();
-  await expect(owner.locator('.podium-badge')).toHaveText('#4 in Flower');
-  await expect(owner.locator('main')).toHaveAttribute('data-podium', '4');
+  await expect(owner.locator('.row.tier')).toHaveCount(3);
+  // 4th under All, 3rd under Flower: Gold.
+  await owner.locator('.row', { hasText: 'Bravo' }).click();
+  await expect(owner.locator('.podium-badge')).toHaveText('#3 in Flower');
+  await expect(owner.locator('main')).toHaveAttribute('data-podium', '3');
+  // 4th under Flower: ordinary.
+  await open(owner, `/products/${ids.Delta}`);
+  await expect(owner.locator('main')).toHaveAttribute('data-podium', 'none');
 
   // The edible isn't on a Flower board, so its page is ordinary.
   await open(owner, `/products/${ids.Charlie}`);
@@ -162,11 +168,11 @@ test('the page follows your Type and Rank by, also when opened from the Log', as
   await owner.goto('/');
   await owner.getByLabel('Type', { exact: true }).selectOption('all');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('overall');
-  await expect(owner.locator('.row.tier')).toHaveCount(4);
+  await expect(owner.locator('.row.tier')).toHaveCount(3);
 });
 
 test('text stays readable on every podium page throughout the motion', async () => {
-  for (const name of ['Secret', 'Alpha', 'Bravo', 'Charlie']) {
+  for (const name of ['Secret', 'Alpha', 'Charlie']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();
     const boxes = await heroTextBoxes(owner);
@@ -177,11 +183,11 @@ test('text stays readable on every podium page throughout the motion', async () 
 
 test('Reduce Motion keeps the colours but nothing moves, sweeps or twinkles', async () => {
   await owner.emulateMedia({ reducedMotion: 'reduce' });
-  for (const name of ['Secret', 'Alpha']) {
+  for (const [name, haze] of [['Secret', '0.14'], ['Alpha', '0.14'], ['Charlie', '0.12']] as const) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();
     const got = await pieces(owner);
-    expect({ haze: got.haze, score: got.score, hazeMs: got.hazeMs, sweep: got.sweep }).toEqual({ haze: '0.14', score: true, hazeMs: 0, sweep: false });
+    expect({ haze: got.haze, score: got.score, holo: got.holo, hazeMs: got.hazeMs, sweep: got.sweep }).toEqual({ haze, score: true, holo: true, hazeMs: 0, sweep: false });
     // (The screen's own entrance fade is kept under Reduce Motion; only the podium's motion stops.)
     expect(await owner.locator('main').evaluate((m) => m.getAnimations({ subtree: true }).map((a) => (a as CSSAnimation).animationName).filter((n) => /^(tier|podium)-/.test(n)))).toEqual([]);
     if (name === 'Alpha') await expect(owner.locator('.glint').first()).toBeHidden();
@@ -191,7 +197,7 @@ test('Reduce Motion keeps the colours but nothing moves, sweeps or twinkles', as
 
 test('a friend’s product page gets its place on their board, worked out only from what you can see', async () => {
   await fan.goto(`/u/${ownerName}`);
-  await expect(fan.locator('.row.tier')).toHaveCount(4);
+  await expect(fan.locator('.row.tier')).toHaveCount(3);
   await fan.locator('.row', { hasText: 'Alpha' }).click();
   await expect(fan.locator('.podium-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('data-podium', '1');
@@ -201,9 +207,12 @@ test('a friend’s product page gets its place on their board, worked out only f
   await expect(fan.locator('.hero-price')).toHaveCount(0);
   await shot(fan, '91-podium-friend-page');
 
-  await open(fan, `/u/${ownerName}/p/${ids.Delta}`);
-  await expect(fan.locator('.podium-badge')).toHaveText('#4 on their Leaderboard');
-  await open(fan, `/u/${ownerName}/p/${ids.Echo}`);
-  await expect(fan.locator('main')).toHaveAttribute('data-podium', 'none');
-  await expect(fan.locator('.podium-badge')).toHaveCount(0);
+  await open(fan, `/u/${ownerName}/p/${ids.Bravo}`);
+  await expect(fan.locator('.podium-badge')).toHaveText('#3 on their Leaderboard');
+  expect(await pieces(fan)).toMatchObject({ holo: true, haze: '0.12', score: true });
+  for (const name of ['Delta', 'Echo']) {
+    await open(fan, `/u/${ownerName}/p/${ids[name]}`);
+    await expect(fan.locator('main')).toHaveAttribute('data-podium', 'none');
+    await expect(fan.locator('.podium-badge')).toHaveCount(0);
+  }
 });

@@ -1,11 +1,11 @@
-// Podium product pages (D22): a product in the top four of the Leaderboard (under the
-// current filter and Rank by) carries its row's tier onto its page, with a "descending
-// shine": 1st rainbow gets every piece, Diamond everything plus glints, Platinum a
-// haze, silver score and badge, Pewter a calm haze and badge. Styled in styles.css.
+// Podium product pages (D22, D39): a product in the top three of the Leaderboard (under
+// the current filter and Rank by) carries its row's tier onto its page: a holo badge, a
+// haze and a flowing score in the tier's colours; 1st and Diamond also sweep the photo
+// as it opens, and Diamond twinkles. Styled in styles.css.
 import { podiumBadge, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
 import { CrownIcon } from '../icons';
 
-/** Classes for the page's <main>: `tiered p1`…`p4`, or nothing. */
+/** Classes for the page's <main>: `tiered p1`…`p3`, or nothing. */
 export const podiumClass = (podium: Podium | null) => (podium ? ` tiered p${podium}` : '');
 
 /** "#1 on your Leaderboard", "#2 in Flower"… Only first place wears the crown. */

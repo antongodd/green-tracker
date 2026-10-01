@@ -6,7 +6,7 @@ import { contrastFailures, HERO_TEXT, heroTextBoxes, shot, signUp } from './help
 // behind the header, with the details on its bottom over a dark fade. A cut-out or the
 // type mark floats above the details. One account; its products (All · Overall):
 // Bright 9.9 (1st, a white photo) · Busy 9.5 (Diamond, a busy bright photo) ·
-// Floating 9.0 (Platinum, a cut-out, long name) · Plain (unrated, white photo) · Nothing (no photo).
+// Floating 9.0 (Gold, a cut-out, long name) · Plain (unrated, white photo) · Nothing (no photo).
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;

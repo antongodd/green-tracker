@@ -103,13 +103,13 @@ export interface RankedRow<P extends RankableProduct> {
   /** 1-based, renumbered over the visible list. */
   rank: number;
   value: number | null;
-  /** 1–4 for rainbow, Diamond, Platinum, Pewter (D19, D21) — follows the visible order.
+  /** 1–3 for rainbow, Diamond, Gold (D19, D39) — follows the visible order.
    *  Only rated rows get a tier: an unrated product never has one. */
   podium: Podium | null;
 }
 
-export type Podium = 1 | 2 | 3 | 4;
-export const PODIUM_TIERS = 4;
+export type Podium = 1 | 2 | 3;
+export const PODIUM_TIERS = 3;
 
 export function matchesFilter(typeKey: string, filter: TypeFilter): boolean {
   return filter === 'all' || typeKey === filter;
@@ -155,7 +155,7 @@ export function rankProducts<P extends RankableProduct>(products: readonly P[], 
 /**
  * A product page's podium place (D22): the tier its row has on the Leaderboard under
  * this view (same filter, same Rank by), so the page always matches the row. null when
- * it isn't in the top four, is unrated or unrankable, or isn't in the list (archived).
+ * it isn't in the top three, is unrated or unrankable, or isn't in the list (archived).
  */
 export function podiumPlace<P extends RankableProduct>(products: readonly P[], id: string, view: ViewState): Podium | null {
   return rankProducts(products, view).find((r) => r.product.id === id)?.podium ?? null;

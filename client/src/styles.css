@@ -304,50 +304,38 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .row[data-heat] { background: linear-gradient(270deg, color-mix(in srgb, var(--heat) 22%, transparent), transparent 60%), var(--surface-1); border-color: color-mix(in srgb, var(--heat) 32%, transparent); }
 .row[data-heat] .score b { color: var(--heat); }
 
-/* ---------- podium tiers (D19 0.13.0; cool metals D21 0.15.0) ----------
-   p1 rainbow (holo, pastel), p2 Diamond (ice blue), p3 Platinum, p4 Pewter. Rated
-   rows only (shared/domain/leaderboard.ts). Every tier's edge and rank number flow
-   through its colours; a soft band of light sweeps across the four rows in a
-   cascade, first place on the same beat. "Descending shine": each metal has a
-   weaker wash and shimmer than the one above, Pewter's edge flows at half speed,
-   and only Diamond twinkles (.glint). Reduce Motion keeps the colours, stops the
-   motion and hides the glints. */
+/* ---------- podium tiers (D19 0.13.0; cool metals D21 0.15.0; three holo cards D39 0.32.0) ----------
+   p1 rainbow, p2 Diamond (ice blue and lilac), p3 Gold. Rated rows only
+   (shared/domain/leaderboard.ts). Each is a holo card: filled edge to edge with its
+   colours flowing under the same dark layer (70% → 86%, tinted per tier) that keeps the
+   text readable through the shimmer (measured: lighter layers failed), its edge, rank
+   number and score flowing through them too. A soft band of light sweeps down the
+   three rows in a cascade, first place on the same beat; Diamond twinkles (.glint).
+   Reduce Motion keeps the colours, stops the motion and hides the glints. */
 .row.tier { position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
-/* The tier colours, shared by the rows and the podium product pages (.tiered, D22). */
-.row.tier, .tiered { --tier-speed: 5s; --edge-speed: var(--tier-speed); --wash: 0.13; --sheen: 0.18;
-  --tier-grad: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1)); }
+/* The tier colours, shared by the rows and the podium product pages (.tiered, D22). --dark tints
+   the layer over each card (green on the rainbow, blue on Diamond, warm on Gold). */
+.row.tier, .tiered { --tier-speed: 5s; --edge-speed: var(--tier-speed); --sheen: 0.18; --dark: 12, 20, 16;
+  --tier-grad: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1));
+  /* Text that flows through the colours (rank, score, badge number): the whole gradient, except
+     Gold's, whose darker shades are too dim for text (measured), so it uses its three lightest. */
+  --tier-text: var(--tier-grad); }
 .row.p1, .tiered.p1 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; --sheen-delay: 0s; }
-.row.p2, .tiered.p2 { --t1: #e6f7ff; --t2: #9edcff; --t3: #ffffff; --t4: #7cc8f2; --t5: #c9ecff; --t6: #b3d4ff; --metal: 150, 215, 255; --wash: 0.3; --sheen: 0.26; --sheen-delay: 0.35s; }
-.row.p3, .tiered.p3 { --t1: #f2f5f9; --t2: #cfd7e2; --t3: #ffffff; --t4: #aeb9c8; --t5: #e1e7ef; --t6: #98a4b5; --metal: 205, 215, 228; --wash: 0.17; --sheen: 0.16; --sheen-delay: 0.7s; }
-.row.p4, .tiered.p4 { --t1: #aeb8c4; --t2: #8792a0; --t3: #c4ccd6; --t4: #707b89; --t5: #9aa5b2; --t6: #626c79; --metal: 140, 152, 168; --wash: 0.12; --sheen: 0.07; --sheen-delay: 1.05s; --edge-speed: calc(var(--tier-speed) * 2); }
-/* First place: holo card. The dark layer over the rainbow keeps text readable. */
-.row.p1 {
+.row.p2, .tiered.p2 { --t1: #dff4ff; --t2: #a9dcff; --t3: #e9e0ff; --t4: #8fd0ff; --t5: #c6f3ff; --t6: #b8c8ff; --dark: 8, 16, 28; --sheen-delay: 0.35s; }
+.row.p3, .tiered.p3 { --t1: #ffe79a; --t2: #f5c451; --t3: #fff3c4; --t4: #e0a83a; --t5: #ffd977; --t6: #c9922e; --dark: 24, 16, 4; --sheen-delay: 0.7s;
+  --tier-text: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
+.row.tier {
   background:
-    linear-gradient(115deg, rgba(12, 20, 16, 0.7), rgba(12, 20, 16, 0.86) 70%) padding-box,
+    linear-gradient(115deg, rgba(var(--dark), 0.7), rgba(var(--dark), 0.86) 70%) padding-box,
     var(--tier-grad) padding-box,
     var(--tier-grad) border-box;
   background-size: 100% 100%, 200% 100%, 200% 100%;
 }
-/* Diamond, Platinum, Pewter: the metal glows from the right, the same shape as the heat rows
-   below (D31, 0.24.0; was a wash from the left), stronger the higher the tier, with a flowing edge. */
-.row.p2 { --glow: 0.26; } .row.p3 { --glow: 0.2; } .row.p4 { --glow: 0.15; }
-.row.p2, .row.p3, .row.p4 {
-  background:
-    linear-gradient(270deg, rgba(var(--metal), var(--glow)), rgba(var(--metal), 0) 60%) padding-box,
-    linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
-    var(--tier-grad) border-box;
-  background-size: 100% 100%, 100% 100%, 200% 100%;
-}
 /* The shimmer passes behind the small grey lines, so they're a little brighter here
    (measured by the podium readability test). */
 .row.tier .meta, .row.tier .score .cap { color: rgba(238, 244, 240, 0.84); }
-/* On the metals the caption sits on the glow itself (D31), so it's full white there (measured). */
-.row.p2 .score .cap, .row.p3 .score .cap, .row.p4 .score .cap { color: var(--text); }
-.row.tier .rk, .row.tier .score b { color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.row.tier .rk, .row.tier .score b { color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .row.tier .rk { font-size: 15px; }
-/* The scores on the top four flow through their tier's colours too (D31); the metals' through
-   their lighter shades only, so they stay readable on the glow as the shimmer passes (measured). */
-.row.p2 .score b, .row.p3 .score b, .row.p4 .score b { background-image: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
 .row.tier::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
@@ -361,8 +349,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .glint.g2 { right: 6px; top: 4px; }
 .glint.g3 { left: 62px; bottom: 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .row.p1 { animation: tier-flow-holo var(--tier-speed) linear infinite; }
-  .row.p2, .row.p3, .row.p4 { animation: tier-flow-edge var(--edge-speed) linear infinite; }
+  .row.tier { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   .row.tier .rk, .row.tier .score b { animation: tier-flow-text var(--edge-speed) linear infinite; }
   .row.tier::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
   .glint.g1 { animation: tier-glint 2.9s ease-in-out infinite; }
@@ -371,7 +358,6 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 }
 @media (prefers-reduced-motion: reduce) { .glint { display: none; } }
 @keyframes tier-flow-holo { from { background-position: 0 0, 0% 0, 0% 0; } to { background-position: 0 0, 100% 0, 100% 0; } }
-@keyframes tier-flow-edge { from { background-position: 0 0, 0 0, 0% 0; } to { background-position: 0 0, 0 0, 100% 0; } }
 @keyframes tier-flow-text { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 @keyframes tier-sheen { 0% { background-position: 120% 0; } 60%, 100% { background-position: -60% 0; } }
 @keyframes tier-glint { 0%, 70%, 100% { opacity: 0; scale: 0.4; } 80% { opacity: 0.9; scale: 1; } 90% { opacity: 0.4; scale: 0.8; } }
@@ -481,45 +467,33 @@ div.hero-photo { cursor: default; }
 .switch:checked { background: var(--accent); border-color: var(--accent); }
 .switch:checked::after { left: 22px; }
 
-/* ---------- podium product pages (D22, 0.16.0; the Poster, D27, 0.20.0) ----------
-   A product in the top four (under the current filter and Rank by) carries its row's
-   tier onto its page, with the rows' "descending shine": a badge, a tier-coloured haze
-   flowing through the bottom of the photo behind the details (1st and Diamond strongest,
-   Platinum faint, Pewter calm at half speed), a coloured score (1st–3rd), the tier's
-   shimmer across the photo and one sweep as it opens (1st, Diamond), and Diamond's
-   glints. Same colours, speeds and shimmer as the rows. Reduce Motion keeps the
-   colours; no motion, sweep or glints. */
+/* ---------- podium product pages (D22, 0.16.0; the Poster, D27, 0.20.0; three holo tiers, D39, 0.32.0) ----------
+   A product in the top three (under the current filter and Rank by) carries its row's
+   tier onto its page: a holo badge like its row, a tier-coloured haze flowing through the
+   bottom of the photo behind the details, a score flowing through its colours, the tier's
+   shimmer across the photo, one sweep as it opens (1st, Diamond), and Diamond's glints.
+   Same colours, speeds and shimmer as the rows. Reduce Motion keeps the colours; no
+   motion, sweep or glints. */
 .tiered .poster.cut .hero-photo, .tiered .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, color-mix(in srgb, var(--t2) 22%, transparent), transparent 60%), var(--surface-1); }
-.tiered.p1 { --haze: 0.14; } .tiered.p2 { --haze: 0.14; } .tiered.p3 { --haze: 0.08; } .tiered.p4 { --haze: 0.06; }
+.tiered.p1 { --haze: 0.14; } .tiered.p2 { --haze: 0.14; } .tiered.p3 { --haze: 0.12; }
 .tiered .hero::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
   background: var(--tier-grad); background-size: 200% 100%; opacity: var(--haze);
   -webkit-mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); }
 .tiered .hero-photo::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
-.tiered.p1 .hero-score b, .tiered.p2 .hero-score b, .tiered.p3 .hero-score b { color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.tiered .hero-score b { color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .podium-badge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 28px; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; line-height: 1.3;
   position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
 .podium-badge svg { width: 15px; height: 15px; flex: none; margin-left: -2px; color: var(--t3); }
-.podium-badge .n { font-weight: 800; color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-/* Pewter's darkest shades are too dim for small text (measured), so its badge number flows through the lighter ones. */
-.tiered.p4 .podium-badge .n { background-image: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
-/* Each badge matches its tier: 1st the row's holo, the metals their wash. */
-.tiered.p1 .podium-badge {
+.podium-badge .n { font-weight: 800; color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+/* Each badge is its row's holo card; the small "#N" needs a darker layer behind it than the row (measured). */
+.tiered .podium-badge {
   background:
-    linear-gradient(115deg, rgba(12, 20, 16, 0.7), rgba(12, 20, 16, 0.86) 70%) padding-box,
+    linear-gradient(115deg, rgba(var(--dark), 0.84), rgba(var(--dark), 0.92) 70%) padding-box,
     var(--tier-grad) padding-box,
     var(--tier-grad) border-box;
   background-size: 100% 100%, 200% 100%, 200% 100%;
-}
-/* The badge's small rainbow "#1" needs a darker holo behind it than the card (measured). */
-.tiered.p1 .podium-badge { background-image: linear-gradient(115deg, rgba(12, 20, 16, 0.84), rgba(12, 20, 16, 0.92) 70%), var(--tier-grad), var(--tier-grad); }
-.tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge {
-  background:
-    linear-gradient(115deg, rgba(var(--metal), var(--wash)), rgba(var(--metal), 0) 55%) padding-box,
-    linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
-    var(--tier-grad) border-box;
-  background-size: 100% 100%, 100% 100%, 200% 100%;
 }
 .tiered .hero-photo::after { z-index: 1; }
 /* Diamond's glints: in the photo below the header, clear of all text. */
@@ -531,8 +505,7 @@ div.hero-photo { cursor: default; }
   .tiered .hero::after { animation: tier-flow-text var(--edge-speed) linear infinite; }
   .tiered .hero-photo::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
   .tiered .hero-score b, .podium-badge .n { animation: tier-flow-text var(--edge-speed) linear infinite; }
-  .tiered.p1 .podium-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
-  .tiered.p2 .podium-badge, .tiered.p3 .podium-badge, .tiered.p4 .podium-badge { animation: tier-flow-edge var(--edge-speed) linear infinite; }
+  .tiered .podium-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   /* One sweep across the photo as the page opens, then still. */
   .tiered.p1 .hero-photo::before, .tiered.p2 .hero-photo::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
     background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--t1) 30%, transparent) 40%, color-mix(in srgb, var(--t3) 40%, transparent) 47%, rgba(255, 255, 255, 0.5) 50%, color-mix(in srgb, var(--t5) 40%, transparent) 53%, color-mix(in srgb, var(--t6) 30%, transparent) 60%, transparent 70%);
