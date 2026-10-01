@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { api, errorText } from '../api';
-import { BackIcon, LeafGlass } from '../icons';
+import { BackIcon } from '../icons';
+import { AuthMark } from '../components/chrome';
 import { addPasskey, passkeysSupported } from '../passkey';
 import { navigate } from '../router';
 import { useSession } from '../session';
@@ -34,6 +35,7 @@ export function Recover() {
         </button>
       </div>
       <form class="form-page" onSubmit={submit}>
+        <AuthMark />
         <h1>Use a recovery code</h1>
         <p class="lead">Enter your username and one of the codes you saved when you created your account. Each code works once.</p>
         <div class="fgroup">
@@ -86,7 +88,7 @@ export function NewPasskey() {
   return (
     <main class="fullscreen">
       <div class="grow">
-        <LeafGlass class="mark" />
+        <AuthMark />
         <h1>Add a new passkey</h1>
         <p class="lead">
           You signed in as <strong>@{me.user?.username}</strong> with a recovery code. Create a passkey on this device so you can sign in with Face ID next time.

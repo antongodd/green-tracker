@@ -3,6 +3,7 @@ import { USERNAME_MAX, USERNAME_PROBLEM_TEXT, usernameProblem } from '../../../s
 import { api, errorText } from '../api';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { BackIcon, CheckIcon, CrossIcon } from '../icons';
+import { AuthMark } from '../components/chrome';
 import { passkeysSupported, signUp } from '../passkey';
 import { linkTo, navigate } from '../router';
 
@@ -79,36 +80,39 @@ export function CreateAccount(p: { onCreated: (username: string, codes: string[]
             if (avail.state === 'ok') setStep(2);
           }}
         >
+          <AuthMark />
           <h1>Choose a username</h1>
           <p class="lead">People search for you by this name. It’s the only thing others see until you approve them.</p>
-          <div class="field">
-            <label for="username">Username</label>
-            <input
-              id="username"
-              class="input"
-              value={username}
-              onInput={(e) => setUsername(e.currentTarget.value.trim())}
-              maxLength={USERNAME_MAX + 5}
-              autoComplete="username"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellcheck={false}
-              autoFocus
-            />
-            <p class={`hint${avail.state === 'ok' ? ' ok' : avail.state === 'bad' ? ' bad' : ''}`} role="status">
-              {avail.state === 'ok' && (
-                <>
-                  <CheckIcon /> Available
-                </>
-              )}
-              {avail.state === 'bad' && (
-                <>
-                  <CrossIcon /> {avail.message}
-                </>
-              )}
-              {avail.state === 'checking' && 'Checking…'}
-              {avail.state === 'idle' && (tooShort && username ? USERNAME_PROBLEM_TEXT.too_short : '3–20 letters, numbers or _')}
-            </p>
+          <div class="fgroup">
+            <div class="field">
+              <label for="username">Username</label>
+              <input
+                id="username"
+                class="input"
+                value={username}
+                onInput={(e) => setUsername(e.currentTarget.value.trim())}
+                maxLength={USERNAME_MAX + 5}
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellcheck={false}
+                autoFocus
+              />
+              <p class={`hint${avail.state === 'ok' ? ' ok' : avail.state === 'bad' ? ' bad' : ''}`} role="status">
+                {avail.state === 'ok' && (
+                  <>
+                    <CheckIcon /> Available
+                  </>
+                )}
+                {avail.state === 'bad' && (
+                  <>
+                    <CrossIcon /> {avail.message}
+                  </>
+                )}
+                {avail.state === 'checking' && 'Checking…'}
+                {avail.state === 'idle' && (tooShort && username ? USERNAME_PROBLEM_TEXT.too_short : '3–20 letters, numbers or _')}
+              </p>
+            </div>
           </div>
           <button class="btn primary" type="submit" disabled={avail.state !== 'ok'}>
             Continue
@@ -119,6 +123,7 @@ export function CreateAccount(p: { onCreated: (username: string, codes: string[]
         </form>
       ) : (
         <div class="form-page">
+          <AuthMark />
           <h1>Create your passkey</h1>
           <p class="lead">
             Your device will ask for Face ID, Touch ID or your screen lock. That’s how you’ll sign in as <strong>@{username}</strong>. There’s no password.
@@ -146,6 +151,7 @@ export function CodesStep(p: { username: string; codes: string[]; onDone: () => 
       <div class="fs-top" />
       <Steps step={3} />
       <div class="form-page">
+        <AuthMark />
         <h1>Save your recovery codes</h1>
         <p class="lead">
           If you lose your passkey, one of these codes gets you back in. Each code works once. <strong>This is the only time you’ll see them.</strong>

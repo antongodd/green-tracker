@@ -92,6 +92,9 @@ test('export everything, restore it after changes, then delete the account', asy
   await button.click();
   await expect(page).toHaveURL(/\/signin$/);
   await expect(page.getByText('Your account and all of its data have been deleted.')).toBeVisible();
+  // D36: on the new welcome screen, under the headline, with the example Leaderboard still below.
+  await expect(page.locator('.welcome .headline')).toBeVisible();
+  await expect(page.locator('.showcase .row')).toHaveCount(3);
   const again = (await page.evaluate(async (u) => (await fetch(`/api/auth/username?u=${u}`)).json(), username)) as { available: boolean };
   expect(again.available).toBe(true);
 });

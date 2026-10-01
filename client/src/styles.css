@@ -215,7 +215,36 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .fs-top { display: flex; align-items: center; min-height: 44px; margin: 0 -12px; }
 .steps { display: flex; gap: 6px; justify-content: center; padding: 4px 0 20px; }
 .steps i { width: 24px; height: 4px; border-radius: 2px; background: var(--surface-3); }
-.steps i.on { background: var(--accent); }
+.steps i.on { background: var(--accent-bright); box-shadow: 0 0 8px rgba(88, 224, 140, 0.8); }
+/* Sign-up and recovery screens (D36, 0.29.0): a glowing leaf tile above each heading. */
+.auth-mark { width: 56px; height: 56px; border-radius: 16px; background: rgba(88, 224, 140, 0.12); display: grid; place-items: center; box-shadow: 0 0 30px rgba(88, 224, 140, 0.2); }
+.auth-mark svg { width: 38px; height: 38px; filter: drop-shadow(0 0 8px rgba(88, 224, 140, 0.55)); }
+.fullscreen .grow .auth-mark { margin-bottom: 4px; }
+
+/* The welcome screen (D36): the name small at the top, a headline, and an example Leaderboard drawn
+   with the real row styles, fanned like cards. Decorative: hidden from screen readers, not tappable. */
+.welcome .grow { justify-content: flex-start; gap: 8px; padding: 12px 0 16px; }
+.welcome .brand { display: flex; align-items: center; gap: 8px; }
+.welcome .brand-mark { width: 38px; height: 38px; }
+.welcome .brand h1 { font-size: 22px; }
+.welcome .headline { margin: 14px 0 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em; }
+.welcome .headline em { font-style: normal; background: linear-gradient(90deg, var(--accent-bright), #8df3b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.showcase { margin: 18px 0 0; width: 100%; max-width: 360px; display: grid; gap: 10px; justify-items: center; pointer-events: none; }
+.showcase .fan { display: grid; gap: 8px; width: 100%; text-align: left; }
+.showcase .row { box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5); }
+.showcase .eg1 { transform: rotate(-2deg); z-index: 3; }
+.showcase .eg2 { transform: rotate(1.5deg) translateX(8px); z-index: 2; }
+.showcase .eg3 { transform: rotate(-1deg) translateX(-6px); z-index: 1; }
+.showcase figcaption { font-size: 12px; color: var(--text-2); }
+/* Shorter iPhones (SE, mini): slimmer example rows so the buttons always fit without scrolling. */
+@media (max-height: 760px) {
+  .welcome .grow { padding: 4px 0 12px; gap: 6px; }
+  .welcome .headline { margin-top: 6px; font-size: 28px; }
+  .showcase { margin-top: 10px; gap: 6px; }
+  .showcase .fan { gap: 4px; }
+  .showcase .row { min-height: 60px; padding-block: 6px; }
+  .showcase .cluster { display: none; }
+}
 .form-page { display: grid; gap: 16px; align-content: start; flex: 1; }
 .form-page h1 { font-size: 24px; }
 

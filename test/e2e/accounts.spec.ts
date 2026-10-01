@@ -36,6 +36,7 @@ test('create an account, sign out and in, recover a lost device, manage passkeys
 
   // Step 2: passkey.
   await expect(page.getByRole('heading', { name: 'Create your passkey' })).toBeVisible();
+  await expect(page.locator('.auth-mark')).toBeVisible(); // D36: the glowing leaf tile
   await page.getByRole('button', { name: 'Create passkey' }).click();
 
   // Step 3: recovery codes, shown once; Continue waits for the tick.
@@ -76,6 +77,7 @@ test('create an account, sign out and in, recover a lost device, manage passkeys
 
   // Nothing else is reachable until a new passkey exists (D4).
   await expect(page.getByRole('heading', { name: 'Add a new passkey' })).toBeVisible();
+  await expect(page.locator('.auth-mark')).toBeVisible();
   await expect(page.getByText('You have 9 recovery codes left.')).toBeVisible();
   await shot(page, '06-new-passkey');
   await page.goto('/more');

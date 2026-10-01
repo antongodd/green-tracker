@@ -146,6 +146,9 @@ test('a cut-out and the type mark float above the details; a long name wraps and
 });
 
 test('the details stay readable over a white photo and a busy one, throughout the podium motion', async () => {
+  // Five pages × 12 photographed moments: about 37s alone, so it ran past the 60s limit with 4 workers
+  // busy (0.29.0's first full run). Same checks, more time.
+  test.slow();
   for (const name of ['Bright', 'Busy', LONG, 'Plain', 'Nothing']) {
     await open(name);
     await expect(page.locator(HERO_TEXT).first()).toBeVisible();
