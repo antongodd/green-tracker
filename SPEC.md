@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.28.1 (all phases done; tab bar glow; steadier accessibility checks)
+**Current version:** 0.29.0 (all phases done; welcome screen showcase)
 
 ---
 
@@ -99,6 +99,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D33 | **Drawings on the empty screens** (2026-09-29; option B "Drawings" of https://claude.ai/artifact/51HkyFqhtqTPX5aHCFQucK). Sixth of the front-end polish series. Replaces the faint outlined leaf of brief §6.10. | Every empty screen keeps its card and words, with a **small green line drawing** for its kind in place of the leaf: a podium (new Leaderboard), a funnel (a type filter with nothing in it: Leaderboard, Log, a friend's board), rating bars with the top one empty (ranking by a rating nothing has), a notebook (empty Log), a box (Archive), a dashed podium with an @ (a friend who's shared nothing), an inbox (no requests), people (no followers; not following anyone) and a crossed-out circle (no one blocked). **Add a product** and **Add a log entry** become the green button with a +; other buttons stay grey. The People lists and Blocked, a plain line before, get a smaller card with a short title above their sentence. Error cards stay plain. No data, export or privacy change. |
 | D34 | **Editor tidy-up** (2026-09-29; option A "Slim" with Overall "Live, in the heading" of https://claude.ai/artifact/8rSPSLwqN7gEdkDT7EZnMJ). Seventh of the front-end polish series. Replaces the editor's plain captions, D18's single-green sliders and the "· Overall" count line. | Every section heading in the product and Log editors has a small outline **icon** in a soft green square (Basics pencil, Classification leaf, Origin pin, Ratings star, Purchases receipt, Photos camera, Notes note, Leafly link, Private lock, Amount scales). Ratings are **slim**: name and number on one line, a thinner full-width slider under it (about a third shorter). A counting, rated slider's fill, knob and number take the **score's colour** (D30's amber → mint); unrated stays grey with a dash; a rating that doesn't count (High on flower, concentrates, pre rolls) is grey with the note "Doesn't count towards Overall". **Overall** shows live, in its colour, at the right of the Ratings heading (a dash until something counts); the line under the sliders says only "Rated N of M". The **date boxes** draw a calendar icon on the left, inside the box; the phone's own picker still opens on a tap. The ✕ is smaller but keeps a 44px target. Hit time unchanged. No data, export or privacy change. |
 | D35 | **Tab bar: outlines and a glow** (2026-09-30; option B "Glow" of https://claude.ai/artifact/YFtaLm4qrwn4thUUhWP6hb). Eighth of the front-end polish series. Keeps P1's four symbols; replaces D18's green bubble behind the active tab. | The tab bar's podium, notebook, people and dots are **slim outlines** on the tabs you're not on; the tab you're on shows its **solid** icon in green with a **soft green glow** and a **short glowing green line** under its name (no bubble). Bar, names, + button, press animation and the People badge unchanged. No data, export or privacy change. |
+| D36 | **Welcome screen: "Your stash, ranked."** (2026-10-01; option A "Showcase" of https://claude.ai/artifact/WDRNbeJWAGHw7X3f8YQXCZ). Ninth of the front-end polish series. | The sign-in screen shows the leaf and **Green Tracker** small at the top, the headline **"Your stash, ranked."** ("ranked." in the green gradient), today's line, and an **example Leaderboard**: three rows fanned like cards, drawn with the real row styles (Wedding Cake 9.4 in the rainbow 1st, Gelato 41 9.1 in Diamond, Zkittlez 8.6 in its score's colour), captioned "Example Leaderboard", hidden from screen readers and not tappable. The three buttons are unchanged and always fit without scrolling (slimmer rows on short iPhones). Create account (all three steps), Use a recovery code and Add a new passkey get a **glowing leaf tile** above the heading; the current step glows; the username sits in a green card. How signing in works is unchanged. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -521,6 +522,18 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
+- **Welcome screen (D36, 0.29.0).** `SignIn` (screens/SignIn.tsx) is `main.fullscreen.welcome`: `.brand` (LeafGlass and the
+  `h1`), `.headline` (its `em` in a green gradient), the lead, the deleted-account notice, then `Showcase`: a `figure` whose
+  `.fan` (`aria-hidden`, `pointer-events: none` on the figure) holds three `div.row`s built from the real `Thumb`, `Cluster`,
+  `Score`, `Glints` and `heatStyle` with fixed example products (`EXAMPLES`), rotated −2°, 1.5°, −1°, and a `figcaption`. Under
+  760px tall the headline shrinks, the rows slim to 60px and lose their tag line. `AuthMark` (components/chrome.tsx) is the 56px
+  glowing leaf tile above each heading of CreateAccount's three steps, Recover and NewPasskey; `.steps i.on` glows; the
+  username field sits in a `.fgroup`. Tested (`test/e2e/welcome.spec.ts`): the headline and the three rows in order with
+  their tier looks, the caption; hidden from screen readers and a tap on a row does nothing; everything fits without
+  scrolling at 390×844 and 375×667 with the rows clear of the buttons; the buttons' destinations; the leaf tile, glowing
+  step and green card; readability through the shimmer. `accounts.spec.ts` checks the tile on Create your passkey and Add a
+  new passkey; `data.spec.ts` the deleted-account notice on the new screen.
+
 - **Tab bar outlines and glow (D35, 0.28.0).** `TabBar` (components/chrome.tsx) draws the current tab's solid icon (P1's
   `BoardIcon` etc., class `tab-on`) and the others' outlines (`BoardLineIcon`, `LogLineIcon`, `PeopleLineIcon`,
   `MoreLineIcon` in icons.tsx: the same shapes in 1.7px lines, the podium's star still solid; class `tab-off`); each name
@@ -748,6 +761,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.29.0 — welcome screen: "Your stash, ranked." (owner request)
+- The sign-in screen now shows the name small at the top, the headline "Your stash, ranked.", and an example
+  Leaderboard: three podium rows fanned like cards, labelled as an example (decision D36, option A of the mockups).
+- Same buttons; they always fit without scrolling, including on an iPhone SE.
+- Create account, Use a recovery code and Add a new passkey get a glowing leaf tile above the heading, a glowing
+  current step and the username in a green card.
+- Tests: 7 new Playwright tests (`welcome.spec.ts`) plus checks in the account and delete-account tests.
+- The hero readability test (5 pages × 12 photographed moments, about 37s on its own) ran past its 60s limit once
+  with 4 workers busy; it's now marked slow (3 minutes). Same checks.
 
 ### 0.28.1 — steadier accessibility checks (tests only)
 - 0.28.0's deploy run stopped on the podium page's accessibility check (colour contrast). It wasn't the new tab

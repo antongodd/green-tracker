@@ -105,3 +105,12 @@ export function Sheet(p: { title?: string; message?: string; options: SheetOptio
     </>
   );
 }
+
+/** The glowing leaf tile above the headings of the sign-up and recovery screens (D36, 0.29.0). */
+export function AuthMark() {
+  return (
+    <div class="auth-mark" aria-hidden="true">
+      <LeafGlass />
+    </div>
+  );
+}

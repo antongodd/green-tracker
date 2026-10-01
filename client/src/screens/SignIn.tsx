@@ -1,10 +1,45 @@
 import { useState } from 'preact/hooks';
 import { errorText } from '../api';
+import { Cluster, Glints, Score, Thumb, type RowProduct } from '../components/ProductRow';
+import { heatStyle } from '../heat';
 import { LeafGlass } from '../icons';
 import { passkeysSupported, signIn } from '../passkey';
 import { linkTo } from '../router';
 import { useSession } from '../session';
 import { takeDeletedNotice } from './Data';
+
+/** The welcome screen's example Leaderboard (D36): drawn with the real row parts, never anyone's data. */
+const EXAMPLES: { product: RowProduct; score: number }[] = [
+  { product: { id: 'eg1', name: 'Wedding Cake', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.4 },
+  { product: { id: 'eg2', name: 'Gelato 41', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.1 },
+  { product: { id: 'eg3', name: 'Zkittlez', productType: 'flower', strainType: 'indica', country: 'CA', countryOther: null, photos: [] }, score: 8.6 },
+];
+
+function Showcase() {
+  return (
+    <figure class="showcase">
+      <div class="fan" aria-hidden="true">
+        {EXAMPLES.map(({ product, score }, i) => {
+          // 1st and 2nd in their podium looks (rainbow, Diamond); 3rd in its score's colour (D30).
+          const podium = i < 2 ? ((i + 1) as 1 | 2) : null;
+          return (
+            <div key={product.id} class={`row${podium ? ` tier p${podium}` : ''} eg eg${i + 1}`} {...heatStyle(podium, 'overall', score)}>
+              <Glints podium={podium} />
+              <span class="rk">{i + 1}</span>
+              <Thumb product={product} />
+              <div class="mid">
+                <div class="name">{product.name}</div>
+                <Cluster product={product} />
+              </div>
+              <Score value={score} />
+            </div>
+          );
+        })}
+      </div>
+      <figcaption>Example Leaderboard</figcaption>
+    </figure>
+  );
+}
 
 export function SignIn() {
   const { refresh } = useSession();
@@ -26,16 +61,23 @@ export function SignIn() {
   }
 
   return (
-    <main class="fullscreen">
+    <main class="fullscreen welcome">
+      {/* D36 (0.29.0): the name small at the top, a headline, and an example Leaderboard. */}
       <div class="grow">
-        <LeafGlass class="mark" />
-        <h1>Green Tracker</h1>
+        <div class="brand">
+          <LeafGlass class="brand-mark" />
+          <h1>Green Tracker</h1>
+        </div>
+        <p class="headline">
+          Your stash, <em>ranked.</em>
+        </p>
         <p class="lead">Rate, rank and remember everything you’ve tried.</p>
         {deleted && (
           <p class="lead" role="status" style={{ color: 'var(--text)' }}>
             Your account and all of its data have been deleted.
           </p>
         )}
+        <Showcase />
       </div>
       <div class="actions">
         {!supported && <p class="error">This browser can’t use passkeys. Open Green Tracker in Safari on your iPhone, or another up-to-date browser.</p>}
