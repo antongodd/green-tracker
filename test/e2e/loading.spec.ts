@@ -49,12 +49,22 @@ test('a slow Leaderboard shows its shapes with the sweep, then the real rows', a
 });
 
 test('nothing shows for the first moment, so a quick load never flickers', async () => {
+  // Timestamps from inside the page: when the screen appeared and when the shapes did.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __screenAt?: number; __skelAt?: number };
+    new MutationObserver(() => {
+      if (w.__screenAt === undefined && document.querySelector('main.screen')) w.__screenAt = performance.now();
+      if (w.__skelAt === undefined && document.querySelector('.skel')) w.__skelAt = performance.now();
+    }).observe(document, { childList: true, subtree: true });
+  });
   const release = await hold('**/api/products');
   await page.goto('/');
-  await expect(page.locator('main.screen')).toBeVisible();
-  // Just after the screen appears, still waiting: no shapes yet (they wait 250ms).
-  expect(await page.evaluate(() => !!document.querySelector('.skel'))).toBe(false);
   await expect(placeholder()).toBeVisible();
+  const t = await page.evaluate(() => {
+    const w = window as unknown as { __screenAt: number; __skelAt: number };
+    return { screenAt: w.__screenAt, skelAt: w.__skelAt };
+  });
+  expect(t.skelAt - t.screenAt).toBeGreaterThanOrEqual(240);
   await release();
   await expect(page.locator('.row', { hasText: 'Slow Kush' })).toBeVisible();
 });

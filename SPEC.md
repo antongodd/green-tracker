@@ -777,6 +777,8 @@ None.
   instead of a blank page (decision D37, option A of the mockups): Leaderboard, a friend's board, the Log, product pages
   and the People lists. Only if loading takes more than a moment; still with Reduce Motion on.
 - Tests: 6 new Playwright tests (`loading.spec.ts`) that hold the data back on purpose.
+- The accessibility sweep of 16 pages (about 35s on its own) reached its 60s limit with 4 workers busy; it's now marked
+  slow, like the hero test in 0.29.0. Same checks.
 
 ### 0.29.0 — welcome screen: "Your stash, ranked." (owner request)
 - The sign-in screen now shows the name small at the top, the headline "Your stash, ranked.", and an example
