@@ -66,6 +66,7 @@ test.beforeAll(async ({ browser }) => {
   await post('/api/products', { ...emptyProductInput(), name: 'Photo Kush', strainType: 'hybrid', country: 'US', ratings: { look: 9, smell: 9, taste: 9, burn: 9 }, photos: [{ upload: await upload(), crop: null }] });
   for (let i = 0; i < 7; i++) await post('/api/products', { ...emptyProductInput(), name: `Row ${i + 1}`, ratings: { look: 8 - i / 2 } });
   await post('/api/log', { ...emptyLogEntryInput(), name: 'Loose One', country: 'US', amount: 1 });
+  await post('/api/log', { ...emptyLogEntryInput(), name: 'Loose Photo', country: 'US', amount: 1, photos: [{ upload: await upload(), crop: null }] });
 });
 test.afterAll(() => context.close());
 
@@ -183,7 +184,7 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   for (const ms of await frozenMs()) expect(ms).toBeLessThan(600);
 });
 
-test('a product without a photo flies its placeholder; the Log does it too, loose entries don’t', async () => {
+test('a product without a photo flies its placeholder; the Log does it too, loose entries without a photo don’t', async () => {
   await page.goto('/');
   await recordTransitions();
   await row('Row 1').click();
@@ -201,8 +202,28 @@ test('a product without a photo flies its placeholder; the Log does it too, loos
 
   await page.locator('.lrow', { hasText: 'Loose One' }).click();
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Loose One' })).toBeVisible();
   await page.waitForTimeout(300);
-  expect((await transitions()).length).toBe(2); // the entry editor opens as before
+  expect((await transitions()).length).toBe(2); // its page (D41) opens without the flight
+});
+
+test('a loose entry with a photo flies it into its page, and Back flies it home (D41)', async () => {
+  await page.goto('/log');
+  await expect(page.locator('.lrow', { hasText: 'Loose Photo' })).toBeVisible();
+  await recordTransitions();
+  await page.locator('.lrow', { hasText: 'Loose Photo' }).click();
+  await expect(page).toHaveURL(/\/log\/[^/]+$/);
+  await expect(page.locator('.hero-photo img')).toBeVisible();
+  await expect.poll(transitions).toEqual([expect.arrayContaining(['::view-transition-group(gt-photo)', '::view-transition-new(root)'])]);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
+  await page.waitForTimeout(400);
+  expect(await entrances()).toEqual([]); // nothing replays once the photo lands
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/log$/);
+  await expect.poll(transitions).toEqual([expect.anything(), expect.arrayContaining(['::view-transition-group(gt-photo)'])]);
+  await expect(page.locator('html')).not.toHaveClass(/vt-photo/);
+  await expect(page.locator('[style*="view-transition-name"]')).toHaveCount(0);
+  for (const ms of await frozenMs()) expect(ms).toBeLessThan(600);
 });
 
 test('opening from a scrolled list: the history entry comes first, and nothing scrolls during the flight', async () => {
@@ -324,7 +345,7 @@ test('a loose Log entry opened from a scrolled Log keeps the phone’s picture o
   expect(scrolled).toBeGreaterThan(50);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
-  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual'); // the editor's entry
+  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual'); // the entry page's own
   await page.goBack(); // what a swipe from the edge does
   await expect(page).toHaveURL(/\/log$/);
   expect(await page.evaluate(() => history.scrollRestoration)).toBe('auto'); // the Log's entry

@@ -12,6 +12,7 @@ import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
 import { Editor } from './screens/Editor';
 import { Log } from './screens/Log';
 import { LogEditor } from './screens/LogEditor';
+import { LogEntryPage } from './screens/LogEntry';
 import { Archive, Leaderboard } from './screens/Leaderboard';
 import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
@@ -108,12 +109,13 @@ function App() {
     screen = <NewPasskey />;
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
-    const entry = path.match(/^\/log\/([^/]+)(\/promote)?$/);
+    const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
     const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+))?$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
     else if (path === '/log/new') screen = <LogEditor key="new-entry" id={null} />;
-    else if (entry?.[2]) screen = <Editor key={`promote-${entry[1]}`} id={null} promoteFrom={decodeURIComponent(entry[1]!)} />;
-    else if (entry) screen = <LogEditor key={entry[1]} id={decodeURIComponent(entry[1]!)} />;
+    else if (entry?.[2] === '/promote') screen = <Editor key={`promote-${entry[1]}`} id={null} promoteFrom={decodeURIComponent(entry[1]!)} />;
+    else if (entry?.[2] === '/edit') screen = <LogEditor key={`edit-${entry[1]}`} id={decodeURIComponent(entry[1]!)} />;
+    else if (entry) screen = <LogEntryPage key={entry[1]} id={decodeURIComponent(entry[1]!)} />;
     else if (them?.[2]) screen = <SharedProfile key={path} username={decodeURIComponent(them[1]!)} id={decodeURIComponent(them[2])} />;
     else if (them) screen = <Person key={path} username={decodeURIComponent(them[1]!)} />;
     else if (product?.[2]) screen = <Editor key={product[1]} id={decodeURIComponent(product[1]!)} />;
