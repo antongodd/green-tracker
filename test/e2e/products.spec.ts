@@ -54,7 +54,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await expect(purchase.getByLabel('Date')).not.toHaveValue('');
   await purchase.getByLabel('Amount (g)').fill('3.5');
   await purchase.getByLabel('Total paid (£)').fill('9.50');
-  await expect(purchase.getByText('£2.71/g')).toBeVisible();
+  await expect(purchase.locator('.psum .r')).toHaveText('£2.71/g'); // on its row too (D42)
   await shot(page, '10-editor');
   await page.getByRole('button', { name: 'Save' }).click();
 
@@ -75,7 +75,10 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await expect(page.getByText('Look', { exact: true })).toHaveCount(0);
   await expectRated(page, '2 of 2', '9.2');
   await expect(page.getByText('Hit time', { exact: true })).toBeVisible();
-  // The old figure is relabelled in mg, never converted.
+  // The old figure is relabelled in mg, never converted: on its folded row and in its fields (D42).
+  const bought = page.getByRole('group', { name: 'Purchase 1' });
+  await expect(bought.locator('.psum .l > span')).toHaveText('3.5mg · £9.50');
+  await bought.locator('.psum').click();
   await expect(page.getByLabel('Amount (mg THC)')).toHaveValue('3.5');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL(profileUrl);
