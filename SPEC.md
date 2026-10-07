@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.32.0 (all phases done; a three-place podium: rainbow, Diamond, Gold)
+**Current version:** 0.33.0 (all phases done; the Data screens: Export, Restore, Delete account)
 
 ---
 
@@ -103,6 +103,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D37 | **Loading placeholders: shimmer** (2026-10-01; option A "Shimmer" of https://claude.ai/artifact/G8GjVckCLnNnfkL2EYC1G7). Tenth and last item of the front-end polish series. | While a screen waits for its data, faint shapes laid out like it show with a soft green-white light sweeping across: the Leaderboard and a friend's board (Rank / Type, tiles, 6 rows), the Log (Type, tiles, country headings, rows), a product page (the big photo area, a card of 4 rating bars) and the People lists (3 person rows). Only after 250ms, so quick loads never flicker; still under Reduce Motion; "Loading" for screen readers; the real screen fades in where they were; an error replaces them if loading fails. No data or speed change. |
 | D38 | **More screen: profile card and icon rows** (2026-10-01; option A "Profile + icons" of https://claude.ai/artifact/TFPCqT2v7ufgM37siV6Ugc). | More opens with **you**: your photo (or letter) with a green ring, **@username**, and "N products · N followers · N following"; tapping it opens People (the Username row goes). Every row has a small **tinted icon tile** like the iPhone's Settings: **Account** (Passkeys key, Recovery codes amber life ring, Blocked people), **Data** (Export and Restore teal arrows, Archive box, moved here from Products), **Sign out** and **Sign out everywhere** on their own, **Danger zone** (Delete account, red bin). The **version** moves from About → Version to a footer under the leaf ("Green Tracker 0.31.0"). Every row does what it did; the counts are your own and only you see them. |
 | D39 | **A three-place podium: rainbow, Diamond, Gold** (2026-10-01; option A "Holo" of https://claude.ai/artifact/48Jq2mexVCGqdiA68NFKuq, after the owner found 2nd–4th looking out of place next to the rest of the Leaderboard). Reopens D19 (four tiers), D21 (cool metals), D22 and D31 at the owner's request. | **Only 1st–3rd get special colours.** 1st stays the rainbow. **2nd Diamond** and **3rd Gold** become **holo cards like 1st**: filled edge to edge with their colours flowing under a dark layer, their edge, rank number and score flowing through them too; Diamond in ice blue and lilac and still twinkling, Gold in warm gold. The shimmer still sweeps down the three rows in a cascade. **Platinum and Pewter are gone**: **4th is an ordinary row** and glows in its score's colour like 5th and below (D30). **Product pages** of the top three take the same colours (a holo badge like the row, the haze, the flowing score; 1st and Diamond keep their sweep, Diamond its glints); a 4th-place page is ordinary. Same on a friend's board and their pages. The **welcome screen's** third example (Zkittlez 8.6) is **Gold**, so it shows the full podium. Only rated products get a place, following Type and Rank by, as before. Reduce Motion: colours only. No data, export or privacy change. See §4 *Podium tiers*. |
+| D40 | **The Data screens: Export, Restore, Delete account** (2026-10-07; option A "Hero" of https://claude.ai/artifact/ALaLdz1wcErcFTDmYdnoYu, with both additions approved: a progress bar, and new headings). The last plain screens in the app. | Each screen opens with a **glowing icon tile** (teal upload, teal download, red bin), a **heading** and one sentence: **"Your data, in one file"**, **"Restore from a file"**, **"Delete @username"**. **Export:** an "In the file" card ticks off every product (archived too), the whole Log and every photo, with a grey line for what isn't included; then the button and the Save to Files advice. **Restore:** once a file is chosen, a card with its name, when and by whom, and three **tiles** (Products · Log · Photos), the archived count and what happens to your profile photo beneath; then a red-outlined Replace button and **Choose a different file**. **Delete account:** red throughout; a "What goes" card with a cross per item; a **Keep a copy? Export first ›** shortcut; the username box edges red once it matches; a Face ID symbol on the button. **Export and Restore show a progress bar** while photos are added or uploaded. What each screen does is unchanged: the same file, the same "Replace all your data?" question, the same username and passkey. No data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -554,6 +555,25 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   every row's icon, tint and destination in order, the headings, the red Delete account, Sign out everywhere still asks;
   the footer version and no Version row; readability.
 
+- **Data screens (D40, 0.33.0).** `ExportScreen`, `RestoreScreen` and `DeleteAccount` (screens/Data.tsx) share `DataHero`
+  (`div.data-hero`: a 64px `.data-mark.teal|red` tile with a glowing icon, an `h1`, one sentence) and `.data-card` (green, `.teal`
+  or `.red` wash). Export: `section[aria-label="In the file"]` with `ul.checks` (`li.yes` CheckIcon, `li.not` DashIcon); the
+  Save to Files note shows only while nothing else is. Restore: one file picker (a `label.btn` round the input, its words and
+  `aria-label` "Choose an export file", then "Choose a different file" below the Replace button; dimmed via
+  `label.btn:has(input:disabled)` while restoring); `section[aria-label="File contents"]` holds `.file-head` (FileIcon tile, the
+  chosen file's whole name, wrapping, and "Exported … by @…"), `.data-tiles` (Products without archived · Log · Photos, rounded
+  numbers) and a hint with the archived count and the profile photo line (`PROFILE_PHOTO`: included / yours will be removed /
+  yours stays). The Replace button is `.btn.danger-out`. Delete: `section[aria-label="What goes"]` (`li.gone` CrossIcon),
+  `a.data-link` to /more/export (lifts and lights green, D20), `.input.armed` (red edge) once the username matches, FaceIdIcon
+  on the button. `ProgressCard`: `role="progressbar"` with the "Adding photos: N of M" / "Uploading photos: N of M" words as its
+  name and `aria-valuenow` / `-max`, a teal bar (width eased 0.3s, still under Reduce Motion), replacing the Replace button on
+  Restore. New icons: FileIcon, FaceIdIcon, DashIcon. Tested (`test/e2e/datascreens.spec.ts`): each screen's tile, heading and
+  card; Export's bar at 1 of 2 and 50% with a photo held back, then the green "Exported …" line; Restore's file name, tiles and
+  hint, the picker's new words and place, the bar at 0 of 2 with the uploads held back and the picker dimmed; Delete's five
+  crosses, the armed box and button, Export first opening Export; axe and pixel contrast on all three (two halves each; it fails
+  with the sentence dimmed). `data.spec.ts` still runs export → restore → delete end to end; it, `cutout.spec.ts` and
+  `profile.spec.ts` find the Replace button below the card and read the new profile photo lines.
+
 - **Loading placeholders (D37, 0.30.0).** `Skeleton` (components/Skeleton.tsx) renders nothing for 250ms, then
   `div.skel.skel-{board|log|product|people}` (`role="status"`, `aria-label="Loading"`, shapes `aria-hidden`); each `.sk`
   carries a `::after` sweep (`sk-sweep`, 1.4s, only under `prefers-reduced-motion: no-preference`). On unmount after being
@@ -803,6 +823,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.33.0 — the Data screens (owner request)
+- Export, Restore and Delete account have a new look (decision D40, option A "Hero" of the mockups): a glowing icon, a
+  heading and one sentence at the top of each.
+- **Export** ticks off what's in the file. **Restore** shows the chosen file's products, Log and photos as big numbers, and
+  you can choose a different file. **Delete account** is red throughout, crosses off what goes and offers Export first.
+- **A progress bar** while Export adds photos and while Restore uploads them.
+- Nothing about what these screens do has changed.
+- Tests: 4 new Playwright tests (`datascreens.spec.ts`); `data.spec.ts`, `cutout.spec.ts` and `profile.spec.ts` read the new
+  Restore card.
 
 ### 0.32.0 — a three-place podium: rainbow, Diamond, Gold (owner request)
 - Only the top three get special colours now (decision D39, option A "Holo" of the mockups). 1st stays the rainbow;

@@ -881,3 +881,63 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .more-gap { margin-top: 20px; }
 .more-foot { display: grid; justify-items: center; gap: 4px; padding: 24px 16px 8px; color: var(--text-2); font-size: 12px; }
 .more-foot svg { width: 22px; height: 22px; opacity: 0.75; }
+
+/* ---------- the Data screens (D40, 0.33.0) ----------
+   Export, Restore and Delete account open with a glowing icon tile (teal; red to delete), a heading
+   and one sentence, then a card that ticks off what's in the file (Export), shows what's in the
+   chosen file as tiles (Restore) or crosses off what goes (Delete). Export and Restore show a
+   progress bar while they work. */
+.data-hero { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 4px 0 2px; }
+.data-hero h1 { margin: 0; font-size: 22px; font-weight: 700; text-wrap: balance; overflow-wrap: anywhere; }
+.data-hero p { margin: 0; max-width: 34ch; color: var(--text-2); font-size: 15px; }
+.data-hero p strong { color: var(--text); font-weight: 600; }
+.data-mark { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; margin-bottom: 4px; }
+.data-mark svg { width: 34px; height: 34px; }
+.data-mark.teal { background: rgba(64, 196, 196, 0.14); color: #7fe3e3; box-shadow: 0 0 34px rgba(64, 196, 196, 0.25); }
+.data-mark.teal svg { filter: drop-shadow(0 0 8px rgba(127, 227, 227, 0.6)); }
+.data-mark.red { background: rgba(255, 107, 107, 0.12); color: var(--danger); box-shadow: 0 0 34px rgba(255, 107, 107, 0.2); }
+.data-mark.red svg { filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5)); }
+.data-card { padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 12px; display: grid; gap: 12px; }
+.data-card > .cap { color: var(--accent-bright); }
+.data-card.teal { background: linear-gradient(115deg, rgba(64, 196, 196, 0.1), rgba(64, 196, 196, 0) 55%), var(--surface-1); border-color: rgba(64, 196, 196, 0.22); }
+.data-card.red { background: linear-gradient(115deg, rgba(255, 107, 107, 0.09), rgba(255, 107, 107, 0) 55%), var(--surface-1); border-color: rgba(255, 107, 107, 0.26); }
+.data-card.red > .cap { color: var(--danger); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.checks li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 15px; }
+.checks li > svg { width: 18px; height: 18px; margin-top: 2px; }
+.checks small { display: block; color: var(--text-2); font-size: 13px; }
+.checks .yes > svg { color: var(--accent-bright); }
+.checks .not { color: var(--text-2); }
+.checks .not > svg { color: var(--text-3); }
+.checks .gone > svg { color: var(--danger); }
+.data-note { justify-content: center; text-align: center; display: block; }
+.data-note strong { color: var(--text); font-weight: 600; }
+.data-note.ok { color: var(--accent-bright); }
+.data-progress { gap: 8px; }
+.data-progress p { margin: 0; font-size: 14px; }
+.data-progress .bar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.data-progress .bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #40c4c4, #7fe3e3); }
+@media (prefers-reduced-motion: no-preference) { .data-progress .bar i { transition: width 0.3s ease-out; } }
+.file-head { display: flex; align-items: center; gap: 12px; }
+.file-head .who { display: grid; min-width: 0; }
+.file-head .who b { font-size: 15px; overflow-wrap: anywhere; } /* the whole name: it matters which file you chose */
+.file-head .who span { font-size: 13px; color: var(--text-2); }
+.data-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.data-tile { padding: 10px 6px; border-radius: 12px; text-align: center; background: linear-gradient(115deg, rgba(64, 196, 196, 0.16), rgba(64, 196, 196, 0) 70%), var(--surface-1); border: 1px solid rgba(64, 196, 196, 0.28); }
+.data-tile b { display: block; font-family: var(--num-font); font-size: 22px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.data-tile span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+/* The file picker is a label around the input, so it can't be :disabled itself: dimmed while Restore runs. */
+label.btn:has(input:disabled) { opacity: 0.4; }
+.btn.danger-out { background: rgba(255, 107, 107, 0.08); border-color: rgba(255, 107, 107, 0.4); color: var(--danger); }
+.data-link { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline); color: var(--text-2); font-size: 14px; text-decoration: none; }
+.data-link .main { flex: 1; min-width: 0; }
+.data-link b { color: var(--text); font-weight: 600; }
+.data-link .go { display: flex; align-items: center; gap: 4px; color: var(--accent-bright); font-weight: 600; white-space: nowrap; }
+.data-link .go svg { width: 11px; height: 11px; }
+.input.armed { border-color: rgba(255, 107, 107, 0.6); box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12); }
+/* Tap feel (D20): the Export shortcut lifts and lights up like a button. */
+.data-link.is-pressed { border-color: rgba(88, 224, 140, 0.5); }
+@media (prefers-reduced-motion: no-preference) {
+  .data-link { transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.18s ease-out; }
+  .data-link.is-pressed { transform: scale(1.03); }
+}

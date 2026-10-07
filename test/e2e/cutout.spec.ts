@@ -263,7 +263,8 @@ test('export and restore keep cut-outs', async ({ page }) => {
 
   await page.goto('/more/restore');
   await page.getByLabel('Choose an export file').setInputFiles(path);
-  await page.getByRole('region', { name: 'File contents' }).getByRole('button', { name: 'Replace my data with this file' }).click();
+  await expect(page.getByRole('region', { name: 'File contents' })).toBeVisible();
+  await page.getByRole('button', { name: 'Replace my data with this file' }).click(); // below the card since D40
   await page.getByRole('dialog').getByRole('button', { name: 'Replace my data' }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 20_000 });
   await expect(page.locator('.row .thumb.cut img')).toBeVisible();

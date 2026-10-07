@@ -186,3 +186,8 @@ export const UploadIcon = icon('M12 15V4 M8 8l4-4 4 4 M5 14v4.5A1.5 1.5 0 0 0 6.
 export const DownloadIcon = icon('M12 4v11 M8 11l4 4 4-4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
 export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9 M10 13h4', { stroke: 2 });
 export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5', { stroke: 2 });
+
+// Data screens (D40, 0.33.0).
+export const FileIcon = icon('M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5Z M14 3.5V8h4', { stroke: 2 });
+export const FaceIdIcon = icon('M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8 M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8 M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16 M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16 M9 9v1.5 M15 9v1.5 M12 9v4h-1 M9.5 16c1.5 1 3.5 1 5 0', { stroke: 2 });
+export const DashIcon = icon('M3 6h6', { stroke: 1.8, viewBox: '0 0 12 12' });
