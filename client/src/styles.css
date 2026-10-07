@@ -941,3 +941,9 @@ label.btn:has(input:disabled) { opacity: 0.4; }
   .data-link { transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.18s ease-out; }
   .data-link.is-pressed { transform: scale(1.03); }
 }
+
+/* ---------- a Log entry's page (D41, 0.34.0) ----------
+   The Poster's top (D27) with an "In your Log" tag over the name, then Details and Actions
+   cards like a product page. */
+.log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(5, 8, 7, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
+.entry-page .sect .btn svg { width: 18px; height: 18px; }

@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { autoCapitalise } from '../../../shared/domain/capitalise';
 import { OTHER_COUNTRY } from '../../../shared/domain/countries';
-import { emptyLogEntryInput, logEntryToInput, promotionInput, validateLogEntryInput, type LogEntry, type LogEntryInput } from '../../../shared/domain/logEntry';
+import { emptyLogEntryInput, logEntryToInput, validateLogEntryInput, type LogEntry, type LogEntryInput } from '../../../shared/domain/logEntry';
 import { productType, unitFor, type ProductTypeKey } from '../../../shared/domain/productTypes';
 import { ApiError, errorText } from '../api';
-import { Header, Sheet } from '../components/chrome';
+import { Header } from '../components/chrome';
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { CONCENTRATE_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
 import { GroupHead, Select, TextField } from '../components/inputs';
 import { LeafLineIcon, PencilIcon, PinIcon, ScaleIcon } from '../icons';
-import { cachedEntry, deleteEntry, fetchEntry, saveEntry } from '../logEntries';
-import { startPromotion } from '../promotion';
+import { cachedEntry, fetchEntry, saveEntry } from '../logEntries';
 import { useOnline } from '../online';
 import { back, navigate } from '../router';
 
@@ -32,8 +31,9 @@ function toInput(f: Form, drafts: PhotoDraft[]): LogEntryInput | string {
 
 /**
  * The loose entry editor (brief §9, §10.2): name, classification, country, amount,
- * one photo. Save to log; Add to leaderboard (saved entries only) hands the live
- * form to the product editor; Delete (saved entries only) behind a confirmation.
+ * one photo. Save to log. A new entry goes back to the Log; a saved one is edited from
+ * its page (/log/:id/edit, D41), and Cancel and Save go back there. Add to leaderboard
+ * and Delete entry live on that page since 0.34.0.
  */
 export function LogEditor(p: { id: string | null }) {
   const existing = p.id ? cachedEntry(p.id) : undefined;
@@ -41,9 +41,8 @@ export function LogEditor(p: { id: string | null }) {
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (existing?.photo ? draftsFromRecords([existing.photo]) : []));
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const online = useOnline();
-  // Set when the pending uploads belong elsewhere now (saved, or handed to promotion).
+  // Set when the pending uploads belong elsewhere now (saved).
   const handedOff = useRef(false);
   const loaded = useRef(!!form);
 
@@ -62,7 +61,9 @@ export function LogEditor(p: { id: string | null }) {
       });
   }, [p.id]);
 
-  const cancel = () => back('/log');
+  // A saved entry returns to its page (D41); a new one to the Log.
+  const home = p.id ? `/log/${p.id}` : '/log';
+  const cancel = () => back(home);
   if (!form) {
     return (
       <>
@@ -95,29 +96,7 @@ export function LogEditor(p: { id: string | null }) {
     try {
       await saveEntry(p.id, input);
       handedOff.current = true;
-      back('/log');
-    } catch (e) {
-      setError(errorText(e));
-      setBusy(false);
-    }
-  }
-
-  /** Commits nothing: opens the product editor pre-filled from this live form. */
-  function addToLeaderboard() {
-    const input = checked();
-    if (!input || !p.id) return;
-    handedOff.current = true;
-    startPromotion({ entryId: p.id, input: promotionInput(input), drafts });
-    navigate(`/log/${p.id}/promote`);
-  }
-
-  async function remove() {
-    setConfirmDelete(false);
-    setBusy(true);
-    try {
-      await deleteEntry(p.id!);
-      handedOff.current = false; // discard any pending photo changes
-      back('/log');
+      back(home);
     } catch (e) {
       setError(errorText(e));
       setBusy(false);
@@ -127,7 +106,7 @@ export function LogEditor(p: { id: string | null }) {
   return (
     <>
       <Header title={p.id ? form.name || 'Log entry' : 'New log entry'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
-      <main class="screen has-savebar" style={p.id ? { paddingBottom: 'calc(var(--safe-bottom) + 160px)' } : undefined}>
+      <main class="screen has-savebar">
         <form
           class="editor"
           onSubmit={(e) => {
@@ -165,11 +144,6 @@ export function LogEditor(p: { id: string | null }) {
 
           <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={handedOff} max={1} />
 
-          {p.id && (
-            <button type="button" class="btn danger" onClick={() => setConfirmDelete(true)} disabled={busy}>
-              Delete entry
-            </button>
-          )}
           <button type="submit" hidden />
         </form>
       </main>
@@ -183,21 +157,8 @@ export function LogEditor(p: { id: string | null }) {
           <button class="btn primary" onClick={save} disabled={busy || uploading || !online}>
             {busy ? 'Saving…' : uploading ? 'Uploading photo…' : 'Save to log'}
           </button>
-          {p.id && (
-            <button class="btn secondary" onClick={addToLeaderboard} disabled={busy || uploading || !online}>
-              Add to leaderboard
-            </button>
-          )}
         </div>
       </div>
-      {confirmDelete && (
-        <Sheet
-          title={`Delete “${form.name}”?`}
-          message="This removes the entry and its photo for good."
-          options={[{ label: 'Delete entry', danger: true, onSelect: remove }]}
-          onCancel={() => setConfirmDelete(false)}
-        />
-      )}
     </>
   );
 }

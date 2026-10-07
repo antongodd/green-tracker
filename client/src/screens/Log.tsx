@@ -43,8 +43,8 @@ function Row(p: { row: LogRow; source: Source }) {
   const photo = p.source.kind === 'product' ? p.source.product.photos[0] : p.source.entry.photo;
   const open = (e: MouseEvent) => {
     rememberRow('log', key, e.currentTarget as HTMLElement);
-    // Products fly their photo into the profile (D20); loose entries open their editor as before.
-    if (p.row.kind === 'product') openRow(e, href);
+    // Products, and loose entries with a photo (D41), fly it into their page's top (D20).
+    if (p.row.kind === 'product' || photo) openRow(e, href);
     else openPlainRow(e, href);
   };
   return (

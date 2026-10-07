@@ -113,7 +113,7 @@ test('no match offers to use the typed text as Other', async () => {
 test('Not set and Other can be picked from the list', async () => {
   const { entries } = await get('/api/log');
   const id = entries.find((e: { name: string }) => e.name === 'F').id;
-  await page.goto(`/log/${id}`);
+  await page.goto(`/log/${id}/edit`); // its form (D41: /log/:id is the entry's page)
   await expect(field()).toHaveText('🇪🇸Spain');
 
   await field().click();

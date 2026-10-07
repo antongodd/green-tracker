@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.33.0 (all phases done; the Data screens: Export, Restore, Delete account)
+**Current version:** 0.34.0 (all phases done; a Log entry's own page)
 
 ---
 
@@ -104,6 +104,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D38 | **More screen: profile card and icon rows** (2026-10-01; option A "Profile + icons" of https://claude.ai/artifact/TFPCqT2v7ufgM37siV6Ugc). | More opens with **you**: your photo (or letter) with a green ring, **@username**, and "N products · N followers · N following"; tapping it opens People (the Username row goes). Every row has a small **tinted icon tile** like the iPhone's Settings: **Account** (Passkeys key, Recovery codes amber life ring, Blocked people), **Data** (Export and Restore teal arrows, Archive box, moved here from Products), **Sign out** and **Sign out everywhere** on their own, **Danger zone** (Delete account, red bin). The **version** moves from About → Version to a footer under the leaf ("Green Tracker 0.31.0"). Every row does what it did; the counts are your own and only you see them. |
 | D39 | **A three-place podium: rainbow, Diamond, Gold** (2026-10-01; option A "Holo" of https://claude.ai/artifact/48Jq2mexVCGqdiA68NFKuq, after the owner found 2nd–4th looking out of place next to the rest of the Leaderboard). Reopens D19 (four tiers), D21 (cool metals), D22 and D31 at the owner's request. | **Only 1st–3rd get special colours.** 1st stays the rainbow. **2nd Diamond** and **3rd Gold** become **holo cards like 1st**: filled edge to edge with their colours flowing under a dark layer, their edge, rank number and score flowing through them too; Diamond in ice blue and lilac and still twinkling, Gold in warm gold. The shimmer still sweeps down the three rows in a cascade. **Platinum and Pewter are gone**: **4th is an ordinary row** and glows in its score's colour like 5th and below (D30). **Product pages** of the top three take the same colours (a holo badge like the row, the haze, the flowing score; 1st and Diamond keep their sweep, Diamond its glints); a 4th-place page is ordinary. Same on a friend's board and their pages. The **welcome screen's** third example (Zkittlez 8.6) is **Gold**, so it shows the full podium. Only rated products get a place, following Type and Rank by, as before. Reduce Motion: colours only. No data, export or privacy change. See §4 *Podium tiers*. |
 | D40 | **The Data screens: Export, Restore, Delete account** (2026-10-07; option A "Hero" of https://claude.ai/artifact/ALaLdz1wcErcFTDmYdnoYu, with both additions approved: a progress bar, and new headings). The last plain screens in the app. | Each screen opens with a **glowing icon tile** (teal upload, teal download, red bin), a **heading** and one sentence: **"Your data, in one file"**, **"Restore from a file"**, **"Delete @username"**. **Export:** an "In the file" card ticks off every product (archived too), the whole Log and every photo, with a grey line for what isn't included; then the button and the Save to Files advice. **Restore:** once a file is chosen, a card with its name, when and by whom, and three **tiles** (Products · Log · Photos), the archived count and what happens to your profile photo beneath; then a red-outlined Replace button and **Choose a different file**. **Delete account:** red throughout; a "What goes" card with a cross per item; a **Keep a copy? Export first ›** shortcut; the username box edges red once it matches; a Face ID symbol on the button. **Export and Restore show a progress bar** while photos are added or uploaded. What each screen does is unchanged: the same file, the same "Replace all your data?" question, the same username and passkey. No data, export or privacy change. |
+| D41 | **A Log entry's own page** (2026-10-07; option C "View first" of https://claude.ai/artifact/UMyhbLBPxgj1Mj2Yi9EyRs, with the owner's changes: Edit both top right and in an Actions card like a product page, no line under Add to leaderboard, the logged date shown, Photo grows for entries; Delete entry kept, not Archive). A step away from rebuild brief §10.2 (a loose row opens the entry editor). | Tapping a loose entry in the Log opens **its page**: the Poster's top (D27) with its photo (a cut-out floats; no photo: the type's mark glows), an **In your Log** tag and the name; a **Details** card (Type, Concentrate type, Country with flag, Amount, **Logged** with the date, empty rows left out); an **Actions** card: green **Add to leaderboard** (opens the product editor filled in from the saved entry, as before), **Edit** and red **Delete entry** (asks first, as before). **Edit** is also top right. Tapping the photo opens it full screen. The form moves to /log/:id/edit; its Cancel and Save to log come back to the page, and it no longer holds Add to leaderboard or Delete entry. A **new** entry still opens straight into the form and saves back to the Log. **Photo grows** (D20): an entry with a photo flies it from its Log row into the page and home on Back, like products; without a photo it opens plainly. Offline, Add to leaderboard and Delete wait for the connection. Followers never see loose entries; no data, export or privacy change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -195,7 +196,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     validator for the shared fields, so the rules can't drift. Hard delete behind a
     confirmation removes the photo files too.
   - *Rows*: product rows show the type mark (= has a full profile) and open the
-    profile; loose rows have no mark and open the entry editor; the whole row is the
+    profile; loose rows have no mark and open the entry's page (since 0.34.0, D41; the
+    editor before), its form at /log/:id/edit; the whole row is the
     tap target. The thumbnail shows the photo, else the type mark (both kinds).
   - *The Type filter is the one stored setting shared with the Leaderboard*;
     changing it on the Log may drop the Leaderboard's Rank by back to Overall if the
@@ -205,7 +207,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - *A profile opened from the Log returns to the Log*, with the Log tab active.
   - *Promotion*: "Add to leaderboard" (saved entries only) commits nothing. It hands
     the entry's **live** form — unsaved edits and any pending photo upload included —
-    to the product editor, pre-filling name, country, photo, product type and
+    to the product editor *(since 0.34.0, D41, it starts from the entry's page, so it
+    hands over the saved entry and its photo)*, pre-filling name, country, photo, product type and
     concentrate type; the amount is dropped. Cancel asks **Keep editing / Discard**;
     Discard returns to the entry, untouched. Save calls `POST /api/log/:id/promote`,
     which in one D1 batch creates the product, re-points the entry's photo to it
@@ -508,7 +511,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     exactly as the list was; otherwise it shows the page colour (black), then ~0.5s of black.
     That's why it went black only when the list had been scrolled. So the entry a product is
     opened from, from a list row (`openRow`), has `history.scrollRestoration = 'auto'`, and
-    since 0.19.4 so does the Log when a loose entry is opened from it (`openPlainRow`); every
+    since 0.19.4 so does the Log when a loose entry is opened from it (`openPlainRow`; since
+    0.34.0 an entry with a photo uses `openRow` and flies it, D41); every
     other entry stays `manual` (the app decides where screens start). Known, left for now
     (owner's choice, 0.19.4): the same black swipe can happen leaving any other screen while
     scrolled down (People lists → a person, a product → its editor, More's sub-screens). On Back the browser puts
@@ -541,7 +545,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - Tested (`test/e2e/motion.spec.ts`): the press waits, lifts to 1.03 and cancels on
     movement; scroll-like movement never presses; a quick tap still flashes; in-card
     rows light up and stay within their card; the flight runs on open and Back (own
-    Leaderboard, Log, a product without a photo), never for loose entries, cleans up
+    Leaderboard, Log, a product without a photo; since 0.34.0 a loose entry with a photo,
+    D41), never for a loose entry without one, cleans up
     after itself, and never freezes the screen more than 0.6s; Reduce Motion gives
     colour only and no flight.
 
@@ -554,6 +559,24 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   `Green Tracker {__APP_VERSION__}`. Tested (`test/e2e/more.spec.ts`): the card's letter, @username and counts, tap → People;
   every row's icon, tint and destination in order, the headings, the red Delete account, Sign out everywhere still asks;
   the footer version and no Version row; readability.
+
+- **A Log entry's page (D41, 0.34.0).** `LogEntryPage` (screens/LogEntry.tsx) at `/log/:id`; `LogEditor` moves to
+  `/log/:id/edit` (main.tsx routes `/log/:id`, `/edit`, `/promote`). The page draws the Poster's markup (`.poster` /
+  `.hero-photo` / `.hero`, D27) without a score: `span.log-tag` ("In your Log", green on a dark pill, measured on the photo)
+  and the `h1`. `section[aria-label="Details"]` lists Type, Concentrate type, Country, Amount (`formatAmount`) and Logged
+  (`formatDate(createdAt)`), skipping empty values. `section[aria-label="Actions"]`: Add to leaderboard (`startPromotion` with
+  `promotionInput(logEntryToInput(entry))` and `draftsFromRecords`, then `/log/:id/promote`), Edit (a link, like the header's)
+  and Delete entry (the same Sheet, then `back('/log')`); the first and last are disabled offline (`useOnline`). The photo opens
+  `PhotoViewer` with no crop or cut-out tools (they stay in the form). Loading shows `Skeleton kind="product"` (D37); a 404 (a
+  promoted or deleted entry reached through Back) replaces it with the Log. `LogEditor`: Cancel and Save go `back()` to the
+  page for a saved entry, to the Log for a new one; its Add to leaderboard, Delete and their sheet are gone. Log rows
+  (screens/Log.tsx) open an entry with a photo through `openRow` (the flight, transitions.ts, finds `.hero-photo` as on a
+  product page) and one without through `openPlainRow`. Tested (`test/e2e/logentry.spec.ts`): the page with a photo, without
+  one and with a cut-out; the Details rows and the date; the three actions and the header's Edit; Edit → Cancel / Save back to
+  the page; the viewer; Delete asking first and an old link to a deleted entry; offline; axe and pixel contrast of the tag and
+  name on each (fails with the tag dimmed). `motion.spec.ts`: an entry with a photo flies in and home, one without doesn't;
+  `log.spec.ts` (page → Edit → Save; Delete; promotion from the page, Discard returning to it), `country.spec.ts` and
+  `editor.spec.ts` open the form at `/edit`.
 
 - **Data screens (D40, 0.33.0).** `ExportScreen`, `RestoreScreen` and `DeleteAccount` (screens/Data.tsx) share `DataHero`
   (`div.data-hero`: a 64px `.data-mark.teal|red` tile with a glowing icon, an `h1`, one sentence) and `.data-card` (green, `.teal`
@@ -823,6 +846,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.34.0 — a Log entry's own page (owner request)
+- Tapping an entry in the Log now opens a page about it, like a product page (decision D41, option C "View first" of the
+  mockups, with your changes): its photo across the top, the name, a Details card with **the date you logged it**, and an
+  Actions card with **Add to leaderboard**, **Edit** and **Delete entry**. Edit is also top right.
+- An entry with a photo **flies it** from the Log into its page, and back again, like products.
+- Edit opens the same form as before; Cancel and Save bring you back to the entry's page. New entries open straight into the form.
+- Tests: 7 new Playwright tests (`logentry.spec.ts`) and one in `motion.spec.ts`; `log.spec.ts`, `country.spec.ts` and
+  `editor.spec.ts` follow the new page.
 
 ### 0.33.0 — the Data screens (owner request)
 - Export, Restore and Delete account have a new look (decision D40, option A "Hero" of the mockups): a glowing icon, a

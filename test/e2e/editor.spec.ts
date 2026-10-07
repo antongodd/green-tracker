@@ -41,7 +41,7 @@ test('every section heading has its icon, in the product and Log editors', async
   await expect(page.locator('.switch-row .gh-ic svg')).toHaveCount(1);
   expect(await color('.gh > .cap')).toBe('rgb(88, 224, 140)');
   await shot(page, '90-editor-top');
-  await page.goto(`/log/${entryId}`);
+  await page.goto(`/log/${entryId}/edit`);
   await expect(page.getByLabel('Name')).toBeVisible();
   expect(await heads()).toEqual(['Basics', 'Classification', 'Origin', 'Amount', 'Photo'].map((label) => ({ label, icon: true })));
 });

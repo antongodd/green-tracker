@@ -116,19 +116,25 @@ test('a product row opens its profile, which returns to the Log', async () => {
   await expect(page).toHaveURL(/\/log$/);
 });
 
-test('a loose entry opens its editor; edits save back to the Log', async () => {
+test('a loose entry opens its page; Edit, and the edits save back to it', async () => {
   await group('United States').getByRole('link', { name: /Wedding Cake/ }).click();
+  // Its page (D41), then the form from the Actions card.
+  await expect(page.getByRole('heading', { level: 1, name: 'Wedding Cake' })).toBeVisible();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('link', { name: 'Edit' }).click();
   await expect(page.getByLabel('Amount (g)')).toHaveValue('3.5');
   await page.getByLabel('Amount (g)').fill('7');
   await shot(page, '41-log-editor');
   await page.getByRole('button', { name: 'Save to log' }).click();
+  await expect(page).toHaveURL(/\/log\/[^/]+$/);
+  await expect(page.getByRole('region', { name: 'Details' })).toContainText('7g');
+  await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/log$/);
   await expect(tile('Total')).toHaveText('37g');
 });
 
 test('delete a loose entry behind a confirmation', async () => {
   await group('No country').getByRole('link', { name: /Tangie/ }).click();
-  await page.getByRole('button', { name: 'Delete entry' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Delete entry' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Delete entry' }).click();
   await expect(page).toHaveURL(/\/log$/);
   await expect(group('No country').locator('.lrow')).toHaveCount(1);
@@ -148,25 +154,27 @@ test('add a new loose entry', async () => {
   await expect(tile('Total')).toHaveText('36g'); // edibles never count
 });
 
-test('promotion: pre-filled from the live form, commits nothing until Save, asks before leaving', async () => {
+test('promotion: pre-filled from the entry, commits nothing until Save, asks before leaving', async () => {
   await group('United States').getByRole('link', { name: /Gary Payton/ }).click();
-  await page.getByLabel('Name').fill('Gary Payton OG'); // unsaved edit carries over
+  // From the entry's page (D41).
   await page.getByRole('button', { name: 'Add to leaderboard' }).click();
   await expect(page.getByText('Add to leaderboard', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('Name')).toHaveValue('Gary Payton OG');
+  await expect(page.getByLabel('Name')).toHaveValue('Gary Payton');
   await expect(page.getByLabel('Country', { exact: true })).toHaveText('🇺🇸United States');
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
   await expect(page.getByRole('group', { name: 'Purchase 1' })).toHaveCount(0); // the amount is dropped
   await shot(page, '42-promote');
 
   // Cancel asks first; Keep editing stays, Discard leaves the entry untouched.
+  await page.getByLabel('Name').fill('Gary Payton OG');
   await page.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Keep editing' }).click();
   await expect(page.getByLabel('Name')).toHaveValue('Gary Payton OG');
   await page.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
-  await expect(page.getByRole('button', { name: 'Save to log' })).toBeVisible();
-  await expect(page.getByLabel('Name')).toHaveValue('Gary Payton');
+  // Back on the entry's page, unchanged.
+  await expect(page.getByRole('heading', { level: 1, name: 'Gary Payton' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add to leaderboard' })).toBeVisible();
 
   // Promote for real.
   await page.getByRole('button', { name: 'Add to leaderboard' }).click();
