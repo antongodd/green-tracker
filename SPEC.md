@@ -571,7 +571,8 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   card; Export's bar at 1 of 2 and 50% with a photo held back, then the green "Exported …" line; Restore's file name, tiles and
   hint, the picker's new words and place, the bar at 0 of 2 with the uploads held back and the picker dimmed; Delete's five
   crosses, the armed box and button, Export first opening Export; axe and pixel contrast on all three (two halves each; it fails
-  with the sentence dimmed). `data.spec.ts` still runs export → restore → delete end to end.
+  with the sentence dimmed). `data.spec.ts` still runs export → restore → delete end to end; it, `cutout.spec.ts` and
+  `profile.spec.ts` find the Replace button below the card and read the new profile photo lines.
 
 - **Loading placeholders (D37, 0.30.0).** `Skeleton` (components/Skeleton.tsx) renders nothing for 250ms, then
   `div.skel.skel-{board|log|product|people}` (`role="status"`, `aria-label="Loading"`, shapes `aria-hidden`); each `.sk`
@@ -830,7 +831,8 @@ None.
   you can choose a different file. **Delete account** is red throughout, crosses off what goes and offers Export first.
 - **A progress bar** while Export adds photos and while Restore uploads them.
 - Nothing about what these screens do has changed.
-- Tests: 4 new Playwright tests (`datascreens.spec.ts`); `data.spec.ts` reads the new Restore card.
+- Tests: 4 new Playwright tests (`datascreens.spec.ts`); `data.spec.ts`, `cutout.spec.ts` and `profile.spec.ts` read the new
+  Restore card.
 
 ### 0.32.0 — a three-place podium: rainbow, Diamond, Gold (owner request)
 - Only the top three get special colours now (decision D39, option A "Holo" of the mockups). 1st stays the rainbow;

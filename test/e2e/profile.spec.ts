@@ -233,14 +233,14 @@ test('export includes the photo; restoring an older file keeps yours, a newer on
     await owner.getByLabel('Choose an export file').setInputFiles(p);
     const contents = owner.getByRole('region', { name: 'File contents' });
     await expect(contents).toContainText(says);
-    await contents.getByRole('button', { name: 'Replace my data with this file' }).click();
+    await owner.getByRole('button', { name: 'Replace my data with this file' }).click(); // below the card since D40
     await owner.getByRole('dialog').getByRole('button', { name: 'Replace my data' }).click();
     await expect(owner).toHaveURL(/\/$/, { timeout: 20_000 });
   };
-  await restore(older, 'Not in this file (yours stays)');
+  await restore(older, 'No profile photo in this file: yours stays.');
   expect((await me(owner)).photo!.version).toBe(second);
 
-  await restore(path, 'Included');
+  await restore(path, 'Profile photo included.');
   const restored = (await me(owner)).photo!;
   expect(restored.version).not.toBe(first); // a fresh copy
   expect(Buffer.from((await bytes(owner, '/api/profile/photo/original')).split(',').map(Number)).toString('base64')).toBe(file.profilePhoto!.original);

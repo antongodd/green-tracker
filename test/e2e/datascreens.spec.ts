@@ -172,7 +172,12 @@ async function readable(open: () => Promise<void>) {
 
 test('all three screens are readable and pass axe', async () => {
   const screens: [string, () => Promise<void>][] = [
-    ['Export', () => page.goto('/more/export').then(() => {})],
+    // Each waits for its screen: settled() only waits for a fade that has begun, so measured
+    // while the session still loaded it saw nothing yet, then a half-faded button (4 workers).
+    ['Export', async () => {
+      await page.goto('/more/export');
+      await expect(page.getByRole('heading', { level: 1, name: 'Your data, in one file' })).toBeVisible();
+    }],
     ['Restore', async () => {
       await page.goto('/more/restore');
       await page.getByLabel('Choose an export file').setInputFiles(exportPath);
