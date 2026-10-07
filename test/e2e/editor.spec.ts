@@ -108,6 +108,8 @@ test('Overall is live in the Ratings heading, in its colour, and a dash when not
 
 test('the date boxes draw their calendar icon on the left, fully inside the box', async () => {
   await openEditor();
+  // A saved purchase is folded into its row (D42): open it.
+  await page.getByRole('group', { name: 'Purchase 1' }).locator('.psum').click();
   for (const input of [page.getByLabel('Date tried'), page.getByRole('group', { name: 'Purchase 1' }).getByLabel('Date')]) {
     const box = (await input.boundingBox())!;
     const icon = (await input.locator('xpath=..').locator('svg').boundingBox())!;

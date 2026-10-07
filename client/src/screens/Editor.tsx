@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { autoCapitalise } from '../../../shared/domain/capitalise';
 import { OTHER_COUNTRY } from '../../../shared/domain/countries';
-import { formatScore, formatUnitPrice } from '../../../shared/domain/format';
-import { unitPrice } from '../../../shared/domain/money';
+import { formatAmount, formatGBP, formatScore, formatUnitPrice } from '../../../shared/domain/format';
+import { latestPurchase, unitPrice } from '../../../shared/domain/money';
 import { emptyProductInput, productToInput, validateProductInput, type Product, type ProductInput } from '../../../shared/domain/product';
 import { RATING_LABELS, productType, unitFor, type ProductTypeKey, type RatingKey } from '../../../shared/domain/productTypes';
 import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
@@ -12,8 +12,8 @@ import { CONCENTRATE_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
-import { todayIso } from '../components/ProductRow';
-import { LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon } from '../icons';
+import { formatIsoDate, todayIso } from '../components/ProductRow';
+import { ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
 import { scoreHeat } from '../../../shared/domain/heat';
 import { cachedProduct, fetchProduct, saveProduct } from '../products';
 import { useOnline } from '../online';
@@ -54,6 +54,22 @@ function toForm({ photos: _photos, ...input }: ProductInput, stored: Ratings): F
   };
 }
 
+/**
+ * The first purchase that would stop the product saving (a number that can't be read, or a value
+ * the shared rules refuse), so the editor can open it (D42). A missing total paid isn't one: that
+ * purchase is simply not kept.
+ */
+function blockingPurchase(f: Form): string | null {
+  for (const d of f.purchases) {
+    const amount = parseNum(d.amount);
+    const totalPaid = parseNum(d.totalPaid);
+    if (amount === 'bad' || totalPaid === 'bad') return d.key;
+    const one = validateProductInput({ ...emptyProductInput(), name: 'Check', purchases: [{ date: d.date || null, amount, totalPaid, supplier: d.supplier || null }] });
+    if (!one.ok) return d.key;
+  }
+  return null;
+}
+
 /** Builds what the server receives; returns a message if a number can't be read. */
 function toInput(f: Form, drafts: PhotoDraft[]): ProductInput | string {
   const photos = photosToInput(drafts);
@@ -83,6 +99,14 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     promotion ? toForm(promotion.input, {}) : p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : p.promoteFrom ? null : toForm(emptyProductInput(), {}),
   );
   const [error, setError] = useState('');
+  // D42: the one purchase whose fields are open; a new one opens with the cursor in Amount.
+  const [openPurchase, setOpenPurchase] = useState<string | null>(null);
+  const focusAmount = useRef<string | null>(null);
+  useEffect(() => {
+    if (!openPurchase || focusAmount.current !== openPurchase) return;
+    focusAmount.current = null;
+    document.getElementById(`${openPurchase}-amount`)?.focus();
+  }, [openPurchase]);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -131,16 +155,32 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
       return { ...f, ratings };
     });
   const setPurchase = (key: string, patch: Partial<PurchaseDraft>) => set('purchases', form.purchases.map((d) => (d.key === key ? { ...d, ...patch } : d)));
+  // D42: purchases fold into one-line rows; one opens at a time. "Latest" follows the app's own rule
+  // (newest date, then entry order) over the purchases that would be kept (those with a total paid).
+  const kept = form.purchases.map((d, i) => ({ key: d.key, date: d.date || null, seq: i, total: parseNum(d.totalPaid) })).filter((x) => typeof x.total === 'number');
+  const latestKey = latestPurchase(kept)?.key ?? null;
+  const addPurchase = () => {
+    const key = `p${++draftKey}`;
+    set('purchases', [...form.purchases, { key, date: todayIso(), amount: '', totalPaid: '', supplier: '' }]);
+    setOpenPurchase(key);
+    focusAmount.current = key;
+  };
   const o = overall(form.productType, form.ratings);
   const count = ratedCount(form.productType, form.ratings);
 
   async function save() {
     if (!form) return;
     setError('');
+    // A purchase that stops the save opens, so its fields are in view (D42).
+    const fail = (message: string) => {
+      const key = blockingPurchase(form);
+      if (key) setOpenPurchase(key);
+      setError(message);
+    };
     const input = toInput(form, drafts);
-    if (typeof input === 'string') return setError(input);
+    if (typeof input === 'string') return fail(input);
     const checked = validateProductInput(input);
-    if (!checked.ok) return setError(checked.message);
+    if (!checked.ok) return fail(checked.message);
     setSaving(true);
     try {
       const product = p.promoteFrom ? await promoteEntry(p.promoteFrom, checked.value) : await saveProduct(p.id, checked.value);
@@ -235,26 +275,45 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               const amount = parseNum(d.amount);
               const total = parseNum(d.totalPaid);
               const up = typeof amount === 'number' && typeof total === 'number' ? unitPrice({ amount, totalPaid: total }) : null;
+              const open = openPurchase === d.key;
+              const sub = [typeof amount === 'number' ? formatAmount(form.productType, amount) : null, typeof total === 'number' ? formatGBP(total) : null, d.supplier.trim() || null].filter(Boolean).join(' · ');
+              const bodyId = `${d.key}-fields`;
               return (
-                <div class="pcard" key={d.key} role="group" aria-label={`Purchase ${i + 1}`}>
-                  <div class="two-col">
-                    <TextField id={`${d.key}-date`} label="Date" type="date" value={d.date} onInput={(v) => setPurchase(d.key, { date: v })} />
-                    <TextField id={`${d.key}-amount`} label={unit === 'mg' ? 'Amount (mg THC)' : 'Amount (g)'} inputMode="decimal" value={d.amount} onInput={(v) => setPurchase(d.key, { amount: v })} />
-                  </div>
-                  <div class="two-col">
-                    <TextField id={`${d.key}-paid`} label="Total paid (£)" inputMode="decimal" value={d.totalPaid} onInput={(v) => setPurchase(d.key, { totalPaid: v })} />
-                    <TextField id={`${d.key}-supplier`} label="Supplier" value={d.supplier} onInput={(v) => setPurchase(d.key, { supplier: v })} onBlur={() => setPurchase(d.key, { supplier: autoCapitalise(d.supplier) })} autoCapitalize="words" />
-                  </div>
-                  <div class="pcard-foot">
-                    <span>{up !== null ? formatUnitPrice(form.productType, up) : total === null ? 'Needs a total paid to be kept' : ''}</span>
-                    <button type="button" onClick={() => set('purchases', form.purchases.filter((x) => x.key !== d.key))}>
-                      Remove
-                    </button>
-                  </div>
+                <div class={`pcard${open ? ' open' : ''}`} key={d.key} role="group" aria-label={`Purchase ${i + 1}`}>
+                  <button type="button" class="psum" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpenPurchase(open ? null : d.key)}>
+                    <span class="l">
+                      <b>
+                        {d.date ? formatIsoDate(d.date) : 'No date'}
+                        {d.key === latestKey && <span class="tag-latest">Latest</span>}
+                      </b>
+                      {total === null ? <span class="warn">Needs a total paid to be kept</span> : <span>{sub}</span>}
+                    </span>
+                    <span class="r">{up !== null ? formatUnitPrice(form.productType, up) : '—'}</span>
+                    <ChevronRight class="chev" />
+                  </button>
+                  {open && (
+                    <div class="pbody" id={bodyId}>
+                      <div class="two-col">
+                        <TextField id={`${d.key}-date`} label="Date" type="date" value={d.date} onInput={(v) => setPurchase(d.key, { date: v })} />
+                        <TextField id={`${d.key}-amount`} label={unit === 'mg' ? 'Amount (mg THC)' : 'Amount (g)'} inputMode="decimal" value={d.amount} onInput={(v) => setPurchase(d.key, { amount: v })} />
+                      </div>
+                      <div class="two-col">
+                        <TextField id={`${d.key}-paid`} label="Total paid (£)" inputMode="decimal" value={d.totalPaid} onInput={(v) => setPurchase(d.key, { totalPaid: v })} />
+                        <TextField id={`${d.key}-supplier`} label="Supplier" value={d.supplier} onInput={(v) => setPurchase(d.key, { supplier: v })} onBlur={() => setPurchase(d.key, { supplier: autoCapitalise(d.supplier) })} autoCapitalize="words" />
+                      </div>
+                      <div class="pcard-foot">
+                        <span class={total === null ? 'warn' : ''}>{total === null ? 'Needs a total paid to be kept' : up !== null ? formatUnitPrice(form.productType, up) : ''}</span>
+                        <button type="button" onClick={() => (set('purchases', form.purchases.filter((x) => x.key !== d.key)), setOpenPurchase(null))}>
+                          <TrashIcon />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
-            <button type="button" class="addrow" onClick={() => set('purchases', [...form.purchases, { key: `p${++draftKey}`, date: todayIso(), amount: '', totalPaid: '', supplier: '' }])}>
+            <button type="button" class="addrow dashed" onClick={addPurchase}>
               <PlusIcon /> Add purchase
             </button>
           </section>

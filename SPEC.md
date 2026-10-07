@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.34.0 (all phases done; a Log entry's own page)
+**Current version:** 0.35.0 (all phases done; purchases fold into rows)
 
 ---
 
@@ -105,6 +105,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D39 | **A three-place podium: rainbow, Diamond, Gold** (2026-10-01; option A "Holo" of https://claude.ai/artifact/48Jq2mexVCGqdiA68NFKuq, after the owner found 2nd–4th looking out of place next to the rest of the Leaderboard). Reopens D19 (four tiers), D21 (cool metals), D22 and D31 at the owner's request. | **Only 1st–3rd get special colours.** 1st stays the rainbow. **2nd Diamond** and **3rd Gold** become **holo cards like 1st**: filled edge to edge with their colours flowing under a dark layer, their edge, rank number and score flowing through them too; Diamond in ice blue and lilac and still twinkling, Gold in warm gold. The shimmer still sweeps down the three rows in a cascade. **Platinum and Pewter are gone**: **4th is an ordinary row** and glows in its score's colour like 5th and below (D30). **Product pages** of the top three take the same colours (a holo badge like the row, the haze, the flowing score; 1st and Diamond keep their sweep, Diamond its glints); a 4th-place page is ordinary. Same on a friend's board and their pages. The **welcome screen's** third example (Zkittlez 8.6) is **Gold**, so it shows the full podium. Only rated products get a place, following Type and Rank by, as before. Reduce Motion: colours only. No data, export or privacy change. See §4 *Podium tiers*. |
 | D40 | **The Data screens: Export, Restore, Delete account** (2026-10-07; option A "Hero" of https://claude.ai/artifact/ALaLdz1wcErcFTDmYdnoYu, with both additions approved: a progress bar, and new headings). The last plain screens in the app. | Each screen opens with a **glowing icon tile** (teal upload, teal download, red bin), a **heading** and one sentence: **"Your data, in one file"**, **"Restore from a file"**, **"Delete @username"**. **Export:** an "In the file" card ticks off every product (archived too), the whole Log and every photo, with a grey line for what isn't included; then the button and the Save to Files advice. **Restore:** once a file is chosen, a card with its name, when and by whom, and three **tiles** (Products · Log · Photos), the archived count and what happens to your profile photo beneath; then a red-outlined Replace button and **Choose a different file**. **Delete account:** red throughout; a "What goes" card with a cross per item; a **Keep a copy? Export first ›** shortcut; the username box edges red once it matches; a Face ID symbol on the button. **Export and Restore show a progress bar** while photos are added or uploaded. What each screen does is unchanged: the same file, the same "Replace all your data?" question, the same username and passkey. No data, export or privacy change. |
 | D41 | **A Log entry's own page** (2026-10-07; option C "View first" of https://claude.ai/artifact/UMyhbLBPxgj1Mj2Yi9EyRs, with the owner's changes: Edit both top right and in an Actions card like a product page, no line under Add to leaderboard, the logged date shown, Photo grows for entries; Delete entry kept, not Archive). A step away from rebuild brief §10.2 (a loose row opens the entry editor). | Tapping a loose entry in the Log opens **its page**: the Poster's top (D27) with its photo (a cut-out floats; no photo: the type's mark glows), an **In your Log** tag and the name; a **Details** card (Type, Concentrate type, Country with flag, Amount, **Logged** with the date, empty rows left out); an **Actions** card: green **Add to leaderboard** (opens the product editor filled in from the saved entry, as before), **Edit** and red **Delete entry** (asks first, as before). **Edit** is also top right. Tapping the photo opens it full screen. The form moves to /log/:id/edit; its Cancel and Save to log come back to the page, and it no longer holds Add to leaderboard or Delete entry. A **new** entry still opens straight into the form and saves back to the Log. **Photo grows** (D20): an entry with a photo flies it from its Log row into the page and home on Back, like products; without a photo it opens plainly. Offline, Add to leaderboard and Delete wait for the connection. Followers never see loose entries; no data, export or privacy change. |
+| D42 | **Purchases fold into rows** (2026-10-07; option B "Rows" of https://claude.ai/artifact/1VSsTZ3mjhhq6cwCvAkezq, one open at a time, the missing-total note in amber). The product editor's Purchases card; replaces the always-open boxes. | Each purchase is a **one-line row**: its date ("No date" when empty) with a green **Latest** tag on the latest purchase (the app's own rule: newest date, then entry order, among purchases with a total paid), the amount · total paid · supplier under it, and the **price per unit** on the right in the rounded numbers (£/g, £/mg for edibles; "—" without an amount). **Tapping a row opens its four fields**, with Remove (red, bin icon) at the bottom; **one opens at a time**. The row follows what you type. **Add purchase** (a dashed green button) adds one at the bottom, open, dated today, with the cursor in Amount. A purchase with **no total paid** says "Needs a total paid to be kept" **in amber**, on its row and in its fields. A purchase that **stops the save** (a number that can't be read, a refused value) opens by itself. Nothing is saved until Save, as before. Price history, Leaderboard prices, value for money, export, restore and followers (who never see purchases) are unchanged. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -560,6 +561,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   every row's icon, tint and destination in order, the headings, the red Delete account, Sign out everywhere still asks;
   the footer version and no Version row; readability.
 
+- **Purchases in the editor (D42, 0.35.0).** In `Editor` (screens/Editor.tsx) each purchase is `div.pcard[role=group]` ("Purchase N")
+  holding `button.psum` (`aria-expanded`, `aria-controls`): `.l b` the date (`formatIsoDate`, else "No date") and `.tag-latest`, `.l > span`
+  the amount (`formatAmount`) · total (`formatGBP`) · supplier, or the amber `.warn` line when there's no total; `.r` the unit price
+  (`formatUnitPrice`, else "—", rounded font); a chevron that turns down when open. `openPurchase` holds the one open key; the open card
+  shows `.pbody` with the four `TextField`s and `.pcard-foot` (the price or the amber note, and Remove with TrashIcon). Latest is
+  `latestPurchase` (shared/domain/money.ts) over the drafts with a readable total, entry order as `seq`. Add purchase (`.addrow.dashed`)
+  opens the new one and focuses its Amount (`focusAmount`). On a failed Save, `blockingPurchase` finds the first purchase that can't be
+  read or that the shared rules refuse (validating it alone) and opens it. The summary rows light up when pressed (D20, like rows in a
+  card). Tested (`test/e2e/purchases.spec.ts`): folded rows with their titles, lines and prices (Latest on the newest by date, not the
+  last entered; "No date"; "—"; £/mg), rounded price, a long supplier cut short; opening one folds the other, the row follows edits;
+  Add purchase at the bottom, open, dated today, Amount focused, amber note, Latest moving to it, saved; Remove and Cancel; a bad number
+  opening its purchase on Save; axe and pixel contrast. `products.spec.ts` and `editor.spec.ts` open a saved purchase before using its fields.
+
 - **A Log entry's page (D41, 0.34.0).** `LogEntryPage` (screens/LogEntry.tsx) at `/log/:id`; `LogEditor` moves to
   `/log/:id/edit` (main.tsx routes `/log/:id`, `/edit`, `/promote`). The page draws the Poster's markup (`.poster` /
   `.hero-photo` / `.hero`, D27) without a score: `span.log-tag` ("In your Log", green on a dark pill, measured on the photo)
@@ -846,6 +860,14 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.35.0 — purchases fold into rows (owner request)
+- In the product editor, each purchase is now a one-line row: its date, a green **Latest** tag on the latest one, the amount,
+  total and supplier, and the price per gram on the right (decision D42, option B "Rows" of the mockups). Tap a row to open
+  its fields; one opens at a time.
+- **Add purchase** adds one at the bottom, already open, with the cursor in Amount.
+- "Needs a total paid to be kept" is now amber. If something in a purchase stops the save, that purchase opens by itself.
+- Tests: 6 new Playwright tests (`purchases.spec.ts`); `products.spec.ts` and `editor.spec.ts` open a saved purchase first.
 
 ### 0.34.0 — a Log entry's own page (owner request)
 - Tapping an entry in the Log now opens a page about it, like a product page (decision D41, option C "View first" of the
