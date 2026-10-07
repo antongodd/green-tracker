@@ -66,10 +66,12 @@ test('export everything, restore it after changes, then delete the account', asy
   await page.goto('/more/restore');
   await page.getByLabel('Choose an export file').setInputFiles(path);
   const contents = page.getByRole('region', { name: 'File contents' });
-  await expect(contents).toContainText('1 + 1 archived');
+  // D40: the file as tiles (Products · Log · Photos), the archived count beneath.
+  await expect(contents.locator('.data-tile b')).toHaveText(['1', '1', '2']);
+  await expect(contents).toContainText('+ 1 archived product.');
   await expect(contents).toContainText(`@${username}`);
   await shot(page, '61-restore');
-  await contents.getByRole('button', { name: 'Replace my data with this file' }).click();
+  await page.getByRole('button', { name: 'Replace my data with this file' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Replace my data' }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 20_000 });
   await expect(page.locator('.row')).toHaveCount(1);
