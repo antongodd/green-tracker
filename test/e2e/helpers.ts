@@ -140,6 +140,32 @@ export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
   }, selector);
 
 /**
+ * contrastFailures for a screen taller than the phone: photographed at the top, then scrolled
+ * to the bottom (from a fresh load, as textBoxes hides what it measures). Each pass judges only
+ * the text fully between the header and the tab bar (what's behind those can't be read, and the
+ * photo shows the bar, not the lights); every match must be judged in at least one pass.
+ */
+export async function wholeScreenContrastFailures(page: Page, path: string, selector: string): Promise<string[]> {
+  const worst: string[] = [];
+  const judged = new Set<string>();
+  let total = 0;
+  for (const end of ['top', 'bottom'] as const) {
+    await page.goto(path);
+    for (const part of selector.split(',')) await page.locator(part).first().waitFor(); // each kind of text is on screen
+    await settled(page);
+    if (end === 'bottom') await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const area = await page.evaluate(() => ({ top: Math.max(0, document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0), bottom: document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight }));
+    const boxes = (await textBoxes(page, selector)).map((b, i) => ({ ...b, i }));
+    total = boxes.length;
+    const seen = boxes.filter((b) => b.y >= area.top && b.y + b.h <= Math.min(area.bottom, 844));
+    for (const b of seen) judged.add(`${b.i}`);
+    worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${end} ${w}`));
+  }
+  if (judged.size !== total) worst.push(`only ${judged.size} of ${total} judged`);
+  return worst;
+}
+
+/**
  * Waits for the screen's entrance fade (0.2s) to finish. axe measures colours as they are at that
  * moment, so run mid-fade it read the half-faded buttons as low contrast (2.6 : 1) and failed now and
  * then (0.28.0's deploy run). Call it before every axe check.

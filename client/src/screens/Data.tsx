@@ -98,6 +98,10 @@ export function ExportScreen() {
                   Every photo<small>cropped and original, cut-outs too</small>
                 </span>
               </li>
+              <li class="yes">
+                <CheckIcon />
+                <span>Your privacy settings</span>
+              </li>
               <li class="not">
                 <DashIcon />
                 <span>Not included: who you follow, your followers and blocks, your passkeys and recovery codes, and your filter settings</span>

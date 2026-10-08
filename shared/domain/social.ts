@@ -50,6 +50,22 @@ export interface SharedProduct {
    * order (most recent date tried first, undated last, then name) as an opaque rank.
    */
   tieRank: number;
+  /** D45: how many times the owner has had it, only when they share smoke counts. */
+  smokeCount?: number;
+  /** D45: each smoke's day, time and amount (never its effect), newest first, only when they share their smokes. */
+  smokes?: SharedSmoke[];
+}
+
+/** A smoke as a follower may receive it (D45): never the effect, never anything from the Log. */
+export interface SharedSmoke {
+  date: string;
+  time: string;
+  amount: number | null;
+}
+
+/** What a follower's view of a board may use (D45): Most used only when the owner shares it. */
+export interface SharedBoardOptions {
+  mostUsed: boolean;
 }
 
 /** Every key a SharedProduct may have — the allow-list the server builds from and the tests check. */
@@ -69,3 +85,6 @@ export const SHARED_PRODUCT_KEYS: readonly (keyof SharedProduct)[] = [
   'photos',
   'tieRank',
 ];
+
+/** Keys a SharedProduct carries only when its owner switches them on (D45). */
+export const SHARED_PRODUCT_OPTIONAL_KEYS: readonly (keyof SharedProduct)[] = ['smokeCount', 'smokes'];

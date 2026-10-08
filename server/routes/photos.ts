@@ -5,6 +5,7 @@ import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, isJpeg, isPng, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
 import { canView } from '../lib/social';
+import { loadEffectivePrivacy } from '../lib/privacy';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -82,7 +83,8 @@ photos.use('*', requireUser());
  * Serves a photo file through an authorised request — never a public bucket URL.
  * - The owner: any variant of any of their photos.
  * - An approved follower (lib/social.ts canView): cropped or thumb only, of a photo
- *   on a product that is neither private nor archived. Never originals, never Log photos.
+ *   on a product that is neither private nor archived, while the owner shares photos
+ *   (D45). Never originals, never Log photos.
  * - Anyone else, or anything else: 403, the same whether or not the photo exists.
  * `private, no-cache` + ETag (lib/photos.ts serveImage), so access that has ended
  * (unfollow, removal, block, private, archive) can't keep showing a cached photo.
@@ -102,6 +104,9 @@ photos.get('/:id/:variant', async (c) => {
   if (row.user_id !== me) {
     const shareable = variant !== 'original' && row.product_id !== null && row.private === 0 && row.archived === 0;
     if (!shareable || !(await canView(c.env.DB, me, row.user_id))) denied();
+    // D45: an owner who doesn't share photos (or their Leaderboard) shares no photo files either.
+    const privacy = await loadEffectivePrivacy(c.env.DB, row.user_id);
+    if (!privacy.sharePhotos) denied();
   }
   const set = variant === 'original' ? row.original_set : row.image_set;
   return serveImage(c.env.PHOTOS, c.req.header('if-none-match'), row.user_id, set, variant);

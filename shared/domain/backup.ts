@@ -8,6 +8,7 @@ import { parseCrop, type Crop } from './photo';
 import { validateLogEntryInput, type LogEntryInput } from './logEntry';
 import { validateProductInput, type ProductInput } from './product';
 import { validateSmokeFields, type SmokeInput } from './smoke';
+import { validatePrivacy, type Privacy } from './privacy';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -66,6 +67,8 @@ export interface ExportFile {
    * made before 0.17.0, and restoring such a file leaves your current photo alone.
    */
   profilePhoto?: ExportPhoto | null;
+  /** D45: your privacy settings. Absent in files made before 0.38.0: restoring one leaves yours alone. */
+  privacy?: Privacy;
 }
 
 /** What the server receives for a restore: the file's records, with photos already uploaded as sets. */
@@ -85,6 +88,8 @@ export interface RestorePayload {
   logEntries: RestoreLogEntry[];
   /** Absent: leave the current profile photo. null: remove it. Otherwise: an uploaded set with its original. */
   profilePhoto?: { upload: string; crop: Crop } | null;
+  /** D45: absent → leave your current settings. */
+  privacy?: Privacy;
 }
 
 export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, smokes: 100_000 } as const;
@@ -119,6 +124,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
     smokes += (e.smokes as unknown[] | undefined)?.length ?? 0;
   }
   if (smokes > RESTORE_LIMITS.smokes) return bad('The export file is too large to restore.');
+  if (f.privacy !== undefined && !validatePrivacy(f.privacy).ok) return bad('The privacy settings in the file couldn’t be read.');
   if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
   return { ok: true, value: raw as ExportFile };
 }
@@ -178,10 +184,17 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     logEntries.push({ ...v.value, createdAt: raw.createdAt, smokes });
   }
   if (smokeCount > RESTORE_LIMITS.smokes) return bad('Too much data to restore at once.');
-  if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries } };
-  if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null } };
+  let privacy: Privacy | undefined;
+  if (r.privacy !== undefined) {
+    const pv = validatePrivacy(r.privacy);
+    if (!pv.ok) return bad('The privacy settings could not be read.');
+    privacy = pv.value;
+  }
+  const extra = privacy ? { privacy } : {};
+  if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries, ...extra } };
+  if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null, ...extra } };
   const pp = r.profilePhoto as Record<string, unknown>;
   const crop = parseCrop(pp.crop);
   if (typeof pp.upload !== 'string' || !pp.upload || uploads.has(pp.upload) || !crop) return bad('The profile photo could not be read.');
-  return { ok: true, value: { products, logEntries, profilePhoto: { upload: pp.upload, crop } } };
+  return { ok: true, value: { products, logEntries, profilePhoto: { upload: pp.upload, crop }, ...extra } };
 }

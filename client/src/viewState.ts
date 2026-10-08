@@ -42,15 +42,19 @@ export function saveView(next: ViewState): ViewState {
   return { filter, rankBy };
 }
 
-/** A followed person's view: the shared Type filter with its own Rank by (never Price or VFM). */
-export function loadOthersView(): ViewState {
+/**
+ * A followed person's view: the shared Type filter with its own Rank by (never Price or VFM;
+ * Most used only when that person shares it, `used`, D45). A stored Most used isn't overwritten
+ * by a board that doesn't offer it, so it comes back on one that does.
+ */
+export function loadOthersView(used = false): ViewState {
   const { rankBy } = read(OTHERS_KEY);
-  const { filter, rankBy: r } = resolveViewState({ filter: loadView().filter, rankBy }, { money: false });
+  const { filter, rankBy: r } = resolveViewState({ filter: loadView().filter, rankBy }, { money: false, used });
   return { filter, rankBy: r };
 }
 
-export function saveOthersView(next: ViewState): ViewState {
-  const { filter, rankBy } = resolveViewState(next, { money: false });
+export function saveOthersView(next: ViewState, used = false): ViewState {
+  const { filter, rankBy } = resolveViewState(next, { money: false, used });
   write({ filter, rankBy }, OTHERS_KEY);
   saveView({ ...loadView(), filter });
   return { filter, rankBy };

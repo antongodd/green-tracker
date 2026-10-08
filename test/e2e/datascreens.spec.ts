@@ -69,7 +69,7 @@ test('Export: a glowing icon, what’s in the file, and a progress bar while pho
   await expect(page.getByRole('heading', { level: 1, name: 'Your data, in one file' })).toBeVisible();
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   const card = page.getByRole('region', { name: 'In the file' });
-  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every smoke/, /^Every photo/]);
+  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every smoke/, /^Every photo/, 'Your privacy settings']);
   await expect(card.locator('li.not')).toContainText('Not included: who you follow');
   await expect(page.locator('.data-note')).toContainText('Save to Files');
 

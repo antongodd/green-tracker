@@ -10,6 +10,7 @@ import { discardUpload, loadImage, renderThumb, uploadSet } from './images';
 import { clearEntryCache, fetchEntries } from './logEntries';
 import { clearProductCache, fetchArchived, fetchProducts } from './products';
 import { clearSmokeCache, fetchSmokes } from './smokes';
+import { fetchPrivacy } from './privacy';
 
 declare const __APP_VERSION__: string;
 
@@ -38,7 +39,7 @@ const fromBase64 = (s: string, type = 'image/jpeg') => {
 
 /** Builds the export: all your data, photos embedded (cropped and originals). */
 export async function buildExport(username: string, progress: Progress): Promise<File> {
-  const [active, archived, entries, me, smokes] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchSmokes()]);
+  const [active, archived, entries, me, smokes, privacy] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchSmokes(), fetchPrivacy()]);
   // D43: each record carries its own smokes, oldest first.
   const smokesFor = (target: string): ExportSmoke[] =>
     smokesOf(smokes, target).reverse().map(({ date, time, amount, effect, createdAt }: Smoke) => ({ date, time, amount, effect, createdAt }));
@@ -108,6 +109,8 @@ export async function buildExport(username: string, progress: Progress): Promise
     products: exportProducts,
     logEntries: exportEntries,
     // D23: your profile photo, original and crop; null when you have none.
+    // D45: your privacy settings travel with your data.
+    privacy,
     profilePhoto: profile ? await embed({ id: 'profile', ...profile, cutout: false }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
@@ -200,6 +203,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     }
     const pp = summary.file.profilePhoto;
     if (pp !== undefined) payload.profilePhoto = pp ? { upload: (await upload(pp)).upload, crop: pp.crop! } : null;
+    if (summary.file.privacy) payload.privacy = summary.file.privacy;
     await api('POST', '/data/restore', payload);
   } catch (e) {
     uploads.forEach(discardUpload);

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, signUp, textBoxes } from './helpers';
+import { contrastFailures, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // D29 (0.22.0): the Aurora. Two still lights at the top of every screen (green top-left,
 // teal top-right) drawn on the screen, so they scroll away with it; a faint green haze at the
@@ -97,10 +97,8 @@ test('the Rank / Type row is frosted, not a black band across the lights', async
 
 test('text sitting straight on the lights stays readable', async () => {
   for (const [path, sel] of [['/more', '.lh.cap'], ['/log', '.group-h'], ['/', '.controls .pill-text']] as const) {
-    await page.goto(path);
-    await expect(page.locator(sel).first()).toBeVisible();
-    await settled();
-    const worst = await contrastFailures(page, await textBoxes(page, sel), 1);
+    // Top and bottom: the More headings run below the fold since the Privacy group (D45).
+    const worst = await wholeScreenContrastFailures(page, path, sel);
     expect(worst, `${path}:\n${worst.join('\n')}`).toEqual([]);
   }
 });

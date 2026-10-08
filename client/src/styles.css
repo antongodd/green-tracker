@@ -898,6 +898,7 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .li-ic.amber { background: rgba(240, 196, 106, 0.14); color: #f0c46a; }
 .li-ic.teal { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }
 .li-ic.red { background: rgba(255, 107, 107, 0.14); color: var(--danger); }
+.li-ic.violet { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
 .more-gap { margin-top: 20px; }
 .more-foot { display: grid; justify-items: center; gap: 4px; padding: 24px 16px 8px; color: var(--text-2); font-size: 12px; }
 .more-foot svg { width: 22px; height: 22px; opacity: 0.75; }
@@ -1037,3 +1038,40 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .smk-recent { display: grid; }
 .smk-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 44px; border-top: 1px solid var(--divider); color: var(--text); text-decoration: none; font-size: 14px; }
 .smk-row .w { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Privacy (D45, 0.38.0) ----------
+   The "What followers see" card on top (violet: it's a follower's eye view), then the
+   switches in groups. A switch whose prerequisite is off is dimmed and can't be used. */
+.privacy { padding-top: calc(var(--header-h) + 12px); }
+.pv { max-width: 688px; margin: 0 16px; padding: 12px; border-radius: 14px; display: grid; gap: 10px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
+@media (min-width: 720px) { .pv { margin: 0 auto; } }
+.pv-cap { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #c4b5fd; }
+.pv-cap a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; color: #c4b5fd; text-decoration: none; }
+.pv-cap a svg { width: 11px; height: 11px; }
+.pv-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline); }
+.pv-row .thumb { width: 48px; height: 48px; border-radius: 9px; }
+.pv-mid { display: grid; min-width: 0; }
+.pv-mid b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-mid span { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-score { display: grid; justify-items: end; }
+.pv-score b { font-family: var(--num-font); font-size: 20px; line-height: 1.1; }
+.pv-score span { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
+.pv-line { margin: 0; font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+.pv-line .flame { width: 13px; height: 13px; color: var(--warning); flex: none; }
+.pv-nothing { margin: 0; padding: 16px; text-align: center; font-size: 14px; color: var(--text-2); border-radius: 12px; background: var(--surface-2); border: 1px dashed rgba(255, 255, 255, 0.12); }
+.pv-error { max-width: 688px; margin: 10px 16px 0; }
+.privacy section > h2.lh { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.priv-row { cursor: pointer; }
+.priv-row .main > span:first-child { font-size: 16px; }
+.priv-row .warn { color: var(--warning); font-weight: 600; }
+.priv-row.off { cursor: default; }
+.priv-row.off .switch { opacity: 0.5; }
+.priv-foot { text-align: left; padding: 16px 4px 0; }
+/* On your own board as followers see it: a line saying so, linking back to Privacy. */
+.pv-note { max-width: 688px; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; color: var(--text-2);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
+.pv-note a { color: #c4b5fd; }
+@media (min-width: 720px) { .pv-note { margin-left: auto; margin-right: auto; } }
+/* A follower's Smokes card (D45): the flame beside the count. */
+.smk-count b .flame { width: 20px; height: 20px; color: var(--warning); margin-right: 4px; vertical-align: -2px; }
