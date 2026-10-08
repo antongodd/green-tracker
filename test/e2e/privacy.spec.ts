@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
+import { settled, shot, signUp, wholeScreenContrastFailures } from './helpers';
 
 // Privacy (D45, 0.38.0; layout B "Preview on top"). More → Privacy → What followers see:
 // a live preview of what followers get, switches that save at once (dependent ones
@@ -153,8 +153,6 @@ test('Open their view: your own board and pages as followers get them', async ()
 });
 
 test('the preview and switch notes are readable', async () => {
-  await owner.goto('/more/privacy');
-  await expect(preview()).toContainText('Shared Kush');
-  await settled(owner);
-  expect(await contrastFailures(owner, await textBoxes(owner, '.pv-cap > span, .pv-line, .pv-mid span, .priv-row .sub'), 1)).toEqual([]);
+  // The screen runs below the tab bar: judged at the top, then scrolled to the bottom.
+  expect(await wholeScreenContrastFailures(owner, '/more/privacy', '.pv-cap > span, .pv-line, .pv-mid span, .priv-row .sub, .priv-row .warn')).toEqual([]);
 });
