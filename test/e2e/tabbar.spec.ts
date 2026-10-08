@@ -40,6 +40,8 @@ test.beforeAll(async ({ browser }) => {
 
 test('five tabs, Smokes second (D43), each a fifth of the bar', async () => {
   await page.goto('/');
+  // Wait for the bar itself: on a busy machine the app is still starting when the page loads (0.36.0 CI).
+  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Smokes', 'Log', 'People', 'More']);
   expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Smokes', 'Log', 'People', 'More']);
   const widths = await page.locator('.nav .tab').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width));
   for (const w of widths) expect(w).toBeCloseTo(390 / 5, 0);
