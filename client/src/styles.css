@@ -377,6 +377,10 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .score b { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .score .cap { font-size: 10px; }
 .score.unrated b { color: var(--text-3); font-weight: 600; }
+/* Most used (D44, option C): the Smokes flame in amber before the count, the caption under both. */
+.score.used { grid-template-columns: auto auto; column-gap: 4px; align-items: center; }
+.score.used .flame { width: 15px; height: 15px; color: var(--warning); }
+.score.used .cap { grid-column: 1 / -1; }
 
 /* Strain tags: uppercase (P2). */
 .tag { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; flex: none; }

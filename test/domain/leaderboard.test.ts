@@ -88,26 +88,31 @@ describe('Rank by (§10.1)', () => {
 
   it('options under All: Overall then the category union in canonical order; no price, VFM or hit time', () => {
     expect(rankByOptions('all', { money: true }).map((o) => o.key)).toEqual([
-      'overall', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
+      'overall', 'used', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
     ]);
   });
 
   it('options under a type include price by unit and VFM, then its categories', () => {
     expect(rankByOptions('edibles', { money: true })).toEqual([
       { key: 'overall', label: 'Overall' },
+      { key: 'used', label: 'Most used' },
       { key: 'price', label: 'Price per mg' },
       { key: 'vfm', label: 'Value for money' },
       { key: 'taste', label: 'Taste' },
       { key: 'high', label: 'High' },
     ]);
-    expect(rankByOptions('flower', { money: true })[1]!.label).toBe('Price per gram');
+    expect(rankByOptions('flower', { money: true })[2]!.label).toBe('Price per gram');
     expect(rankByOptions('pre_roll', { money: true }).map((o) => o.key)).not.toContain('look');
   });
 
-  it('a followed person’s view never offers price or VFM', () => {
-    const keys = rankByOptions('flower', { money: false }).map((o) => o.key);
-    expect(keys).not.toContain('price');
-    expect(keys).not.toContain('vfm');
+  it('a followed person’s view never offers price, VFM or Most used (D44)', () => {
+    for (const filter of ['all', 'flower'] as const) {
+      const keys = rankByOptions(filter, { money: false }).map((o) => o.key);
+      expect(keys).not.toContain('price');
+      expect(keys).not.toContain('vfm');
+      expect(keys).not.toContain('used');
+    }
+    expect(resolveViewState({ filter: 'all', rankBy: 'used' }, { money: false })).toMatchObject({ rankBy: 'overall', changed: true });
   });
 
   it('Rank by Look, then filter to Edibles → falls back to Overall and the stored setting is overwritten', () => {
@@ -176,5 +181,40 @@ describe('Podium product pages (D22)', () => {
     expect(podiumBadge(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edibles by Price per mg');
     expect(podiumBadge(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
     expect(podiumBadge(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
+  });
+});
+
+describe('Most used (D44)', () => {
+  const view = { filter: 'all', rankBy: 'used' } as const;
+  it('most first; never smoked is left out; the top three get the tiers', () => {
+    const rows = rankProducts(
+      [p('a', 'flower', { look: 7 }, { smokeCount: 3 }), p('never', 'flower', { look: 9 }, { smokeCount: 0 }), p('b', 'edibles', {}, { smokeCount: 12 }), p('c', 'flower', { look: 8 }, { smokeCount: 5 }), p('d', 'flower', { look: 6 }, { smokeCount: 1 }), p('nocount', 'flower', { look: 9 })],
+      view,
+    );
+    expect(rows.map((r) => [r.product.id, r.value, r.podium])).toEqual([
+      ['b', 12, 1],
+      ['c', 5, 2],
+      ['a', 3, 3],
+      ['d', 1, null],
+    ]);
+  });
+
+  it('a tie goes to the higher Overall, unrated after rated, then the usual order', () => {
+    const rows = rankProducts(
+      [p('rated6', 'flower', { look: 6 }, { smokeCount: 4 }), p('unrated', 'flower', {}, { smokeCount: 4 }), p('rated9', 'flower', { look: 9 }, { smokeCount: 4 }), p('also9', 'flower', { look: 9 }, { smokeCount: 4, dateTried: '2026-09-01' })],
+      view,
+    );
+    expect(rows.map((r) => r.product.id)).toEqual(['also9', 'rated9', 'rated6', 'unrated']);
+  });
+
+  it('follows the Type filter; nothing smoked → rank-empty; a page’s place and badge', () => {
+    const list = [p('f1', 'flower', { look: 5 }, { smokeCount: 2 }), p('e1', 'edibles', { taste: 5 }, { smokeCount: 9 }), p('f2', 'flower', { look: 5 }, { smokeCount: 0 })];
+    expect(rankProducts(list, { filter: 'flower', rankBy: 'used' }).map((r) => r.product.id)).toEqual(['f1']);
+    expect(podiumPlace(list, 'e1', view)).toBe(1);
+    expect(podiumPlace(list, 'f2', view)).toBeNull();
+    expect(podiumBadge(1, view, 'your')).toBe('#1 by Most used');
+    expect(podiumBadge(2, { filter: 'flower', rankBy: 'used' }, 'your')).toBe('#2 in Flower by Most used');
+    const none = [p('x', 'flower', { look: 5 }, { smokeCount: 0 })];
+    expect(leaderboardEmptyState(1, rankProducts(none, view).length, view)).toBe('rank-empty');
   });
 });

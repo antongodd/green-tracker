@@ -17,7 +17,8 @@ const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 
 
 /** The heat colour for a row's ranked value, as `rgb(r, g, b)`, or null when it gets none. */
 export function scoreHeat(rankBy: RankBy, value: number | null): string | null {
-  if (value === null || rankBy === 'price' || rankBy === 'vfm') return null;
+  // Price, value for money and Most used (a count, D44) stay plain: they aren't scores out of 10.
+  if (value === null || rankBy === 'price' || rankBy === 'vfm' || rankBy === 'used') return null;
   const first = HEAT_STOPS[0]!;
   let [r, g, b] = rgb(first[1]);
   if (value > first[0]) {

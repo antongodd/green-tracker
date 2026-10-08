@@ -20,10 +20,12 @@ export interface RankableProduct {
   tieRank?: number;
   /** Absent in a follower's view — money is never sent to followers. */
   purchases?: readonly Purchase[];
+  /** Times you've had it (Smokes, D43): your own view only; absent in a follower's (D44). */
+  smokeCount?: number;
 }
 
 export type TypeFilter = 'all' | (typeof FILTER_TYPES)[number]['key'];
-export type RankBy = 'overall' | 'price' | 'vfm' | RatingKey;
+export type RankBy = 'overall' | 'used' | 'price' | 'vfm' | RatingKey;
 
 export interface Option<K extends string> {
   key: K;
@@ -40,12 +42,14 @@ function isTypeFilter(value: unknown): value is TypeFilter {
 
 /**
  * Rank by options, derived from the rating sets and the filter.
- * All: Overall, then the de-duplicated union of every type's categories (canonical order).
- * A type: Overall, price (by unit), value for money, then that type's categories.
- * `money: false` (a followed person's view) never offers price or VFM. Hit time is never offered.
+ * All: Overall, Most used, then the de-duplicated union of every type's categories (canonical order).
+ * A type: Overall, Most used, price (by unit), value for money, then that type's categories.
+ * `money: false` (a followed person's view) never offers price, VFM or Most used (D44: their
+ * smokes are never sent). Hit time is never offered.
  */
 export function rankByOptions(filter: TypeFilter, { money }: { money: boolean }): Option<RankBy>[] {
   const options: Option<RankBy>[] = [{ key: 'overall', label: 'Overall' }];
+  if (money) options.push({ key: 'used', label: 'Most used' });
   if (filter === 'all') {
     // Every type's set counts towards the union, including Other/Not set.
     const union = new Set(PRODUCT_TYPES.flatMap((t) => t.ratingSet.map((s) => s.key)));
@@ -60,9 +64,10 @@ export function rankByOptions(filter: TypeFilter, { money }: { money: boolean })
   return options;
 }
 
-/** Caption under a row's score: OVERALL, TASTE, PRICE, VFM… */
+/** Caption under a row's score: OVERALL, TASTE, PRICE, VFM, TIMES (Most used)… */
 export function rankByCaption(rankBy: RankBy): string {
   if (rankBy === 'overall') return 'OVERALL';
+  if (rankBy === 'used') return 'TIMES';
   if (rankBy === 'price') return 'PRICE';
   if (rankBy === 'vfm') return 'VFM';
   return RATING_LABELS[rankBy].toUpperCase();
@@ -89,6 +94,9 @@ export function rankValue(p: RankableProduct, rankBy: RankBy): number | null {
   switch (rankBy) {
     case 'overall':
       return overall(p.productType, p.ratings);
+    case 'used':
+      // D44: never smoked (or a view without counts) can't be ranked, so it's left out.
+      return p.smokeCount ? p.smokeCount : null;
     case 'price':
       return p.purchases ? headlinePrice(p.purchases) : null;
     case 'vfm':
@@ -135,6 +143,7 @@ export function tieBreak(a: RankableProduct, b: RankableProduct): number {
  * Rank a list (the caller passes non-archived products only). Highest first
  * for everything, including price. Under Overall, unrated products sort to the
  * bottom; under any other Rank by, products that can't be ranked are hidden.
+ * Most used (D44) breaks a tie on the higher Overall (unrated last) before the usual order.
  */
 export function rankProducts<P extends RankableProduct>(products: readonly P[], view: ViewState): RankedRow<P>[] {
   const scored = products
@@ -146,6 +155,10 @@ export function rankProducts<P extends RankableProduct>(products: readonly P[], 
       if (a.value === null) return 1;
       if (b.value === null) return -1;
       return b.value - a.value;
+    }
+    if (view.rankBy === 'used') {
+      const [oa, ob] = [overall(a.product.productType, a.product.ratings), overall(b.product.productType, b.product.ratings)];
+      if (oa !== ob) return oa === null ? 1 : ob === null ? -1 : ob - oa;
     }
     return tieBreak(a.product, b.product);
   });

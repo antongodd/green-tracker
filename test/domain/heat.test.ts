@@ -28,6 +28,7 @@ describe('Leaderboard heat (D30)', () => {
     expect(scoreHeat('look', 7)).toBe(scoreHeat('overall', 7));
     expect(scoreHeat('price', 7)).toBeNull();
     expect(scoreHeat('vfm', 7)).toBeNull();
+    expect(scoreHeat('used', 7)).toBeNull(); // Most used is a count, not a score (D44)
     expect(scoreHeat('overall', null)).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { formatScore, formatWeightTotal } from '../../../shared/domain/format';
-import { leaderboardEmptyState, leaderboardTiles, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
+import { leaderboardEmptyState, leaderboardTiles, matchesFilter, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
 import type { Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, type RatingKey } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
@@ -15,6 +15,7 @@ import { cameFrom, linkTo, navigate } from '../router';
 import { restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
+import { useSmokes, withSmokeCounts } from '../smokes';
 
 const DEFAULT_VIEW: ViewState = { filter: 'all', rankBy: 'overall' };
 
@@ -45,6 +46,20 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
     );
   }
   const scope = typeLabel ? `${typeLabel} products` : 'products';
+  if (p.view.rankBy === 'used') {
+    return (
+      <EmptyCard art="smokes" title="Nothing smoked yet">
+        <p>None of your {scope} has a smoke yet. Add one and it’ll rank here.</p>
+        <a class="btn primary" style={{ width: 'auto' }} href="/smokes/new" onClick={linkTo('/smokes/new')}>
+          <PlusIcon />
+          Add a smoke
+        </a>
+        <button class="btn secondary" style={{ width: 'auto' }} onClick={p.onOverall}>
+          Rank by Overall
+        </button>
+      </EmptyCard>
+    );
+  }
   const { title, body } =
     p.view.rankBy === 'price'
       ? { title: 'Nothing priced yet', body: `None of your ${scope} has a purchase with an amount, so there’s no price to rank.` }
@@ -65,8 +80,11 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
 }
 
 export function Leaderboard() {
-  const [products, setProducts] = useState<Product[] | null>(cachedProducts());
+  const [loaded, setProducts] = useState<Product[] | null>(cachedProducts());
   const [view, setView] = useState<ViewState>(loadView);
+  // Most used (D44) needs your smoke counts; every other Rank by draws without waiting for them.
+  const { smokes } = useSmokes();
+  const products = loaded && (view.rankBy !== 'used' || smokes) ? withSmokeCounts(loaded, smokes ?? []) : null;
   const [error, setError] = useState('');
   const arrivedFromProduct = useRef(/^\/products\//.test(cameFrom() ?? ''));
 
@@ -90,6 +108,8 @@ export function Leaderboard() {
   };
 
   const rows = products ? rankProducts(products, view) : [];
+  // Most used leaves out what you've never had; a line under the rows says how many.
+  const neverSmoked = products && view.rankBy === 'used' ? products.filter((p) => matchesFilter(p.productType, view.filter) && !p.smokeCount).length : 0;
   const empty = products ? leaderboardEmptyState(products.length, rows.length, view) : null;
   const tiles = leaderboardTiles(rows.map((r) => r.product));
 
@@ -98,7 +118,7 @@ export function Leaderboard() {
       <Header right={<MeButton />} />
       <main class="screen">
         {!products && !error && <Skeleton kind="board" />}
-        {error && !products && (
+        {error && !loaded && (
           <div class="empty">
             <h2>Couldn’t load your products</h2>
             <p>{error}</p>
@@ -125,6 +145,11 @@ export function Leaderboard() {
               <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} podium={r.podium} rankBy={view.rankBy} value={r.value} />
             ))}
           </div>
+        )}
+        {rows.length > 0 && neverSmoked > 0 && (
+          <p class="footnote">
+            {neverSmoked} never smoked, not shown. Ties go to the higher Overall.
+          </p>
         )}
       </main>
       <button class="fab" aria-label="Add a product" onClick={() => navigate('/products/new')}>
