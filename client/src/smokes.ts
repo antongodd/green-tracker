@@ -52,6 +52,13 @@ export function dropEntrySmokes(entryId: string): void {
   changed();
 }
 
+/** Most used (D44): each of your products with how many times you've had it (0 when never). */
+export function withSmokeCounts<P extends { id: string }>(products: P[], smokes: Smoke[]): (P & { smokeCount: number })[] {
+  const counts = new Map<string, number>();
+  for (const s of smokes) if (s.productId) counts.set(s.productId, (counts.get(s.productId) ?? 0) + 1);
+  return products.map((p) => ({ ...p, smokeCount: counts.get(p.id) ?? 0 }));
+}
+
 /** Forget everything (sign-out, restore), so the next account never sees this one's data. */
 export function clearSmokeCache(): void {
   list = null;

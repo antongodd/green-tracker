@@ -25,6 +25,7 @@ import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 import { Skeleton } from '../components/Skeleton';
 import { SmokesCard } from './Smokes';
+import { useSmokes, withSmokeCounts } from '../smokes';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
 export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
@@ -124,6 +125,8 @@ export function Profile(p: { id: string }) {
   // Its podium place (D22) comes from the same list and view as the Leaderboard.
   const [list, setList] = useState(cachedProducts);
   const [view] = useState(loadView);
+  // Under Most used (D44) its place comes from your smoke counts, like the Leaderboard's.
+  const { smokes } = useSmokes();
   useEffect(() => {
     if (!list) fetchProducts().then(setList).catch(() => {});
   }, []);
@@ -227,13 +230,14 @@ export function Profile(p: { id: string }) {
     ['Date tried', product.dateTried ? formatIsoDate(product.dateTried) : ''],
   ];
   const shown = details.filter(([, v]) => v);
-  const podium = list && !product.archived ? podiumPlace([...list.filter((x) => x.id !== product.id), product], product.id, view) : null;
+  const ranked = list && (view.rankBy !== 'used' || smokes) ? withSmokeCounts([...list.filter((x) => x.id !== product.id), product], smokes ?? []) : null;
+  const podium = ranked && !product.archived ? podiumPlace(ranked, product.id, view) : null;
   const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
   return (
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
-      <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
+      <main class={`screen${podiumClass(podium)}`} data-podium={ranked ? podium ?? 'none' : undefined}>
         <ProductHero
           name={product.name}
           productType={product.productType}

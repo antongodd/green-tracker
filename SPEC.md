@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.36.0 (all phases done; Smokes)
+**Current version:** 0.37.0 (all phases done; Smokes and Most used)
 
 ---
 
@@ -107,6 +107,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D41 | **A Log entry's own page** (2026-10-07; option C "View first" of https://claude.ai/artifact/UMyhbLBPxgj1Mj2Yi9EyRs, with the owner's changes: Edit both top right and in an Actions card like a product page, no line under Add to leaderboard, the logged date shown, Photo grows for entries; Delete entry kept, not Archive). A step away from rebuild brief §10.2 (a loose row opens the entry editor). | Tapping a loose entry in the Log opens **its page**: the Poster's top (D27) with its photo (a cut-out floats; no photo: the type's mark glows), an **In your Log** tag and the name; a **Details** card (Type, Concentrate type, Country with flag, Amount, **Logged** with the date, empty rows left out); an **Actions** card: green **Add to leaderboard** (opens the product editor filled in from the saved entry, as before), **Edit** and red **Delete entry** (asks first, as before). **Edit** is also top right. Tapping the photo opens it full screen. The form moves to /log/:id/edit; its Cancel and Save to log come back to the page, and it no longer holds Add to leaderboard or Delete entry. A **new** entry still opens straight into the form and saves back to the Log. **Photo grows** (D20): an entry with a photo flies it from its Log row into the page and home on Back, like products; without a photo it opens plainly. Offline, Add to leaderboard and Delete wait for the connection. Followers never see loose entries; no data, export or privacy change. |
 | D42 | **Purchases fold into rows** (2026-10-07; option B "Rows" of https://claude.ai/artifact/1VSsTZ3mjhhq6cwCvAkezq, one open at a time, the missing-total note in amber). The product editor's Purchases card; replaces the always-open boxes. | Each purchase is a **one-line row**: its date ("No date" when empty) with a green **Latest** tag on the latest purchase (the app's own rule: newest date, then entry order, among purchases with a total paid), the amount · total paid · supplier under it, and the **price per unit** on the right in the rounded numbers (£/g, £/mg for edibles; "—" without an amount). **Tapping a row opens its four fields**, with Remove (red, bin icon) at the bottom; **one opens at a time**. The row follows what you type. **Add purchase** (a dashed green button) adds one at the bottom, open, dated today, with the cursor in Amount. A purchase with **no total paid** says "Needs a total paid to be kept" **in amber**, on its row and in its fields. A purchase that **stops the save** (a number that can't be read, a refused value) opens by itself. Nothing is saved until Save, as before. Price history, Leaderboard prices, value for money, export, restore and followers (who never see purchases) are unchanged. |
 | D43 | **Smokes: a new tab for what you had, and when** (2026-10-08; option B "Week strip" and product-page option 1 "Smokes card" of https://claude.ai/artifact/JLzNCm46hnUNS5MCWf9MH7, with the owner's answers: named **Smokes**, second in the tab bar; each smoke holds what, when (now, changeable), how much and an Effect box to write in, for now; twice in one evening counts twice; "taken" for edibles; New Log entry from the picker; deleting a Log entry deletes its smokes). Reopens D6 (four tabs), P1 and D25 at the owner's request. Part 1 of 2: **Most used** in Rank by is Part 2; who sees what goes to a later Privacy item. | **The tab** (flame icon; your photo top right like the other main tabs): a card with the **last 7 days** as a strip (a bar per smoke, up to five, and the number; tap a day to jump to it), "N in the last 7 days" and "N this month"; then every smoke, newest first, under a frosted heading per day (Today, Yesterday, Tue 6 Oct…). A row: the photo (or type mark), the name with a **Log** chip for a Log entry, "0.3 g · effect", and the time; tap it to change or delete it. **The +** opens a picker: search, **Recent** (your last four), **Leaderboard**, **Log** (archived products are left out), and **New Log entry** (name and type, added to your Log, then on to the smoke). **The form**: When (date and time, the phone's own pickers; never a future day), How much (optional, g or mg THC; it starts with what you had last time; quick 0.2 / 0.3 / 0.5 / 1 g or 5 / 10 / 20 mg), Effect (up to 500 characters), **Add smoke**; Change goes back to the picker. **Product and Log entry pages** get a **Smokes** card (under Ratings on a product): the count in a big tile ("times smoked", "times taken" for edibles), when you last had it, your last three (tap to change), and **Add a smoke** set to this one (not on an archived product, which keeps its smokes and count). **Add to leaderboard** moves an entry's smokes to the new product in the same save; **deleting a Log entry** deletes its smokes and says how many. **Export / Restore** carry them inside each product and entry (a file from before 0.36.0 restores with none); Export's list and Delete account's "What goes" name them. **Followers never see any of it.** Times are the phone's own date and clock. A new table only (`migrations/0006_smokes.sql`). See §4 *Smokes*. |
+| D44 | **Most used in Rank by** (2026-10-08; option C "Flame" with never-smoked "Left out" of https://claude.ai/artifact/1w5ocZnqLeudXUHW3qh7Mk). Part 2 of Smokes (D43). Only on your own Leaderboard: a friend's board doesn't offer it, at least until the Privacy settings exist (owner's answer). | **Rank by → Most used**, second after Overall under All and under each Type, ranks your products by how many times you've had them, all time (a Log entry's smokes count once it's on the Leaderboard; archived products stay off it, as before). A row shows the **Smokes flame in amber** before the count (rounded numbers) and **TIMES** under it. **Never smoked is left out**, as Price leaves out products with no purchase, and a line under the rows says how many ("2 never smoked, not shown"). **A tie goes to the higher Overall** (unrated last), then the usual order. The **top three** get the rainbow, Diamond and Gold, the number flowing through the tier's colours (the flame stays amber); rows below are plain (**no heat**: a count isn't a score out of 10). **Product pages** of the top three wear their place: "#1 by Most used", "#2 in Flower by Most used". Nothing smoked yet: "Nothing smoked yet" with **Add a smoke** and Rank by Overall. Tiles, data, export and privacy unchanged; the setting stays per device (D5). See §4 *Most used*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -562,6 +563,23 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   every row's icon, tint and destination in order, the headings, the red Delete account, Sign out everywhere still asks;
   the footer version and no Version row; readability.
 
+- **Most used (D44, 0.37.0).** `RankBy` gains `'used'` (shared/domain/leaderboard.ts): `rankByOptions` offers it second when
+  `money` is true (your own board; a follower's view, `money: false`, never has it, and `resolveViewState` drops a stored one there,
+  in the separate `gt.view.others` setting, so your own choice stays); `rankByCaption` → `TIMES`; `rankValue` is
+  `RankableProduct.smokeCount` (0 or absent → null, so it's left out like an unpriced product); `rankProducts` breaks a tie under
+  Most used on `overall()` (unrated last) before `tieBreak`. `scoreHeat` returns null for it (plain, like price and VFM). Client:
+  `withSmokeCounts` (client/src/smokes.ts) adds each product's count from `useSmokes`; `Leaderboard` waits for the counts only
+  under Most used (otherwise it draws at once), shows `p.footnote` "N never smoked, not shown. Ties go to the higher Overall." for the
+  visible type, and `BoardEmpty` has a Most used case (`EmptyCard art="smokes"`, Add a smoke → `/smokes/new`, Rank by Overall).
+  `Profile` ranks with the same counts for its podium place (`data-podium` set once they're known). `ProductRow` → `Score` with
+  `flame`: `.score.used` puts `FlameIcon.flame` (`--warning` amber, 15px) beside the `b` (`formatRankValue` → a whole number) with
+  the caption spanning both; on a tier row only the `b` takes the flowing text. Tested: `test/domain/leaderboard.test.ts` (options
+  with and without money, order, left out, ties on Overall then the usual order, the filter, page place, badge, rank-empty);
+  `heat.test.ts` (no heat); `test/e2e/mostused.spec.ts` (the empty case, order and counts, the flame amber and beside the number,
+  TIMES, the footnote, tiers on three and plain below, three digits fit, axe, pixel contrast of the podium counts and captions
+  through the motion (fails with the caption dimmed), the Type filter, the product pages' place and badge, a new smoke reordering,
+  a friend's board not offering it and your own choice kept). The 375px label test (`leaderboard.spec.ts`) covers "Most used".
+
 - **Smokes (D43, 0.36.0).** Rules in `shared/domain/smoke.ts`: `validateSmokeFields` / `validateSmokeInput` (a real `YYYY-MM-DD`
   date not after `latest`, `HH:MM` 24-hour time, amount > 0 or null, effect trimmed to null when blank and ≤ 500 characters,
   exactly one of `productId` / `logEntryId`), the wording (`smokeVerb`: "taken" for edibles, "smoked" otherwise; `timesText`,
@@ -901,6 +919,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.37.0 — Most used (owner request)
+- **Rank by → Most used** on your Leaderboard (decision D44, option C of the mockups): your products by how many times you've
+  had them. Each row shows the amber flame and the count, with TIMES under it.
+- Products you've never smoked are left out (a line under the list says how many). A tie goes to the higher Overall.
+- The top three get the rainbow, Diamond and Gold as usual, and their pages say "#1 by Most used".
+- Only on your own Leaderboard: a friend's board doesn't offer it.
+- Tests: 5 new Playwright tests (`mostused.spec.ts`), 3 new rule tests and updated option lists (`leaderboard.test.ts`), and
+  `heat.test.ts`.
 
 ### 0.36.0 — Smokes (owner request)
 - A new tab, **Smokes**, second in the tab bar (decision D43, option B "Week strip" of the mockups): what you had and when.
