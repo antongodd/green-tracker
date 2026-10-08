@@ -1,9 +1,9 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { contrastFailures, shot, signUp, textBoxes } from './helpers';
 
-// D35 (0.28.0): the tab bar's four icons (P1's podium, notebook, people, dots) are slim outlines;
-// the tab you're on shows its solid icon, in green, glowing, with a short glowing green line
-// under its name, in place of D18's green bubble. The People badge is unchanged.
+// D35 (0.28.0): the tab bar's icons (P1's podium, notebook, people, dots; D43's flame for Smokes
+// since 0.36.0) are slim outlines; the tab you're on shows its solid icon, in green, glowing, with a
+// short glowing green line under its name, in place of D18's green bubble. The People badge is unchanged.
 test.describe.configure({ mode: 'serial' });
 let page: Page, fan: Page;
 let name = '';
@@ -38,7 +38,17 @@ test.beforeAll(async ({ browser }) => {
   ({ page: fan } = await person(browser, 'fan'));
 });
 
-for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/people', 'People'], ['/more', 'More']] as const) {
+test('five tabs, Smokes second (D43), each a fifth of the bar', async () => {
+  await page.goto('/');
+  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Smokes', 'Log', 'People', 'More']);
+  const widths = await page.locator('.nav .tab').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width));
+  for (const w of widths) expect(w).toBeCloseTo(390 / 5, 0);
+  // Each name fits its tab.
+  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 5).map((e) => e.textContent));
+  expect(clipped).toEqual([]);
+});
+
+for (const [path, label] of [['/', 'Leaderboard'], ['/smokes', 'Smokes'], ['/log', 'Log'], ['/people', 'People'], ['/more', 'More']] as const) {
   test(`on ${label}: only its tab is solid, glowing and underlined; the others are outlines`, async () => {
     await page.goto(path);
     await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(new RegExp(`^${label}`));
@@ -65,6 +75,9 @@ test('the People badge still shows follow requests', async () => {
 });
 
 test('tab names are readable, current and not', async () => {
-  await page.goto('/log');
-  expect(await contrastFailures(page, await textBoxes(page, '.nav .tab-l'), 1)).toEqual([]);
+  for (const path of ['/log', '/smokes']) {
+    await page.goto(path);
+    await page.locator('.nav .tab[aria-current="page"]').waitFor();
+    expect(await contrastFailures(page, await textBoxes(page, '.nav .tab-l'), 1), path).toEqual([]);
+  }
 });

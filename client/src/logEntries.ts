@@ -3,6 +3,7 @@ import type { LogEntry, LogEntryInput } from '../../shared/domain/logEntry';
 import type { Product, ProductInput } from '../../shared/domain/product';
 import { api } from './api';
 import { cacheProduct } from './products';
+import { dropEntrySmokes, moveEntrySmokes } from './smokes';
 
 const byId = new Map<string, LogEntry>();
 let list: LogEntry[] | null = null;
@@ -43,12 +44,14 @@ export async function saveEntry(id: string | null, input: LogEntryInput): Promis
 export async function deleteEntry(id: string): Promise<void> {
   await api('DELETE', `/log/${encodeURIComponent(id)}`);
   forget(id);
+  dropEntrySmokes(id);
 }
 
-/** Promotion: one atomic call creates the product and removes the entry. */
+/** Promotion: one atomic call creates the product, moves the entry's smokes to it (D43) and removes the entry. */
 export async function promoteEntry(id: string, input: ProductInput): Promise<Product> {
   const r = await api<{ product: Product }>('POST', `/log/${encodeURIComponent(id)}/promote`, input);
   forget(id);
+  moveEntrySmokes(id, r.product.id);
   return cacheProduct(r.product);
 }
 

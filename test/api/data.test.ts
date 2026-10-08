@@ -62,7 +62,7 @@ describe('restore (brief §13)', () => {
     };
     const res = await b.post('/api/data/restore', payload);
     expect(res.status, JSON.stringify(res.json)).toBe(200);
-    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, profilePhoto: 'kept' });
+    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, smokes: 0, profilePhoto: 'kept' });
 
     const products = [...(await b.get('/api/products')).json.products, ...(await b.get('/api/products?archived=1')).json.products] as Product[];
     expect(products.map((p) => p.name).sort()).toEqual(['Restored Archived', 'Restored Flower']);
@@ -154,7 +154,10 @@ describe('delete account (brief §4, §17)', () => {
         photos: [{ upload: await newSet(b, 'doomed'), crop: null }],
       })
     ).json.product as Product;
-    await b.post('/api/log', { ...emptyLogEntryInput(), name: 'Doomed Entry', photos: [{ upload: await newSet(b, 'doomedlog'), crop: null }] });
+    const doomedEntry = (await b.post('/api/log', { ...emptyLogEntryInput(), name: 'Doomed Entry', photos: [{ upload: await newSet(b, 'doomedlog'), crop: null }] })).json.entry as LogEntry;
+    for (const target of [{ productId: product.id, logEntryId: null }, { productId: null, logEntryId: doomedEntry.id }]) {
+      expect((await b.post('/api/smokes', { ...target, date: '2026-10-01', time: '20:00', amount: null, effect: 'Gone' })).status).toBe(201);
+    }
     await newSet(b, 'pending-upload'); // never saved
     const profile = await newSet(b, 'profile');
     expect((await b.req('PUT', '/api/profile/photo', { upload: profile, crop: { x: 0, y: 0, w: 1, h: 1, square: true } })).status).toBe(200);
@@ -169,7 +172,7 @@ describe('delete account (brief §4, §17)', () => {
 
     // Signed out, and the passkey leads nowhere.
     expect((await b.get('/api/auth/me')).json.user).toBeNull();
-    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
+    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'smokes WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
       expect(d1(`SELECT COUNT(*) AS n FROM ${table} = ?`, id), table).toEqual([{ n: 0 }]);
     }
     expect(d1('SELECT COUNT(*) AS n FROM follows WHERE follower_id = ? OR followed_id = ?', id, id)).toEqual([{ n: 0 }]);

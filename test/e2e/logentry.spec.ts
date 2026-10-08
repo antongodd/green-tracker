@@ -145,7 +145,7 @@ test('Delete entry asks first, then the entry is gone from the Log', async () =>
   await expect(page.getByRole('heading', { level: 1, name: 'Short Lived' })).toBeVisible();
   await actions().getByRole('button', { name: 'Delete entry' }).click();
   const sheet = page.getByRole('dialog', { name: 'Delete “Short Lived”?' });
-  await expect(sheet).toContainText('This removes the entry and its photo for good.');
+  await expect(sheet).toContainText('This removes the entry for good.');
   await sheet.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Short Lived' })).toBeVisible();
   await actions().getByRole('button', { name: 'Delete entry' }).click();

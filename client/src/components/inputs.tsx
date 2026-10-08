@@ -4,7 +4,7 @@ import { formatScore } from '../../../shared/domain/format';
 import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
 import { scoreHeat } from '../../../shared/domain/heat';
 import type { RatingKey } from '../../../shared/domain/productTypes';
-import { CalendarIcon, ChevronDown, CrossIcon } from '../icons';
+import { CalendarIcon, ChevronDown, ClockIcon, CrossIcon } from '../icons';
 import { Slider } from './Slider';
 
 /** Native select (iOS shows its own picker), styled as an input. */
@@ -79,11 +79,12 @@ export function TextField(p: {
   return (
     <div class="field">
       <label for={p.id}>{p.label}</label>
-      {p.type === 'date' ? (
+      {p.type === 'date' || p.type === 'time' ? (
         // D34: our own calendar icon on the left, inside the box, so it can never be cut off;
         // the browser's own picker button is stretched invisibly over the whole box instead.
+        // A time box (a smoke's When, D43) is the same with a clock.
         <div class="datebox">
-          <CalendarIcon />
+          {p.type === 'time' ? <ClockIcon /> : <CalendarIcon />}
           {input(p)}
         </div>
       ) : (

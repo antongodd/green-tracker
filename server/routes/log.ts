@@ -114,7 +114,7 @@ log.put('/:id', async (c) => {
   return c.json({ entry: await loadEntry(db, userId, id) });
 });
 
-/** Loose entries are hard-deleted (behind a confirmation in the app), photo files included. */
+/** Loose entries are hard-deleted (behind a confirmation in the app), photo files and smokes (D43) included. */
 log.delete('/:id', async (c) => {
   const userId = c.var.user!.id;
   const id = c.req.param('id');
@@ -123,7 +123,7 @@ log.delete('/:id', async (c) => {
   const photo = entry.photo
     ? await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE id = ?1 AND user_id = ?2`).bind(entry.photo.id, userId).first<PhotoRow>()
     : null;
-  await db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(id, userId).run(); // the photo row cascades
+  await db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(id, userId).run(); // the photo row and smokes cascade
   if (photo) deleteLater(c.executionCtx, c.env.PHOTOS, [...setKeys(userId, photo.original_set), ...(photo.image_set !== photo.original_set ? imageKeys(userId, photo.image_set) : [])]);
   return c.json({ ok: true });
 });
@@ -131,7 +131,7 @@ log.delete('/:id', async (c) => {
 /**
  * Promotion (brief §10.2): on Save, atomically — one D1 batch, all or nothing —
  * create the product, re-assign the photo to it (moved, not copied; its original
- * travels too), and delete the loose entry. Nothing is written before this call.
+ * travels too), move its smokes to it (D43), and delete the loose entry. Nothing is written before this call.
  */
 log.post('/:id/promote', async (c) => {
   const userId = c.var.user!.id;
@@ -140,7 +140,12 @@ log.post('/:id/promote', async (c) => {
   const db = c.env.DB;
   await loadEntry(db, userId, entryId);
   const created = await createProductWrites(db, userId, input, { adoptFromLogEntry: entryId });
-  await db.batch([...created.statements, db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(entryId, userId)]);
+  await db.batch([
+    ...created.statements,
+    // Its smokes (D43) move to the new product, before the entry goes (they'd cascade with it).
+    db.prepare('UPDATE smokes SET product_id = ?1, log_entry_id = NULL, updated_at = ?4 WHERE log_entry_id = ?2 AND user_id = ?3').bind(created.id, entryId, userId, Date.now()),
+    db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(entryId, userId),
+  ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, created.unusedKeys);
   return c.json({ product: await loadOne(db, userId, created.id) }, 201);
 });

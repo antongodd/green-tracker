@@ -5,7 +5,7 @@ import { FLOWER } from '../icons';
  * The empty states' line drawings (D33, 0.26.0): one small green drawing per kind of empty
  * screen, in place of the faint leaf. Strokes and fills come from `.empty-art` in styles.css.
  */
-export type EmptyArtKind = 'podium' | 'filter' | 'unrated' | 'log' | 'archive' | 'shared' | 'requests' | 'followers' | 'following' | 'blocked';
+export type EmptyArtKind = 'podium' | 'filter' | 'unrated' | 'smokes' | 'log' | 'archive' | 'shared' | 'requests' | 'followers' | 'following' | 'blocked';
 
 const Leaf = (p: { x: number; y: number; s: number }) => <path class="soft" d={FLOWER} transform={`translate(${p.x} ${p.y}) scale(${p.s})`} vector-effect="non-scaling-stroke" />;
 const Person = (p: { x: number; y: number; r: number; class?: string }) => (
@@ -43,6 +43,15 @@ const ART: Record<EmptyArtKind, () => JSX.Element> = {
       <rect class="fill" x="60" y="47" width="52" height="10" rx="5" />
       <rect x="60" y="73" width="80" height="10" rx="5" />
       <rect class="fill" x="60" y="73" width="36" height="10" rx="5" />
+    </>
+  ),
+  // Smokes (D43): a flame over a week of empty days.
+  smokes: () => (
+    <>
+      <path class="soft" d="M86 8c2 9 18 16 18 34a20 20 0 0 1-40 0c0-9 5-15 10-19 .3 6 3 10 7 12-1-10 1-19 5-27Z" />
+      <path d="M84 44c-4 3-6 6-6 10a6 6 0 0 0 12 0c0-4-2-7-6-10Z" />
+      <path class="dim dash" d="M22 94h124" />
+      <path class="dim" d="M34 86v8M52 82v12M70 88v6M98 84v10M116 88v6M134 80v14" />
     </>
   ),
   log: () => (

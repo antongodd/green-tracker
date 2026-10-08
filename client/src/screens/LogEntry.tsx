@@ -21,6 +21,15 @@ import { useOnline } from '../online';
 import { startPromotion } from '../promotion';
 import { back, linkTo, navigate } from '../router';
 import { formatDate } from '../session';
+import { smokesOf } from '../../../shared/domain/smoke';
+import { cachedSmokes } from '../smokes';
+import { SmokesCard } from './Smokes';
+
+/** What deleting takes with it: its photo and (D43) its smokes. */
+function deleteMessage(smokes: number, photo: boolean): string {
+  const parts = [photo ? 'its photo' : null, smokes ? (smokes === 1 ? 'its smoke' : `its ${smokes} smokes`) : null].filter(Boolean);
+  return `This removes the entry${parts.length ? ` and ${parts.join(' and ')}` : ''} for good.`;
+}
 
 export function LogEntryPage(p: { id: string }) {
   const [entry, setEntry] = useState<LogEntry | undefined>(cachedEntry(p.id));
@@ -119,6 +128,8 @@ export function LogEntryPage(p: { id: string }) {
           </div>
         </div>
 
+        <SmokesCard target={`e:${entry.id}`} productType={entry.productType} canAdd />
+
         <section class="sect" aria-label="Details">
           <span class="cap">Details</span>
           <dl class="kv">
@@ -151,7 +162,7 @@ export function LogEntryPage(p: { id: string }) {
       {confirmDelete && (
         <Sheet
           title={`Delete “${entry.name}”?`}
-          message="This removes the entry and its photo for good."
+          message={deleteMessage(smokesOf(cachedSmokes() ?? [], `e:${entry.id}`).length, !!entry.photo)}
           options={[{ label: 'Delete entry', danger: true, onSelect: remove }]}
           onCancel={() => setConfirmDelete(false)}
         />

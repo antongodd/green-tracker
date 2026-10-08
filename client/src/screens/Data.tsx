@@ -89,6 +89,12 @@ export function ExportScreen() {
               <li class="yes">
                 <CheckIcon />
                 <span>
+                  Every smoke<small>when, how much and the effect</small>
+                </span>
+              </li>
+              <li class="yes">
+                <CheckIcon />
+                <span>
                   Every photo<small>cropped and original, cut-outs too</small>
                 </span>
               </li>
@@ -186,7 +192,7 @@ export function RestoreScreen() {
       <main class="screen">
         <div class="wrap stack data" style={{ paddingTop: '16px' }}>
           <DataHero tint="teal" icon={<DownloadIcon />} title="Restore from a file">
-            Replaces your products, Log and photos with an export file. Followers and passkeys stay as they are.
+            Replaces your products, Log, smokes and photos with an export file. Followers and passkeys stay as they are.
           </DataHero>
           {!summary && picker}
           {summary && f && (
@@ -219,6 +225,7 @@ export function RestoreScreen() {
                 </div>
                 <p class="hint">
                   {summary.archived ? `+ ${plural(summary.archived, 'archived product')}. ` : ''}
+                  {`${summary.smokes ? plural(summary.smokes, 'smoke') : 'No smokes'}. `}
                   {PROFILE_PHOTO[summary.profilePhoto]}
                 </p>
               </section>
@@ -244,7 +251,7 @@ export function RestoreScreen() {
       {confirming && summary && (
         <Sheet
           title="Replace all your data?"
-          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'log entry', 'log entries')} and ${plural(summary.photos, 'photo')}. This can’t be undone.`}
+          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'log entry', 'log entries')}, ${plural(summary.photos, 'photo')} and ${plural(summary.smokes, 'smoke')}. This can’t be undone.`}
           options={[{ label: 'Replace my data', danger: true, onSelect: run }]}
           onCancel={() => setConfirming(false)}
         />
@@ -303,6 +310,10 @@ export function DeleteAccount() {
               <li class="gone">
                 <CrossIcon />
                 <span>Your whole Log</span>
+              </li>
+              <li class="gone">
+                <CrossIcon />
+                <span>Every smoke</span>
               </li>
               <li class="gone">
                 <CrossIcon />
