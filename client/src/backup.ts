@@ -1,6 +1,7 @@
 // Export and restore run in the browser (brief §13; the server's CPU budget is too
 // small to build or unpack a file with embedded photos).
-import { checkExportFile, EXPORT_FORMAT, EXPORT_VERSION, type ExportFile, type ExportLogEntry, type ExportPhoto, type ExportProduct, type RestorePayload } from '../../shared/domain/backup';
+import { checkExportFile, EXPORT_FORMAT, EXPORT_VERSION, type ExportFile, type ExportLogEntry, type ExportPhoto, type ExportProduct, type ExportSmoke, type RestorePayload } from '../../shared/domain/backup';
+import { smokesOf, type Smoke } from '../../shared/domain/smoke';
 import type { LogEntry } from '../../shared/domain/logEntry';
 import { ownProfilePhotoUrl, photoUrl, type PhotoRecord } from '../../shared/domain/photo';
 import type { Product } from '../../shared/domain/product';
@@ -8,6 +9,7 @@ import { api, ApiError, type Me } from './api';
 import { discardUpload, loadImage, renderThumb, uploadSet } from './images';
 import { clearEntryCache, fetchEntries } from './logEntries';
 import { clearProductCache, fetchArchived, fetchProducts } from './products';
+import { clearSmokeCache, fetchSmokes } from './smokes';
 
 declare const __APP_VERSION__: string;
 
@@ -36,7 +38,10 @@ const fromBase64 = (s: string, type = 'image/jpeg') => {
 
 /** Builds the export: all your data, photos embedded (cropped and originals). */
 export async function buildExport(username: string, progress: Progress): Promise<File> {
-  const [active, archived, entries, me] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me')]);
+  const [active, archived, entries, me, smokes] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchSmokes()]);
+  // D43: each record carries its own smokes, oldest first.
+  const smokesFor = (target: string): ExportSmoke[] =>
+    smokesOf(smokes, target).reverse().map(({ date, time, amount, effect, createdAt }: Smoke) => ({ date, time, amount, effect, createdAt }));
   const products: Product[] = [...active, ...archived];
   const profile = me.user?.photo ?? null;
   const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.filter((e) => e.photo).length + (profile ? 1 : 0);
@@ -74,6 +79,7 @@ export async function buildExport(username: string, progress: Progress): Promise
       photos: embedded,
       archived: p.archived,
       createdAt: p.createdAt,
+      smokes: smokesFor(`p:${p.id}`),
     });
   }
   const exportEntries: ExportLogEntry[] = [];
@@ -89,6 +95,7 @@ export async function buildExport(username: string, progress: Progress): Promise
       amount: e.amount,
       photo: e.photo ? await embed(e.photo) : null,
       createdAt: e.createdAt,
+      smokes: smokesFor(`e:${e.id}`),
     });
   }
 
@@ -133,6 +140,8 @@ export interface ExportSummary {
   logEntries: number;
   /** Product and Log photos (the profile photo is counted separately). */
   photos: number;
+  /** D43: 0 in a file from before 0.36.0. */
+  smokes: number;
   /** D23: the file's profile photo; a file from before 0.17.0 has none and leaves yours alone. */
   profilePhoto: 'included' | 'none' | 'not-in-file';
 }
@@ -154,6 +163,7 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
     archived: f.products.filter((p) => p.archived).length,
     logEntries: f.logEntries.length,
     photos: f.products.reduce((n, p) => n + p.photos.length, 0) + f.logEntries.filter((e) => e.photo).length,
+    smokes: [...f.products, ...f.logEntries].reduce((n, x) => n + (x.smokes?.length ?? 0), 0),
     profilePhoto: f.profilePhoto === undefined ? 'not-in-file' : f.profilePhoto ? 'included' : 'none',
   };
 }
@@ -197,4 +207,5 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
   }
   clearProductCache();
   clearEntryCache();
+  clearSmokeCache();
 }

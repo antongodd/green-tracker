@@ -18,10 +18,12 @@ import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
 import { clearEntryCache } from './logEntries';
+import { clearSmokeCache } from './smokes';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile } from './screens/Person';
 import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
+import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
 
@@ -40,6 +42,7 @@ function App() {
         if (prev?.user?.username !== next.user?.username) {
           clearProductCache();
           clearEntryCache();
+          clearSmokeCache();
         }
         return next;
       });
@@ -111,7 +114,11 @@ function App() {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
     const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+))?$/);
+    const smoke = path.match(/^\/smokes\/(?:new\/(p|e)\/([^/]+)|([^/]+))$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
+    else if (path === '/smokes/new') screen = <SmokePicker />;
+    else if (smoke?.[1]) screen = <SmokeForm key={path} id={null} target={`${smoke[1]}:${decodeURIComponent(smoke[2]!)}`} />;
+    else if (smoke?.[3]) screen = <SmokeForm key={path} id={decodeURIComponent(smoke[3])} />;
     else if (path === '/log/new') screen = <LogEditor key="new-entry" id={null} />;
     else if (entry?.[2] === '/promote') screen = <Editor key={`promote-${entry[1]}`} id={null} promoteFrom={decodeURIComponent(entry[1]!)} />;
     else if (entry?.[2] === '/edit') screen = <LogEditor key={`edit-${entry[1]}`} id={decodeURIComponent(entry[1]!)} />;
@@ -122,6 +129,9 @@ function App() {
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else
       switch (path) {
+        case '/smokes':
+          screen = <Smokes />;
+          break;
         case '/log':
           screen = <Log />;
           break;

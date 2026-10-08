@@ -69,7 +69,7 @@ test('Export: a glowing icon, what’s in the file, and a progress bar while pho
   await expect(page.getByRole('heading', { level: 1, name: 'Your data, in one file' })).toBeVisible();
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   const card = page.getByRole('region', { name: 'In the file' });
-  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/]);
+  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every smoke/, /^Every photo/]);
   await expect(card.locator('li.not')).toContainText('Not included: who you follow');
   await expect(page.locator('.data-note')).toContainText('Save to Files');
 
@@ -107,7 +107,7 @@ test('Restore: the file as tiles, a different file, and a progress bar while pho
   await expect(contents.locator('.file-head b')).toHaveText(new RegExp(`^green-tracker-${username}-\\d{4}-\\d{2}-\\d{2}\\.json$`));
   await expect(contents.locator('.file-head .who span')).toContainText(`by @${username}`);
   expect(await contents.locator('.data-tile').evaluateAll((ts) => ts.map((t) => [t.querySelector('b')!.textContent, t.querySelector('span')!.textContent]))).toEqual([['1', 'Products'], ['1', 'Log'], ['2', 'Photos']]);
-  await expect(contents.locator('.hint')).toHaveText('+ 1 archived product. No profile photo: yours will be removed.');
+  await expect(contents.locator('.hint')).toHaveText('+ 1 archived product. No smokes. No profile photo: yours will be removed.');
   // The same picker, now reading "Choose a different file", under the Replace button.
   await expect(page.getByLabel('Choose an export file')).toHaveCount(0);
   await expect(page.getByLabel('Choose a different file')).toHaveCount(1);
@@ -134,7 +134,8 @@ test('Delete account: red throughout, what goes, Export first, and the username 
   await expect(page.getByRole('heading', { level: 1, name: `Delete @${username}` })).toBeVisible();
   await expect(page.locator('.data-mark.red svg')).toBeVisible();
   await expect(page.locator('.data-hero p')).toContainText('It can’t be undone.');
-  await expect(page.getByRole('region', { name: 'What goes' }).locator('li.gone')).toHaveCount(5);
+  await expect(page.getByRole('region', { name: 'What goes' }).locator('li.gone')).toHaveCount(6);
+  await expect(page.getByRole('region', { name: 'What goes' }).locator('li.gone').nth(2)).toHaveText('Every smoke');
 
   const input = page.getByLabel('Type your username to confirm');
   const button = page.getByRole('button', { name: 'Delete my account' });

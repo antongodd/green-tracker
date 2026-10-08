@@ -24,6 +24,7 @@ import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 import { Skeleton } from '../components/Skeleton';
+import { SmokesCard } from './Smokes';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
 export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
@@ -262,6 +263,8 @@ export function Profile(p: { id: string }) {
         />
 
         <Ratings product={product} />
+        {/* D43: yours only; an archived product keeps its count but takes no new smokes. */}
+        <SmokesCard target={`p:${product.id}`} productType={product.productType} canAdd={!product.archived} />
         {product.photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>

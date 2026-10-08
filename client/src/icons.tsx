@@ -65,6 +65,8 @@ const icon = (d: string, opts: { evenodd?: boolean; stroke?: number; viewBox?: s
 export const BoardIcon = icon('M9 7.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V20H9Z M2.5 12.5a1 1 0 0 1 1-1H8V20H3.5a1 1 0 0 1-1-1Z M16 14.5h4.5a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H16Z M12 1.9l.8 1.6 1.8.26-1.3 1.27.3 1.78L12 5.97l-1.6.84.3-1.78-1.3-1.27 1.8-.26Z');
 export const LogIcon = icon('M6 2.5h11.5a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 6 2.5Z M8.5 7.25h8v1.5h-8Z M8.5 11.25h8v1.5h-8Z M8.5 15.25h5v1.5h-5Z', { evenodd: true });
 export const PeopleIcon = icon('M9 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M1.5 19.5c0-3.3 3.4-5.5 7.5-5.5s7.5 2.2 7.5 5.5v.5a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5Z M16.5 11.2a3.3 3.3 0 1 0-1.1-6.4 5.5 5.5 0 0 1 0 6.2c.35.13.72.2 1.1.2Z M18 20.5h4a.5.5 0 0 0 .5-.5v-.4c0-2.6-2.3-4.4-5.4-4.8 1 1.1 1.4 2.4 1.4 3.8Z');
+// Smokes (D43, 0.36.0): a flame, its inner flame cut out.
+export const FlameIcon = icon('M12.6 1.8c.6 3.3 5.9 5.8 5.9 11.7a6.5 6.5 0 0 1-13 0c0-3.1 1.6-5.2 3.2-6.5.1 2 1 3.3 2.2 3.9-.4-3.4.4-6.6 1.7-9.1Z M12 14.1c-1.4 1.1-2.2 2.2-2.2 3.6a2.2 2.2 0 0 0 4.4 0c0-1.4-.8-2.5-2.2-3.6Z', { evenodd: true });
 export const MoreIcon = icon('M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M19 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z');
 
 // UI
@@ -151,6 +153,9 @@ export const LinkIcon = icon('M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 
 export const LockLineIcon = icon('M6 10.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z M8 10.5V7.5a4 4 0 0 1 8 0v3', { stroke: 2 });
 export const ScaleIcon = icon('M12 4v16 M7 20h10 M4 7.5h16 M6.5 7.5 3.5 14a3 3 0 0 0 6 0Z M17.5 7.5l-3 6.5a3 3 0 0 0 6 0Z', { stroke: 2 });
 export const CameraLineIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5ZM12 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', { stroke: 2 });
+/** A smoke's Effect heading (D43): a small burst. */
+export const SparkIcon = icon('M12 3v4 M12 17v4 M3 12h4 M17 12h4 M6 6l2.5 2.5 M15.5 15.5 18 18 M6 18l2.5-2.5 M15.5 8.5 18 6', { stroke: 2 });
+export const ClockIcon = icon('M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17Z M12 7.5V12l3 2', { stroke: 2 });
 export const CalendarIcon = icon('M5 5.5h14a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z M4 10h16 M8 3.5v4 M16 3.5v4', { stroke: 2 });
 
 // Tab bar outlines (D35, 0.28.0): the same four shapes as the solid tab icons (P1), drawn as slim
@@ -174,6 +179,7 @@ const tabLine = (d: string) =>
   };
 export const LogLineIcon = tabLine('M6.3 3.35h11.2a1.65 1.65 0 0 1 1.65 1.65v14.5a1.65 1.65 0 0 1-1.65 1.65H6.3a1.45 1.45 0 0 1-1.45-1.45V4.8A1.45 1.45 0 0 1 6.3 3.35Z M8.85 8h7.3 M8.85 12h7.3 M8.85 16h4.3');
 export const PeopleLineIcon = tabLine('M9 11.1a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z M2.35 19.9c0-3.1 3-5.1 6.65-5.1s6.65 2 6.65 5.1Z M16.1 4.6a3.2 3.2 0 0 1 0 6.2 M17.7 14.9c2.3.5 4 2.1 4 4.4v.6h-2.9');
+export const FlameLineIcon = tabLine('M12.6 2.6c.8 3.2 5.15 5.6 5.15 10.9a5.75 5.75 0 0 1-11.5 0c0-2.5 1.1-4.3 2.4-5.5.3 1.8 1.2 2.9 2.4 3.3-.3-3.2.4-6.2 1.55-8.7Z M12 14.4c-1.3 1-2 2-2 3.3a2 2 0 0 0 4 0c0-1.3-.7-2.3-2-3.3Z');
 export const MoreLineIcon = tabLine('M5 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M12 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M19 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z');
 
 // More screen rows (D38, 0.31.0): outlines in the editors' heading style.

@@ -7,6 +7,7 @@
 import { parseCrop, type Crop } from './photo';
 import { validateLogEntryInput, type LogEntryInput } from './logEntry';
 import { validateProductInput, type ProductInput } from './product';
+import { validateSmokeFields, type SmokeInput } from './smoke';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -21,6 +22,18 @@ export interface ExportPhoto {
   cutout?: boolean;
 }
 
+/**
+ * A smoke in the file (D43, since 0.36.0), inside the product or Log entry it belongs to.
+ * Files from before 0.36.0 have none; restoring one leaves you with no smokes.
+ */
+export interface ExportSmoke {
+  date: string;
+  time: string;
+  amount: number | null;
+  effect: string | null;
+  createdAt: number;
+}
+
 export interface ExportProduct extends Omit<ProductInput, 'photos' | 'ratings' | 'purchases'> {
   /** Every stored rating, including categories hidden by a type switch. */
   ratings: Record<string, number>;
@@ -29,11 +42,15 @@ export interface ExportProduct extends Omit<ProductInput, 'photos' | 'ratings' |
   photos: ExportPhoto[];
   archived: boolean;
   createdAt: number;
+  /** D43: absent in files made before 0.36.0. */
+  smokes?: ExportSmoke[];
 }
 
 export interface ExportLogEntry extends Omit<LogEntryInput, 'photos'> {
   photo: ExportPhoto | null;
   createdAt: number;
+  /** D43: absent in files made before 0.36.0. */
+  smokes?: ExportSmoke[];
 }
 
 export interface ExportFile {
@@ -52,12 +69,16 @@ export interface ExportFile {
 }
 
 /** What the server receives for a restore: the file's records, with photos already uploaded as sets. */
+export type RestoreSmoke = Omit<SmokeInput, 'productId' | 'logEntryId'> & { createdAt: number };
 export interface RestoreProduct extends ProductInput {
   archived: boolean;
   createdAt: number;
+  /** D43: absent (a file from before 0.36.0) means none. */
+  smokes?: RestoreSmoke[];
 }
 export interface RestoreLogEntry extends LogEntryInput {
   createdAt: number;
+  smokes?: RestoreSmoke[];
 }
 export interface RestorePayload {
   products: RestoreProduct[];
@@ -66,7 +87,7 @@ export interface RestorePayload {
   profilePhoto?: { upload: string; crop: Crop } | null;
 }
 
-export const RESTORE_LIMITS = { products: 5000, logEntries: 5000 } as const;
+export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, smokes: 100_000 } as const;
 
 type Result<T> = { ok: true; value: T } | { ok: false; message: string };
 
@@ -87,12 +108,17 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
     const ph = p as Record<string, unknown>;
     return parseCrop(ph.crop) !== undefined && isB64(ph.original) && isB64(ph.cropped) && (ph.cutout === undefined || typeof ph.cutout === 'boolean');
   };
+  const smokesOk = (v: unknown) => v === undefined || (Array.isArray(v) && v.every((s) => s && typeof s === 'object' && isTime((s as Record<string, unknown>).createdAt)));
+  let smokes = 0;
   for (const p of f.products as Record<string, unknown>[]) {
-    if (!p || typeof p !== 'object' || !Array.isArray(p.photos) || !p.photos.every(photoOk) || !isTime(p.createdAt)) return bad('A product in the file couldn’t be read.');
+    if (!p || typeof p !== 'object' || !Array.isArray(p.photos) || !p.photos.every(photoOk) || !isTime(p.createdAt) || !smokesOk(p.smokes)) return bad('A product in the file couldn’t be read.');
+    smokes += (p.smokes as unknown[] | undefined)?.length ?? 0;
   }
   for (const e of f.logEntries as Record<string, unknown>[]) {
-    if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt)) return bad('A log entry in the file couldn’t be read.');
+    if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt) || !smokesOk(e.smokes)) return bad('A log entry in the file couldn’t be read.');
+    smokes += (e.smokes as unknown[] | undefined)?.length ?? 0;
   }
+  if (smokes > RESTORE_LIMITS.smokes) return bad('The export file is too large to restore.');
   if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
   return { ok: true, value: raw as ExportFile };
 }
@@ -112,6 +138,23 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
   const newPhotosOnly = (photos: { id?: string; upload?: string }[]) =>
     photos.every((ph) => !ph.id && ph.upload && !uploads.has(ph.upload) && (uploads.add(ph.upload), true));
 
+  // D43: each record's smokes, checked like any other; absent (a file from before 0.36.0) is none.
+  let smokeCount = 0;
+  const readSmokes = (v: unknown): RestoreSmoke[] | string => {
+    if (v === undefined) return [];
+    if (!Array.isArray(v)) return 'its smokes could not be read.';
+    const out: RestoreSmoke[] = [];
+    for (const s of v) {
+      const f = validateSmokeFields(s);
+      if (!f.ok) return `a smoke: ${f.message}`;
+      const createdAt = (s as Record<string, unknown>).createdAt;
+      if (!isTime(createdAt)) return 'a smoke could not be read.';
+      out.push({ ...f.value, createdAt });
+    }
+    smokeCount += out.length;
+    return out;
+  };
+
   const products: RestoreProduct[] = [];
   for (const [i, raw] of (r.products as Record<string, unknown>[]).entries()) {
     const v = validateProductInput(raw);
@@ -120,7 +163,9 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     if (Object.values(v.value.ratings).some((x) => x === null)) return bad(`${where}: a rating is missing its value.`);
     if (!newPhotosOnly(v.value.photos)) return bad(`${where}: a photo could not be read.`);
     if (typeof raw.archived !== 'boolean' || !isTime(raw.createdAt)) return bad(`${where} could not be read.`);
-    products.push({ ...v.value, archived: raw.archived, createdAt: raw.createdAt });
+    const smokes = readSmokes(raw.smokes);
+    if (typeof smokes === 'string') return bad(`${where}: ${smokes}`);
+    products.push({ ...v.value, archived: raw.archived, createdAt: raw.createdAt, smokes });
   }
   const logEntries: RestoreLogEntry[] = [];
   for (const [i, raw] of (r.logEntries as Record<string, unknown>[]).entries()) {
@@ -128,8 +173,11 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     if (!v.ok) return bad(`Log entry ${i + 1}: ${v.message}`);
     if (!newPhotosOnly(v.value.photos)) return bad(`Log entry ${i + 1}: a photo could not be read.`);
     if (!isTime(raw.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
-    logEntries.push({ ...v.value, createdAt: raw.createdAt });
+    const smokes = readSmokes(raw.smokes);
+    if (typeof smokes === 'string') return bad(`Log entry ${i + 1}: ${smokes}`);
+    logEntries.push({ ...v.value, createdAt: raw.createdAt, smokes });
   }
+  if (smokeCount > RESTORE_LIMITS.smokes) return bad('Too much data to restore at once.');
   if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries } };
   if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null } };
   const pp = r.profilePhoto as Record<string, unknown>;

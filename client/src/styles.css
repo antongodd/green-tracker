@@ -127,7 +127,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
   border-top: 1px solid var(--bar-line);
 }
 .nav::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--safe-bottom); background: var(--bar-solid); }
-.nav .tabs { display: grid; grid-template-columns: repeat(4, 1fr); height: 49px; max-width: 720px; margin: 0 auto; }
+.nav .tabs { display: grid; grid-template-columns: repeat(5, 1fr); height: 49px; max-width: 720px; margin: 0 auto; }
 .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; font-weight: 600; color: var(--text-2); text-decoration: none; background: none; border: 0; }
 .tab svg { width: 26px; height: 26px; }
 .tab { isolation: isolate; }
@@ -522,14 +522,14 @@ div.hero-photo { cursor: default; }
 .select select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .select svg { position: absolute; right: 14px; top: 50%; width: 12px; height: 12px; margin-top: -6px; color: var(--text-2); pointer-events: none; }
 textarea.input { height: auto; min-height: 120px; padding: 12px 14px; resize: vertical; line-height: 1.45; }
-input[type="date"].input { appearance: none; -webkit-appearance: none; display: flex; align-items: center; min-width: 0; max-width: 100%; }
-input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
+input[type="date"].input, input[type="time"].input { appearance: none; -webkit-appearance: none; display: flex; align-items: center; min-width: 0; max-width: 100%; }
+input[type="date"].input::-webkit-date-and-time-value, input[type="time"].input::-webkit-date-and-time-value { text-align: left; }
 /* The date box (D34): our calendar icon on the left, inside the box; the browser's picker button
    is stretched invisibly over the whole box, so a tap anywhere still opens the picker. */
 .datebox { position: relative; min-width: 0; }
 .datebox > svg { position: absolute; z-index: 1; left: 11px; top: 50%; width: 17px; height: 17px; margin-top: -8.5px; color: var(--accent-bright); pointer-events: none; }
-.datebox input[type="date"].input { position: relative; padding-left: 36px; padding-right: 8px; }
-.datebox input[type="date"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.datebox input[type="date"].input, .datebox input[type="time"].input { position: relative; padding-left: 36px; padding-right: 8px; }
+.datebox input[type="date"].input::-webkit-calendar-picker-indicator, .datebox input[type="time"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .two-col > * { min-width: 0; }
 /* Slim ratings (D34, 0.27.0): name and number on one line, a thinner slider right under it;
@@ -963,3 +963,73 @@ label.btn:has(input:disabled) { opacity: 0.4; }
    cards like a product page. */
 .log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(5, 8, 7, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
 .entry-page .sect .btn svg { width: 18px; height: 18px; }
+
+/* ---------- Smokes (D43, 0.36.0) ----------
+   The tab: a strip of the last 7 days (a bar per smoke, up to five), then every smoke under a
+   frosted heading per day, newest first. The picker, the form and the Smokes card on product
+   and Log entry pages share the row pieces (.sbody, .nm, .sub, .log-chip). */
+.sk-week { height: 128px; border-radius: 14px; }
+.week { max-width: 688px; margin: 14px 16px 4px; padding: 12px 10px 10px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-edge); }
+@media (min-width: 720px) { .week { margin-left: auto; margin-right: auto; } }
+.week-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 0 4px 10px; font-size: 13px; color: var(--text-2); }
+.week-top b { font-family: var(--num-font); font-size: 22px; font-weight: 700; color: var(--text); margin-right: 2px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.day { display: grid; justify-items: center; gap: 4px; min-height: 44px; padding: 6px 0 7px; border-radius: 10px; background: none; border: 1px solid transparent; color: var(--text-2); }
+.day:disabled { cursor: default; }
+.day .dl { font-size: 11px; font-weight: 600; }
+.day .bars { height: 34px; width: 14px; display: flex; flex-direction: column-reverse; gap: 2px; }
+.day .bars i { display: block; height: 5px; border-radius: 3px; background: var(--bar-fill); }
+.day .bars i.none { height: 4px; background: rgba(238, 244, 240, 0.08); }
+.day .dn { font-family: var(--num-font); font-size: 13px; font-weight: 700; }
+.day.today { color: var(--accent-bright); background: var(--accent-soft); border-color: rgba(88, 224, 140, 0.35); }
+.sday { max-width: 720px; margin: 0 auto; }
+/* The tab has no control row, so its day headings stick right under the header. */
+.sday-h { top: var(--header-h); }
+.srows { display: grid; gap: 8px; padding: 0 16px; }
+.srow { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 68px; padding: 10px 12px 10px 10px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
+.srow .thumb, .chosen .thumb { width: 48px; height: 48px; border-radius: 9px; }
+.srow .tm { font-size: 14px; color: var(--text-2); }
+.sbody { display: grid; min-width: 0; gap: 1px; }
+.nm { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 16px; font-weight: 600; }
+.nm-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sbody .sub { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-chip { flex: none; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; }
+@media (prefers-reduced-motion: no-preference) {
+  .srow.fresh { animation: smoke-fresh 1.6s ease-out; }
+  @keyframes smoke-fresh { from { box-shadow: 0 0 0 2px var(--accent-bright), 0 0 24px rgba(88, 224, 140, 0.5); } }
+}
+
+/* The picker: search, then Recent, Leaderboard and Log, then New Log entry. */
+.picker { padding-top: calc(var(--header-h) + 12px); }
+.pick-search { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+.pick-group { max-width: 720px; margin: 0 auto; }
+.pick-group h2.lh { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.pick-group > .lrows, .pick-group > .fgroup { margin-top: 0; }
+.pick-group:last-of-type { margin-top: 20px; }
+.lrow.pick { width: 100%; grid-template-columns: 40px minmax(0, 1fr) auto; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; }
+.lrow.pick:first-child { border-top: 0; }
+.lrow.pick .nm { font-weight: 500; }
+.lrow.pick .cnt { font-size: 13px; font-weight: 700; color: var(--text-2); }
+.lrow.newlog { grid-template-columns: 40px minmax(0, 1fr); }
+.lrow.newlog .nm { color: var(--accent-bright); font-weight: 600; }
+.thumb.plus { background: none; box-shadow: none; border: 1.5px dashed rgba(88, 224, 140, 0.5); color: var(--accent-bright); }
+.thumb.plus svg { width: 18px; height: 18px; }
+.newlog-form { margin: 0 16px; }
+.pick-error { max-width: 688px; margin: 12px auto 0; padding: 0 16px; }
+
+/* The form: what you had, then When, How much (with quick amounts) and Effect. */
+.chosen { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(88, 224, 140, 0.26); background: var(--surface-1); color: var(--text); font-family: var(--num-font); font-size: 15px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
+.smoke-form textarea.input { min-height: 96px; }
+
+/* The Smokes card (option 1): the count in a big tile, when you last had it, the last three. */
+.smk { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; }
+.smk-count { min-width: 104px; padding: 8px 14px; }
+.smk-count b { font-size: 32px; line-height: 1.1; }
+.smk-last { display: grid; gap: 2px; min-width: 0; }
+.smk-last strong { font-weight: 600; }
+.smk-recent { display: grid; }
+.smk-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 44px; border-top: 1px solid var(--divider); color: var(--text); text-decoration: none; font-size: 14px; }
+.smk-row .w { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

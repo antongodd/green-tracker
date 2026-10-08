@@ -35,7 +35,10 @@ test('export everything, restore it after changes, then delete the account', asy
   });
   const archived = await post(page, '/api/products', { ...emptyProductInput(), name: 'Old Favourite', ratings: { look: 6 } });
   await post(page, `/api/products/${archived.product.id}/archived`, { value: true });
-  await post(page, '/api/log', { ...emptyLogEntryInput(), name: 'Quick One', amount: 1, photos: [{ upload: await upload(page, '#8a3b6b'), crop: null }] });
+  const quick = await post(page, '/api/log', { ...emptyLogEntryInput(), name: 'Quick One', amount: 1, photos: [{ upload: await upload(page, '#8a3b6b'), crop: null }] });
+  // Smokes (D43) travel inside the product or entry they belong to.
+  await post(page, '/api/smokes', { productId: archived.product.id, logEntryId: null, date: '2026-09-02', time: '21:15', amount: 0.4, effect: 'Sleepy' });
+  await post(page, '/api/smokes', { productId: null, logEntryId: quick.entry.id, date: '2026-09-03', time: '08:00', amount: null, effect: null });
 
   // More is grouped Account · Data · Danger zone (D38, 0.31.0: Archive moved into Data, the version to the footer).
   await page.getByRole('link', { name: 'More' }).click();
@@ -58,6 +61,9 @@ test('export everything, restore it after changes, then delete the account', asy
   expect(Buffer.from(keeper.photos[0]!.original, 'base64').subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
   expect(json.products.find((p) => p.name === 'Old Favourite')!.archived).toBe(true);
   expect(json.logEntries.map((e) => [e.name, e.amount, !!e.photo])).toEqual([['Quick One', 1, true]]);
+  expect(json.products.find((p) => p.name === 'Old Favourite')!.smokes).toEqual([{ date: '2026-09-02', time: '21:15', amount: 0.4, effect: 'Sleepy', createdAt: expect.any(Number) }]);
+  expect(keeper.smokes).toEqual([]);
+  expect(json.logEntries[0]!.smokes).toEqual([{ date: '2026-09-03', time: '08:00', amount: null, effect: null, createdAt: expect.any(Number) }]);
   const text = readFileSync(path, 'utf8');
   for (const key of ['follows', 'followers', 'blocks', 'passkeys', 'recovery', 'gt.view', 'rankBy']) expect(text).not.toContain(`"${key}`);
 
@@ -68,7 +74,7 @@ test('export everything, restore it after changes, then delete the account', asy
   const contents = page.getByRole('region', { name: 'File contents' });
   // D40: the file as tiles (Products · Log · Photos), the archived count beneath.
   await expect(contents.locator('.data-tile b')).toHaveText(['1', '1', '2']);
-  await expect(contents).toContainText('+ 1 archived product.');
+  await expect(contents).toContainText('+ 1 archived product. 2 smokes.');
   await expect(contents).toContainText(`@${username}`);
   await shot(page, '61-restore');
   await page.getByRole('button', { name: 'Replace my data with this file' }).click();
@@ -82,6 +88,10 @@ test('export everything, restore it after changes, then delete the account', asy
   await expect(page.locator('.hero-score b')).toHaveText('7.5');
   await page.goto('/log');
   await expect(page.locator('.lrow', { hasText: 'Quick One' })).toBeVisible();
+  await page.goto('/smokes');
+  await expect(page.locator('.srow')).toHaveCount(2);
+  await expect(page.locator('.srow', { hasText: 'Old Favourite' }).locator('.sub')).toHaveText('0.4 g · Sleepy');
+  await expect(page.locator('.srow', { hasText: 'Quick One' }).locator('.log-chip')).toHaveText('Log');
 
   // Delete the account: the username must be typed, and the passkey confirms.
   await page.goto('/more/delete');

@@ -10,6 +10,7 @@ import { log } from './routes/log';
 import { people } from './routes/people';
 import { data } from './routes/data';
 import { profile } from './routes/profile';
+import { smokes } from './routes/smokes';
 
 export type { Env } from './env';
 
@@ -53,6 +54,7 @@ app.route('/log', log);
 app.route('/people', people);
 app.route('/data', data);
 app.route('/profile', profile);
+app.route('/smokes', smokes);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
 

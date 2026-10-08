@@ -2,14 +2,14 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { shot, signUp } from './helpers';
 
-// You in the header (D25): top right on the four main tabs only — your photo, or your
+// You in the header (D25): top right on the main tabs only (five since 0.36.0, D43) — your photo, or your
 // letter until you add one. Tapping it opens People at your card.
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
 let username: string;
 let productId: string;
-const MAIN = ['/', '/log', '/people', '/more'];
+const MAIN = ['/', '/smokes', '/log', '/people', '/more'];
 
 const me = () => page.locator('.hdr .me-btn');
 const tabBar = () => page.getByRole('navigation', { name: 'Main' });
@@ -39,7 +39,7 @@ test.beforeAll(async ({ browser }) => {
   );
 });
 
-test('your letter sits top right on the four main tabs, with the title still centred, and nowhere else', async () => {
+test('your letter sits top right on the five main tabs, with the title still centred, and nowhere else', async () => {
   for (const path of MAIN) {
     await page.goto(path);
     await expect(me(), path).toHaveCount(1);
@@ -53,7 +53,7 @@ test('your letter sits top right on the four main tabs, with the title still cen
     expect(button.height, `${path} tap target`).toBeGreaterThanOrEqual(44);
   }
   // Screens further in keep their corners for Back, Edit and ⋯.
-  for (const path of [`/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/more/archive', '/more/passkeys', '/more/blocked']) {
+  for (const path of [`/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/smokes/new', `/smokes/new/p/${productId}`, '/more/archive', '/more/passkeys', '/more/blocked']) {
     await page.goto(path);
     await expect(page.locator('.hdr')).toBeVisible();
     await expect(me(), path).toHaveCount(0);
@@ -88,7 +88,7 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
         });
     }).observe(document.body, { childList: true, subtree: true });
   });
-  for (const tab of ['Log', 'People', 'More', 'Leaderboard', 'Log', 'Leaderboard']) {
+  for (const tab of ['Log', 'Smokes', 'People', 'More', 'Leaderboard', 'Log', 'Leaderboard']) {
     await tabBar().getByRole('link', { name: new RegExp(tab) }).click();
     await expect(tabBar().getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page');
     await expect(me().locator('.av img')).toHaveCount(1);
