@@ -23,6 +23,7 @@ import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile } from './screens/Person';
 import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
+import { PrivacyScreen } from './screens/Privacy';
 import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
@@ -114,8 +115,11 @@ function App() {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
     const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+))?$/);
+    const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+))?$/);
     const smoke = path.match(/^\/smokes\/(?:new\/(p|e)\/([^/]+)|([^/]+))$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
+    else if (preview?.[1]) screen = <SharedProfile key={path} username={me.user!.username} id={decodeURIComponent(preview[1])} preview />;
+    else if (preview) screen = <Person key={path} username={me.user!.username} preview />;
     else if (path === '/smokes/new') screen = <SmokePicker />;
     else if (smoke?.[1]) screen = <SmokeForm key={path} id={null} target={`${smoke[1]}:${decodeURIComponent(smoke[2]!)}`} />;
     else if (smoke?.[3]) screen = <SmokeForm key={path} id={decodeURIComponent(smoke[3])} />;
@@ -158,6 +162,9 @@ function App() {
           break;
         case '/more/recovery-codes':
           screen = <RecoveryCodes />;
+          break;
+        case '/more/privacy':
+          screen = <PrivacyScreen />;
           break;
         case '/more/archive':
           screen = <Archive />;

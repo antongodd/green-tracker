@@ -44,12 +44,13 @@ function isTypeFilter(value: unknown): value is TypeFilter {
  * Rank by options, derived from the rating sets and the filter.
  * All: Overall, Most used, then the de-duplicated union of every type's categories (canonical order).
  * A type: Overall, Most used, price (by unit), value for money, then that type's categories.
- * `money: false` (a followed person's view) never offers price, VFM or Most used (D44: their
- * smokes are never sent). Hit time is never offered.
+ * `money: false` (a followed person's view) never offers price or VFM. Most used (D44) is
+ * offered on your own board, and on a followed person's only when they share it (`used`, D45).
+ * Hit time is never offered.
  */
-export function rankByOptions(filter: TypeFilter, { money }: { money: boolean }): Option<RankBy>[] {
+export function rankByOptions(filter: TypeFilter, { money, used = money }: { money: boolean; used?: boolean }): Option<RankBy>[] {
   const options: Option<RankBy>[] = [{ key: 'overall', label: 'Overall' }];
-  if (money) options.push({ key: 'used', label: 'Most used' });
+  if (used) options.push({ key: 'used', label: 'Most used' });
   if (filter === 'all') {
     // Every type's set counts towards the union, including Other/Not set.
     const union = new Set(PRODUCT_TYPES.flatMap((t) => t.ratingSet.map((s) => s.key)));
@@ -82,9 +83,9 @@ export interface ViewState {
  * Validate stored view state. An invalid filter → All. A Rank by that doesn't
  * exist under the filter → Overall; `changed` tells the caller to overwrite the stored setting.
  */
-export function resolveViewState(stored: { filter?: unknown; rankBy?: unknown }, { money }: { money: boolean }) {
+export function resolveViewState(stored: { filter?: unknown; rankBy?: unknown }, { money, used = money }: { money: boolean; used?: boolean }) {
   const filter: TypeFilter = isTypeFilter(stored.filter) ? stored.filter : 'all';
-  const valid = rankByOptions(filter, { money }).some((o) => o.key === stored.rankBy);
+  const valid = rankByOptions(filter, { money, used }).some((o) => o.key === stored.rankBy);
   const rankBy = valid ? (stored.rankBy as RankBy) : 'overall';
   return { filter, rankBy, changed: filter !== stored.filter || rankBy !== stored.rankBy };
 }

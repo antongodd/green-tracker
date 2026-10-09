@@ -4,7 +4,8 @@ import type { PersonCard } from '../../shared/domain/social';
 import { fail } from '../lib/http';
 import { hit } from '../lib/rateLimit';
 import { requireUser } from '../lib/session';
-import { blockedEitherWay, canView, findUser, photoColumnSql, relationTo, shareProducts, toCards, visiblePhoto, type UserRef } from '../lib/social';
+import { blockedEitherWay, canView, findUser, photoColumnSql, relationTo, sharedSmokes, shareProducts, toCards, visiblePhoto, type UserRef } from '../lib/social';
+import { loadEffectivePrivacy } from '../lib/privacy';
 import { serveImage } from '../lib/photos';
 import { load } from './products';
 
@@ -182,14 +183,18 @@ people.delete('/u/:username/block', async (c) => {
 
 async function sharedFor(c: Context<AppEnv>) {
   const them = await other(c);
-  if (!(await canView(c.env.DB, c.var.user!.id, them.id))) fail(403, 'not_following', 'Follow to see their leaderboard.');
-  return { them, products: shareProducts(await load(c.env.DB, them.id, { archived: false })) };
+  const db = c.env.DB;
+  if (!(await canView(db, c.var.user!.id, them.id))) fail(403, 'not_following', 'Follow to see their leaderboard.');
+  // D45: their own privacy settings decide what is shared, on every request.
+  const privacy = await loadEffectivePrivacy(db, them.id);
+  const products = privacy.shareBoard ? shareProducts(await load(db, them.id, { archived: false }), privacy, await sharedSmokes(db, them.id, privacy)) : [];
+  return { them, privacy, products };
 }
 
-/** Their Leaderboard: visible products, shared fields only. */
+/** Their Leaderboard: visible products, shared fields only; `options.mostUsed` when they share it (D45). */
 people.get('/u/:username/products', async (c) => {
-  const { them, products } = await sharedFor(c);
-  return c.json({ person: await card(c, them, 'following'), products });
+  const { them, privacy, products } = await sharedFor(c);
+  return c.json({ person: await card(c, them, 'following'), products, options: { mostUsed: privacy.shareMostUsed } });
 });
 
 /** One of their product profiles. Private, archived or unknown → not found. */

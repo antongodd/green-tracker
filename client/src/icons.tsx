@@ -191,6 +191,8 @@ export const DevicesIcon = icon('M4.5 5h10a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1
 export const UploadIcon = icon('M12 15V4 M8 8l4-4 4 4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
 export const DownloadIcon = icon('M12 4v11 M8 11l4 4 4-4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
 export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9 M10 13h4', { stroke: 2 });
+/** Privacy (D45): an eye. */
+export const EyeIcon = icon('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', { stroke: 2 });
 export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5', { stroke: 2 });
 
 // Data screens (D40, 0.33.0).

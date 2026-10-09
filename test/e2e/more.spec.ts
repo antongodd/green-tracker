@@ -1,10 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // D38 (0.31.0): the More screen opens with you (photo or letter, @username, products, followers
-// and following; tap → People), then settings rows with small tinted icon tiles (Account · Data ·
-// Sign out · Danger zone), and the version in a footer under the leaf.
+// and following; tap → People), then settings rows with small tinted icon tiles (Account · Privacy
+// (D45, 0.38.0) · Data · Sign out · Danger zone), and the version in a footer under the leaf.
 test.describe.configure({ mode: 'serial' });
 let page: Page;
 let name = '';
@@ -37,7 +37,8 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(9);
+  await expect(page.locator('main .list .li')).toHaveCount(10);
+  await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
   const rows = await page.locator('main .list .li').evaluateAll((els) =>
     els.map((e) => ({ label: e.querySelector('.main')!.textContent, icon: !!e.querySelector('.li-ic svg'), tint: e.querySelector('.li-ic')?.classList[1] ?? null, href: e.getAttribute('href') })),
   );
@@ -45,6 +46,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Passkeys', icon: true, tint: 'green', href: '/more/passkeys' },
     { label: 'Recovery codes', icon: true, tint: 'amber', href: '/more/recovery-codes' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
+    { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },
     { label: 'Restore', icon: true, tint: 'teal', href: '/more/restore' },
     { label: 'Archive', icon: true, tint: 'green', href: '/more/archive' },
@@ -52,7 +54,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Sign out everywhere', icon: true, tint: 'green', href: null },
     { label: 'Delete account', icon: true, tint: 'red', href: '/more/delete' },
   ]);
-  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Data', 'Danger zone']);
+  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Data', 'Danger zone']);
   expect(await page.locator('.li.dng .main').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(255, 107, 107)');
   await page.getByRole('link', { name: /Recovery codes/ }).click();
   await expect(page).toHaveURL(/\/more\/recovery-codes$/);
@@ -70,11 +72,8 @@ test('the version sits in the footer under the leaf', async () => {
 });
 
 test('readable: the card, rows, values, headings and footer', async () => {
-  await page.goto('/more');
-  await settled(page);
-  await page.locator('.more-foot').scrollIntoViewIfNeeded();
-  await page.evaluate(() => window.scrollTo(0, 0));
-  expect(await contrastFailures(page, await textBoxes(page, '.more-me b, .more-me .who span, .li .main, .li .v, .lh.cap'), 1)).toEqual([]);
+  // The Privacy group (D45) pushed Danger zone below the fold: the top, then the bottom.
+  expect(await wholeScreenContrastFailures(page, '/more', '.more-me b, .more-me .who span, .li .main, .li .main .sub, .li .v, .lh.cap')).toEqual([]);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   expect(await contrastFailures(page, await textBoxes(page, '.more-foot span'), 1)).toEqual([]);
 });

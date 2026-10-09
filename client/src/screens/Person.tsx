@@ -16,7 +16,10 @@ import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
 import { Cluster, formatRankValue, Glints, Score, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
-import { MoreIcon } from '../icons';
+import { FlameIcon, MoreIcon } from '../icons';
+import { dayLabel, smokeAmountText, timesCaption } from '../../../shared/domain/smoke';
+import { todayIso } from '../components/ProductRow';
+import { fetchPreview } from '../privacy';
 import { EmptyCard } from '../components/EmptyCard';
 import * as api from '../people';
 import { cameFrom, linkTo, openRow } from '../router';
@@ -30,9 +33,12 @@ import { Skeleton } from '../components/Skeleton';
 const enc = encodeURIComponent;
 const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null, cutout: ph.cutout });
 
+/** Where someone's board lives: theirs under /u/…, or your own as followers see it (D45). */
+const boardPath = (username: string, preview?: boolean) => (preview ? '/more/privacy/preview' : `/u/${enc(username)}`);
+
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
-function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: Podium | null; value: number | null; rankBy: ViewState['rankBy'] }) {
-  const href = `/u/${enc(p.username)}/p/${enc(p.product.id)}`;
+function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: Podium | null; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean }) {
+  const href = `${boardPath(p.username, p.preview)}/p/${enc(p.product.id)}`;
   const key = `u:${p.username}`;
   const open = (e: MouseEvent) => {
     rememberRow(key, p.product.id, e.currentTarget as HTMLElement);
@@ -52,8 +58,17 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
           </div>
         )}
       </div>
-      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value)} />
+      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value)} flame={p.rankBy === 'used'} />
     </a>
+  );
+}
+
+/** On your own board as followers see it (D45): says so, and links back to the switches. */
+function PreviewNote() {
+  return (
+    <p class="pv-note">
+      This is what your followers see now. <a href="/more/privacy" onClick={linkTo('/more/privacy')}>Change it in Privacy</a>
+    </p>
   );
 }
 
@@ -125,29 +140,47 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
   );
 }
 
-/** Someone else's page: their read-only Leaderboard if you follow them; otherwise just a Follow card. */
-export function Person(p: { username: string }) {
+/**
+ * Someone else's page: their read-only Leaderboard if you follow them; otherwise just a Follow card.
+ * `preview` (D45): your own board exactly as your followers get it now, from the same server code.
+ */
+export function Person(p: { username: string; preview?: boolean }) {
   const [person, setPerson] = useState<PersonCard | null>(null);
   const [products, setProducts] = useState<SharedProduct[] | null>(null);
-  const [view, setView] = useState<ViewState>(loadOthersView);
+  // Most used is offered only when they share it (D45).
+  const [mostUsed, setMostUsed] = useState(false);
+  const [view, setView] = useState<ViewState>(() => loadOthersView());
   const [error, setError] = useState<{ missing: boolean; text: string } | null>(null);
-  const arrived = useRef(/^\/u\/[^/]+\/p\//.test(cameFrom() ?? ''));
+  const arrived = useRef(/^\/u\/[^/]+\/p\/|^\/more\/privacy\/preview\/p\//.test(cameFrom() ?? ''));
+  const listKey = p.preview ? 'u:preview' : `u:${p.username}`;
 
   useEffect(() => {
+    const show = (board: { products: SharedProduct[]; options: { mostUsed: boolean } }) => {
+      setMostUsed(board.options.mostUsed);
+      setView(loadOthersView(board.options.mostUsed));
+      setProducts(board.products);
+    };
+    if (p.preview) {
+      setPerson({ username: p.username, relation: 'following' });
+      fetchPreview()
+        .then(show)
+        .catch((e) => setError({ missing: false, text: errorText(e) }));
+      return;
+    }
     api
       .person(p.username)
       .then(async (card) => {
         setPerson(card);
-        if (card.relation === 'following') setProducts(await api.theirProducts(card.username));
+        if (card.relation === 'following') show(await api.theirBoard(card.username));
       })
       .catch((e) => setError({ missing: e instanceof ApiError && e.status === 404, text: errorText(e) }));
-  }, [p.username]);
+  }, [p.username, p.preview]);
 
   const restored = useRef(false);
   useLayoutEffect(() => {
     if (restored.current || !products) return;
     restored.current = true;
-    restoreRow(`u:${person!.username}`, arrived.current);
+    restoreRow(listKey, arrived.current);
   }, [products]);
 
   if (error) {
@@ -171,20 +204,23 @@ export function Person(p: { username: string }) {
   const empty = products ? leaderboardEmptyState(products.length, rows.length, view) : null;
   const tiles = leaderboardTiles(rows.map((r) => r.product));
   const change = (next: ViewState) => {
-    setView(saveOthersView(next));
+    setView(saveOthersView(next, mostUsed));
     window.scrollTo(0, 0);
   };
+  const back = p.preview ? '/more/privacy' : '/people';
+  const tab = p.preview ? 'more' : 'people';
   const typeLabel = view.filter === 'all' ? null : productType(view.filter).label;
 
   // "@username" in the header is the signal you're viewing someone else's tracker (design §8).
   return (
     <>
-      <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to="/people" />} />
+      <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to={back} />} />
       <main class="screen">
+        {p.preview && <PreviewNote />}
         {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} used={mostUsed} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
             {/* PRODUCTS and AVERAGE only — never TOTAL. */}
             <Tiles
               tiles={[
@@ -208,8 +244,8 @@ export function Person(p: { username: string }) {
           </EmptyCard>
         )}
         {empty === 'rank-empty' && (
-          <EmptyCard art="unrated" title="Nothing rated on that">
-            <p>None of these products has that rating yet.</p>
+          <EmptyCard art="unrated" title={view.rankBy === 'used' ? 'Nothing smoked yet' : 'Nothing rated on that'}>
+            <p>{view.rankBy === 'used' ? `None of these products has been smoked yet.` : 'None of these products has that rating yet.'}</p>
             <button class="btn secondary" style={{ width: 'auto' }} onClick={() => change({ ...view, rankBy: 'overall' })}>
               Rank by Overall
             </button>
@@ -218,13 +254,50 @@ export function Person(p: { username: string }) {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} podium={r.podium} value={r.value} rankBy={view.rankBy} />
+              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} podium={r.podium} value={r.value} rankBy={view.rankBy} preview={p.preview} />
             ))}
           </div>
         )}
       </main>
-      <TabBar active="people" />
+      <TabBar active={tab} />
     </>
+  );
+}
+
+/**
+ * What a follower sees of the owner's smokes on a product (D45), only what they share:
+ * the count with the flame, and (if shared) each smoke's day, time and amount. Never an effect.
+ */
+function SharedSmokes(p: { product: SharedProduct }) {
+  const { smokeCount, smokes } = p.product;
+  if (smokeCount === undefined && smokes === undefined) return null;
+  const n = smokeCount ?? smokes!.length;
+  const today = todayIso();
+  return (
+    <section class="sect smokes-card" aria-labelledby="their-smokes-h">
+      <span class="cap" id="their-smokes-h">
+        Smokes
+      </span>
+      <div class="smk">
+        <div class="tile smk-count">
+          <b>
+            <FlameIcon class="flame" />
+            {n}
+          </b>
+          <span class="cap">{timesCaption(p.product.productType, n)}</span>
+        </div>
+      </div>
+      {smokes && smokes.length > 0 && (
+        <div class="smk-recent">
+          {smokes.slice(0, 10).map((s, i) => (
+            <div class="smk-row" key={i}>
+              <span class="w">{[dayLabel(s.date, today), s.amount !== null ? smokeAmountText(p.product.productType, s.amount) : null].filter(Boolean).join(' · ')}</span>
+              <span class="num">{s.time}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -233,32 +306,43 @@ export function Person(p: { username: string }) {
  * and details limited to strain type, product type, concentrate type, country and
  * Source (D1). No price history, VFM, notes, Leafly, crop or any action.
  */
-export function SharedProfile(p: { username: string; id: string }) {
+export function SharedProfile(p: { username: string; id: string; preview?: boolean }) {
   const [product, setProduct] = useState<SharedProduct | null>(null);
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<number | null>(null);
-  // Its podium place on their board (D22), worked out only from what you can see.
+  // Its podium place on their board (D22), worked out only from what you can see, under the
+  // same Rank by as their board (Most used only when they share it, D45).
   const [list, setList] = useState<SharedProduct[] | null>(null);
-  const [view] = useState(loadOthersView);
+  const [view, setView] = useState(() => loadOthersView());
 
   useEffect(() => {
-    api
-      .theirProduct(p.username, p.id)
-      .then(setProduct)
-      .catch((e) => setError(errorText(e)));
-    api
-      .theirProducts(p.username)
-      .then(setList)
-      .catch(() => {});
-  }, [p.username, p.id]);
+    const board = p.preview ? fetchPreview() : api.theirBoard(p.username);
+    board
+      .then((b) => {
+        setView(loadOthersView(b.options.mostUsed));
+        setList(b.products);
+        if (p.preview) {
+          const mine = b.products.find((x) => x.id === p.id);
+          if (mine) setProduct(mine);
+          else setError('Your followers can’t see this product.');
+        }
+      })
+      .catch((e) => (p.preview ? setError(errorText(e)) : undefined));
+    if (!p.preview)
+      api
+        .theirProduct(p.username, p.id)
+        .then(setProduct)
+        .catch((e) => setError(errorText(e)));
+  }, [p.username, p.id, p.preview]);
 
-  const backTo = `/u/${enc(p.username)}`;
+  const backTo = boardPath(p.username, p.preview);
+  const tab = p.preview ? 'more' : 'people';
   if (!product) {
     return (
       <>
         <Header title={`@${p.username}`} leaf={false} left={<BackButton to={backTo} />} />
         <main class="screen">{error ? <div class="empty"><h2>Not available</h2><p>{error}</p></div> : <Skeleton kind="product" />}</main>
-        <TabBar active="people" />
+        <TabBar active={tab} />
       </>
     );
   }
@@ -296,6 +380,7 @@ export function SharedProfile(p: { username: string; id: string }) {
           whose="their"
         />
         <Ratings product={product} />
+        <SharedSmokes product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
@@ -308,8 +393,9 @@ export function SharedProfile(p: { username: string; id: string }) {
             <dl class="kv">{details.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}</dl>
           </section>
         )}
+        {p.preview && <PreviewNote />}
       </main>
-      <TabBar active="people" />
+      <TabBar active={tab} />
       {viewing !== null && <PhotoViewer photos={photos} start={viewing} onClose={() => setViewing(null)} />}
     </>
   );

@@ -5,18 +5,20 @@ import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, DevicesIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
 import { linkTo } from '../router';
+import { fetchPrivacy } from '../privacy';
+import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
 import { formatDate, useSession } from '../session';
 
 declare const __APP_VERSION__: string;
 
-type Tint = 'green' | 'amber' | 'teal' | 'red';
+type Tint = 'green' | 'amber' | 'teal' | 'red' | 'violet';
 /** A settings row (D38, 0.31.0): a small tinted icon tile, the label, an optional value and an arrow. */
-function Row(p: { label: string; value?: string; to?: string; onClick?: () => void; danger?: boolean; icon?: preact.ComponentType<{ class?: string }>; tint?: Tint }) {
+function Row(p: { label: string; sub?: string; value?: string; to?: string; onClick?: () => void; danger?: boolean; icon?: preact.ComponentType<{ class?: string }>; tint?: Tint }) {
   const Icon = p.icon;
   const inner = (
     <>
@@ -25,7 +27,14 @@ function Row(p: { label: string; value?: string; to?: string; onClick?: () => vo
           <Icon />
         </span>
       )}
-      <span class="main">{p.label}</span>
+      {p.sub ? (
+        <span class="main">
+          <span>{p.label}</span>
+          <span class="sub">{p.sub}</span>
+        </span>
+      ) : (
+        <span class="main">{p.label}</span>
+      )}
       {p.value && <span class="v">{p.value}</span>}
       {p.to && <ChevronRight class="chev" />}
     </>
@@ -64,6 +73,7 @@ export function More() {
   const [archived, setArchived] = useState<number | null>(null);
   const [products, setProducts] = useState<number | null>(() => cachedProducts()?.length ?? null);
   const [counts, setCounts] = useState<{ followers: number; following: number } | null>(null);
+  const [privacy, setPrivacy] = useState<Privacy | null>(null);
 
   useEffect(() => {
     fetchArchived()
@@ -71,6 +81,9 @@ export function More() {
       .catch(() => {});
     fetchProducts()
       .then((list) => setProducts(list.length))
+      .catch(() => {});
+    fetchPrivacy()
+      .then(setPrivacy)
       .catch(() => {});
     Promise.all([people.followers(), people.following()])
       .then(([f, g]) => setCounts({ followers: f.length, following: g.length }))
@@ -110,6 +123,13 @@ export function More() {
             <Row label="Passkeys" value={String(passkeys)} to="/more/passkeys" icon={KeyIcon} />
             <Row label="Recovery codes" value={`${codes} left`} to="/more/recovery-codes" icon={LifeRingIcon} tint="amber" />
             <Row label="Blocked people" to="/more/blocked" icon={BlockIcon} />
+          </div>
+        </div>
+        {/* D45: what your followers see. */}
+        <div class="lh cap">Privacy</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="What followers see" sub={privacy ? privacySummary(privacy) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
           </div>
         </div>
         <div class="lh cap">Data</div>

@@ -32,7 +32,7 @@ function Pill(p: { id: string; name: string; label: string; active: boolean; val
  * The control row under the header (P4: sticky). Rank by on the left (Leaderboard
  * only), Type on the right in the same place on every screen.
  */
-export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boolean; onFilter: (f: TypeFilter) => void; onRankBy?: (r: RankBy) => void }) {
+export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boolean; used?: boolean; onFilter: (f: TypeFilter) => void; onRankBy?: (r: RankBy) => void }) {
   const row = useRef<HTMLDivElement>(null);
   // 0 = full labels, 1 = short Rank label, 2 = short Rank and Type labels.
   const [compact, setCompact] = useState(0);
@@ -62,7 +62,7 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
   const typeLabel = filterOptions().find((o) => o.key === p.filter)!.label;
   let rank: { options: { key: string; label: string }[]; label: string } | null = null;
   if (p.rankBy && p.onRankBy) {
-    const options = rankByOptions(p.filter, { money: p.money ?? true });
+    const options = rankByOptions(p.filter, { money: p.money ?? true, used: p.used ?? p.money ?? true });
     const full = options.find((o) => o.key === p.rankBy)?.label ?? 'Overall';
     const short = p.rankBy === 'price' && p.filter !== 'all' ? SHORT_PRICE[productType(p.filter).unit.amount] : SHORT_RANK[p.rankBy];
     rank = { options, label: compact >= 1 && short ? short : full };

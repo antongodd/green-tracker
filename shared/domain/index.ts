@@ -14,3 +14,4 @@ export * from './logEntry';
 export * from './social';
 export * from './backup';
 export * from './smoke';
+export * from './privacy';

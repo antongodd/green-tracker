@@ -2,7 +2,8 @@ import type { Product } from '../../shared/domain/product';
 import { productType } from '../../shared/domain/productTypes';
 import type { Ratings } from '../../shared/domain/ratings';
 import { tieBreak } from '../../shared/domain/leaderboard';
-import type { PersonCard, Relation, SharedProduct } from '../../shared/domain/social';
+import type { PersonCard, Relation, SharedProduct, SharedSmoke } from '../../shared/domain/social';
+import type { Privacy } from '../../shared/domain/privacy';
 import { usernameKey } from '../../shared/domain/account';
 
 export interface UserRef {
@@ -53,9 +54,11 @@ export async function canView(db: D1Database, viewer: string, owner: string): Pr
  * the other: the owner follows you or has asked to (they reached out to you), or
  * you're their approved follower. Sending someone a request doesn't reveal their
  * photo until they approve it. Both arguments are SQL expressions (a parameter or
- * a column), so lists and single checks share one definition.
+ * a column), so lists and single checks share one definition. D45 only narrows it:
+ * an owner who has switched their profile photo off is shown to no one else.
  */
 export const photoVisibleSql = (viewer: string, owner: string) => `(${owner} = ${viewer} OR (
+  NOT EXISTS (SELECT 1 FROM privacy_settings ps WHERE ps.user_id = ${owner} AND ps.share_profile_photo = 0) AND
   (EXISTS (SELECT 1 FROM follows pf WHERE pf.follower_id = ${owner} AND pf.followed_id = ${viewer})
     OR EXISTS (SELECT 1 FROM follows pf WHERE pf.follower_id = ${viewer} AND pf.followed_id = ${owner} AND pf.status = 'approved'))
   AND NOT EXISTS (SELECT 1 FROM blocks pb WHERE (pb.blocker_id = ${viewer} AND pb.blocked_id = ${owner}) OR (pb.blocker_id = ${owner} AND pb.blocked_id = ${viewer}))))`;
@@ -80,9 +83,11 @@ export function toCards(rows: { username: string; relation: Relation; photo?: st
 /**
  * Builds a follower's copy of a product from an explicit allow-list — never by
  * copying the record and deleting fields, so nothing new can leak by accident.
- * The caller has already excluded private and archived products.
+ * The caller has already excluded private and archived products. `privacy` is the
+ * owner's effective settings (D45): what's switched off is blanked, and the smoke
+ * count and smokes are added only when switched on.
  */
-export function shareProduct(p: Product, tieRank: number): SharedProduct {
+export function shareProduct(p: Product, tieRank: number, privacy: Privacy, smokes: readonly SharedSmoke[] = []): SharedProduct {
   const def = productType(p.productType);
   const ratings: Ratings = {};
   for (const slot of def.ratingSet) {
@@ -98,20 +103,39 @@ export function shareProduct(p: Product, tieRank: number): SharedProduct {
     productTypeOther: def.freeText ? p.productTypeOther : null,
     concentrateType: isConcentrate ? p.concentrateType : null,
     concentrateTypeOther: isConcentrate && p.concentrateType === 'other' ? p.concentrateTypeOther : null,
-    country: p.country,
-    countryOther: p.country === 'OTHER' ? p.countryOther : null,
-    source: p.source,
+    country: privacy.shareCountry ? p.country : null,
+    countryOther: privacy.shareCountry && p.country === 'OTHER' ? p.countryOther : null,
+    source: privacy.shareSource ? p.source : null,
     hitTimeMinutes: p.productType === 'edibles' ? p.hitTimeMinutes : null,
     ratings,
-    photos: p.photos.map((ph) => ({ id: ph.id, version: ph.version, cutout: ph.cutout })),
+    photos: privacy.sharePhotos ? p.photos.map((ph) => ({ id: ph.id, version: ph.version, cutout: ph.cutout })) : [],
     tieRank,
+    ...(privacy.shareSmokeCounts ? { smokeCount: smokes.length } : {}),
+    ...(privacy.shareSmokes ? { smokes: smokes.map(({ date, time, amount }) => ({ date, time, amount })) } : {}),
   };
 }
 
-/** The follower's list: visible products only, each with the owner's tie-break rank (D3). */
-export function shareProducts(products: Product[]): SharedProduct[] {
+/**
+ * The follower's list: visible products only, each with the owner's tie-break rank (D3).
+ * Nothing at all when the owner doesn't share their Leaderboard (D45). `smokes` maps a
+ * product to its smokes, newest first (only read when counts or smokes are shared).
+ */
+export function shareProducts(products: Product[], privacy: Privacy, smokes: ReadonlyMap<string, SharedSmoke[]> = new Map()): SharedProduct[] {
+  if (!privacy.shareBoard) return [];
   const visible = products.filter((p) => !p.private && !p.archived);
   const ordered = [...visible].sort(tieBreak);
   const rank = new Map(ordered.map((p, i) => [p.id, i]));
-  return visible.map((p) => shareProduct(p, rank.get(p.id)!));
+  return visible.map((p) => shareProduct(p, rank.get(p.id)!, privacy, smokes.get(p.id) ?? []));
+}
+
+/** The owner's smokes by product, newest first, as followers may get them (D45): only when shared. */
+export async function sharedSmokes(db: D1Database, ownerId: string, privacy: Privacy): Promise<Map<string, SharedSmoke[]>> {
+  const out = new Map<string, SharedSmoke[]>();
+  if (!privacy.shareBoard || (!privacy.shareSmokeCounts && !privacy.shareSmokes)) return out;
+  const { results } = await db
+    .prepare('SELECT product_id, date, time, amount FROM smokes WHERE user_id = ?1 AND product_id IS NOT NULL ORDER BY date DESC, time DESC, created_at DESC')
+    .bind(ownerId)
+    .all<{ product_id: string; date: string; time: string; amount: number | null }>();
+  for (const r of results) out.set(r.product_id, [...(out.get(r.product_id) ?? []), { date: r.date, time: r.time, amount: r.amount }]);
+  return out;
 }
