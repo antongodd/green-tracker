@@ -38,10 +38,10 @@ beforeAll(async () => {
 });
 
 describe('Smokes switched off (D46)', () => {
-  it('the app is told which sites have Smokes, signed in or not', async () => {
-    expect((await owner.get('/api/auth/me')).json.features).toEqual({ smokes: false });
-    expect((await live().get('/api/auth/me')).json).toEqual({ user: null, features: { smokes: false } });
-    expect((await new Browser().get('/api/auth/me')).json.features).toEqual({ smokes: true });
+  it('the app is told which site it is on and whether it has Smokes, signed in or not (D47)', async () => {
+    expect((await owner.get('/api/auth/me')).json).toMatchObject({ features: { smokes: false }, site: 'live' });
+    expect((await live().get('/api/auth/me')).json).toEqual({ user: null, features: { smokes: false }, site: 'live' });
+    expect((await new Browser().get('/api/auth/me')).json).toEqual({ user: null, features: { smokes: true }, site: 'dev' });
   });
 
   it('nothing can be added, changed or deleted', async () => {

@@ -34,7 +34,8 @@ auth.get('/me', async (c) => {
   const user = c.var.user;
   // D46: which features this site has (the dev site has Smokes; live doesn't yet).
   const features = siteFeatures(c.env);
-  if (!user) return c.json({ user: null, features });
+  const site = c.env.SITE === 'dev' ? 'dev' : 'live'; // D47
+  if (!user) return c.json({ user: null, features, site });
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes,
@@ -56,6 +57,7 @@ auth.get('/me', async (c) => {
     recoveryCodesLeft: counts?.codes ?? 0,
     pendingRequests: counts?.requests ?? 0,
     features,
+    site,
   });
 });
 

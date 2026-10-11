@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.39.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46)
+**Current version:** 0.40.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47)
 
 ---
 
@@ -33,6 +33,7 @@ this document records how they were implemented and every decision made on top.
 | `npm run dev` | Local dev (Vite + Worker in workerd). Copy `.dev.vars.example` to `.dev.vars` first so passkeys bind to localhost |
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
 | `npm run deploy` | Build, apply remote migrations, deploy — normally run by GitHub Actions on every push to `main` (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
+| `npm run deploy:dev` | The same for the dev site (D47): builds with `CLOUDFLARE_ENV=dev`, migrates `green-tracker-dev`, deploys `green-tracker-dev`. Normally run by GitHub Actions on every push to `dev` |
 | `npm run deploy:embedded` | Same, but embeds the client files in the Worker instead of using Workers static assets. For the cloud build environment, whose proxy breaks the assets upload (see §4, Deployment) |
 
 ### Cloudflare resources
@@ -42,6 +43,9 @@ this document records how they were implemented and every decision made on top.
 | Worker | `green-tracker` | https://green-tracker.green-tracker.workers.dev |
 | D1 (WEUR) | `green-tracker` | `0cb063fc-ce0e-4f8f-a7b1-0354e47b325f` |
 | R2 | `green-tracker-photos` | |
+| Worker (dev site, D47) | `green-tracker-dev` | https://green-tracker-dev.green-tracker.workers.dev (Cloudflare Access: the owner's email only) |
+| D1 (dev site, WEUR) | `green-tracker-dev` | `d4126bea-f68d-4c76-a44e-d5f802f4be3a` |
+| R2 (dev site) | `green-tracker-dev-photos` | |
 
 ## 2. Build phases
 
@@ -110,6 +114,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D44 | **Most used in Rank by** (2026-10-08; option C "Flame" with never-smoked "Left out" of https://claude.ai/artifact/1w5ocZnqLeudXUHW3qh7Mk). Part 2 of Smokes (D43). Only on your own Leaderboard: a friend's board doesn't offer it, at least until the Privacy settings exist (owner's answer). | **Rank by → Most used**, second after Overall under All and under each Type, ranks your products by how many times you've had them, all time (a Log entry's smokes count once it's on the Leaderboard; archived products stay off it, as before). A row shows the **Smokes flame in amber** before the count (rounded numbers) and **TIMES** under it. **Never smoked is left out**, as Price leaves out products with no purchase, and a line under the rows says how many ("2 never smoked, not shown"). **A tie goes to the higher Overall** (unrated last), then the usual order. The **top three** get the rainbow, Diamond and Gold, the number flowing through the tier's colours (the flame stays amber); rows below are plain (**no heat**: a count isn't a score out of 10). **Product pages** of the top three wear their place: "#1 by Most used", "#2 in Flower by Most used". Nothing smoked yet: "Nothing smoked yet" with **Add a smoke** and Rank by Overall. Tiles, data, export and privacy unchanged; the setting stays per device (D5). See §4 *Most used*. |
 | D45 | **Privacy: choose what your followers see** (2026-10-08; layout B "Preview on top" of https://claude.ai/artifact/U5db1F9da2tEMW89qDvAfc, every switch the owner listed kept, "My Smokes" included and marked Not recommended; one setting for all followers; nobody is told). Narrows D1 and D23 only when switched off; D43/D44 data reaches followers only when switched on. | **More → Privacy → What followers see** (a violet eye, between Account and Data, with a summary line, e.g. "Followers see: Leaderboard, Source, Country, Photos"). The screen: a **What followers see** card on top, built by the server's own follower code, showing your top product as followers get it and what else they see, with **Open their view ›** (your board and product pages exactly as followers get them, under More); then switches that **save at once**: **Your Leaderboard** (Share my Leaderboard), **On your products** (Source, Country, Product photos), **Smokes** (How many times I've had each; Most used on my Leaderboard; My Smokes: what and when, "Not recommended"), **You** (My profile photo). **Starting point = before 0.38.0**: the first four and the profile photo on, the three Smokes switches off. A switch whose prerequisite is off is greyed and says so ("Needs … on"): everything but the profile photo needs Share my Leaderboard; Most used needs the counts. **What followers get:** Leaderboard off → no products, no pages, no photo files ("hasn't shared any products"); Source / Country off → blank; photos off → the type's mark, and the photo files refused; counts on → a Smokes card with the flame and "Smoked N times" on your product pages; Most used on → their Rank by offers it on your board (flame rows, podium badge); My Smokes on → that card lists each smoke's day, time and amount, **never the effect**, never Log entries; profile photo off → your letter for everyone else everywhere (search, lists, requests, your page). Never shared, whatever the switches: prices, purchases, suppliers, notes, date tried, Leafly, the Log, private and archived products. Strangers still get nothing. **Export / Restore** carry the settings (an older file leaves yours alone); Delete account removes them. A new table (`migrations/0007_privacy.sql`). See §4 *Privacy*. |
 | D46 | **Smokes off on the live site until it's re-released** (2026-10-11; the owner wants live "back to how it was before" Smokes while it's rebuilt and tested, with Privacy kept). A per-site switch, not a removal: the code stays, the live site runs with it off, a test site with it on (the dev site, next). | **Where Smokes is off:** four tabs again (Leaderboard, Log, People, More); `/smokes` addresses open the Leaderboard; no Smokes card on product or Log entry pages; no Most used in Rank by (a stored Most used shows Overall but is kept for when it's back); Privacy keeps Leaderboard, Source, Country, Product photos and My profile photo but offers no Smokes switches, and More's summary leaves them out; Export, Restore and Delete account don't mention smokes. Nothing can be added, changed or deleted (the server refuses with 404). **Nothing is deleted:** smokes already saved stay, and still go into an export and come back with a restore; the three Smokes privacy switches keep what you set but count as off, so no smoke count, Most used or smoke ever reaches a follower. Deleting a Log entry still takes its (hidden) smokes with it, as before. Accounts, passkeys, followers and all other data are untouched. See §4 *Smokes switch*. |
+| D47 | **A private dev site** (2026-10-11; the owner wants to test new work on their phone before anyone else sees it, then push it live when ready; Cloudflare email lock, live data copied in once, an orange DEV label and "GT Dev"). | **Two sites from one codebase.** *Dev*: https://green-tracker-dev.green-tracker.workers.dev — only the owner's email gets in (a Cloudflare Access code), its own database and photos (never live data), Smokes on, an orange **DEV** label after the title on every screen and the sign-in screen, called **GT Dev** on the Home Screen. *Live*: unchanged. **Flow:** work goes in by pull request to the `dev` branch ("merge" → the dev site); "go live" → a release pull request from `dev` to `main`, the same tests, then live. A release is merged with a merge commit (not squashed) so `dev` and `main` stay in step. **Data:** the owner signs up on dev (passkeys belong to one address, so a separate account) and copies their own data in with Export on live and Restore on dev; nobody else's data is on dev. See §4 *Dev site*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -593,6 +598,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   Source off in the preview and the follower's board and page, counts → Most used → smokes on a follower's page and board, the
   board off, Open their view, axe, pixel contrast); `more.spec.ts` (the new row and group), `datascreens.spec.ts` (the Export line).
 
+- **Dev site (D47, 0.40.0).** `wrangler.jsonc` gains `env.dev` (Worker `green-tracker-dev`; D1 `green-tracker-dev`, R2
+  `green-tracker-dev-photos`; vars `RP_ID` / `ORIGIN` for its address, `SMOKES: "on"`, `SITE: "dev"`; bindings and vars
+  aren't inherited, so all are listed). The Vite Cloudflare plugin builds it when `CLOUDFLARE_ENV=dev`; `vite.config.ts`'s
+  `siteName()` then renames the page title, `apple-mobile-web-app-title` and the manifest's names to "GT Dev" (the live build is
+  untouched). `server/env.ts` `SITE`; `/api/auth/me` returns `site: 'dev' | 'live'`; `Header` and `SignIn` show
+  `b.dev-badge` ("DEV", dark on `--warning`) when it's `dev`. CI (`.github/workflows/ci.yml`): pushes to `dev` run the tests
+  then `deploy-dev` (`npm run deploy:dev`; no check from outside, as the lock keeps it out); pushes to `main` deploy live as
+  before. The lock is Cloudflare Access (Zero Trust, free plan) on the Worker's workers.dev address, allowing the owner's
+  email with a one-time code. Tested: `test/domain/siteConfig.test.ts` (live has no Smokes, DEV label or test-only vars; dev
+  has Smokes, the label, its own address, database and bucket); `test/api/smokesOff.test.ts` (`site` on both servers; the
+  main API test server is set up like dev); `test/e2e/dev-site.spec.ts` (no label on live; on dev the label on every screen,
+  inside the header bar, readable, axe; on the sign-in screen).
+
 - **Smokes switch (D46, 0.39.0).** One Worker variable, `SMOKES` (`"on"` enables; unset on the live site in `wrangler.jsonc`),
   read by `siteFeatures(env)` in `server/env.ts` → `SiteFeatures { smokes }` (`shared/domain/privacy.ts`). Server:
   `/api/auth/me` returns `features` (signed in or out); `server/routes/smokes.ts` refuses anything but `GET` with 404 when off
@@ -968,6 +986,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.40.0 — a private dev site (owner request)
+- A second site, only for you, to try new work on your phone before it goes live (decision D47):
+  https://green-tracker-dev.green-tracker.workers.dev, behind a Cloudflare email-code lock, with its own data, Smokes on, an
+  orange **DEV** label and "GT Dev" on the Home Screen.
+- From now on "merge" puts work on the dev site; "go live" sends what's on dev to the live site, through the same tests.
+- Nothing changes on the live site.
+- Tests: 3 config checks (`siteConfig.test.ts`), 3 Playwright tests (`dev-site.spec.ts`); the API test server now runs set up
+  like the dev site.
 
 ### 0.39.0 — Smokes off on the live site (owner request)
 - The live site is back to how it was before Smokes (decision D46): four tabs, no Smokes cards, no Most used, no Smokes

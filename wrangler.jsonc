@@ -23,5 +23,27 @@
     "RP_ID": "green-tracker.green-tracker.workers.dev",
     "ORIGIN": "https://green-tracker.green-tracker.workers.dev"
   },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // The dev site (D47): only the owner can open it (a Cloudflare Access email lock), with its
+  // own database and photos, and Smokes on. Built with CLOUDFLARE_ENV=dev; deployed from the
+  // dev branch. Bindings and vars aren't inherited, so each is listed again.
+  "env": {
+    "dev": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "green-tracker-dev",
+          "database_id": "d4126bea-f68d-4c76-a44e-d5f802f4be3a",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-dev-photos" }],
+      "vars": {
+        "RP_ID": "green-tracker-dev.green-tracker.workers.dev",
+        "ORIGIN": "https://green-tracker-dev.green-tracker.workers.dev",
+        "SMOKES": "on",
+        "SITE": "dev"
+      }
+    }
+  }
 }

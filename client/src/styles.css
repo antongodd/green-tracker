@@ -114,6 +114,8 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .hdr .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-size: 17px; font-weight: 600; }
 .hdr .title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hdr .title svg { width: 26px; height: 26px; flex: none; }
+/* D47: the dev site's label, so it's never mistaken for the live one. Dark on amber: 9:1. */
+.dev-badge { flex: none; padding: 2px 6px; border-radius: 6px; background: var(--warning); color: #1a1205; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; }
 .hbtn { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; min-width: 44px; padding: 0 8px; color: var(--accent-bright); font-size: 16px; background: none; border: 0; text-decoration: none; }
 .hbtn svg { width: 22px; height: 22px; }
 

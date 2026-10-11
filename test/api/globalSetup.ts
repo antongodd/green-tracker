@@ -51,7 +51,7 @@ async function start(vars: Record<string, string> = {}): Promise<{ base: string;
 export async function setup(project: TestProject) {
   // The two can't share a port pick: start one after the other.
   const main = await start();
-  const live = await start({ SMOKES: 'off' });
+  const live = await start({ SMOKES: 'off', SITE: 'live' });
   project.provide('apiBase', main.base);
   project.provide('persistDir', main.persist);
   project.provide('liveApiBase', live.base);
