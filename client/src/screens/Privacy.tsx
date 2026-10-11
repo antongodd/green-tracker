@@ -16,6 +16,7 @@ import { ChevronRight, FlameIcon } from '../icons';
 import { useOnline } from '../online';
 import { fetchPreview, fetchPrivacy, savePrivacy } from '../privacy';
 import { linkTo } from '../router';
+import { useSmokesOn } from '../session';
 
 interface Switch {
   key: PrivacyKey;
@@ -105,6 +106,7 @@ export function PrivacyScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const online = useOnline();
+  const smokesOn = useSmokesOn();
 
   const reloadPreview = () =>
     fetchPreview()
@@ -136,6 +138,8 @@ export function PrivacyScreen() {
   }
 
   const s = settings ?? DEFAULT_PRIVACY;
+  // D46: where Smokes is off its switches aren't offered (your settings for them are kept).
+  const groups = smokesOn ? GROUPS : GROUPS.filter((g) => g.title !== 'Smokes');
   return (
     <>
       <Header title="Privacy" left={<BackButton to="/more" />} />
@@ -147,7 +151,7 @@ export function PrivacyScreen() {
           </p>
         )}
         {settings &&
-          GROUPS.map((g) => (
+          groups.map((g) => (
             <section key={g.title} aria-label={g.title}>
               <h2 class="lh cap">{g.title}</h2>
               <div class="wrap">

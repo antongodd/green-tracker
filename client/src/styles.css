@@ -127,7 +127,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
   border-top: 1px solid var(--bar-line);
 }
 .nav::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--safe-bottom); background: var(--bar-solid); }
-.nav .tabs { display: grid; grid-template-columns: repeat(5, 1fr); height: 49px; max-width: 720px; margin: 0 auto; }
+.nav .tabs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 49px; max-width: 720px; margin: 0 auto; }
 .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; font-weight: 600; color: var(--text-2); text-decoration: none; background: none; border: 0; }
 .tab svg { width: 26px; height: 26px; }
 .tab { isolation: isolate; }

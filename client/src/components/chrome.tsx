@@ -1,7 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { BackIcon, BoardIcon, BoardLineIcon, FlameIcon, FlameLineIcon, LeafGlass, LogIcon, LogLineIcon, MoreIcon, MoreLineIcon, PeopleIcon, PeopleLineIcon } from '../icons';
 import { back, linkTo } from '../router';
-import { useSession } from '../session';
+import { useSession, useSmokesOn } from '../session';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
@@ -50,13 +50,14 @@ const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Lin
   { key: 'more', label: 'More', path: '/more', Icon: MoreIcon, Line: MoreLineIcon },
 ];
 
-/** Tab bar (D6, P1; five tabs since 0.36.0, D43). The active tab is the only indicator of the main screen. */
+/** Tab bar (D6, P1; five tabs since 0.36.0, D43; four where Smokes is off, D46). The active tab is the only indicator of the main screen. */
 export function TabBar(p: { active: Tab | null }) {
   const requests = useSession().me.pendingRequests ?? 0;
+  const tabs = useSmokesOn() ? TABS : TABS.filter((t) => t.key !== 'smokes');
   return (
     <nav class="nav" aria-label="Main">
       <div class="tabs">
-        {TABS.map(({ key, label, path, Icon, Line }) => (
+        {tabs.map(({ key, label, path, Icon, Line }) => (
           <a key={key} class="tab" href={path} onClick={linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
             {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
             <span class="tab-l">{label}</span>

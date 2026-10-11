@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { AppEnv } from '../env';
+import { siteFeatures, type AppEnv } from '../env';
 import { effectivePrivacy, validatePrivacy } from '../../shared/domain/privacy';
 import { fail, jsonBody } from '../lib/http';
 import { loadPrivacy, savePrivacyStatement } from '../lib/privacy';
@@ -29,7 +29,7 @@ privacy.put('/', async (c) => {
 privacy.get('/preview', async (c) => {
   const userId = c.var.user!.id;
   const db = c.env.DB;
-  const p = effectivePrivacy(await loadPrivacy(db, userId));
+  const p = effectivePrivacy(await loadPrivacy(db, userId), siteFeatures(c.env));
   const products = p.shareBoard ? shareProducts(await load(db, userId, { archived: false }), p, await sharedSmokes(db, userId, p)) : [];
   return c.json({ products, options: { mostUsed: p.shareMostUsed }, shared: p.shareBoard });
 });

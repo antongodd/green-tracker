@@ -1,2 +1,4 @@
 RP_ID=localhost
 ORIGIN=http://localhost:5173
+# Smokes (D46): on for local development; off on the live site.
+SMOKES=on

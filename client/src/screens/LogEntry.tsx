@@ -20,7 +20,7 @@ import { cachedEntry, deleteEntry, fetchEntry } from '../logEntries';
 import { useOnline } from '../online';
 import { startPromotion } from '../promotion';
 import { back, linkTo, navigate } from '../router';
-import { formatDate } from '../session';
+import { formatDate, useSmokesOn } from '../session';
 import { smokesOf } from '../../../shared/domain/smoke';
 import { cachedSmokes } from '../smokes';
 import { SmokesCard } from './Smokes';
@@ -38,6 +38,7 @@ export function LogEntryPage(p: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [viewing, setViewing] = useState(false);
   const online = useOnline();
+  const smokesOn = useSmokesOn(); // D46
   const path = `/log/${p.id}`;
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export function LogEntryPage(p: { id: string }) {
           </div>
         </div>
 
-        <SmokesCard target={`e:${entry.id}`} productType={entry.productType} canAdd />
+        {smokesOn && <SmokesCard target={`e:${entry.id}`} productType={entry.productType} canAdd />}
 
         <section class="sect" aria-label="Details">
           <span class="cap">Details</span>

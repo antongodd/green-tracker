@@ -28,16 +28,21 @@ function write(view: ViewState, key = KEY): void {
   }
 }
 
-/** The stored view, validated. An invalid or no-longer-offered value falls back and is overwritten. */
-export function loadView(): ViewState {
-  const { filter, rankBy, changed } = resolveViewState(read(), { money: true });
-  if (changed) write({ filter, rankBy });
+/**
+ * The stored view, validated. An invalid or no-longer-offered value falls back and is overwritten,
+ * except a stored Most used where Smokes is off (`used` false, D46): it shows Overall but is kept,
+ * so it comes back once Smokes does.
+ */
+export function loadView(used = true): ViewState {
+  const stored = read();
+  const { filter, rankBy, changed } = resolveViewState(stored, { money: true, used });
+  if (changed && (used || stored.rankBy !== 'used')) write({ filter, rankBy });
   return { filter, rankBy };
 }
 
 /** Saves a change; a Rank by that doesn't exist under the new filter falls back to Overall. */
-export function saveView(next: ViewState): ViewState {
-  const { filter, rankBy } = resolveViewState(next, { money: true });
+export function saveView(next: ViewState, used = true): ViewState {
+  const { filter, rankBy } = resolveViewState(next, { money: true, used });
   write({ filter, rankBy });
   return { filter, rankBy };
 }

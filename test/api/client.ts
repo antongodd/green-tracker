@@ -8,14 +8,18 @@ let ipCounter = 0;
 export class Browser {
   cookies = new Map<string, string>();
   lastSetCookie: string[] = [];
-  constructor(public ip = `10.0.${Math.floor(++ipCounter / 250)}.${ipCounter % 250}`) {}
+  constructor(
+    public ip = `10.0.${Math.floor(++ipCounter / 250)}.${ipCounter % 250}`,
+    /** Which server: the main one (Smokes on), or `inject('liveApiBase')` for one with Smokes off (D46). */
+    public base = inject('apiBase'),
+  ) {}
 
   async req(method: string, path: string, body?: unknown, headers: Record<string, string> = {}) {
     const h: Record<string, string> = { 'cf-connecting-ip': this.ip, ...headers };
     if (method !== 'GET' && !('origin' in headers)) h.origin = ORIGIN;
     if (body !== undefined) h['content-type'] = 'application/json';
     if (this.cookies.size) h.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
-    const res = await fetch(inject('apiBase') + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+    const res = await fetch(this.base + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
     this.lastSetCookie = res.headers.getSetCookie();
     for (const c of this.lastSetCookie) {
       const [pair] = c.split(';');
@@ -33,7 +37,7 @@ export class Browser {
     for (const [k, v] of Object.entries(parts)) typeof v === 'string' ? form.append(k, v) : form.append(k, new Blob([v as BlobPart], { type: 'image/jpeg' }), `${k}.jpg`);
     const headers: Record<string, string> = { 'cf-connecting-ip': this.ip, origin: 'http://localhost' };
     if (this.cookies.size) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
-    const res = await fetch(inject('apiBase') + path, { method: 'POST', headers, body: form });
+    const res = await fetch(this.base + path, { method: 'POST', headers, body: form });
     return { status: res.status, json: (await res.json()) as any };
   }
 
@@ -41,7 +45,7 @@ export class Browser {
   async raw(path: string, headers: Record<string, string> = {}) {
     const h: Record<string, string> = { 'cf-connecting-ip': this.ip, ...headers };
     if (this.cookies.size) h.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
-    const res = await fetch(inject('apiBase') + path, { headers: h });
+    const res = await fetch(this.base + path, { headers: h });
     return { status: res.status, headers: res.headers, bytes: new Uint8Array(await res.arrayBuffer()) };
   }
 

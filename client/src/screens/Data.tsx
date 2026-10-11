@@ -6,7 +6,7 @@ import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { CheckIcon, ChevronRight, CrossIcon, DashIcon, DownloadIcon, FaceIdIcon, FileIcon, TrashIcon, UploadIcon } from '../icons';
 import { deleteAccount } from '../passkey';
 import { navigate } from '../router';
-import { formatDate, useSession } from '../session';
+import { formatDate, useSession, useSmokesOn } from '../session';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -42,6 +42,7 @@ function DataHero(p: { tint: 'teal' | 'red'; icon: ComponentChildren; title: str
 /** More → Export: one JSON file with everything, photos embedded; the share sheet on iPhone. */
 export function ExportScreen() {
   const { me } = useSession();
+  const smokesOn = useSmokesOn(); // D46: no Smokes lines where Smokes is off
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [note, setNote] = useState<{ text: string; done: boolean } | null>(null);
@@ -86,12 +87,14 @@ export function ExportScreen() {
                 <CheckIcon />
                 <span>Your whole Log</span>
               </li>
-              <li class="yes">
-                <CheckIcon />
-                <span>
-                  Every smoke<small>when, how much and the effect</small>
-                </span>
-              </li>
+              {smokesOn && (
+                <li class="yes">
+                  <CheckIcon />
+                  <span>
+                    Every smoke<small>when, how much and the effect</small>
+                  </span>
+                </li>
+              )}
               <li class="yes">
                 <CheckIcon />
                 <span>
@@ -144,6 +147,7 @@ const PROFILE_PHOTO: Record<ExportSummary['profilePhoto'], string> = {
 /** More → Restore: pick a file, see what's in it, confirm, and everything is replaced at once. */
 export function RestoreScreen() {
   const { refresh } = useSession();
+  const smokesOn = useSmokesOn();
   const [summary, setSummary] = useState<ExportSummary | null>(null);
   const [fileName, setFileName] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -196,7 +200,7 @@ export function RestoreScreen() {
       <main class="screen">
         <div class="wrap stack data" style={{ paddingTop: '16px' }}>
           <DataHero tint="teal" icon={<DownloadIcon />} title="Restore from a file">
-            Replaces your products, Log, smokes and photos with an export file. Followers and passkeys stay as they are.
+            Replaces your products, {smokesOn ? 'Log, smokes and photos' : 'Log and photos'} with an export file. Followers and passkeys stay as they are.
           </DataHero>
           {!summary && picker}
           {summary && f && (
@@ -229,7 +233,7 @@ export function RestoreScreen() {
                 </div>
                 <p class="hint">
                   {summary.archived ? `+ ${plural(summary.archived, 'archived product')}. ` : ''}
-                  {`${summary.smokes ? plural(summary.smokes, 'smoke') : 'No smokes'}. `}
+                  {smokesOn && `${summary.smokes ? plural(summary.smokes, 'smoke') : 'No smokes'}. `}
                   {PROFILE_PHOTO[summary.profilePhoto]}
                 </p>
               </section>
@@ -255,7 +259,7 @@ export function RestoreScreen() {
       {confirming && summary && (
         <Sheet
           title="Replace all your data?"
-          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'log entry', 'log entries')}, ${plural(summary.photos, 'photo')} and ${plural(summary.smokes, 'smoke')}. This can’t be undone.`}
+          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'log entry', 'log entries')}${smokesOn ? `, ${plural(summary.photos, 'photo')} and ${plural(summary.smokes, 'smoke')}` : ` and ${plural(summary.photos, 'photo')}`}. This can’t be undone.`}
           options={[{ label: 'Replace my data', danger: true, onSelect: run }]}
           onCancel={() => setConfirming(false)}
         />
@@ -275,6 +279,7 @@ export const takeDeletedNotice = () => {
 /** More → Delete account: type the username, confirm with the passkey. Irreversible. (Look: D40.) */
 export function DeleteAccount() {
   const { me, refresh } = useSession();
+  const smokesOn = useSmokesOn();
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -315,10 +320,12 @@ export function DeleteAccount() {
                 <CrossIcon />
                 <span>Your whole Log</span>
               </li>
-              <li class="gone">
-                <CrossIcon />
-                <span>Every smoke</span>
-              </li>
+              {smokesOn && (
+                <li class="gone">
+                  <CrossIcon />
+                  <span>Every smoke</span>
+                </li>
+              )}
               <li class="gone">
                 <CrossIcon />
                 <span>Every photo</span>

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { AppEnv } from '../env';
+import { siteFeatures, type AppEnv } from '../env';
 import { addDays, validateSmokeInput, type Smoke, type SmokeInput } from '../../shared/domain/smoke';
 import { randomId } from '../lib/crypto';
 import { fail, jsonBody } from '../lib/http';
@@ -11,6 +11,12 @@ import { requireUser } from '../lib/session';
 
 export const smokes = new Hono<AppEnv>();
 smokes.use('*', requireUser());
+// D46: where Smokes is off (the live site until it's re-released) nothing can be added,
+// changed or deleted. Reading yours still works, so an export keeps them.
+smokes.use('*', async (c, next) => {
+  if (c.req.method !== 'GET' && !siteFeatures(c.env).smokes) fail(404, 'not_found', 'Not found.');
+  await next();
+});
 
 interface SmokeRow {
   id: string;

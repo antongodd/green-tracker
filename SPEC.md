@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.38.0 (all phases done; Smokes, Most used and Privacy)
+**Current version:** 0.39.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46)
 
 ---
 
@@ -109,6 +109,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D43 | **Smokes: a new tab for what you had, and when** (2026-10-08; option B "Week strip" and product-page option 1 "Smokes card" of https://claude.ai/artifact/JLzNCm46hnUNS5MCWf9MH7, with the owner's answers: named **Smokes**, second in the tab bar; each smoke holds what, when (now, changeable), how much and an Effect box to write in, for now; twice in one evening counts twice; "taken" for edibles; New Log entry from the picker; deleting a Log entry deletes its smokes). Reopens D6 (four tabs), P1 and D25 at the owner's request. Part 1 of 2: **Most used** in Rank by is Part 2; who sees what goes to a later Privacy item. | **The tab** (flame icon; your photo top right like the other main tabs): a card with the **last 7 days** as a strip (a bar per smoke, up to five, and the number; tap a day to jump to it), "N in the last 7 days" and "N this month"; then every smoke, newest first, under a frosted heading per day (Today, Yesterday, Tue 6 Oct…). A row: the photo (or type mark), the name with a **Log** chip for a Log entry, "0.3 g · effect", and the time; tap it to change or delete it. **The +** opens a picker: search, **Recent** (your last four), **Leaderboard**, **Log** (archived products are left out), and **New Log entry** (name and type, added to your Log, then on to the smoke). **The form**: When (date and time, the phone's own pickers; never a future day), How much (optional, g or mg THC; it starts with what you had last time; quick 0.2 / 0.3 / 0.5 / 1 g or 5 / 10 / 20 mg), Effect (up to 500 characters), **Add smoke**; Change goes back to the picker. **Product and Log entry pages** get a **Smokes** card (under Ratings on a product): the count in a big tile ("times smoked", "times taken" for edibles), when you last had it, your last three (tap to change), and **Add a smoke** set to this one (not on an archived product, which keeps its smokes and count). **Add to leaderboard** moves an entry's smokes to the new product in the same save; **deleting a Log entry** deletes its smokes and says how many. **Export / Restore** carry them inside each product and entry (a file from before 0.36.0 restores with none); Export's list and Delete account's "What goes" name them. **Followers never see any of it.** Times are the phone's own date and clock. A new table only (`migrations/0006_smokes.sql`). See §4 *Smokes*. |
 | D44 | **Most used in Rank by** (2026-10-08; option C "Flame" with never-smoked "Left out" of https://claude.ai/artifact/1w5ocZnqLeudXUHW3qh7Mk). Part 2 of Smokes (D43). Only on your own Leaderboard: a friend's board doesn't offer it, at least until the Privacy settings exist (owner's answer). | **Rank by → Most used**, second after Overall under All and under each Type, ranks your products by how many times you've had them, all time (a Log entry's smokes count once it's on the Leaderboard; archived products stay off it, as before). A row shows the **Smokes flame in amber** before the count (rounded numbers) and **TIMES** under it. **Never smoked is left out**, as Price leaves out products with no purchase, and a line under the rows says how many ("2 never smoked, not shown"). **A tie goes to the higher Overall** (unrated last), then the usual order. The **top three** get the rainbow, Diamond and Gold, the number flowing through the tier's colours (the flame stays amber); rows below are plain (**no heat**: a count isn't a score out of 10). **Product pages** of the top three wear their place: "#1 by Most used", "#2 in Flower by Most used". Nothing smoked yet: "Nothing smoked yet" with **Add a smoke** and Rank by Overall. Tiles, data, export and privacy unchanged; the setting stays per device (D5). See §4 *Most used*. |
 | D45 | **Privacy: choose what your followers see** (2026-10-08; layout B "Preview on top" of https://claude.ai/artifact/U5db1F9da2tEMW89qDvAfc, every switch the owner listed kept, "My Smokes" included and marked Not recommended; one setting for all followers; nobody is told). Narrows D1 and D23 only when switched off; D43/D44 data reaches followers only when switched on. | **More → Privacy → What followers see** (a violet eye, between Account and Data, with a summary line, e.g. "Followers see: Leaderboard, Source, Country, Photos"). The screen: a **What followers see** card on top, built by the server's own follower code, showing your top product as followers get it and what else they see, with **Open their view ›** (your board and product pages exactly as followers get them, under More); then switches that **save at once**: **Your Leaderboard** (Share my Leaderboard), **On your products** (Source, Country, Product photos), **Smokes** (How many times I've had each; Most used on my Leaderboard; My Smokes: what and when, "Not recommended"), **You** (My profile photo). **Starting point = before 0.38.0**: the first four and the profile photo on, the three Smokes switches off. A switch whose prerequisite is off is greyed and says so ("Needs … on"): everything but the profile photo needs Share my Leaderboard; Most used needs the counts. **What followers get:** Leaderboard off → no products, no pages, no photo files ("hasn't shared any products"); Source / Country off → blank; photos off → the type's mark, and the photo files refused; counts on → a Smokes card with the flame and "Smoked N times" on your product pages; Most used on → their Rank by offers it on your board (flame rows, podium badge); My Smokes on → that card lists each smoke's day, time and amount, **never the effect**, never Log entries; profile photo off → your letter for everyone else everywhere (search, lists, requests, your page). Never shared, whatever the switches: prices, purchases, suppliers, notes, date tried, Leafly, the Log, private and archived products. Strangers still get nothing. **Export / Restore** carry the settings (an older file leaves yours alone); Delete account removes them. A new table (`migrations/0007_privacy.sql`). See §4 *Privacy*. |
+| D46 | **Smokes off on the live site until it's re-released** (2026-10-11; the owner wants live "back to how it was before" Smokes while it's rebuilt and tested, with Privacy kept). A per-site switch, not a removal: the code stays, the live site runs with it off, a test site with it on (the dev site, next). | **Where Smokes is off:** four tabs again (Leaderboard, Log, People, More); `/smokes` addresses open the Leaderboard; no Smokes card on product or Log entry pages; no Most used in Rank by (a stored Most used shows Overall but is kept for when it's back); Privacy keeps Leaderboard, Source, Country, Product photos and My profile photo but offers no Smokes switches, and More's summary leaves them out; Export, Restore and Delete account don't mention smokes. Nothing can be added, changed or deleted (the server refuses with 404). **Nothing is deleted:** smokes already saved stay, and still go into an export and come back with a restore; the three Smokes privacy switches keep what you set but count as off, so no smoke count, Most used or smoke ever reaches a follower. Deleting a Log entry still takes its (hidden) smokes with it, as before. Accounts, passkeys, followers and all other data are untouched. See §4 *Smokes switch*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -592,6 +593,25 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   Source off in the preview and the follower's board and page, counts → Most used → smokes on a follower's page and board, the
   board off, Open their view, axe, pixel contrast); `more.spec.ts` (the new row and group), `datascreens.spec.ts` (the Export line).
 
+- **Smokes switch (D46, 0.39.0).** One Worker variable, `SMOKES` (`"on"` enables; unset on the live site in `wrangler.jsonc`),
+  read by `siteFeatures(env)` in `server/env.ts` → `SiteFeatures { smokes }` (`shared/domain/privacy.ts`). Server:
+  `/api/auth/me` returns `features` (signed in or out); `server/routes/smokes.ts` refuses anything but `GET` with 404 when off
+  (reading stays, for the export); `effectivePrivacy(p, features)` turns `SMOKE_PRIVACY_KEYS` off when Smokes is off, used by
+  `loadEffectivePrivacy(db, id, features)` (people, photos) and the Privacy preview, so nothing about smokes reaches a follower
+  while the stored settings are kept. Restore and promotion still carry smokes. Client: `useSmokesOn()` (`session.ts`, from
+  `me.features`); `TabBar` drops the Smokes tab (`.nav .tabs` is a column grid, so four or five tabs share the bar);
+  `main.tsx` routes `/smokes…` to the Leaderboard; `Leaderboard` / `Profile` pass `used` to `ControlRow`, `loadView(used)` /
+  `saveView(next, used)` (a stored Most used is shown as Overall but not overwritten) and `useSmokes(load)` skips the fetch;
+  `Profile` / `LogEntry` hide `SmokesCard`; `PrivacyScreen` drops the Smokes group; `More` passes the features to
+  `privacySummary`; `Data.tsx` drops the smoke lines. Tests run two servers: the API tests (`test/api/globalSetup.ts`,
+  `liveApiBase`, `Browser(ip, base)`) and Playwright (`playwright.config.ts` `webServer` array, `LIVE_PORT` 8789,
+  `test/e2e/server.mjs` with `E2E_SMOKES`, a store per port) each have one with Smokes on (as on the dev site; the rest of the
+  suite) and one with it off (as on live). `test/api/smokesOff.test.ts` (features, writes refused, saved smokes kept and
+  exportable, followers get nothing about smokes whatever the stored switches, everything else as before; four of five fail
+  with the switch ignored), `test/domain/privacy.test.ts` (effective settings and summary), `test/e2e/smokes-off.spec.ts` (four
+  equal tabs, Smokes addresses, Rank by and the kept Most used, product and Log entry pages, Privacy and More, Data screens, a
+  follower's view, axe, tab-label contrast; all but the follower test fail with the client switch ignored).
+
 - **Most used (D44, 0.37.0).** `RankBy` gains `'used'` (shared/domain/leaderboard.ts): `rankByOptions` offers it second when
   `money` is true (your own board; a follower's view, `money: false`, never has it, and `resolveViewState` drops a stored one there,
   in the separate `gt.view.others` setting, so your own choice stays); `rankByCaption` → `TIMES`; `rankValue` is
@@ -948,6 +968,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.39.0 — Smokes off on the live site (owner request)
+- The live site is back to how it was before Smokes (decision D46): four tabs, no Smokes cards, no Most used, no Smokes
+  switches in Privacy. Privacy itself stays.
+- Nothing is deleted: everyone keeps their account, followers and data, and any smokes already saved are kept (and still
+  exported) for when Smokes comes back. Followers see nothing about smokes in the meantime.
+- Smokes is now a per-site switch, so it stays on for testing (the dev site, next) while it's rebuilt.
+- Tests: the API and Playwright tests now run a second server with Smokes off, as on live: 5 new server tests
+  (`smokesOff.test.ts`), 6 new Playwright tests (`smokes-off.spec.ts`), 2 rule tests.
 
 ### 0.38.0 — Privacy (owner request)
 - **More → Privacy → What followers see**: choose what your followers see (decision D45, layout B of the mockups). A preview
