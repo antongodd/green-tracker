@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { settled, shot, signUp } from './helpers';
 
 // D20 (0.14.0): "Lift" press feedback on everything you can tap, and "Photo grows"
 // when a product is opened from a list (and on Back). One account for the file.
@@ -356,6 +356,9 @@ test('a loose Log entry opened from a scrolled Log keeps the phone’s picture o
 test('swiping back (the browser’s Back) shows the list without its entrance fade; other changes keep it', async () => {
   await page.goto('/');
   await expect(row('Photo Kush')).toBeVisible();
+  // Let the page's own load fade finish first: rows can be on screen a frame before it starts,
+  // and counting from then caught it as a fade on "/" (0.40.0 CI).
+  await settled(page);
   await page.evaluate(() => {
     const w = window as unknown as { __fades: string[] };
     w.__fades = [];
