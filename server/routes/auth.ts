@@ -7,7 +7,7 @@ import {
   type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
-import type { AppEnv } from '../env';
+import { siteFeatures, type AppEnv } from '../env';
 import { USERNAME_PROBLEM_TEXT, normaliseRecoveryCode, usernameKey, usernameProblem } from '../../shared/domain/account';
 import { randomId, utf8 } from '../lib/crypto';
 import { fail, jsonBody, str } from '../lib/http';
@@ -32,7 +32,9 @@ const TAKEN = 'That username is taken.';
 /** Who is signed in. Always 200 so the client can branch on `user`. */
 auth.get('/me', async (c) => {
   const user = c.var.user;
-  if (!user) return c.json({ user: null });
+  // D46: which features this site has (the dev site has Smokes; live doesn't yet).
+  const features = siteFeatures(c.env);
+  if (!user) return c.json({ user: null, features });
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes,
@@ -53,6 +55,7 @@ auth.get('/me', async (c) => {
     passkeys: counts?.passkeys ?? 0,
     recoveryCodesLeft: counts?.codes ?? 0,
     pendingRequests: counts?.requests ?? 0,
+    features,
   });
 });
 

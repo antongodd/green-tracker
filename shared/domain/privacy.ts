@@ -51,10 +51,23 @@ export function privacyEnabled(p: Privacy, key: PrivacyKey): boolean {
   return !need || (p[need] && privacyEnabled(p, need));
 }
 
-/** What actually applies: a switch that's on but needs one that's off counts as off. */
-export function effectivePrivacy(p: Privacy): Privacy {
+/** The switches about Smokes (D43): they apply only on a site where Smokes is on (D46). */
+export const SMOKE_PRIVACY_KEYS = ['shareSmokeCounts', 'shareMostUsed', 'shareSmokes'] as const satisfies readonly PrivacyKey[];
+
+/** Which features this site has (D46). Smokes is off on the live site until it's re-released. */
+export interface SiteFeatures {
+  smokes: boolean;
+}
+
+/**
+ * What actually applies: a switch that's on but needs one that's off counts as off, and
+ * (D46) the Smokes switches count as off where Smokes is off. Your stored settings keep
+ * them, so they apply again once Smokes is back.
+ */
+export function effectivePrivacy(p: Privacy, features: SiteFeatures = { smokes: true }): Privacy {
   const out = { ...p };
   for (const k of PRIVACY_KEYS) out[k] = p[k] && privacyEnabled(p, k);
+  if (!features.smokes) for (const k of SMOKE_PRIVACY_KEYS) out[k] = false;
   return out;
 }
 
@@ -71,8 +84,8 @@ export function validatePrivacy(raw: unknown): { ok: true; value: Privacy } | { 
 }
 
 /** The line under More → What followers see: "Followers see: Leaderboard, Source, Country, Photos". */
-export function privacySummary(p: Privacy): string {
-  const e = effectivePrivacy(p);
+export function privacySummary(p: Privacy, features?: SiteFeatures): string {
+  const e = effectivePrivacy(p, features);
   if (!e.shareBoard) return 'Followers see only your name';
   const parts = ['Leaderboard', e.shareSource && 'Source', e.shareCountry && 'Country', e.sharePhotos && 'Photos', e.shareSmokeCounts && 'Smoke counts', e.shareMostUsed && 'Most used', e.shareSmokes && 'Smokes'].filter(Boolean);
   return `Followers see: ${parts.join(', ')}`;

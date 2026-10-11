@@ -1,4 +1,4 @@
-import { DEFAULT_PRIVACY, effectivePrivacy, type Privacy } from '../../shared/domain/privacy';
+import { DEFAULT_PRIVACY, effectivePrivacy, type Privacy, type SiteFeatures } from '../../shared/domain/privacy';
 
 // Privacy settings (D45): one row per account that changed anything; none = the defaults.
 
@@ -31,8 +31,9 @@ export async function loadPrivacy(db: D1Database, userId: string): Promise<Priva
   };
 }
 
-/** What applies to followers: a switch whose prerequisite is off counts as off. */
-export const loadEffectivePrivacy = async (db: D1Database, userId: string): Promise<Privacy> => effectivePrivacy(await loadPrivacy(db, userId));
+/** What applies to followers: a switch whose prerequisite is off counts as off, and so do the Smokes ones where Smokes is off (D46). */
+export const loadEffectivePrivacy = async (db: D1Database, userId: string, features: SiteFeatures): Promise<Privacy> =>
+  effectivePrivacy(await loadPrivacy(db, userId), features);
 
 /** The statement that stores `p` for `userId` (insert or replace), for a batch. */
 export function savePrivacyStatement(db: D1Database, userId: string, p: Privacy): D1PreparedStatement {

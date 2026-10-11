@@ -16,6 +16,7 @@ import { restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
 import { useSmokes, withSmokeCounts } from '../smokes';
+import { useSmokesOn } from '../session';
 
 const DEFAULT_VIEW: ViewState = { filter: 'all', rankBy: 'overall' };
 
@@ -81,9 +82,11 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
 
 export function Leaderboard() {
   const [loaded, setProducts] = useState<Product[] | null>(cachedProducts());
-  const [view, setView] = useState<ViewState>(loadView);
+  // D46: where Smokes is off there's no Most used, and no smokes to fetch.
+  const smokesOn = useSmokesOn();
+  const [view, setView] = useState<ViewState>(() => loadView(smokesOn));
   // Most used (D44) needs your smoke counts; every other Rank by draws without waiting for them.
-  const { smokes } = useSmokes();
+  const { smokes } = useSmokes(smokesOn);
   const products = loaded && (view.rankBy !== 'used' || smokes) ? withSmokeCounts(loaded, smokes ?? []) : null;
   const [error, setError] = useState('');
   const arrivedFromProduct = useRef(/^\/products\//.test(cameFrom() ?? ''));
@@ -103,7 +106,7 @@ export function Leaderboard() {
   }, [products]);
 
   const change = (next: ViewState) => {
-    setView(saveView(next));
+    setView(saveView(next, smokesOn));
     window.scrollTo(0, 0);
   };
 
@@ -126,7 +129,7 @@ export function Leaderboard() {
         )}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} used={smokesOn} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
             <Tiles
               tiles={[
                 { value: String(tiles.products), label: 'Products' },

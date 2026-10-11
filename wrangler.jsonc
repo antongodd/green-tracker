@@ -18,6 +18,7 @@
   ],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
   // Passkeys are bound to this address (D11). Local dev overrides these in .dev.vars.
+  // No SMOKES here: Smokes is off on the live site until it's re-released (D46).
   "vars": {
     "RP_ID": "green-tracker.green-tracker.workers.dev",
     "ORIGIN": "https://green-tracker.green-tracker.workers.dev"

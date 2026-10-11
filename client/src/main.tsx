@@ -116,11 +116,13 @@ function App() {
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
     const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+))?$/);
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+))?$/);
-    const smoke = path.match(/^\/smokes\/(?:new\/(p|e)\/([^/]+)|([^/]+))$/);
+    // D46: where Smokes is off, its addresses open the Leaderboard instead.
+    const smokesOn = me.features?.smokes ?? false;
+    const smoke = smokesOn ? path.match(/^\/smokes\/(?:new\/(p|e)\/([^/]+)|([^/]+))$/) : null;
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
     else if (preview?.[1]) screen = <SharedProfile key={path} username={me.user!.username} id={decodeURIComponent(preview[1])} preview />;
     else if (preview) screen = <Person key={path} username={me.user!.username} preview />;
-    else if (path === '/smokes/new') screen = <SmokePicker />;
+    else if (smokesOn && path === '/smokes/new') screen = <SmokePicker />;
     else if (smoke?.[1]) screen = <SmokeForm key={path} id={null} target={`${smoke[1]}:${decodeURIComponent(smoke[2]!)}`} />;
     else if (smoke?.[3]) screen = <SmokeForm key={path} id={decodeURIComponent(smoke[3])} />;
     else if (path === '/log/new') screen = <LogEditor key="new-entry" id={null} />;
@@ -134,7 +136,7 @@ function App() {
     else
       switch (path) {
         case '/smokes':
-          screen = <Smokes />;
+          screen = smokesOn ? <Smokes /> : <Leaderboard />;
           break;
         case '/log':
           screen = <Log />;

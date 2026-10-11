@@ -1,4 +1,5 @@
 import type { Crop } from '../../shared/domain/photo';
+import type { SiteFeatures } from '../../shared/domain/privacy';
 import { reportNetwork } from './online';
 
 /** A failed API call. `message` is written for the person using the app and can be shown as-is. */
@@ -47,6 +48,8 @@ export interface Me {
   recoveryCodesLeft?: number;
   /** Incoming follow requests: the badge on the People tab. */
   pendingRequests?: number;
+  /** D46: what this site has. Smokes is off on the live site until it's re-released. */
+  features?: SiteFeatures;
 }
 
 export interface Passkey {

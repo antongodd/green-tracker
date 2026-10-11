@@ -1,5 +1,5 @@
 import { Hono, type Context } from 'hono';
-import type { AppEnv } from '../env';
+import { siteFeatures, type AppEnv } from '../env';
 import type { PersonCard } from '../../shared/domain/social';
 import { fail } from '../lib/http';
 import { hit } from '../lib/rateLimit';
@@ -186,7 +186,7 @@ async function sharedFor(c: Context<AppEnv>) {
   const db = c.env.DB;
   if (!(await canView(db, c.var.user!.id, them.id))) fail(403, 'not_following', 'Follow to see their leaderboard.');
   // D45: their own privacy settings decide what is shared, on every request.
-  const privacy = await loadEffectivePrivacy(db, them.id);
+  const privacy = await loadEffectivePrivacy(db, them.id, siteFeatures(c.env));
   const products = privacy.shareBoard ? shareProducts(await load(db, them.id, { archived: false }), privacy, await sharedSmokes(db, them.id, privacy)) : [];
   return { them, privacy, products };
 }

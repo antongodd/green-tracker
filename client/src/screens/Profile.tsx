@@ -26,6 +26,7 @@ import { cameFrom, linkTo, navigate, savedScroll } from '../router';
 import { Skeleton } from '../components/Skeleton';
 import { SmokesCard } from './Smokes';
 import { useSmokes, withSmokeCounts } from '../smokes';
+import { useSmokesOn } from '../session';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
 export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
@@ -124,9 +125,11 @@ export function Profile(p: { id: string }) {
   const path = `/products/${p.id}`;
   // Its podium place (D22) comes from the same list and view as the Leaderboard.
   const [list, setList] = useState(cachedProducts);
-  const [view] = useState(loadView);
+  // D46: where Smokes is off there's no Most used and no Smokes card.
+  const smokesOn = useSmokesOn();
+  const [view] = useState(() => loadView(smokesOn));
   // Under Most used (D44) its place comes from your smoke counts, like the Leaderboard's.
-  const { smokes } = useSmokes();
+  const { smokes } = useSmokes(smokesOn);
   useEffect(() => {
     if (!list) fetchProducts().then(setList).catch(() => {});
   }, []);
@@ -268,7 +271,7 @@ export function Profile(p: { id: string }) {
 
         <Ratings product={product} />
         {/* D43: yours only; an archived product keeps its count but takes no new smokes. */}
-        <SmokesCard target={`p:${product.id}`} productType={product.productType} canAdd={!product.archived} />
+        {smokesOn && <SmokesCard target={`p:${product.id}`} productType={product.productType} canAdd={!product.archived} />}
         {product.photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>

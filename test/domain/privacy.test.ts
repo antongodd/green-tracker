@@ -36,3 +36,18 @@ describe('privacy settings (D45)', () => {
     expect(resolveViewState({ filter: 'all', rankBy: 'used' }, { money: false }).rankBy).toBe('overall');
   });
 });
+
+describe('where Smokes is off (D46)', () => {
+  const all = { ...DEFAULT_PRIVACY, shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true };
+  it('the Smokes switches count as off; the others are untouched', () => {
+    expect(effectivePrivacy(all, { smokes: false })).toEqual({ ...all, shareSmokeCounts: false, shareMostUsed: false, shareSmokes: false });
+    expect(effectivePrivacy(all, { smokes: true })).toEqual(all);
+    expect(effectivePrivacy({ ...all, shareSource: false }, { smokes: false }).shareSource).toBe(false);
+  });
+
+  it('the line under More says nothing about smokes, and the stored settings are kept for later', () => {
+    expect(privacySummary(all, { smokes: false })).toBe('Followers see: Leaderboard, Source, Country, Photos');
+    expect(privacySummary(all, { smokes: true })).toBe('Followers see: Leaderboard, Source, Country, Photos, Smoke counts, Most used, Smokes');
+    expect(all.shareSmokes).toBe(true);
+  });
+});

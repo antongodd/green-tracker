@@ -65,17 +65,21 @@ export function clearSmokeCache(): void {
   changed();
 }
 
-/** Your smokes: the cached list straight away, refreshed once per screen (`fresh` once it has been). */
-export function useSmokes(): { smokes: Smoke[] | null; fresh: boolean; error: unknown } {
+/**
+ * Your smokes: the cached list straight away, refreshed once per screen (`fresh` once it has been).
+ * `load` false (where Smokes is off, D46): nothing is fetched, and the list stays as cached.
+ */
+export function useSmokes(load = true): { smokes: Smoke[] | null; fresh: boolean; error: unknown } {
   const [smokes, setSmokes] = useState<Smoke[] | null>(list);
   const [fresh, setFresh] = useState(false);
   const [error, setError] = useState<unknown>(null);
   useEffect(() => {
     const update = () => setSmokes(list);
     listeners.add(update);
-    fetchSmokes()
-      .then(() => setFresh(true))
-      .catch(setError);
+    if (load)
+      fetchSmokes()
+        .then(() => setFresh(true))
+        .catch(setError);
     return () => void listeners.delete(update);
   }, []);
   return { smokes, fresh, error };
