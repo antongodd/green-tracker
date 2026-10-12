@@ -308,12 +308,13 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 
 /* ---------- Leaderboard colours (D48, 0.41.0; replaces the podium by place of D19, D21, D39) ----------
    A row's colour is earned by its score (shared/domain/gems.ts), in the preset you chose in
-   More → Appearance. Four bands, each a little stronger than the one below:
-     band1 8.0–8.4  a dark row with a still coloured edge and a glow from the right;
-     band2 8.5–8.9  the same, its edge flowing through the colours;
-     band3 9.0–9.4  a holo card: the colours under a dark layer (80% → 90%);
-     band4 9.5–10   the full holo card (70% → 86%, as the old 1st place) with a band of light.
-   The rank number and score take the colours (flowing from band 2 up). The dark layers keep
+   More → Appearance. Four bands, all holo cards of one kind since D49 (0.42.0), each a little
+   stronger than the one below (the dark layer over the colours thins as the score rises):
+     band1 8.0–8.4  the faintest card (90% → 95%), still;
+     band2 8.5–8.9  a faint card (86% → 93%), flowing;
+     band3 9.0–9.4  a card (80% → 90%), flowing;
+     band4 9.5–10   the full card (70% → 86%, as the old 1st place) with a band of light.
+   The rank number and score take the colours (the score flowing from band 2 up). The dark layers keep
    the text readable through the colours (measured by the readability tests). Only Metals'
    Diamond twinkles (.glint). Reduce Motion keeps the colours, stops the motion and the glints. */
 .row.tier { position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
@@ -322,29 +323,19 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
   /* Small text flows through the lighter shades only (the deep purples and blues failed the readability test). */
   --tier-light: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
 /* The presets' colours, shared by the rows, product pages, the Colours key and Appearance.
-   --dark tints the layer over a holo card (blue on Sapphire and Diamond, violet on Amethyst). */
+   --dark tints the layer over a holo card. Gems' Sapphire and Amethyst (D49): a brighter blue and a
+   softer lilac, under near-neutral layers (the violet-tinted one made Amethyst a purple slab on iPhone). */
 .pal-prism[class*="band"], .pal-gems.band4, .pal-metals.band4 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; }
 .pal-gems.band1, .pal-metals.band1 { --t1: #5ff2b0; --t2: #2fd893; --t3: #a8ffd9; --t4: #19b877; --t5: #7dffc8; --t6: #34e0a0; }
-.pal-gems.band2 { --t1: #8fb8ff; --t2: #6f9bff; --t3: #c3d6ff; --t4: #5580f5; --t5: #a9c8ff; --t6: #7fa5ff; --dark: 8, 12, 30; }
-.pal-gems.band3 { --t1: #d9b3ff; --t2: #c08cff; --t3: #ecd9ff; --t4: #a070f5; --t5: #c99bff; --t6: #e2c8ff; --dark: 18, 8, 30; }
+.pal-gems.band2 { --t1: #a4c8ff; --t2: #7fb0ff; --t3: #d3e4ff; --t4: #5e98ff; --t5: #b8d6ff; --t6: #8dbaff; --dark: 10, 16, 26; }
+.pal-gems.band3 { --t1: #d4b8ff; --t2: #b598f0; --t3: #e6d6ff; --t4: #9a7ee0; --t5: #c6a8fa; --t6: #dccaff; --dark: 12, 14, 22; }
 .pal-metals.band2 { --t1: #ffd9cc; --t2: #f2a996; --t3: #ffe6dc; --t4: #d98a78; --t5: #f6c1b0; --t6: #e09a88; --dark: 28, 12, 10; }
 .pal-metals.band3 { --t1: #dff4ff; --t2: #a9dcff; --t3: #e9e0ff; --t4: #8fd0ff; --t5: #c6f3ff; --t6: #b8c8ff; --dark: 8, 16, 28; }
-.row.tier.band1, .swatch.band1 {
-  background:
-    linear-gradient(270deg, color-mix(in srgb, var(--t2) 20%, transparent), transparent 62%) padding-box,
-    linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
-    linear-gradient(90deg, color-mix(in srgb, var(--t1) 25%, transparent), color-mix(in srgb, var(--t2) 70%, transparent)) border-box;
-}
-.row.tier.band2, .swatch.band2 {
-  background:
-    linear-gradient(270deg, color-mix(in srgb, var(--t2) 24%, transparent), transparent 62%) padding-box,
-    linear-gradient(var(--surface-1), var(--surface-1)) padding-box,
-    var(--tier-grad) border-box;
-  background-size: 100% 100%, 100% 100%, 200% 100%;
-}
+.row.tier.band1, .swatch.band1 { --d1: 0.9; --d2: 0.95; }
+.row.tier.band2, .swatch.band2 { --d1: 0.86; --d2: 0.93; }
 .row.tier.band3, .swatch.band3 { --d1: 0.8; --d2: 0.9; }
 .row.tier.band4, .swatch.band4 { --d1: 0.7; --d2: 0.86; }
-.row.tier.band3, .row.tier.band4, .swatch.band3, .swatch.band4 {
+.row.tier, .swatch[class*="band"] {
   background:
     linear-gradient(115deg, rgba(var(--dark), var(--d1)), rgba(var(--dark), var(--d2)) 70%) padding-box,
     var(--tier-grad) padding-box,
@@ -376,21 +367,18 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .glint.g2 { right: 6px; top: 4px; }
 .glint.g3 { left: 62px; bottom: 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .row.tier.band2, .swatch.band2 { animation: tier-flow-edge var(--tier-speed) linear infinite; }
-  .row.tier.band3, .row.tier.band4, .swatch.band3, .swatch.band4 { animation: tier-flow-holo var(--tier-speed) linear infinite; }
+  .row.tier:not(.band1), .swatch[class*="band"]:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   .row.tier:not(.band1) .score b { animation: tier-flow-text var(--tier-speed) linear infinite; }
   .row.tier.band4::after, .swatch.band4::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; }
   .row.first { animation: first-halo 3.2s ease-in-out infinite; }
   /* A coloured #1 keeps its colour's motion and breathes too. */
-  .row.tier.band2.first { animation: tier-flow-edge var(--tier-speed) linear infinite, first-halo 3.2s ease-in-out infinite; }
-  .row.tier.band3.first, .row.tier.band4.first { animation: tier-flow-holo var(--tier-speed) linear infinite, first-halo 3.2s ease-in-out infinite; }
+  .row.tier.first:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite, first-halo 3.2s ease-in-out infinite; }
   .glint.g1 { animation: tier-glint 2.9s ease-in-out infinite; }
   .glint.g2 { animation: tier-glint 3.7s ease-in-out 1.1s infinite; }
   .glint.g3 { animation: tier-glint 4.3s ease-in-out 2.3s infinite; }
 }
 @media (prefers-reduced-motion: reduce) { .glint { display: none; } }
 @keyframes tier-flow-holo { from { background-position: 0 0, 0% 0, 0% 0; } to { background-position: 0 0, 100% 0, 100% 0; } }
-@keyframes tier-flow-edge { from { background-position: 0 0, 0 0, 0% 0; } to { background-position: 0 0, 0 0, 100% 0; } }
 @keyframes tier-flow-text { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 @keyframes tier-sheen { 0% { background-position: 120% 0; } 60%, 100% { background-position: -60% 0; } }
 @keyframes tier-glint { 0%, 70%, 100% { opacity: 0; scale: 0.4; } 80% { opacity: 0.9; scale: 1; } 90% { opacity: 0.4; scale: 0.8; } }
