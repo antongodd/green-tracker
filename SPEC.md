@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.41.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48)
+**Current version:** 0.42.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49)
 
 ---
 
@@ -116,6 +116,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D46 | **Smokes off on the live site until it's re-released** (2026-10-11; the owner wants live "back to how it was before" Smokes while it's rebuilt and tested, with Privacy kept). A per-site switch, not a removal: the code stays, the live site runs with it off, a test site with it on (the dev site, next). | **Where Smokes is off:** four tabs again (Leaderboard, Log, People, More); `/smokes` addresses open the Leaderboard; no Smokes card on product or Log entry pages; no Most used in Rank by (a stored Most used shows Overall but is kept for when it's back); Privacy keeps Leaderboard, Source, Country, Product photos and My profile photo but offers no Smokes switches, and More's summary leaves them out; Export, Restore and Delete account don't mention smokes. Nothing can be added, changed or deleted (the server refuses with 404). **Nothing is deleted:** smokes already saved stay, and still go into an export and come back with a restore; the three Smokes privacy switches keep what you set but count as off, so no smoke count, Most used or smoke ever reaches a follower. Deleting a Log entry still takes its (hidden) smokes with it, as before. Accounts, passkeys, followers and all other data are untouched. See §4 *Smokes switch*. |
 | D47 | **A private dev site** (2026-10-11; the owner wants to test new work on their phone before anyone else sees it, then push it live when ready; a Cloudflare Access lock, live data copied in once, an orange DEV label and "GT Dev"). | **Two sites from one codebase.** *Dev*: https://green-tracker-dev.green-tracker.workers.dev — only the owner gets in (Cloudflare Access: signing in with the owner's Cloudflare account), its own database and photos (never live data), Smokes on, an orange **DEV** label after the title on every screen and the sign-in screen, called **GT Dev** on the Home Screen. *Live*: unchanged. **Flow:** work goes in by pull request to the `dev` branch ("merge" → the dev site); "go live" → a release pull request from `dev` to `main`, the same tests, then live. A release is merged with a merge commit (not squashed) so `dev` and `main` stay in step. **Data:** the owner signs up on dev (passkeys belong to one address, so a separate account) and copies their own data in with Export on live and Restore on dev; nobody else's data is on dev. See §4 *Dev site*. |
 | D48 | **Leaderboard colours by score, a preset of your choice, and a crown and halo for #1** (2026-10-12; preset B "Gems" of https://claude.ai/artifact/KKHAxTqBACJsEGj2pJsBvH as where everyone starts, Prism and Metals as choices; "Crown" and "Halo" together for #1; badge "Amethyst · #3"; the owner's answers: saved to the account, the same bands everywhere, no colours for Price, Value for money and Most used, #1 still marked there in gold). Reopens D19, D21, D22, D30, D31 and D39 at the owner's request: the owner wanted more than a top three, earned by the score. | **Four bands** from the score as shown (one decimal place): **8.0–8.4** a dark row with a still coloured edge and glow; **8.5–8.9** the edge flows; **9.0–9.4** a holo card; **9.5–10** the full holo card with the shine (the old 1st place). Below 8 the heat glow (D30) as before; unrated never. Only scores out of 10 (Overall, any rating); Price, Value for money and Most used get none. **Presets** (More → **Appearance**, new, between Privacy and Data): **Gems** Emerald · Sapphire · Amethyst · Rainbow (where everyone starts), **Prism** one rainbow growing stronger, **Metals** Emerald · Rose gold · Diamond (twinkles) · Rainbow; no gold. **#1** (the top row with a value, in any ranking) wears a **gold crown** above its rank number and a **halo** round the row in its colour (gold without one), gently breathing; a switch **Mark my #1** turns both off. A **Colours** button beside Rank by (when ranking by a score) opens the key. **Product pages** of a coloured product carry it (glow, haze stronger band by band, holo badge **"Amethyst · #3 on your Leaderboard"**, the sweep from 9.0); an uncoloured #1 gets a gold badge ("#1 by Price"). The welcome screen's examples become Rainbow (crown and halo), Amethyst, Sapphire. **Saved to your account** (a new table, `migrations/0008_appearance.sql`), sent with who you are; **Export / Restore** carry it (an older file leaves yours alone); Delete account removes it. **Friends' boards** show in *your* preset; nothing about your appearance is ever sent to anyone else. Reduce Motion keeps the colours and stills them. See §4 *Leaderboard colours*. |
+| D49 | **The four colours as one set of cards; Gems' Sapphire and Amethyst rebalanced** (2026-10-12; option "A + Emerald" of https://claude.ai/artifact/Wh6t4N99LszTqEc55nDM9D, after the owner's iPhone screenshot showed Amethyst as a strong purple slab next to an edge-only Sapphire). Amends D48 at the owner's request. | **Every band is a holo card** under one dark layer that thins as the score rises: **8.0–8.4** the faintest (90% → 95%), still; **8.5–8.9** faint (86% → 93%), flowing; **9.0–9.4** (80% → 90%), flowing; **9.5–10** unchanged (70% → 86%, the shine). In every preset (the steps stay the same in all three; only colours differ). **Gems:** Sapphire a brighter blue, Amethyst a softer lilac, both under near-neutral layers instead of blue and violet ones; Emerald and Rainbow unchanged. Prism and Metals keep their colours. No data, export, privacy or follower change. See §4 *Leaderboard colours*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -587,12 +588,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   first with its name and range, the green glow, "Crown and halo · your #1" when marked, a note that Price, Value for money
   and Most used have no colours, **Change in Appearance** and **Done**). `heatStyle(band, …)` skips banded rows. *Styles:*
   palette classes set `--t1`…`--t6` (and `--dark` for Sapphire, Amethyst, Rose gold, Diamond); `--tier-grad` all six,
-  `--tier-light` (t1, t3, t5) for small text. `band1` a still edge (`border-box` gradient) and glow from the right;
-  `band2` the same with the edge flowing (`tier-flow-edge`); `band3` a holo card under an 80% → 90% layer; `band4` 70% →
-  86% with the shine (`tier-sheen`). Scores flow from band 2 up; the rank number takes `--t3` (the lightest shade: the
+  `--tier-light` (t1, t3, t5) for small text. *Since 0.42.0 (D49)* every band is a holo card (`.row.tier`,
+  `.swatch[class*="band"]`: the `--dark` layer from `--d1` to `--d2` over `--tier-grad`): `band1` 0.9 → 0.95, still;
+  `band2` 0.86 → 0.93 and `band3` 0.8 → 0.9, flowing (`tier-flow-holo`); `band4` 0.7 → 0.86 with the shine
+  (`tier-sheen`). Gems' Sapphire `#7fb0ff` family under `10, 16, 26` and Amethyst `#b598f0` family under `12, 14, 22`.
+  *(0.41.0 had band 1 and 2 as a dark row with a coloured edge, still or flowing, and Gems' Amethyst under a violet
+  `18, 8, 30` layer.)* Scores flow from band 2 up; the rank number takes `--t3` (the lightest shade: the
   flowing rank failed the readability test where a holo card is lightest); badge text flows through `--tier-light` (the
   deep purples and blues failed it). `.row.first`: `--halo` (the row's `--t2`, gold `#ffd36b` without one) as a
-  box-shadow, breathing (`first-halo`, 3.2s; combined with the colour's own motion on bands 2–4); `.rank-crown` 15px gold
+  box-shadow, breathing (`first-halo`, 3.2s; combined with the card's own motion on bands 2–4); `.rank-crown` 15px gold
   above the number. Product pages: `.tiered.band{n}` haze 0.06 / 0.09 / 0.12 / 0.14, the photo shimmer and one sweep
   (`tier-arrive`) from band 3. Reduce Motion: colours stay, no motion, no glints. *Appearance:* `appearance_settings`
   (`user_id` PK → users ON DELETE CASCADE, `preset` CHECK gems/prism/metals, `mark_first`, `updated_at`), no row = the
@@ -1021,6 +1025,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.42.0 — the four colours as one set (owner request, with a screenshot)
+- On the iPhone, Amethyst came out as a strong purple block next to a much plainer Sapphire (decision D49).
+- All four colours are now cards of one kind, each a little stronger than the one below: **Emerald** the faintest (still),
+  **Sapphire** a faint card in a brighter blue, **Amethyst** a card in a softer lilac, **Rainbow** unchanged.
+- Amethyst and Sapphire now sit under a near-neutral dark layer instead of a purple and a blue one.
+- The same steps apply in Prism and Metals (their colours are unchanged). The key, Appearance and product pages follow.
+- Tests: `appearance.spec.ts` checks every band is a card, the layer thinning band by band, and Gems' new colours and
+  layers; the readability tests pass on every band in every preset.
 
 ### 0.41.0 — Leaderboard colours by score (owner request)
 - Colours on the Leaderboard are now earned by the **score**, not the place (decision D48): **Emerald** 8.0–8.4,

@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D48 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D49 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -53,11 +53,13 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   finished green, including the **"Live site serves this build"** step, and say it's live with exact iPhone steps.
 - Only merge when Anton says so.
 - After a merge, restart your working branch from the latest `dev` (same branch name; force-with-lease is fine).
+- If the session was started with dev as its branch, it can only push dev: a push of any other branch gets a 403.
+  Never push straight to dev; tell Anton at the start and ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D49), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D50), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -77,7 +79,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D48.
+- Reopen any decision D1–D49.
 
 ## Testing notes
 
@@ -103,5 +105,5 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 Keep this short and current.
 
 - **Live:** 0.40.x. Smokes is hidden there (D46); Privacy (D45) is on.
-- **Dev:** set up on Anton's phone, with his live data copied in. 0.41.0 (Leaderboard colours by score, D48) is going there.
+- **Dev:** set up on Anton's phone, with his live data copied in. 0.41.0 (Leaderboard colours by score, D48) is there; 0.42.0 (the four colours as one set, D49) is going there.
 - **Next:** Smokes is on hold until Anton decides what he wants; Leaderboard design rework in progress.

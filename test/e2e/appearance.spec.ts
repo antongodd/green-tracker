@@ -32,7 +32,7 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(() => page.context().close());
 
 const PRESETS = [
-  ['gems', ['Rainbow', 'Amethyst', 'Sapphire', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(192, 140, 255)', 'rgb(111, 155, 255)', 'rgb(47, 216, 147)']],
+  ['gems', ['Rainbow', 'Amethyst', 'Sapphire', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(181, 152, 240)', 'rgb(127, 176, 255)', 'rgb(47, 216, 147)']], // D49: softer lilac, brighter blue
   ['prism', ['Prism', 'Prism', 'Prism', 'Prism'], ['rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)']],
   ['metals', ['Rainbow', 'Diamond', 'Rose gold', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(169, 220, 255)', 'rgb(242, 169, 150)', 'rgb(47, 216, 147)']],
 ] as const;
@@ -52,6 +52,8 @@ test('each band on its row, in every preset: the right colours, each a little st
         return {
           t2: cs.getPropertyValue('--t2').trim(),
           holo: cs.backgroundImage.startsWith('linear-gradient(115deg, rgba('),
+          // The dark layer over the colours: its tint and its two strengths (it thins as the score rises).
+          layer: [...cs.backgroundImage.matchAll(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g)].slice(0, 2).map((m) => [m[1], m[2], m[3], m[4]].map(Number)),
           flows: anims.filter((n) => n.startsWith('tier-flow')),
           sheen: el.getAnimations({ subtree: true }).some((a) => (a as CSSAnimation).animationName === 'tier-sheen'),
           scoreFlows: score.getAnimations().length > 0,
@@ -61,13 +63,16 @@ test('each band on its row, in every preset: the right colours, each a little st
     );
     const hex = (rgb: string) => '#' + rgb.match(/\d+/g)!.map((n) => Number(n).toString(16).padStart(2, '0')).join('');
     expect(info.map((i) => i.t2), preset).toEqual(t2.map(hex));
-    // Band 4: the full holo card with the shine; 3: a holo card; 2: a flowing edge; 1: a still edge.
+    // All four are cards of one kind (D49): 4 the full card with the shine, 3 and 2 fainter and flowing, 1 the faintest and still.
     expect(info.map((i) => [i.holo, i.flows.join(), i.sheen, i.scoreFlows, i.scoreColoured]), preset).toEqual([
       [true, 'tier-flow-holo', true, true, true],
       [true, 'tier-flow-holo', false, true, true],
-      [false, 'tier-flow-edge', false, true, true],
-      [false, '', false, false, true],
+      [true, 'tier-flow-holo', false, true, true],
+      [true, '', false, false, true],
     ]);
+    expect(info.map((i) => i.layer.map((l) => l[3])), preset).toEqual([[0.7, 0.86], [0.8, 0.9], [0.86, 0.93], [0.9, 0.95]]);
+    // Gems' Amethyst and Sapphire sit under near-neutral layers, not the violet one that read as a purple slab (D49).
+    if (preset === 'gems') expect(info.slice(1, 3).map((i) => i.layer[0]!.slice(0, 3))).toEqual([[12, 14, 22], [10, 16, 26]]);
     // Only Metals' Diamond twinkles.
     await expect(page.locator('.glint')).toHaveCount(preset === 'metals' ? 3 : 0);
     await shot(page, `150-colours-${preset}`);
