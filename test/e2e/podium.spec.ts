@@ -159,7 +159,7 @@ test('the page follows your Type and Rank by, also when opened from the Log', as
   await owner.goto('/');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('taste');
   await expect(owner.locator('.row')).toHaveCount(1);
-  await owner.getByRole('link', { name: 'Log' }).click();
+  await owner.getByRole('link', { name: 'Log', exact: true }).click();
   await owner.locator('.lrow', { hasText: 'Delta' }).click();
   await expect(owner.locator('.podium-badge')).toHaveText('#1 in Flower by Taste');
   await expect(owner.locator('main')).toHaveAttribute('data-podium', '1');
@@ -172,6 +172,7 @@ test('the page follows your Type and Rank by, also when opened from the Log', as
 });
 
 test('text stays readable on every podium page throughout the motion', async () => {
+  test.slow(); // 36 photographs; ran past 60s on a busy machine (0.40.1)
   for (const name of ['Secret', 'Alpha', 'Charlie']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.podium-badge')).toBeVisible();

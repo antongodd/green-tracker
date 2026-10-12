@@ -55,7 +55,12 @@ export class Browser {
 }
 
 let nameCounter = 0;
-export const uniqueName = (prefix = 'user') => `${prefix}${Date.now().toString(36).slice(-5)}${++nameCounter}`.slice(0, 20);
+/**
+ * A username no other test has. Each test file runs in its own worker with its own counter, so the
+ * time and counter alone repeated across files in the same millisecond ("That username is taken",
+ * 0.40.1 CI); four random characters keep them apart.
+ */
+export const uniqueName = (prefix = 'user') => `${prefix}${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 6)}${++nameCounter}`.slice(0, 20);
 
 /** Signs up a new account in `browser`; returns its passkey and recovery codes. */
 export async function signUp(browser: Browser, username = uniqueName()) {

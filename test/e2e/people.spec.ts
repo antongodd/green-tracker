@@ -124,7 +124,7 @@ test('blocking hides the blocker; unblocking from More', async () => {
   await fan.getByPlaceholder('Search usernames').fill(ownerName.toLowerCase());
   await expect(fan.getByText(/No one found for/)).toBeVisible();
 
-  await owner.getByRole('link', { name: 'More' }).click();
+  await owner.getByRole('link', { name: 'More', exact: true }).click();
   await owner.getByRole('link', { name: /Blocked people/ }).click();
   await owner.locator('.prow', { hasText: `@${fanName}` }).getByRole('button', { name: 'Unblock' }).click();
   await expect(owner.getByText('You haven’t blocked anyone.')).toBeVisible();

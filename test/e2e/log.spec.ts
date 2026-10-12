@@ -101,17 +101,17 @@ test('the Type filter is shared with the Leaderboard; empty groups are not drawn
   await expect(group('Canada').locator('.lrow')).toHaveCount(1);
   await expect(tile('Products')).toHaveText('1');
   await expect(tile('Total')).toHaveText('0g');
-  await page.getByRole('link', { name: 'Leaderboard' }).click();
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page.getByLabel('Type', { exact: true })).toHaveValue('edibles');
   await page.getByLabel('Type', { exact: true }).selectOption('all');
-  await page.getByRole('link', { name: 'Log' }).click();
+  await page.getByRole('link', { name: 'Log', exact: true }).click();
   await expect(page.locator('.group-h')).toHaveCount(5);
 });
 
 test('a product row opens its profile, which returns to the Log', async () => {
   await group('United States').getByRole('link', { name: /Gelato 41/ }).click();
   await expect(page.getByRole('heading', { name: 'Gelato 41' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Log' })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('link', { name: 'Log', exact: true })).toHaveAttribute('aria-current', 'page');
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/log$/);
 });
@@ -188,7 +188,7 @@ test('promotion: pre-filled from the entry, commits nothing until Save, asks bef
   await expect(tile('Total')).toHaveText('32.5g'); // the entry's 3.5g amount was dropped
   // On the Leaderboard it's unrated, so it sits among the unrated rows at the bottom
   // (everything in this seed is unrated; ties go by name).
-  await page.getByRole('link', { name: 'Leaderboard' }).click();
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   const gary = page.locator('.row', { hasText: 'Gary Payton' });
   await expect(gary).toContainText('Unrated');
   await expect(page.locator('.row').filter({ hasNotText: 'Unrated' })).toHaveCount(0);
