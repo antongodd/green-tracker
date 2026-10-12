@@ -992,6 +992,13 @@ label.btn:has(input:disabled) { opacity: 0.4; }
    cards like a product page. */
 .log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(5, 8, 7, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
 .entry-page .sect .btn svg { width: 18px; height: 18px; }
+/* Kept from your Leaderboard (D50): on an entry returned from the Leaderboard. */
+.kept-head { display: flex; gap: 12px; align-items: center; }
+.kept-head strong { display: block; font-size: 15px; }
+.kept-head .small { display: block; margin-top: 2px; }
+.kept-ic { flex: none; width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: var(--accent-bright); background: var(--accent-soft); }
+.kept-ic svg { width: 18px; height: 18px; }
+.sect .btn svg, .sect .btn.secondary svg { width: 18px; height: 18px; }
 
 /* ---------- Smokes (D43, 0.36.0) ----------
    The tab: a strip of the last 7 days (a bar per smoke, up to five), then every smoke under a

@@ -91,7 +91,7 @@ test('their profile shows identity, ratings and details only — no price, notes
   for (const hidden of ['Price history', 'Value for money', 'Private notes', 'Leafly', 'Secret Shop', '£']) {
     await expect(fan.getByText(hidden)).toHaveCount(0);
   }
-  for (const action of ['Edit', 'Archive', 'Private']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
+  for (const action of ['Edit', 'Archive', 'Private', 'Return to Log']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
   await expect(fan.getByRole('link', { name: 'Edit' })).toHaveCount(0);
   await shot(fan, '53-their-profile');
   await fan.getByRole('link', { name: 'Back' }).click();

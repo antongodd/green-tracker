@@ -55,7 +55,7 @@ data.post('/restore', async (c) => {
 
   // Every photo must be a fresh upload of yours that includes its original. Which are
   // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
-  const uploadIds = [...products.flatMap((p) => p.photos), ...logEntries.flatMap((e) => e.photos), ...(profilePhoto ? [profilePhoto] : [])].map((ph) => ph.upload!);
+  const uploadIds = [...products.flatMap((p) => p.photos), ...logEntries.flatMap((e) => [...e.photos, ...(e.kept?.photos ?? [])]), ...(profilePhoto ? [profilePhoto] : [])].map((ph) => ph.upload!);
   const cutouts = new Set<string>();
   if (uploadIds.length) {
     const { results } = await db
@@ -79,7 +79,7 @@ data.post('/restore', async (c) => {
   const crop = (c: { crop: { x: number; y: number; w: number; h: number; square: boolean } | null }) =>
     c.crop ? { cx: c.crop.x, cy: c.crop.y, cw: c.crop.w, ch: c.crop.h, cs: c.crop.square ? 1 : 0 } : { cx: null, cy: null, cw: null, ch: null, cs: 0 };
 
-  for (const p of products) {
+  const addProduct = (p: (typeof products)[number] | NonNullable<(typeof logEntries)[number]['kept']>, archived: boolean, firstPosition: number): string => {
     const id = randomId();
     productRows.push({
       id,
@@ -96,14 +96,19 @@ data.post('/restore', async (c) => {
       leafly: p.leaflyLink,
       notes: p.notes,
       hit: p.hitTimeMinutes,
-      archived: p.archived ? 1 : 0,
+      archived: archived ? 1 : 0,
       private: p.private ? 1 : 0,
       created: p.createdAt,
     });
     for (const [category, value] of Object.entries(p.ratings)) ratingRows.push({ p: id, c: category, v: value });
     p.purchases.forEach((pu, i) => purchaseRows.push({ id: randomId(), p: id, seq: i + 1, date: pu.date, amount: pu.amount, paid: pu.totalPaid, supplier: pu.supplier }));
+    p.photos.forEach((ph, i) => photoRows.push({ id: randomId(), p: id, e: null, pos: firstPosition + i, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 }));
+    return id;
+  };
+
+  for (const p of products) {
+    const id = addProduct(p, p.archived, 0);
     p.smokes?.forEach(smoke(id, null));
-    p.photos.forEach((ph, i) => photoRows.push({ id: randomId(), p: id, e: null, pos: i, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 }));
   }
   for (const e of logEntries) {
     const id = randomId();
@@ -118,6 +123,8 @@ data.post('/restore', async (c) => {
       countryOther: e.countryOther,
       amount: e.amount,
       created: e.createdAt,
+      // D50: the product a returned entry keeps; its photos come after the entry's.
+      kept: e.kept ? addProduct(e.kept, false, 1) : null,
     });
     e.smokes?.forEach(smoke(null, id));
     for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 });
@@ -165,8 +172,8 @@ data.post('/restore', async (c) => {
     statements.push(
       db
         .prepare(
-          `INSERT INTO log_entries (id, user_id, name, product_type, product_type_other, concentrate_type, concentrate_type_other, country, country_other, amount, created_at, updated_at)
-           SELECT ${j('id')}, ?1, ${j('name')}, ${j('type')}, ${j('typeOther')}, ${j('conc')}, ${j('concOther')}, ${j('country')}, ${j('countryOther')}, ${j('amount')}, ${j('created')}, ?3 FROM json_each(?2)`,
+          `INSERT INTO log_entries (id, user_id, name, product_type, product_type_other, concentrate_type, concentrate_type_other, country, country_other, amount, created_at, updated_at, kept_product_id)
+           SELECT ${j('id')}, ?1, ${j('name')}, ${j('type')}, ${j('typeOther')}, ${j('conc')}, ${j('concOther')}, ${j('country')}, ${j('countryOther')}, ${j('amount')}, ${j('created')}, ?3, ${j('kept')} FROM json_each(?2)`,
         )
         .bind(userId, chunk, now),
     );
@@ -208,7 +215,7 @@ data.post('/restore', async (c) => {
 
   await db.batch(statements);
   deleteLater(c.executionCtx, c.env.PHOTOS, old.flatMap((o) => [...setKeys(userId, o.original_set), ...(o.image_set !== o.original_set ? imageKeys(userId, o.image_set) : [])]));
-  return c.json({ products: productRows.length, logEntries: entryRows.length, photos: photoRows.length, smokes: smokeRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
+  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, smokes: smokeRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
 });
 
 // Delete account --------------------------------------------------------------

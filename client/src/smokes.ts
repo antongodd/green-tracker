@@ -45,6 +45,13 @@ export function moveEntrySmokes(entryId: string, productId: string): void {
   changed();
 }
 
+/** After Return to Log (D50): the product's smokes now belong to its entry (the server moved them). */
+export function moveProductSmokes(productId: string, entryId: string): void {
+  if (!list) return;
+  list = list.map((s) => (s.productId === productId ? { ...s, productId: null, logEntryId: entryId } : s));
+  changed();
+}
+
 /** After a Log entry is deleted: its smokes went with it. */
 export function dropEntrySmokes(entryId: string): void {
   if (!list) return;

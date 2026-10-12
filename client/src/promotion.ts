@@ -1,6 +1,7 @@
 // "Add to leaderboard" hands the log entry's live form (unsaved edits included)
 // to the product editor. Nothing is committed until the product is saved.
 import type { ProductInput } from '../../shared/domain/product';
+import type { Ratings } from '../../shared/domain/ratings';
 import type { PhotoDraft } from './components/EditorPhotos';
 
 export interface Promotion {
@@ -8,6 +9,8 @@ export interface Promotion {
   input: ProductInput;
   /** The entry's photo draft, pending uploads included; the product editor now owns them. */
   drafts: PhotoDraft[];
+  /** D50: every rating a returned entry's product keeps, hidden categories included. */
+  ratings?: Ratings;
 }
 
 let current: Promotion | null = null;

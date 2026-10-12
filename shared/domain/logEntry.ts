@@ -2,7 +2,7 @@
 // type, an optional amount and one photo. No ratings, prices, dates or notes.
 
 import type { PhotoInput, PhotoRecord } from './photo';
-import { emptyProductInput, PRODUCT_LIMITS, validateProductInput, type ProductInput } from './product';
+import { emptyProductInput, PRODUCT_LIMITS, productToInput, validateProductInput, type Product, type ProductInput, type PurchaseRecord } from './product';
 import type { ProductTypeKey } from './productTypes';
 
 export interface LogEntry {
@@ -19,6 +19,12 @@ export interface LogEntry {
   photo: PhotoRecord | null;
   createdAt: number;
   updatedAt: number;
+  /**
+   * D50: the Leaderboard product this entry was returned from, kept as it was (ratings,
+   * purchases, notes, its other photos) and hidden until Add to leaderboard brings it back.
+   * null for an ordinary entry.
+   */
+  kept: Product | null;
 }
 
 export interface LogEntryInput {
@@ -50,7 +56,7 @@ export function emptyLogEntryInput(): LogEntryInput {
 }
 
 export function logEntryToInput(e: LogEntry): LogEntryInput {
-  const { id: _i, createdAt: _c, updatedAt: _u, photo, ...rest } = e;
+  const { id: _i, createdAt: _c, updatedAt: _u, kept: _k, photo, ...rest } = e;
   return { ...rest, photos: photo ? [{ id: photo.id, crop: photo.crop }] : [] };
 }
 
@@ -110,5 +116,36 @@ export function promotionInput(entry: LogEntryInput): ProductInput {
     country: entry.country,
     countryOther: entry.countryOther,
     photos: entry.photos,
+  };
+}
+
+/**
+ * Return to Log (D50): a returned product's amount is all its purchases' amounts added up
+ * (grams, or mg of THC for edibles, like the entry's); null when none has one.
+ */
+export function returnedAmount(purchases: Pick<PurchaseRecord, 'amount'>[]): number | null {
+  const amounts = purchases.map((p) => p.amount).filter((a): a is number => a !== null);
+  if (!amounts.length) return null;
+  const sum = Math.round(amounts.reduce((n, a) => n + a, 0) * 1000) / 1000;
+  return sum > 0 ? Math.min(sum, PRODUCT_LIMITS.money) : null;
+}
+
+/**
+ * Add to leaderboard on an entry that keeps a product (D50) fills the editor with
+ * everything kept, under the entry's own name, type, country and photo (which may have
+ * been changed in the Log): the entry's photo first, as it was the product's first.
+ */
+export function keptPromotionInput(entry: LogEntryInput, kept: Product): ProductInput {
+  const k = productToInput(kept);
+  return {
+    ...k,
+    name: entry.name,
+    productType: entry.productType,
+    productTypeOther: entry.productTypeOther,
+    concentrateType: entry.concentrateType,
+    concentrateTypeOther: entry.concentrateTypeOther,
+    country: entry.country,
+    countryOther: entry.countryOther,
+    photos: [...entry.photos, ...k.photos],
   };
 }

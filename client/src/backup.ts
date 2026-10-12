@@ -1,6 +1,6 @@
 // Export and restore run in the browser (brief §13; the server's CPU budget is too
 // small to build or unpack a file with embedded photos).
-import { checkExportFile, EXPORT_FORMAT, EXPORT_VERSION, type ExportFile, type ExportLogEntry, type ExportPhoto, type ExportProduct, type ExportSmoke, type RestorePayload } from '../../shared/domain/backup';
+import { checkExportFile, EXPORT_FORMAT, EXPORT_VERSION, type ExportFile, type ExportKept, type ExportLogEntry, type ExportPhoto, type ExportProduct, type ExportSmoke, type RestorePayload } from '../../shared/domain/backup';
 import { smokesOf, type Smoke } from '../../shared/domain/smoke';
 import type { LogEntry } from '../../shared/domain/logEntry';
 import { ownProfilePhotoUrl, photoUrl, type PhotoRecord } from '../../shared/domain/photo';
@@ -45,7 +45,7 @@ export async function buildExport(username: string, progress: Progress): Promise
     smokesOf(smokes, target).reverse().map(({ date, time, amount, effect, createdAt }: Smoke) => ({ date, time, amount, effect, createdAt }));
   const products: Product[] = [...active, ...archived];
   const profile = me.user?.photo ?? null;
-  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.filter((e) => e.photo).length + (profile ? 1 : 0);
+  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0) + (profile ? 1 : 0);
   let done = 0;
   progress(0, photos);
   const embed = async (ph: PhotoRecord, url = (v: 'original' | 'cropped') => photoUrl(ph, v)): Promise<ExportPhoto> => {
@@ -56,11 +56,10 @@ export async function buildExport(username: string, progress: Progress): Promise
     return out;
   };
 
-  const exportProducts: ExportProduct[] = [];
-  for (const p of products) {
+  const exportProduct = async (p: Product): Promise<ExportKept> => {
     const embedded: ExportPhoto[] = [];
     for (const ph of p.photos) embedded.push(await embed(ph));
-    exportProducts.push({
+    return {
       name: p.name,
       strainType: p.strainType,
       productType: p.productType,
@@ -78,11 +77,11 @@ export async function buildExport(username: string, progress: Progress): Promise
       ratings: p.ratings as Record<string, number>,
       purchases: [...p.purchases].sort((a, b) => a.seq - b.seq).map(({ date, amount, totalPaid, supplier }) => ({ date, amount, totalPaid, supplier })),
       photos: embedded,
-      archived: p.archived,
       createdAt: p.createdAt,
-      smokes: smokesFor(`p:${p.id}`),
-    });
-  }
+    };
+  };
+  const exportProducts: ExportProduct[] = [];
+  for (const p of products) exportProducts.push({ ...(await exportProduct(p)), archived: p.archived, smokes: smokesFor(`p:${p.id}`) });
   const exportEntries: ExportLogEntry[] = [];
   for (const e of entries as LogEntry[]) {
     exportEntries.push({
@@ -97,6 +96,8 @@ export async function buildExport(username: string, progress: Progress): Promise
       photo: e.photo ? await embed(e.photo) : null,
       createdAt: e.createdAt,
       smokes: smokesFor(`e:${e.id}`),
+      // D50: what a returned entry keeps.
+      ...(e.kept ? { kept: await exportProduct(e.kept) } : {}),
     });
   }
 
@@ -166,7 +167,7 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
     products: f.products.filter((p) => !p.archived).length,
     archived: f.products.filter((p) => p.archived).length,
     logEntries: f.logEntries.length,
-    photos: f.products.reduce((n, p) => n + p.photos.length, 0) + f.logEntries.filter((e) => e.photo).length,
+    photos: f.products.reduce((n, p) => n + p.photos.length, 0) + f.logEntries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0),
     smokes: [...f.products, ...f.logEntries].reduce((n, x) => n + (x.smokes?.length ?? 0), 0),
     profilePhoto: f.profilePhoto === undefined ? 'not-in-file' : f.profilePhoto ? 'included' : 'none',
   };
@@ -199,8 +200,16 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
       payload.products.push({ ...p, purchases: p.purchases, photos });
     }
     for (const e of summary.file.logEntries) {
-      const { photo, ...rest } = e;
-      payload.logEntries.push({ ...rest, photos: photo ? [await upload(photo)] : [] });
+      const { photo, kept, ...rest } = e;
+      const photos = photo ? [await upload(photo)] : [];
+      if (!kept) {
+        payload.logEntries.push({ ...rest, photos });
+        continue;
+      }
+      // D50: a returned entry's kept product, its photos uploaded like any other.
+      const keptPhotos = [];
+      for (const ph of kept.photos) keptPhotos.push(await upload(ph));
+      payload.logEntries.push({ ...rest, photos, kept: { ...kept, photos: keptPhotos } });
     }
     const pp = summary.file.profilePhoto;
     if (pp !== undefined) payload.profilePhoto = pp ? { upload: (await upload(pp)).upload, crop: pp.crop! } : null;
