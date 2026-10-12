@@ -130,13 +130,13 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await expect(hero(page).getByText('Private')).toBeVisible();
 
   // A second, unrated product classified Other: no icon, sorts to the bottom.
-  await page.getByRole('link', { name: 'Leaderboard' }).click();
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await page.getByRole('button', { name: 'Add a product' }).click();
   await page.getByLabel('Name').fill('mystery sample');
   await page.getByLabel('Product type').selectOption('other');
   await page.getByLabel('Date tried').fill('2026-08-12');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.getByRole('link', { name: 'Leaderboard' }).click();
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
 
   const rows = page.locator('.row');
   await expect(rows).toHaveCount(2);
@@ -156,14 +156,14 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('dialog').getByRole('button', { name: 'Archive' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('.row')).toHaveCount(1);
-  await page.getByRole('link', { name: 'More' }).click();
+  await page.getByRole('link', { name: 'More', exact: true }).click();
   await expect(page.getByRole('link', { name: /Archive\s*1/ })).toBeVisible();
   await page.getByRole('link', { name: /Archive/ }).click();
   await expect(page.locator('.row')).toContainText('Gelato 41 OG');
   await shot(page, '14-archive');
   await page.getByRole('button', { name: 'Un-archive' }).click();
   await expect(page.getByRole('heading', { name: 'Nothing archived' })).toBeVisible();
-  await page.getByRole('link', { name: 'Leaderboard' }).click();
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page.locator('.row')).toHaveCount(2);
 });
 

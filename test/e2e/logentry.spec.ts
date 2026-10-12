@@ -83,7 +83,7 @@ test('tapping an entry opens its page: its photo on top, the tag and name, Detai
   await expect(actions().locator('.btn svg')).toHaveCount(3);
   await expect(page.getByText(/Rate it/)).toHaveCount(0); // no line under Add to leaderboard
   await expect(page.locator('.hdr').getByRole('link', { name: 'Edit' })).toBeVisible();
-  await expect(page.locator('nav').getByRole('link', { name: 'Log' })).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('nav').getByRole('link', { name: 'Log', exact: true })).toHaveAttribute('aria-current', 'page');
   // The photo flew in from the row (D20): the name fades in once it has landed (D27).
   await expect(page.locator('html')).not.toHaveClass(/vt-/);
   await expect(page.locator('.poster .hero')).toHaveCSS('opacity', '1');

@@ -41,7 +41,7 @@ test('export everything, restore it after changes, then delete the account', asy
   await post(page, '/api/smokes', { productId: null, logEntryId: quick.entry.id, date: '2026-09-03', time: '08:00', amount: null, effect: null });
 
   // More is grouped Account · Data · Danger zone (D38, 0.31.0: Archive moved into Data, the version to the footer).
-  await page.getByRole('link', { name: 'More' }).click();
+  await page.getByRole('link', { name: 'More', exact: true }).click();
   for (const group of ['Account', 'Data', 'Danger zone']) await expect(page.locator('.lh', { hasText: group })).toBeVisible();
   await shot(page, '60-more');
 
