@@ -140,7 +140,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
 
   const rows = page.locator('.row');
   await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0)).toHaveClass(/p1/);
+  await expect(rows.nth(0)).toHaveClass(/\bfirst\b/); // the #1 mark (D48)
   await expect(rows.nth(0)).toContainText('Gelato 41 OG');
   await expect(rows.nth(0).getByRole('img', { name: 'Private' })).toBeVisible();
   await expect(rows.nth(0).locator('.meta')).toHaveText(/^£2\.71\/g\s*·\s*Cookies$/);

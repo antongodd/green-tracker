@@ -8,6 +8,7 @@ import { BackButton, Header, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ProductRow } from '../components/ProductRow';
+import { ColoursSheet } from '../components/Gems';
 import { PlusIcon } from '../icons';
 import { EmptyCard } from '../components/EmptyCard';
 import { cachedProducts, fetchArchived, fetchProducts, setFlag } from '../products';
@@ -89,6 +90,8 @@ export function Leaderboard() {
   const { smokes } = useSmokes(smokesOn);
   const products = loaded && (view.rankBy !== 'used' || smokes) ? withSmokeCounts(loaded, smokes ?? []) : null;
   const [error, setError] = useState('');
+  // D48: the Colours key.
+  const [showKey, setShowKey] = useState(false);
   const arrivedFromProduct = useRef(/^\/products\//.test(cameFrom() ?? ''));
 
   useEffect(() => {
@@ -129,7 +132,7 @@ export function Leaderboard() {
         )}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} used={smokesOn} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} used={smokesOn} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             <Tiles
               tiles={[
                 { value: String(tiles.products), label: 'Products' },
@@ -145,7 +148,7 @@ export function Leaderboard() {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} podium={r.podium} rankBy={view.rankBy} value={r.value} />
+              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} value={r.value} />
             ))}
           </div>
         )}
@@ -159,6 +162,7 @@ export function Leaderboard() {
         <PlusIcon />
       </button>
       <TabBar active="leaderboard" />
+      {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
     </>
   );
 }
@@ -205,7 +209,7 @@ export function Archive() {
         <div class="rows">
           {rows.map((r) => (
             <div class="archived-row" key={r.product.id}>
-              <ProductRow product={r.product} rank={r.rank} podium={null} />
+              <ProductRow product={r.product} rank={r.rank} band={null} first={false} />
               <button class="btn secondary unarchive" style={{ width: 'auto', height: '40px' }} onClick={() => unarchive(r.product.id)}>
                 Un-archive
               </button>

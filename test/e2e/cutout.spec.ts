@@ -56,7 +56,7 @@ async function newProduct(page: Page, name: string, file: { name: string; mimeTy
   await page.getByLabel('Add photos').setInputFiles([file]);
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.locator('main[data-podium]')).toBeVisible();
+  await expect(page.locator('main[data-band]')).toBeVisible();
   return page.url().split('/products/')[1]!;
 }
 
@@ -121,6 +121,8 @@ test('remove the background on a product page: tap the bud, apply, then restore 
 
   // Preview, then Apply saves at once (from a product page, like a crop).
   await expect(flow(page).getByRole('img', { name: 'The cut-out' })).toBeVisible();
+  // …and on a top row in the top colour of your preset (D48).
+  await expect(flow(page).locator('.cut-row')).toHaveClass(/\btier band4 pal-gems\b/);
   await settled(page);
   expect(await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze().then((r) => r.violations.map((v) => v.id))).toEqual([]);
   await shot(page, '91-cutout-preview');
@@ -194,7 +196,7 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
 
   // Cancel the edit: nothing saved.
   await page.getByRole('button', { name: 'Cancel' }).click();
-  await expect(page.locator('main[data-podium]')).toBeVisible();
+  await expect(page.locator('main[data-band]')).toBeVisible();
   expect((await product(page, id)).photos[0].cutout).toBe(false);
   await expect(page.locator('.hero-photo.cut')).toHaveCount(0);
 

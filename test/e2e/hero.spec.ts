@@ -5,8 +5,8 @@ import { contrastFailures, HERO_TEXT, heroTextBoxes, shot, signUp } from './help
 // The Poster (D27, 0.20.0): the first photo fills the top of a product page edge to edge,
 // behind the header, with the details on its bottom over a dark fade. A cut-out or the
 // type mark floats above the details. One account; its products (All · Overall):
-// Bright 9.9 (1st, a white photo) · Busy 9.5 (Diamond, a busy bright photo) ·
-// Floating 9.0 (Gold, a cut-out, long name) · Plain (unrated, white photo) · Nothing (no photo).
+// Bright 9.9 (1st, Rainbow with the #1 mark, a white photo) · Busy 9.5 (Rainbow, a busy bright photo) ·
+// Floating 9.0 (Amethyst, a cut-out, long name) · Plain (unrated, white photo) · Nothing (no photo).
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
@@ -64,10 +64,10 @@ const create = async (name: string, over: Partial<ProductInput>) => {
   ids[name] = await page.evaluate(async (b) => ((await (await fetch('/api/products', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).json()) as { product: { id: string } }).product.id, body);
 };
 
-/** Opens a product page once its podium place is known and the screen's entrance has finished. */
+/** Opens a product page once its colour (D48) is known and the screen's entrance has finished. */
 async function open(name: string) {
   await page.goto(`/products/${ids[name]}`);
-  await expect(page.locator('main[data-podium]')).toBeVisible();
+  await expect(page.locator('main[data-band]')).toBeVisible();
   await page.locator('main').evaluate((m) => Promise.all(m.getAnimations().filter((a) => (a as CSSAnimation).animationName === 'enter').map((a) => a.finished)));
 }
 
@@ -89,7 +89,7 @@ test.afterAll(async () => {
 
 test('the photo fills the top of the page, behind the header, and the details sit on it; tapping them opens the photo', async () => {
   await open('Busy');
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '2');
+  await expect(page.locator('main')).toHaveAttribute('data-band', '4');
   const photo = await rect('.hero-photo');
   const header = await rect('.hdr');
   const hero = await rect('.hero');
@@ -118,7 +118,7 @@ test('the photo fills the top of the page, behind the header, and the details si
 
 test('a cut-out and the type mark float above the details; a long name wraps and never overflows', async () => {
   await open(LONG);
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '3');
+  await expect(page.locator('main')).toHaveAttribute('data-band', '3');
   const img = await rect('.hero-photo img');
   // The cut-out and the thumbnail shown under it while it loads share one box, centred
   // (0.20.0 drew the image at its own width from the left edge: two buds, one off to the left).
@@ -145,7 +145,7 @@ test('a cut-out and the type mark float above the details; a long name wraps and
   await shot(page, '97-hero-none');
 });
 
-test('the details stay readable over a white photo and a busy one, throughout the podium motion', async () => {
+test('the details stay readable over a white photo and a busy one, throughout the colours’ motion', async () => {
   // Five pages × 12 photographed moments: about 37s alone, so it ran past the 60s limit with 4 workers
   // busy (0.29.0's first full run). Same checks, more time.
   test.slow();

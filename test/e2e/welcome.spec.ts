@@ -2,8 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { contrastFailures, settled, shot, textBoxes } from './helpers';
 
 // D36 (0.29.0): the welcome (sign-in) screen shows the name small at the top, the headline
-// "Your stash, ranked.", and an example Leaderboard drawn with the real row styles (rainbow 1st,
-// Diamond 2nd, a 3rd in its score's colour), labelled as an example, decorative and not tappable.
+// "Your stash, ranked.", and an example Leaderboard drawn with the real row styles (since D48 the
+// colours by score in Gems: Rainbow with the crown and halo, Amethyst, Sapphire), labelled as an
+// example, decorative and not tappable.
 // The buttons are unchanged and always fit without scrolling. Sign-up and recovery screens get a
 // glowing leaf tile, a glowing current step and the username in a green card.
 
@@ -13,7 +14,7 @@ const fits = (page: Page) =>
     return { scroll: document.documentElement.scrollHeight - innerHeight, bottom: Math.round(last.bottom), height: innerHeight };
   });
 
-test('the headline and the example Leaderboard, in podium order', async ({ page }) => {
+test('the headline and the example Leaderboard, in its colours', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Green Tracker' })).toBeVisible();
@@ -22,13 +23,13 @@ test('the headline and the example Leaderboard, in podium order', async ({ page 
   const rows = page.locator('.showcase .row');
   await expect(rows).toHaveCount(3);
   expect(await rows.locator('.name').allTextContents()).toEqual(['Wedding Cake', 'Gelato 41', 'Zkittlez']);
-  expect(await rows.locator('.score b').allTextContents()).toEqual(['9.4', '9.1', '8.6']);
-  await expect(rows.nth(0)).toHaveClass(/\btier p1\b/);
-  await expect(rows.nth(1)).toHaveClass(/\btier p2\b/);
-  await expect(rows.nth(1).locator('.glint')).toHaveCount(3);
-  // The full podium (D39): the third example is Gold, not a heat row.
-  await expect(rows.nth(2)).toHaveClass(/\btier p3\b/);
+  expect(await rows.locator('.score b').allTextContents()).toEqual(['9.7', '9.2', '8.7']);
+  await expect(rows.nth(0)).toHaveClass(/\btier band4 pal-gems first\b/);
+  await expect(rows.nth(0).locator('.rank-crown')).toHaveCount(1);
+  await expect(rows.nth(1)).toHaveClass(/\btier band3 pal-gems\b/);
+  await expect(rows.nth(2)).toHaveClass(/\btier band2 pal-gems\b/);
   await expect(rows.nth(2)).not.toHaveAttribute('data-heat');
+  await expect(page.locator('.showcase .glint')).toHaveCount(0);
   await expect(page.locator('.showcase figcaption')).toHaveText('Example Leaderboard');
   await shot(page, '96-welcome');
 });

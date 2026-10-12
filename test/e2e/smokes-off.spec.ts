@@ -99,7 +99,7 @@ test('Privacy keeps its other switches but offers none about smokes; More’s li
 
 test('Export, Restore and Delete account don’t mention smokes', async () => {
   await page.goto('/more/export');
-  await expect(page.getByRole('region', { name: 'In the file' }).locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/, 'Your privacy settings']);
+  await expect(page.getByRole('region', { name: 'In the file' }).locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/, 'Your privacy and appearance settings']);
   await page.goto('/more/restore');
   await expect(page.locator('main')).toContainText('Replaces your products, Log and photos with an export file.');
   await page.goto('/more/delete');

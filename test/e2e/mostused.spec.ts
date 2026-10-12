@@ -6,8 +6,8 @@ import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
 // Most used (D44, 0.37.0; option C "Flame" with never-smoked left out). Rank by → Most used on
 // your own Leaderboard ranks by how many times you've had each product, all time: the Smokes
 // flame in amber before the count, TIMES under it; never smoked is left out (a line says how
-// many); a tie goes to the higher Overall; the top three get the rainbow, Diamond and Gold; no
-// heat colours (a count isn't a score). A friend's board doesn't offer it.
+// many); a tie goes to the higher Overall; no colours (a count isn't a score, D48): only #1 wears
+// the crown and a gold halo. A friend's board doesn't offer it.
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
@@ -67,7 +67,7 @@ test('most first, the flame and TIMES; a tie goes to the higher Overall; never s
   await expect(page.locator('.pill.active').first()).toContainText('Most used');
   await expect(page.locator('.footnote')).toHaveText('2 never smoked, not shown. Ties go to the higher Overall.');
 
-  // The amber flame before every count, beside the number, never flowing with the podium colours.
+  // The amber flame before every count, beside the number, never flowing with any colours.
   for (const row of await rows().all()) {
     const got = await row.locator('.score').evaluate((s) => {
       const f = s.querySelector('svg.flame')!.getBoundingClientRect();
@@ -76,12 +76,14 @@ test('most first, the flame and TIMES; a tie goes to the higher Overall; never s
     });
     expect(got).toEqual({ colour: 'rgb(240, 169, 59)', beside: true });
   }
-  // The top three are the podium; the rest plain: no heat glow on a count.
-  for (let i = 0; i < 3; i++) await expect(rows().nth(i)).toHaveClass(new RegExp(`\\btier p${i + 1}\\b`));
-  for (let i = 3; i < 5; i++) {
+  // No colours and no heat glow on a count (D48); #1 wears the crown and a gold halo.
+  for (let i = 0; i < 5; i++) {
     await expect(rows().nth(i)).not.toHaveClass(/tier/);
     await expect(rows().nth(i)).not.toHaveAttribute('data-heat');
   }
+  await expect(rows().nth(0)).toHaveClass(/\bfirst\b/);
+  await expect(rows().nth(0).locator('.rank-crown')).toHaveCount(1);
+  expect(await rows().nth(0).evaluate((e) => getComputedStyle(e).getPropertyValue('--halo').trim())).toBe('#ffd36b');
   // The count still fits its column with three digits.
   const fits = await rows().first().locator('.score').evaluate((s) => s.scrollWidth <= s.clientWidth + 1);
   expect(fits).toBe(true);
@@ -89,15 +91,16 @@ test('most first, the flame and TIMES; a tie goes to the higher Overall; never s
   await shot(page, '140-most-used');
 });
 
-test('the counts stay readable on the podium through the motion', async () => {
+test('the counts stay readable on #1 through the halo’s motion', async () => {
   await page.goto('/');
   await expect(page.getByLabel('Rank by', { exact: true })).toHaveValue('used');
-  await expect(rows().first()).toHaveClass(/tier p1/);
-  const worst = await contrastFailures(page, await textBoxes(page, '.row.tier .score b, .row.tier .score .cap'));
+  await expect(rows().first()).toHaveClass(/\bfirst\b/);
+  await settled(page);
+  const worst = await contrastFailures(page, await textBoxes(page, '.row.first .score b, .row.first .score .cap, .row.first .name'));
   expect(worst, worst.join('\n')).toEqual([]);
 });
 
-test('the Type filter applies; the product page wears its place and badge', async () => {
+test('the Type filter applies; #1’s page wears its place and the crown, in gold', async () => {
   await page.goto('/');
   await page.getByLabel('Type', { exact: true }).selectOption('edibles');
   await expect(rows()).toHaveCount(1);
@@ -106,12 +109,16 @@ test('the Type filter applies; the product page wears its place and badge', asyn
   await page.getByLabel('Type', { exact: true }).selectOption('all');
 
   await page.goto(`/products/${ids['Wedding Cake']}`);
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '1');
-  await expect(page.locator('.podium-badge')).toHaveText('#1 by Most used');
+  await expect(page.locator('main')).toHaveAttribute('data-band', 'none'); // a count earns no colour
+  await expect(page.locator('.gem-badge')).toHaveText('#1 by Most used');
+  await expect(page.locator('.gem-badge')).toHaveClass(/\bplain\b/);
+  await expect(page.locator('.gem-badge svg')).toHaveCount(1); // the crown
   await page.goto(`/products/${ids['Lemon Haze']}`);
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '3');
+  await expect(page.locator('main')).toHaveAttribute('data-band', 'none');
+  await expect(page.locator('.gem-badge')).toHaveCount(0);
   await page.goto(`/products/${ids['Never Tried']}`);
-  await expect(page.locator('main')).toHaveAttribute('data-podium', 'none');
+  await expect(page.locator('main')).toHaveAttribute('data-band', 'none');
+  await expect(page.locator('.gem-badge')).toHaveCount(0);
 
   // A new smoke moves the order straight away.
   await smokes('Gelato 41', 1);

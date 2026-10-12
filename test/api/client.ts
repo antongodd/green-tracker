@@ -3,13 +3,20 @@ import { SoftPasskey } from './authenticator';
 
 const ORIGIN = 'http://localhost';
 let ipCounter = 0;
+/**
+ * Each test file numbers its browsers from 1 again (files run in their own module scope), so every
+ * file's first browser used to share 10.0.0.1 and the sign-up limit (10 an hour per address) counted
+ * across files: adding a file with sign-ups pushed an unrelated file over it (0.41.0). A random
+ * block per file keeps each file's addresses its own.
+ */
+const [blockA, blockB] = [1 + Math.floor(Math.random() * 250), Math.floor(Math.random() * 200)];
 
 /** One browser: its own cookie jar and client IP (so rate limits don't leak between tests). */
 export class Browser {
   cookies = new Map<string, string>();
   lastSetCookie: string[] = [];
   constructor(
-    public ip = `10.0.${Math.floor(++ipCounter / 250)}.${ipCounter % 250}`,
+    public ip = `10.${blockA}.${blockB + Math.floor(++ipCounter / 250)}.${ipCounter % 250}`,
     /** Which server: the main one (Smokes on), or `inject('liveApiBase')` for one with Smokes off (D46). */
     public base = inject('apiBase'),
   ) {}

@@ -7,6 +7,7 @@ import { randomId } from '../lib/crypto';
 import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, setKeys } from '../lib/photos';
 import { savePrivacyStatement } from '../lib/privacy';
+import { saveAppearanceStatement } from '../lib/appearance';
 import { clearSessionCookie, requireUser } from '../lib/session';
 import { parseTransports, saveChallenge, takeChallenge } from '../lib/webauthn';
 
@@ -50,7 +51,7 @@ data.post('/restore', async (c) => {
   const db = c.env.DB;
   const v = validateRestore(await jsonBody(c));
   if (!v.ok) fail(400, 'invalid_restore', v.message);
-  const { products, logEntries, profilePhoto, privacy } = v.value;
+  const { products, logEntries, profilePhoto, privacy, appearance } = v.value;
 
   // Every photo must be a fresh upload of yours that includes its original. Which are
   // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
@@ -201,6 +202,8 @@ data.post('/restore', async (c) => {
   }
   // D45: the file's privacy settings; a file from before 0.38.0 has none and leaves yours alone.
   if (privacy) statements.push(savePrivacyStatement(db, userId, privacy));
+  // D48: the same for your appearance settings (a file from before 0.41.0 has none).
+  if (appearance) statements.push(saveAppearanceStatement(db, userId, appearance));
   if (uploadIds.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(uploadIds)));
 
   await db.batch(statements);
@@ -225,7 +228,7 @@ data.post('/delete/options', async (c) => {
 
 /**
  * Step 2: with the passkey check and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, smokes, privacy settings, photos, the profile photo,
+ * the user row cascades to products, ratings, purchases, log entries, smokes, privacy and appearance settings, photos, the profile photo,
  * uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */
