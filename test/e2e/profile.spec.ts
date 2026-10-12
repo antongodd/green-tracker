@@ -206,7 +206,7 @@ test('within a visit People remembers your last list; a relaunch opens on Follow
   await owner.goto('/people');
   await owner.getByRole('tab', { name: /Requests/ }).click();
   await expect(owner.locator('.prow', { hasText: 'sid' })).toBeVisible(); // the stranger's request, with their letter
-  await owner.getByRole('link', { name: 'More' }).click();
+  await owner.getByRole('link', { name: 'More', exact: true }).click();
   await owner.getByRole('link', { name: /People/ }).click();
   await expect(owner.getByRole('tab', { name: /Requests/ })).toHaveAttribute('aria-selected', 'true');
   await owner.reload();
