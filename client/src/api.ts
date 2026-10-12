@@ -1,5 +1,6 @@
 import type { Crop } from '../../shared/domain/photo';
 import type { SiteFeatures } from '../../shared/domain/privacy';
+import type { Appearance } from '../../shared/domain/gems';
 import { reportNetwork } from './online';
 
 /** A failed API call. `message` is written for the person using the app and can be shown as-is. */
@@ -48,6 +49,8 @@ export interface Me {
   recoveryCodesLeft?: number;
   /** Incoming follow requests: the badge on the People tab. */
   pendingRequests?: number;
+  /** D48: your Leaderboard colours and #1 mark (signed in only). */
+  appearance?: Appearance;
   /** D46: what this site has. Smokes is off on the live site until it's re-released. */
   features?: SiteFeatures;
   /** D47: which site this is. The dev site shows an orange DEV label. */

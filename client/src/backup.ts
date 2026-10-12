@@ -109,8 +109,9 @@ export async function buildExport(username: string, progress: Progress): Promise
     products: exportProducts,
     logEntries: exportEntries,
     // D23: your profile photo, original and crop; null when you have none.
-    // D45: your privacy settings travel with your data.
+    // D45: your privacy settings travel with your data; D48: so do your Leaderboard colours.
     privacy,
+    ...(me.appearance && { appearance: me.appearance }),
     profilePhoto: profile ? await embed({ id: 'profile', ...profile, cutout: false }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
@@ -204,6 +205,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     const pp = summary.file.profilePhoto;
     if (pp !== undefined) payload.profilePhoto = pp ? { upload: (await upload(pp)).upload, crop: pp.crop! } : null;
     if (summary.file.privacy) payload.privacy = summary.file.privacy;
+    if (summary.file.appearance) payload.appearance = summary.file.appearance;
     await api('POST', '/data/restore', payload);
   } catch (e) {
     uploads.forEach(discardUpload);

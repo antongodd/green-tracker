@@ -3,9 +3,9 @@ import { scoreHeat } from '../../shared/domain/heat';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
 import { contrastFailures, signUp, textBoxes } from './helpers';
 
-// D30 (0.23.0): below the podium, a row glows in its score's colour (amber → yellow-green →
-// mint); since D39 (0.32.0) the podium is three places, so 4th glows too. Never the podium rows, price or value for money rankings, or unrated rows. On your
-// board, a friend's, and the Archive. Two people in two browsers.
+// D30 (0.23.0): a row glows in its score's colour (amber → yellow-green → green); since D48
+// (0.41.0) only below 8, where the colour bands stop. Never a row in a colour band, price or value
+// for money rankings, or unrated rows. On your board, a friend's, and the Archive. Two people in two browsers.
 test.describe.configure({ mode: 'serial' });
 let owner: Page, fan: Page;
 let ownerName = '';
@@ -30,7 +30,7 @@ test.beforeAll(async ({ browser }) => {
   let fanName: string;
   ({ page: owner, name: ownerName } = await person(browser, 'heat'));
   ({ page: fan, name: fanName } = await person(browser, 'hfan'));
-  const seed: [string, number | null][] = [['Top A', 9.9], ['Top B', 9.8], ['Top C', 9.7], ['Top D', 9.6], ['Minty', 9.2], ['Middle', 6.8], ['Lower', 5.5], ['Lowest', 3], ['Blank', null], ['Shelved', 7.4]];
+  const seed: [string, number | null][] = [['Top A', 9.9], ['Top B', 9.8], ['Top C', 9.7], ['Top D', 9.6], ['Minty', 7.9], ['Middle', 6.8], ['Lower', 5.5], ['Lowest', 3], ['Blank', null], ['Shelved', 7.4]];
   for (const [name, look] of seed) {
     const body: ProductInput = { ...emptyProductInput(), name, ratings: look === null ? {} : { look }, purchases: buy(10 + (look ?? 0)) };
     ids[name] = (await post(owner, '/api/products', body)).product.id;
@@ -45,12 +45,12 @@ test.afterAll(async () => {
 });
 
 const expected = [
-  { name: 'Top A', heat: null }, { name: 'Top B', heat: null }, { name: 'Top C', heat: null }, { name: 'Top D', heat: scoreHeat('overall', 9.6) },
-  { name: 'Minty', heat: scoreHeat('overall', 9.2) }, { name: 'Middle', heat: scoreHeat('overall', 6.8) },
+  { name: 'Top A', heat: null }, { name: 'Top B', heat: null }, { name: 'Top C', heat: null }, { name: 'Top D', heat: null },
+  { name: 'Minty', heat: scoreHeat('overall', 7.9) }, { name: 'Middle', heat: scoreHeat('overall', 6.8) },
   { name: 'Lower', heat: scoreHeat('overall', 5.5) }, { name: 'Lowest', heat: scoreHeat('overall', 3) }, { name: 'Blank', heat: null },
 ];
 
-test('rows below the podium glow in their score’s colour; the podium and unrated rows don’t', async () => {
+test('rows below 8 glow in their score’s colour; rows in a colour band and unrated rows don’t', async () => {
   await owner.goto('/');
   await expect(owner.locator('.row')).toHaveCount(9);
   const got = await rows(owner);
@@ -59,7 +59,9 @@ test('rows below the podium glow in their score’s colour; the podium and unrat
   for (const r of got) if (r.heat) expect(r.score, r.name!).toBe(r.heat);
   expect(await owner.locator('.row[data-heat]').first().evaluate((e) => getComputedStyle(e).backgroundImage)).toContain('linear-gradient');
   expect(scoreHeat('overall', 3)).toBe('rgb(224, 163, 92)'); // amber at the bottom
-  expect(scoreHeat('overall', 9.2)).toBe('rgb(141, 243, 182)'); // mint at the top
+  expect(scoreHeat('overall', 9.2)).toBe('rgb(141, 243, 182)'); // mint at the top (still used by the rating bars, D32)
+  // The four 9.6+ rows wear their colour band instead (D48).
+  await expect(owner.locator('.row.tier.band4')).toHaveCount(4);
 });
 
 test('ranking by price turns it off; ranking by a rating follows that rating', async () => {
@@ -71,7 +73,7 @@ test('ranking by price turns it off; ranking by a rating follows that rating', a
   await expect(owner.locator('.row[data-heat]')).toHaveCount(0);
   await owner.getByLabel('Rank by', { exact: true }).selectOption('look');
   await expect(owner.locator('.row')).toHaveCount(8); // Blank has no Look
-  await expect(owner.locator('.row[data-heat]')).toHaveCount(5);
+  await expect(owner.locator('.row[data-heat]')).toHaveCount(4);
   await owner.getByLabel('Type', { exact: true }).selectOption('all');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('overall');
 });
@@ -85,9 +87,9 @@ test('a friend’s board and the Archive glow too', async () => {
   await expect(owner.locator('.row')).toHaveAttribute('data-heat', scoreHeat('overall', 7.4)!);
 });
 
-test('the coloured scores and the text on the glow stay readable, from amber to mint', async () => {
+test('the coloured scores and the text on the glow stay readable, from amber to green', async () => {
   await owner.goto('/');
-  await expect(owner.locator('.row[data-heat]')).toHaveCount(5);
+  await expect(owner.locator('.row[data-heat]')).toHaveCount(4);
   await owner.locator('main').evaluate((m) => Promise.all(m.getAnimations().map((a) => a.finished)));
   // Bring the glowing rows into view below the sticky controls.
   await owner.evaluate(() => {

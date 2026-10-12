@@ -14,6 +14,7 @@ import { fail, jsonBody, str } from '../lib/http';
 import { LIMITS, clientKey, hit } from '../lib/rateLimit';
 import { hashRecoveryCode, newRecoveryCodes } from '../lib/recovery';
 import { clearSessionCookie, startSession } from '../lib/session';
+import { loadAppearance } from '../lib/appearance';
 import { RP_NAME, parseTransports, passkeyName, saveChallenge, takeChallenge } from '../lib/webauthn';
 
 export const auth = new Hono<AppEnv>();
@@ -56,6 +57,8 @@ auth.get('/me', async (c) => {
     passkeys: counts?.passkeys ?? 0,
     recoveryCodesLeft: counts?.codes ?? 0,
     pendingRequests: counts?.requests ?? 0,
+    // D48: how the app looks for you, there from the first screen.
+    appearance: await loadAppearance(c.env.DB, user.id),
     features,
     site,
   });

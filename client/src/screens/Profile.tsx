@@ -12,8 +12,8 @@ import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
 import { ExternalIcon, LockIcon } from '../icons';
 import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
-import { podiumPlace } from '../../../shared/domain/leaderboard';
-import { podiumClass } from '../components/Podium';
+import { boardPlace } from '../../../shared/domain/leaderboard';
+import { pageClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
 import { loadView } from '../viewState';
 import { api } from '../api';
@@ -123,7 +123,8 @@ export function Profile(p: { id: string }) {
   const [savingCrop, setSavingCrop] = useState<string | null>(null);
   const [cuttingOut, setCuttingOut] = useState<number | null>(null);
   const path = `/products/${p.id}`;
-  // Its podium place (D22) comes from the same list and view as the Leaderboard.
+  // Its row (D22, D48) comes from the same list and view as the Leaderboard.
+  const appearance = useAppearance();
   const [list, setList] = useState(cachedProducts);
   // D46: where Smokes is off there's no Most used and no Smokes card.
   const smokesOn = useSmokesOn();
@@ -234,13 +235,13 @@ export function Profile(p: { id: string }) {
   ];
   const shown = details.filter(([, v]) => v);
   const ranked = list && (view.rankBy !== 'used' || smokes) ? withSmokeCounts([...list.filter((x) => x.id !== product.id), product], smokes ?? []) : null;
-  const podium = ranked && !product.archived ? podiumPlace(ranked, product.id, view) : null;
+  const place = ranked && !product.archived ? boardPlace(ranked, product.id, view) : null;
   const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
   return (
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
-      <main class={`screen${podiumClass(podium)}`} data-podium={ranked ? podium ?? 'none' : undefined}>
+      <main class={`screen${pageClass(place, appearance)}`} data-band={ranked ? place?.band ?? 'none' : undefined}>
         <ProductHero
           name={product.name}
           productType={product.productType}
@@ -251,7 +252,8 @@ export function Profile(p: { id: string }) {
           overall={o}
           photo={product.photos[0] ? shownFromRecord(product.photos[0]) : null}
           onOpenPhoto={() => setViewing(0)}
-          podium={podium}
+          place={place}
+          appearance={appearance}
           view={view}
           whose="your"
           price={price !== null ? formatUnitPrice(product.productType, price) : null}

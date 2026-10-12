@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   leaderboardEmptyState,
-  podiumBadge,
-  podiumPlace,
+  boardPlace,
+  placeBadge,
+  placeText,
   rankByOptions,
   rankProducts,
   resolveViewState,
@@ -23,21 +24,22 @@ const p = (id: string, productType: string, ratings: RankableProduct['ratings'],
 });
 
 describe('Default ranking (§17 Leaderboard)', () => {
-  it('highest Overall first; unrated at the bottom; podium on the top three (D19, D39)', () => {
+  it('highest Overall first; unrated at the bottom; bands by score and #1 marked, not a podium by place (D48)', () => {
     const rows = rankProducts(
       [p('low', 'flower', { look: 5 }), p('unrated', 'flower', {}), p('high', 'flower', { look: 9 }), p('mid', 'flower', { look: 7 }), p('x', 'flower', { look: 6 }), p('lowest', 'flower', { look: 2 })],
       { filter: 'all', rankBy: 'overall' },
     );
     expect(rows.map((r) => r.product.id)).toEqual(['high', 'mid', 'x', 'low', 'lowest', 'unrated']);
-    expect(rows.map((r) => r.podium)).toEqual([1, 2, 3, null, null, null]); // 4th is an ordinary row (D39)
+    expect(rows.map((r) => r.band)).toEqual([3, null, null, null, null, null]); // only the 9 earns a colour
+    expect(rows.map((r) => r.first)).toEqual([true, false, false, false, false, false]);
   });
 
-  it('an unrated product never gets a tier, even within the top three (D19)', () => {
+  it('an unrated product never gets a band or the #1 mark, even at the top (D48)', () => {
     const rows = rankProducts([p('a', 'flower', { look: 8 }), p('b', 'flower', {}), p('c', 'flower', { look: 6 }), p('d', 'flower', {})], { filter: 'all', rankBy: 'overall' });
     expect(rows.map((r) => r.product.id)).toEqual(['a', 'c', 'b', 'd']);
-    expect(rows.map((r) => r.podium)).toEqual([1, 2, null, null]);
+    expect(rows.map((r) => r.band)).toEqual([1, null, null, null]);
     const none = rankProducts([p('u1', 'flower', {}), p('u2', 'flower', {})], { filter: 'all', rankBy: 'overall' });
-    expect(none.map((r) => r.podium)).toEqual([null, null]);
+    expect(none.map((r) => [r.band, r.first])).toEqual([[null, false], [null, false]]);
   });
 
   it('ties broken by most recent date tried', () => {
@@ -48,18 +50,18 @@ describe('Default ranking (§17 Leaderboard)', () => {
     expect(rows.map((r) => r.product.id)).toEqual(['new', 'old', 'undated']);
   });
 
-  it('filtering to a type renumbers ranks from 1 and the podium follows', () => {
+  it('filtering to a type renumbers ranks from 1 and the #1 mark follows', () => {
     const rows = rankProducts([p('f', 'flower', { look: 9 }), p('e', 'edibles', { taste: 5 })], { filter: 'edibles', rankBy: 'overall' });
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ rank: 1, podium: 1 });
+    expect(rows[0]).toMatchObject({ rank: 1, first: true, band: null });
   });
 
-  it('under another Rank by, the three tiers follow that order', () => {
+  it('under a rating, the bands follow that rating, not Overall', () => {
     const rows = rankProducts(
-      [1, 2, 3, 4, 5].map((n) => p(`t${n}`, 'flower', { taste: n, look: 10 - n })),
+      [9.6, 9.1, 8.6, 8.1, 7].map((n, i) => p(`t${i}`, 'flower', { taste: n, look: 5 })),
       { filter: 'all', rankBy: 'taste' },
     );
-    expect(rows.map((r) => [r.product.id, r.podium])).toEqual([['t5', 1], ['t4', 2], ['t3', 3], ['t2', null], ['t1', null]]);
+    expect(rows.map((r) => [r.product.id, r.band, r.first])).toEqual([['t0', 4, true], ['t1', 3, false], ['t2', 2, false], ['t3', 1, false], ['t4', null, false]]);
   });
 
   it('Other and Not set products appear under All', () => {
@@ -143,7 +145,7 @@ describe('Empty states (§10.1)', () => {
   });
 });
 
-describe('Podium product pages (D22)', () => {
+describe('Product pages: place and badge (D22, D48)', () => {
   const list = [
     p('a', 'flower', { look: 9 }),
     p('b', 'flower', { look: 8, taste: 5 }),
@@ -153,49 +155,61 @@ describe('Podium product pages (D22)', () => {
     p('f', 'flower', { look: 5.5 }),
     p('u', 'flower', {}),
   ];
+  const gems = { preset: 'gems', markFirst: true } as const;
+  const at = (id: string, view: { filter: any; rankBy: any }) => {
+    const r = boardPlace(list, id, view);
+    return r && [r.rank, r.band, r.first];
+  };
 
-  it('a page gets the place its row has, under the same filter and Rank by', () => {
+  it('a page gets the row it has, under the same filter and Rank by', () => {
     const all = { filter: 'all', rankBy: 'overall' } as const;
-    expect(['c', 'a', 'd', 'b', 'e', 'f', 'u'].map((id) => podiumPlace(list, id, all))).toEqual([1, 2, 3, null, null, null, null]);
+    expect(['c', 'a', 'd', 'b', 'e', 'f', 'u'].map((id) => at(id, all))).toEqual([[1, 4, true], [2, 3, false], [3, 1, false], [4, null, false], [5, null, false], [6, null, false], [7, null, false]]);
     // Filtered to Flower the edible drops out and the rest move up; Rank by Taste reorders.
-    expect(podiumPlace(list, 'a', { filter: 'flower', rankBy: 'overall' })).toBe(1);
-    expect(podiumPlace(list, 'b', { filter: 'flower', rankBy: 'overall' })).toBe(3); // a 9 · d 8 · b 6.5 · e 6
-    expect(podiumPlace(list, 'e', { filter: 'flower', rankBy: 'overall' })).toBeNull(); // 4th: no place (D39)
-    expect(podiumPlace(list, 'c', { filter: 'flower', rankBy: 'overall' })).toBeNull();
-    expect(podiumPlace(list, 'd', { filter: 'all', rankBy: 'taste' })).toBe(2); // after the edible's 9.5
-    expect(podiumPlace(list, 'a', { filter: 'all', rankBy: 'taste' })).toBeNull(); // no Taste: hidden, so no place
+    expect(at('a', { filter: 'flower', rankBy: 'overall' })).toEqual([1, 3, true]);
+    expect(at('c', { filter: 'flower', rankBy: 'overall' })).toBeNull();
+    expect(at('d', { filter: 'all', rankBy: 'taste' })).toEqual([2, 3, false]); // after the edible's 9.5
+    expect(at('a', { filter: 'all', rankBy: 'taste' })).toBeNull(); // no Taste: hidden, so no place
   });
 
-  it('an unrated product or one not in the list (archived) never gets a place', () => {
-    const few = [p('x', 'flower', { look: 8 }), p('u', 'flower', {})];
-    expect(podiumPlace(few, 'u', { filter: 'all', rankBy: 'overall' })).toBeNull();
-    expect(podiumPlace(few, 'gone', { filter: 'all', rankBy: 'overall' })).toBeNull();
+  it('a product not in the list (archived) has no place', () => {
+    expect(boardPlace(list, 'gone', { filter: 'all', rankBy: 'overall' })).toBeNull();
   });
 
-  it('the badge names the list it tops', () => {
-    expect(podiumBadge(1, { filter: 'all', rankBy: 'overall' }, 'your')).toBe('#1 on your Leaderboard');
-    expect(podiumBadge(3, { filter: 'all', rankBy: 'overall' }, 'their')).toBe('#3 on their Leaderboard');
-    expect(podiumBadge(2, { filter: 'flower', rankBy: 'overall' }, 'your')).toBe('#2 in Flower');
-    expect(podiumBadge(1, { filter: 'all', rankBy: 'taste' }, 'your')).toBe('#1 by Taste');
-    expect(podiumBadge(3, { filter: 'flower', rankBy: 'taste' }, 'their')).toBe('#3 in Flower by Taste');
-    expect(podiumBadge(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edibles by Price per mg');
-    expect(podiumBadge(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
-    expect(podiumBadge(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
+  it('the place names the list it is in', () => {
+    expect(placeText(1, { filter: 'all', rankBy: 'overall' }, 'your')).toBe('#1 on your Leaderboard');
+    expect(placeText(3, { filter: 'all', rankBy: 'overall' }, 'their')).toBe('#3 on their Leaderboard');
+    expect(placeText(2, { filter: 'flower', rankBy: 'overall' }, 'your')).toBe('#2 in Flower');
+    expect(placeText(1, { filter: 'all', rankBy: 'taste' }, 'your')).toBe('#1 by Taste');
+    expect(placeText(3, { filter: 'flower', rankBy: 'taste' }, 'their')).toBe('#3 in Flower by Taste');
+    expect(placeText(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edibles by Price per mg');
+    expect(placeText(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
+    expect(placeText(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
+  });
+
+  it('the badge: a band names its colour in your preset; #1 without one gets its place only when marked', () => {
+    const all = { filter: 'all', rankBy: 'overall' } as const;
+    expect(placeBadge({ rank: 3, band: 3, first: false }, all, 'your', gems)).toBe('Amethyst · #3 on your Leaderboard');
+    expect(placeBadge({ rank: 1, band: 4, first: true }, all, 'their', gems)).toBe('Rainbow · #1 on their Leaderboard');
+    expect(placeBadge({ rank: 2, band: 2, first: false }, { filter: 'flower', rankBy: 'overall' }, 'your', { preset: 'metals', markFirst: true })).toBe('Rose gold · #2 in Flower');
+    expect(placeBadge({ rank: 4, band: 1, first: false }, all, 'your', { preset: 'prism', markFirst: false })).toBe('Prism · #4 on your Leaderboard');
+    expect(placeBadge({ rank: 5, band: null, first: false }, all, 'your', gems)).toBeNull();
+    expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price per gram');
+    expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { preset: 'gems', markFirst: false })).toBeNull();
   });
 });
 
 describe('Most used (D44)', () => {
   const view = { filter: 'all', rankBy: 'used' } as const;
-  it('most first; never smoked is left out; the top three get the tiers', () => {
+  it('most first; never smoked is left out; no colours (a count isn’t a score), #1 marked', () => {
     const rows = rankProducts(
       [p('a', 'flower', { look: 7 }, { smokeCount: 3 }), p('never', 'flower', { look: 9 }, { smokeCount: 0 }), p('b', 'edibles', {}, { smokeCount: 12 }), p('c', 'flower', { look: 8 }, { smokeCount: 5 }), p('d', 'flower', { look: 6 }, { smokeCount: 1 }), p('nocount', 'flower', { look: 9 })],
       view,
     );
-    expect(rows.map((r) => [r.product.id, r.value, r.podium])).toEqual([
-      ['b', 12, 1],
-      ['c', 5, 2],
-      ['a', 3, 3],
-      ['d', 1, null],
+    expect(rows.map((r) => [r.product.id, r.value, r.band, r.first])).toEqual([
+      ['b', 12, null, true],
+      ['c', 5, null, false],
+      ['a', 3, null, false],
+      ['d', 1, null, false],
     ]);
   });
 
@@ -210,10 +224,10 @@ describe('Most used (D44)', () => {
   it('follows the Type filter; nothing smoked → rank-empty; a page’s place and badge', () => {
     const list = [p('f1', 'flower', { look: 5 }, { smokeCount: 2 }), p('e1', 'edibles', { taste: 5 }, { smokeCount: 9 }), p('f2', 'flower', { look: 5 }, { smokeCount: 0 })];
     expect(rankProducts(list, { filter: 'flower', rankBy: 'used' }).map((r) => r.product.id)).toEqual(['f1']);
-    expect(podiumPlace(list, 'e1', view)).toBe(1);
-    expect(podiumPlace(list, 'f2', view)).toBeNull();
-    expect(podiumBadge(1, view, 'your')).toBe('#1 by Most used');
-    expect(podiumBadge(2, { filter: 'flower', rankBy: 'used' }, 'your')).toBe('#2 in Flower by Most used');
+    expect(boardPlace(list, 'e1', view)).toMatchObject({ rank: 1, band: null, first: true });
+    expect(boardPlace(list, 'f2', view)).toBeNull();
+    expect(placeBadge({ rank: 1, band: null, first: true }, view, 'your', { preset: 'gems', markFirst: true })).toBe('#1 by Most used');
+    expect(placeText(2, { filter: 'flower', rankBy: 'used' }, 'your')).toBe('#2 in Flower by Most used');
     const none = [p('x', 'flower', { look: 5 }, { smokeCount: 0 })];
     expect(leaderboardEmptyState(1, rankProducts(none, view).length, view)).toBe('rank-empty');
   });

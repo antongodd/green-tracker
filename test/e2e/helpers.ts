@@ -114,7 +114,7 @@ export async function contrastFailures(page: Page, boxes: TextBox[], steps = 12)
  * its background), so only what's behind it is photographed. Through the DOM: the app's
  * CSP rightly refuses an injected <style>.
  */
-export const HERO_TEXT = '.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .podium-badge > span, .podium-badge .n';
+export const HERO_TEXT = '.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .gem-badge > span, .gem-badge .n, .gem-badge .gem';
 export const heroTextBoxes = (page: Page): Promise<TextBox[]> => textBoxes(page, HERO_TEXT);
 /** The same for any text on the page (the Aurora's section titles, D29). */
 export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>

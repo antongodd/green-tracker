@@ -9,6 +9,7 @@ import { validateLogEntryInput, type LogEntryInput } from './logEntry';
 import { validateProductInput, type ProductInput } from './product';
 import { validateSmokeFields, type SmokeInput } from './smoke';
 import { validatePrivacy, type Privacy } from './privacy';
+import { validateAppearance, type Appearance } from './gems';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -69,6 +70,8 @@ export interface ExportFile {
   profilePhoto?: ExportPhoto | null;
   /** D45: your privacy settings. Absent in files made before 0.38.0: restoring one leaves yours alone. */
   privacy?: Privacy;
+  /** D48: your Leaderboard colours and #1 mark. Absent in files made before 0.41.0: restoring one leaves yours alone. */
+  appearance?: Appearance;
 }
 
 /** What the server receives for a restore: the file's records, with photos already uploaded as sets. */
@@ -90,6 +93,8 @@ export interface RestorePayload {
   profilePhoto?: { upload: string; crop: Crop } | null;
   /** D45: absent → leave your current settings. */
   privacy?: Privacy;
+  /** D48: absent → leave your current settings. */
+  appearance?: Appearance;
 }
 
 export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, smokes: 100_000 } as const;
@@ -125,6 +130,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
   }
   if (smokes > RESTORE_LIMITS.smokes) return bad('The export file is too large to restore.');
   if (f.privacy !== undefined && !validatePrivacy(f.privacy).ok) return bad('The privacy settings in the file couldn’t be read.');
+  if (f.appearance !== undefined && !validateAppearance(f.appearance).ok) return bad('The appearance settings in the file couldn’t be read.');
   if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
   return { ok: true, value: raw as ExportFile };
 }
@@ -190,7 +196,13 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     if (!pv.ok) return bad('The privacy settings could not be read.');
     privacy = pv.value;
   }
-  const extra = privacy ? { privacy } : {};
+  let appearance: Appearance | undefined;
+  if (r.appearance !== undefined) {
+    const av = validateAppearance(r.appearance);
+    if (!av.ok) return bad('The appearance settings could not be read.');
+    appearance = av.value;
+  }
+  const extra = { ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}) };
   if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries, ...extra } };
   if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null, ...extra } };
   const pp = r.profilePhoto as Record<string, unknown>;

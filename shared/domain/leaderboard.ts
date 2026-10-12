@@ -8,6 +8,7 @@ import {
 } from './productTypes';
 import { headlinePrice, purchasedWeight, valueForMoney, type Purchase } from './money';
 import { categoryValue, overall, type Ratings } from './ratings';
+import { bandName, scoreBand, type Appearance, type Band } from './gems';
 
 export interface RankableProduct {
   id: string;
@@ -112,13 +113,11 @@ export interface RankedRow<P extends RankableProduct> {
   /** 1-based, renumbered over the visible list. */
   rank: number;
   value: number | null;
-  /** 1–3 for rainbow, Diamond, Gold (D19, D39) — follows the visible order.
-   *  Only rated rows get a tier: an unrated product never has one. */
-  podium: Podium | null;
+  /** Its colour band, earned by the score (D48): null below 8, unrated, or not ranked by a score. */
+  band: Band | null;
+  /** The top of the visible list, with something to rank it by: the row your #1 mark (crown and halo) goes on (D48). */
+  first: boolean;
 }
-
-export type Podium = 1 | 2 | 3;
-export const PODIUM_TIERS = 3;
 
 export function matchesFilter(typeKey: string, filter: TypeFilter): boolean {
   return filter === 'all' || typeKey === filter;
@@ -163,31 +162,42 @@ export function rankProducts<P extends RankableProduct>(products: readonly P[], 
     }
     return tieBreak(a.product, b.product);
   });
-  return scored.map((r, i) => ({ ...r, rank: i + 1, podium: i < PODIUM_TIERS && r.value !== null ? ((i + 1) as Podium) : null }));
+  return scored.map((r, i) => ({ ...r, rank: i + 1, band: scoreBand(view.rankBy, r.value), first: i === 0 && r.value !== null }));
 }
 
 /**
- * A product page's podium place (D22): the tier its row has on the Leaderboard under
- * this view (same filter, same Rank by), so the page always matches the row. null when
- * it isn't in the top three, is unrated or unrankable, or isn't in the list (archived).
+ * A product's row on the Leaderboard under this view (same filter, same Rank by), so its
+ * page always matches the row (D22, D48). null when it isn't in the list (archived, or
+ * hidden because it can't be ranked by this).
  */
-export function podiumPlace<P extends RankableProduct>(products: readonly P[], id: string, view: ViewState): Podium | null {
-  return rankProducts(products, view).find((r) => r.product.id === id)?.podium ?? null;
+export function boardPlace<P extends RankableProduct>(products: readonly P[], id: string, view: ViewState): RankedRow<P> | null {
+  return rankProducts(products, view).find((r) => r.product.id === id) ?? null;
 }
 
 /**
- * The badge on a podium product's page (D22): "#1 on your Leaderboard" under All and
- * Overall, otherwise the list it tops — "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste".
+ * Where a product stands: "#1 on your Leaderboard" under All and Overall, otherwise the
+ * list it's in — "#2 in Flower", "#1 by Taste", "#3 in Flower by Taste".
  */
-export function podiumBadge(podium: Podium, view: ViewState, whose: 'your' | 'their'): string {
-  if (view.filter === 'all' && view.rankBy === 'overall') return `#${podium} on ${whose} Leaderboard`;
-  const parts = [`#${podium}`];
+export function placeText(rank: number, view: ViewState, whose: 'your' | 'their'): string {
+  if (view.filter === 'all' && view.rankBy === 'overall') return `#${rank} on ${whose} Leaderboard`;
+  const parts = [`#${rank}`];
   if (view.filter !== 'all') parts.push(`in ${productType(view.filter).label}`);
   if (view.rankBy !== 'overall') {
     const label = rankByOptions(view.filter, { money: true }).find((o) => o.key === view.rankBy)?.label ?? RATING_LABELS[view.rankBy as RatingKey];
     parts.push(`by ${label}`);
   }
   return parts.join(' ');
+}
+
+/**
+ * The badge on a product's page (D48), or null for none: a product in a band names its
+ * colour and place ("Amethyst · #3 on your Leaderboard"); your #1 without a band (below 8,
+ * or ranked by price, value for money or Most used) gets its place when #1 is marked.
+ */
+export function placeBadge(place: Pick<RankedRow<RankableProduct>, 'rank' | 'band' | 'first'>, view: ViewState, whose: 'your' | 'their', appearance: Appearance): string | null {
+  const where = placeText(place.rank, view, whose);
+  if (place.band) return `${bandName(appearance.preset, place.band)} · ${where}`;
+  return place.first && appearance.markFirst ? where : null;
 }
 
 export interface LeaderboardTiles {

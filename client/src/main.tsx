@@ -24,6 +24,7 @@ import { Person, SharedProfile } from './screens/Person';
 import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
 import { PrivacyScreen } from './screens/Privacy';
+import { AppearanceScreen } from './screens/Appearance';
 import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
@@ -167,6 +168,9 @@ function App() {
           break;
         case '/more/privacy':
           screen = <PrivacyScreen />;
+          break;
+        case '/more/appearance':
+          screen = <AppearanceScreen />;
           break;
         case '/more/archive':
           screen = <Archive />;

@@ -155,11 +155,11 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   await expect(page.locator('.hero-photo img')).toBeVisible();
   await expect.poll(transitions).toEqual([expect.arrayContaining(['::view-transition-group(gt-photo)', '::view-transition-new(root)'])]);
   await expect(page.locator('html')).not.toHaveClass(/vt-photo/); // cleaned up afterwards
-  // Photo Kush is 1st, so its page is a podium page (D22): its one sweep across the photo
-  // waits for the flight to land instead of running underneath it.
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '1');
+  // Photo Kush scores 9.0, so its page wears its colour (D48) and gets the sweep: its one sweep
+  // across the photo waits for the flight to land instead of running underneath it.
+  await expect(page.locator('main')).toHaveAttribute('data-band', '3');
   const sweep = await page.evaluate(async () => {
-    const a = document.getAnimations().find((x) => (x as CSSAnimation).animationName === 'podium-arrive')!;
+    const a = document.getAnimations().find((x) => (x as CSSAnimation).animationName === 'tier-arrive')!;
     // Held (paused) during the flight, it resumes on the next frame after landing; until then its
     // start time is empty. Wait for that frame (a.ready) rather than reading it early (0.28.0).
     await a.ready;
