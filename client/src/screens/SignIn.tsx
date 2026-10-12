@@ -42,7 +42,7 @@ function Showcase() {
 }
 
 export function SignIn() {
-  const { refresh } = useSession();
+  const { refresh, me } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [deleted] = useState(takeDeletedNotice);
@@ -67,6 +67,11 @@ export function SignIn() {
         <div class="brand">
           <LeafGlass class="brand-mark" />
           <h1>Green Tracker</h1>
+          {me.site === 'dev' && (
+            <b class="dev-badge" aria-label="Dev site">
+              DEV
+            </b>
+          )}
         </div>
         <p class="headline">
           Your stash, <em>ranked.</em>

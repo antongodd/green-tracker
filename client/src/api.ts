@@ -50,6 +50,8 @@ export interface Me {
   pendingRequests?: number;
   /** D46: what this site has. Smokes is off on the live site until it's re-released. */
   features?: SiteFeatures;
+  /** D47: which site this is. The dev site shows an orange DEV label. */
+  site?: 'dev' | 'live';
 }
 
 export interface Passkey {

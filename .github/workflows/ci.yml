@@ -1,12 +1,13 @@
-# Tests every pull request; on main, tests then deploys to Cloudflare and checks
-# the live site is serving the new build. Needs one repository secret,
-# CLOUDFLARE_API_TOKEN (the account ID is in wrangler.jsonc).
+# Tests every pull request. On dev, tests then deploys the dev site (D47); on main,
+# tests then deploys the live site. Each deploy checks its site is serving the new
+# build. Needs one repository secret, CLOUDFLARE_API_TOKEN (the account ID is in
+# wrangler.jsonc).
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -80,3 +81,36 @@ jobs:
           done
           echo "::error::The live site isn't serving $want"
           exit 1
+
+  # The dev site (D47). Only the owner can open it (a Cloudflare Access email lock), so there's
+  # no check from outside here: the deploy step itself fails if the new build doesn't go out.
+  deploy-dev:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
+    environment:
+      name: dev
+      url: https://green-tracker-dev.green-tracker.workers.dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check the Cloudflare token is set
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Add the CLOUDFLARE_API_TOKEN repository secret (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+      - name: Build, migrate, deploy the dev site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run deploy:dev

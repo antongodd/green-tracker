@@ -1,6 +1,6 @@
 {
   "name": "green-tracker",
-  "version": "0.39.0",
+  "version": "0.40.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
     "build": "vite build",
     "preview": "npm run build && wrangler dev --config dist/green_tracker/wrangler.json",
     "deploy": "npm run build && wrangler d1 migrations apply green-tracker --remote && wrangler deploy --config dist/green_tracker/wrangler.json",
+    "deploy:dev": "CLOUDFLARE_ENV=dev npm run build && wrangler d1 migrations apply green-tracker-dev --remote --env dev && wrangler deploy --config dist/green_tracker/wrangler.json",
     "db:migrate:local": "wrangler d1 migrations apply green-tracker --local",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

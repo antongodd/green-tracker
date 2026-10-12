@@ -10,6 +10,8 @@ export interface Env {
   ORIGIN: string;
   /** "on": this site has Smokes (D43, D46). Unset on the live site until Smokes is re-released. */
   SMOKES?: string;
+  /** "dev" on the dev site (D47): the app shows its DEV label. Unset on the live site. */
+  SITE?: string;
   /** Test servers only: raises the sign-up limit. Never set in production (default 10 an hour). */
   SIGNUP_LIMIT_PER_HOUR?: string;
 }

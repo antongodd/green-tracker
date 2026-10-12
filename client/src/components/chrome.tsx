@@ -10,6 +10,8 @@ import { useSession, useSmokesOn } from '../session';
  * photo on the right (MeButton, D25).
  */
 export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChildren; left?: ComponentChildren; right?: ComponentChildren }) {
+  // D47: on the dev site an orange DEV label sits after the title on every screen.
+  const dev = useSession().me.site === 'dev';
   return (
     <header class="hdr">
       <div class="bar">
@@ -17,6 +19,11 @@ export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChil
         <div class="title">
           {p.icon ?? (p.leaf !== false && <LeafGlass />)}
           <span>{p.title ?? 'Green Tracker'}</span>
+          {dev && (
+            <b class="dev-badge" aria-label="Dev site">
+              DEV
+            </b>
+          )}
         </div>
         <div class={`slot r${p.right ? '' : ' hidden'}`}>{p.right}</div>
       </div>
