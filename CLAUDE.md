@@ -119,3 +119,9 @@ Keep this short and current. **Read the to-do list to Anton at the start of each
 2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
    for live, update `test/domain/siteConfig.test.ts` and D46).
 3. **Leaderboard design rework**: continue when Anton brings it up.
+4. **Sound effects and haptics** (Anton's idea, 2026-10-13): make the app feel more interactive. Talked through, not
+   planned yet. Sounds: made in code (no downloads), obey the iPhone's silent switch, an on/off switch in More →
+   Appearance. Haptics: iPhone web apps can't vibrate the usual way; the iOS 18+ trick (flicking a hidden on/off switch
+   gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
+   Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
+   moments, what feel, on or off to start.

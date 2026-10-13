@@ -1061,7 +1061,7 @@ None.
 ### 0.43.1 — CLAUDE.md: where things stand and the to-do list
 - `CLAUDE.md`'s "Where things stand" now says live and dev are the same (0.43.0, Smokes hidden on live) and holds the
   to-do list, which each new conversation reads to the owner at the start: the Log photo swap bug, the Smokes rework,
-  the Leaderboard design rework.
+  the Leaderboard design rework, and sound effects and haptics (the owner's idea, not planned yet).
 - The note about sessions started on `dev` now says a branch push *may* be refused (it worked after a restart).
 
 ### 0.43.0 — Return to Log (owner request)
