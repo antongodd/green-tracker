@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.43.1 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
+**Current version:** 0.43.2 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
 
 ---
 
@@ -1057,6 +1057,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.43.2 — CLAUDE.md: a Done list (owner request)
+- `CLAUDE.md`'s "Where things stand" gets a **Done** table under the to-do list (each finished item with its version,
+  decision, and when it reached dev and live), filled in back to 0.39.0, and the rule that keeps it current: an item
+  merged into `dev` is marked "on dev"; when it goes live it moves to Done.
+- A separate "Green Tracker to-do list" conversation answers the owner's "what's done, what's next" from this section.
 
 ### 0.43.1 — CLAUDE.md: where things stand and the to-do list
 - `CLAUDE.md`'s "Where things stand" now says live and dev are the same (0.43.0, Smokes hidden on live) and holds the
