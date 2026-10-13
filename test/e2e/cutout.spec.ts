@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
-import { shot, signUp, settled } from './helpers';
+import { shot, signUp, settled, photoAction } from './helpers';
 
 // Remove background (D26). Most tests use a quick stand-in for the AI (anything that
 // differs from the photo's border colour is a "thing"); the last test runs the real one.
@@ -102,8 +102,8 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   const before = (await product(page, id)).photos[0];
   expect(before.cutout).toBe(false);
 
-  // The grid's new button, bottom-left of the photo; Crop stays bottom-right.
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  // From the viewer's bar (D52: the grid's own buttons went).
+  await photoAction(page, 1, 'Cut out');
   await expect(flow(page)).toBeVisible();
   // Two separate things: the bud and the lighter. Next waits for a choice.
   await expect(flow(page).getByText('Found 2 separate things')).toBeVisible();
@@ -146,10 +146,9 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   const original = await inspect(page, `/api/photos/${after.id}/original?v=${after.version}`, [[0.02, 0.02]]);
   expect(original).toMatchObject({ type: 'image/jpeg', w: 1200, h: 900, alpha: [255] });
 
-  // Shown without a box: the big photo, the grid (no Remove button now) and the row.
+  // Shown without a box: the big photo, the grid and the row.
   await expect(page.locator('.hero-photo.cut img')).toBeVisible();
   await expect(page.locator('.pcell.cut')).toHaveCount(1);
-  await expect(page.getByRole('button', { name: 'Remove background from photo 1' })).toHaveCount(0);
   await shot(page, '92-cutout-product');
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page.locator('.row .thumb.cut img')).toBeVisible();
@@ -161,7 +160,7 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   await page.locator('.row').first().click();
   await page.locator('.hero-photo').click();
   const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
-  await expect(viewer.getByRole('button', { name: 'Remove background' })).toHaveCount(0);
+  await expect(viewer.getByRole('button', { name: 'Cut out' })).toHaveCount(0);
   await viewer.getByRole('button', { name: 'Restore background' }).click();
   await expect(page.locator('.hero-photo:not(.cut) img')).toBeVisible();
   await expect.poll(async () => (await product(page, id)).photos[0].cutout).toBe(false);
@@ -169,7 +168,7 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   expect(restored.crop).toEqual(before.crop);
   expect((await inspect(page, `/api/photos/${restored.id}/cropped?v=${restored.version}`, [[0.02, 0.02]])).type).toBe('image/jpeg');
   await page.locator('.hero-photo').click();
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove background' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Cut out' })).toBeVisible();
 });
 
 test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', async ({ page }) => {
@@ -179,7 +178,7 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
   await page.getByRole('banner').getByRole('link', { name: 'Edit' }).click();
 
   // The stand-in AI keeps the tray and the bud as one thing: straight to a preview of both.
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await expect(flow(page).getByRole('img', { name: 'The cut-out' })).toBeVisible();
   const whole = await flow(page).getByRole('img', { name: 'The cut-out' }).evaluate((i) => (i as HTMLImageElement).naturalWidth);
   expect(whole).toBeGreaterThan(900); // the tray is in it
@@ -202,7 +201,7 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
 
   // Again, then Save.
   await page.getByRole('banner').getByRole('link', { name: 'Edit' }).click();
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await flow(page).getByRole('button', { name: 'Not right? Tap the bud in your photo' }).click();
   await tapAt(page, '.cut-tap', 0.5, 0.5);
   await flow(page).getByRole('button', { name: 'Apply' }).click();
@@ -220,7 +219,7 @@ test('a Log entry photo can be cut out, and promotion keeps the cut-out', async 
   await page.getByLabel('Add photo').setInputFiles([await twoThings(page)]);
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   // Cut out before the entry is even saved (its first set holds the original too).
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await tapAt(page, 'canvas.cut-tap', BUD.x, BUD.y);
   await flow(page).getByRole('button', { name: 'Next' }).click();
   // A Log entry isn't on the Leaderboard, so the preview shows no row.
@@ -246,7 +245,7 @@ test('export and restore keep cut-outs', async ({ page }) => {
   await fakeAi(page);
   await signUp(page);
   const id = await newProduct(page, 'Export cut', await twoThings(page));
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await tapAt(page, 'canvas.cut-tap', BUD.x, BUD.y);
   await flow(page).getByRole('button', { name: 'Next' }).click();
   await flow(page).getByRole('button', { name: 'Apply' }).click();
@@ -284,7 +283,7 @@ test('Reduce Motion: no sweeping line while it works', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await signUp(page);
   await newProduct(page, 'Calm cut', await twoThings(page));
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await expect(flow(page).getByText('Cutting out… about 5 seconds')).toBeVisible();
   expect(await page.locator('.cut-scan.go .cut-line').evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
   await expect(flow(page).getByText('Found 2 separate things')).toBeVisible();
@@ -294,7 +293,7 @@ test('without Reduce Motion a line sweeps while it works', async ({ page }) => {
   await fakeAi(page, 1500);
   await signUp(page);
   await newProduct(page, 'Sweep cut', await twoThings(page));
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await expect(flow(page).getByText('Cutting out… about 5 seconds')).toBeVisible();
   expect(await page.locator('.cut-scan.go .cut-line').evaluate((el) => getComputedStyle(el).animationName)).toBe('cut-sweep');
   await shot(page, '94-cutout-cutting');
@@ -339,7 +338,7 @@ test('the real AI: asks before downloading, keeps it on the phone, and cuts out 
   });
   const id = await newProduct(page, 'Real cut', { name: 'bud.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(b64, 'base64') });
 
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   // First time on this phone: it asks before downloading.
   const ask = page.getByRole('dialog', { name: 'Download the background remover?' });
   await expect(ask).toBeVisible();
@@ -394,7 +393,7 @@ test('the real AI: asks before downloading, keeps it on the phone, and cuts out 
   await page.locator('.hero-photo').click();
   await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Restore background' }).click();
   await expect(page.locator('.hero-photo:not(.cut) img')).toBeVisible();
-  await page.getByRole('button', { name: 'Remove background from photo 1' }).click();
+  await photoAction(page, 1, 'Cut out');
   await expect(flow(page)).toHaveAttribute('data-stage', /^(loading|cutting|pick|preview)$/);
   await expect(page.getByRole('dialog', { name: 'Download the background remover?' })).toHaveCount(0);
   expect(csp).toEqual([]);

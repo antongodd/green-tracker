@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Crop } from '../../../shared/domain/photo';
-import { BackIcon, CropIcon, CutoutIcon } from '../icons';
+import { BackIcon, CropIcon, CutoutIcon, StarFillIcon, StarIcon, TrashIcon } from '../icons';
 
 /** A photo as the screens show it: server URLs, or local previews for unsaved edits. */
 export interface ShownPhoto {
@@ -33,8 +33,10 @@ export function useLockScroll() {
 
 /**
  * Full-screen viewer (brief §6.9): full-bleed black over header and tabs, close
- * top-left, swipe between photos (P8), "Crop this photo" at the bottom, with
- * Remove background above it (D26) — Restore background on a photo already cut out.
+ * top-left, swipe between photos (P8). D52 (0.44.0): a bar along the bottom with
+ * Set as cover (a product's photos; "The cover" on the first), Crop, Cut out (D26;
+ * Restore background on a photo already cut out) and, in an editor, Remove.
+ * Someone else's photos get no bar.
  */
 export function PhotoViewer(p: {
   photos: ShownPhoto[];
@@ -44,6 +46,7 @@ export function PhotoViewer(p: {
   onRemove?: (i: number) => void;
   onCutout?: (i: number) => void;
   onRestore?: (i: number) => void;
+  onCover?: (i: number) => void;
 }) {
   useLockScroll();
   const strip = useRef<HTMLDivElement>(null);
@@ -85,36 +88,48 @@ export function PhotoViewer(p: {
         )}
         <span class="viewer-btn" aria-hidden="true" />
       </div>
-      <div class="viewer-strip" ref={strip} onScroll={onScroll}>
+      <div class="viewer-strip" ref={strip} onScroll={onScroll} tabIndex={0} role="group" aria-label="Photos">
         {p.photos.map((ph, i) => (
           <div class="viewer-slide" key={ph.key}>
             <img src={ph.image} alt={`Photo ${i + 1} of ${p.photos.length}${ph.cutout ? ', background removed' : ''}`} draggable={false} />
           </div>
         ))}
       </div>
-      <div class="viewer-bottom">
-        {/* Someone else's photos are read-only: no crop, no cut-out (brief §5). */}
-        {p.onCutout && current && !current.cutout && (
-          <button type="button" class="btn secondary" onClick={() => p.onCutout!(index)} disabled={current.uploading}>
-            <CutoutIcon /> Remove background
-          </button>
-        )}
-        {p.onRestore && current?.cutout && (
-          <button type="button" class="btn secondary" onClick={() => p.onRestore!(index)} disabled={current.uploading}>
-            <CutoutIcon /> Restore background
-          </button>
-        )}
-        {p.onCrop && (
-          <button type="button" class="btn secondary" onClick={() => p.onCrop!(index)} disabled={!current || current.uploading}>
-            <CropIcon /> Crop this photo
-          </button>
-        )}
-        {p.onRemove && (
-          <button type="button" class="btn text danger-text" onClick={() => p.onRemove!(index)}>
-            Remove photo
-          </button>
-        )}
-      </div>
+      {/* Someone else's photos are read-only: no bar (brief §5). */}
+      {(p.onCover || p.onCrop || p.onCutout || p.onRemove) && (
+        <div class="viewer-bar">
+          {p.onCover &&
+            (index === 0 ? (
+              <button type="button" class="on" disabled>
+                <StarFillIcon /> The cover
+              </button>
+            ) : (
+              <button type="button" onClick={() => p.onCover!(index)} disabled={!current || current.uploading}>
+                <StarIcon /> Set as cover
+              </button>
+            ))}
+          {p.onCrop && (
+            <button type="button" onClick={() => p.onCrop!(index)} disabled={!current || current.uploading}>
+              <CropIcon /> Crop
+            </button>
+          )}
+          {p.onCutout && current && !current.cutout && (
+            <button type="button" onClick={() => p.onCutout!(index)} disabled={current.uploading}>
+              <CutoutIcon /> Cut out
+            </button>
+          )}
+          {p.onRestore && current?.cutout && (
+            <button type="button" onClick={() => p.onRestore!(index)} disabled={current.uploading}>
+              <CutoutIcon /> Restore background
+            </button>
+          )}
+          {p.onRemove && (
+            <button type="button" class="dng" onClick={() => p.onRemove!(index)}>
+              <TrashIcon /> Remove
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

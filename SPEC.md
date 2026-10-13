@@ -119,6 +119,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D49 | **The four colours as one set of cards; Gems' Sapphire and Amethyst rebalanced** (2026-10-12; option "A + Emerald" of https://claude.ai/artifact/Wh6t4N99LszTqEc55nDM9D, after the owner's iPhone screenshot showed Amethyst as a strong purple slab next to an edge-only Sapphire). Amends D48 at the owner's request. | **Every band is a holo card** under one dark layer that thins as the score rises: **8.0–8.4** the faintest (90% → 95%), still; **8.5–8.9** faint (86% → 93%), flowing; **9.0–9.4** (80% → 90%), flowing; **9.5–10** unchanged (70% → 86%, the shine). In every preset (the steps stay the same in all three; only colours differ). **Gems:** Sapphire a brighter blue, Amethyst a softer lilac, both under near-neutral layers instead of blue and violet ones; Emerald and Rainbow unchanged. Prism and Metals keep their colours. No data, export, privacy or follower change. See §4 *Leaderboard colours*. |
 | D50 | **Return to Log: a Leaderboard product can go back to being a Log entry, keeping everything else hidden** (2026-10-12; the owner put something on the Leaderboard by mistake and couldn't take it off without deleting it; option A "Kept card" of https://claude.ai/artifact/SdQCsaP7EoHJksH4PPyeDy, the button named **Return to Log**; the owner's answers: any product, not just ones that came from the Log; Add to leaderboard opens the editor filled in; the Kept card only on entries that were on the Leaderboard; Delete entry deletes the kept data too, with a warning; the amount is all its purchases added up). A step back from rebuild brief §10.2, where promotion only goes one way. | **Product page → Actions → Return to Log** (between Private and Archive; not on an archived product, which is un-archived first; waits for the connection offline) asks first ("It leaves your Leaderboard and followers' view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."), then the product is a Log entry and its page opens (Back goes to the Log). **The entry:** its name, type, concentrate type and country; its **first photo**; as its **amount**, all its purchases' amounts added up (none with an amount → no amount); **Logged** = when the product was first added; its **smokes** (D43) go with it. **Kept, hidden:** everything else (ratings, hidden ones too; purchases; notes; source, strain, date tried, Leafly, hit time, Private; the other photos), on the entry's page as a **Kept from your Leaderboard** card (Ratings "4 · Overall 8.8", Purchases "2 · £60.00", Notes, Other photos; rows with nothing are left out). An ordinary entry has no such card. **Add to leaderboard** opens the product editor with everything kept filled back in, under the entry's own name, type, country and photo (changes made in the Log win; the entry's photo first); Save puts back **the same product** (same place in time, same purchases), smokes included. **Delete entry** says what goes too ("…What's kept from your Leaderboard goes too: 2 ratings, 1 purchase, notes and 1 other photo.") and deletes it all. While it's in the Log the product is off the Leaderboard, its tiles, the Archive and Most used; **followers** lose it and its photo files at once; nothing about it can be changed except through the entry. **Export / Restore** carry it inside the entry (an older file has none). One new column, `log_entries.kept_product_id` (`migrations/0009_return_to_log.sql`). See §4 *Return to Log*. |
 | D51 | **Swapping a Log entry's photo in one edit works** (2026-10-13; a bug the owner hit, found while testing 0.43.0, on the live site too). A bug fix; no behaviour is chosen. | Replacing a Log entry's photo with a new one and saving used to fail with "Something went wrong": the save added the new photo before removing the old one, and an entry may hold only one (`photos_log_entry` is unique). **Removed photos now go first**, in the same all-or-nothing save, so a failed save still changes nothing. Product photos (no such limit) and Add to leaderboard / Return to Log (which move a photo, never doubling an entry's) weren't affected; they use the same order now. No data, export, privacy or follower change. See §4 *Photos*. |
+| D52 | **Choosing the cover photo, and a tidier photo section** (2026-10-13; layout C "Even grid" of https://claude.ai/artifact/7Eo1e8aHBrWXaYm2b28GCZ, step 1 of the owner's photo rework; the owner's answers: both Set as cover and drag, saved at once from the product page, a star (not a "Cover" label), new photos at the end, removing the cover makes the next one the cover, Log entries keep one photo). Replaces §4's "no reordering" and D26's grid buttons. | **The cover is a product's first photo**, shown everywhere a product has one photo (Leaderboard rows, the Poster, the Log, tiles, followers' view, Return to Log). The Photos grid stays three even squares to a row; the cover is first, with a **gold ring and a ★**. **Product page:** tap a photo → a bar along the bottom of the viewer: **Set as cover** (saved at once: the viewer closes, the big photo fades over to the new cover, "Cover updated"; "The cover" on the first), **Crop**, **Cut out** (Restore background on a cut-out). **Editor:** **⋯** on each photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold a photo and drag it**; the first is the cover; Save keeps the order, Cancel doesn't; the viewer's bar adds **Remove**. Removing the cover makes the next photo the cover; new photos go at the end. The grid's round Crop and Remove background buttons are gone. **Log entries** keep one photo: ⋯ without Set as cover, no star. **A friend's photos:** the ring and star, no ⋯, no bar. **No database change**; Export/Restore keep the order; followers see the new cover (only if photos are shared, D45). See §4 *Photos*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -193,10 +194,26 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     and revoked access can't keep showing cached photos. Uploads must be JPEG
     (checked by signature), ≤ 8MB per image and ≤ 1MB per thumbnail. *(Since 0.19.0 a
     cut-out's image and thumbnail are PNG instead, D26.)*
-  - *Removing photos* happens in the editor (viewer → Remove photo), applied on Save
-    *(builder: the brief doesn't mention deletion)*. There's no reordering: photos
-    keep the order they were added, and the first is the hero and list thumbnail
-    *(builder; can be added if wanted)*.
+  - *Removing photos* happens in the editor (viewer → Remove, or ⋯ → Remove photo), applied
+    on Save *(builder: the brief doesn't mention deletion)*.
+  - *The cover* (D52, 0.44.0): a product's first photo is its cover, the hero and list
+    thumbnail everywhere (rows, the Poster, the Log, tiles, followers, Return to Log). The
+    grid marks it with a gold ring (`--star`) and a ★ (`.pslot.cover`). **Set as cover**:
+    from your product page, the viewer's bar → `POST /api/photos/:id/cover` (saved at once;
+    moves the photo to position 0 and renumbers the others in order; 404 for anyone else's
+    photo, a Log entry's, or one a returned entry keeps, D50); the old cover fades out over
+    the new one (`.hero-old`) and a "Cover updated" toast shows. In the editor: ⋯ → Set as
+    cover, or **press and hold** a photo (300ms) and drag it (`PhotoGrid` `onMove`; the
+    others slide out of the way; the page doesn't scroll while dragging; a drag isn't a tap);
+    Save sends the new order through `planPhotoWrites` like any edit. No database change:
+    `photos.position` already held the order; Export lists photos in order and Restore keeps
+    the file's order. Log entries keep one photo and have no cover.
+  - *Photo actions* (D52): the grid's round Crop and Remove background buttons are gone. In an
+    editor each photo has ⋯ (Set as cover, Crop, Remove/Restore background, Remove photo; a Log
+    entry's has no Set as cover). The viewer has a bar along the bottom: Set as cover ("The
+    cover" on the first), Crop, Cut out (Restore background on a cut-out) and, in an editor,
+    Remove. A friend's photos have no ⋯ and no bar. The viewer's strip is focusable (arrow
+    keys) for keyboard users.
   - *Viewer*: full-bleed black over header and tabs, close top-left, swipe between
     photos (P8, native scroll-snap), `n / N` counter, Crop this photo. *Cropper*:
     Cancel · Free | Square · Apply, corner handles with 44px touch areas, drag to
@@ -1062,6 +1079,24 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.44.0 — choosing the cover photo (owner request)
+- Step 1 of the photo rework (decision D52). A product's **cover** (its first photo) is marked in the Photos grid with
+  a gold ring and a star.
+- **Product page:** open a photo and tap **Set as cover** in the new bar along the bottom (with Crop and Cut out). It
+  saves at once: the big photo fades over to the new cover and your Leaderboard row follows.
+- **Editor:** tap **⋯** on a photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold** a photo
+  and drag it; the first is the cover. Removing the cover makes the next photo the cover.
+- The two round buttons on every photo are gone. Log entries keep one photo (⋯, no cover). A friend's photos: the star,
+  nothing to tap but the photo.
+- Found while testing: with several photos, the viewer's swipe area couldn't be reached by keyboard (an accessibility
+  check flagged it); it can now (arrow keys).
+- Found on GitHub's first run: the menu's accessibility check ran while the menu was still sliding up (half-faded text
+  read as low contrast). `settled()` now also waits for a menu's slide-up; reproduced by slowing animations tenfold,
+  which fails without the fix and passes with it.
+- Tests: `cover.test.ts` (5 server tests), `cover.spec.ts` (9 Playwright tests); `photos.spec.ts`, `cutout.spec.ts`,
+  `logentry.spec.ts` and `quality.spec.ts` use the ⋯ menu and the viewer's bar (`photoAction` in `helpers.ts`).
+- `CLAUDE.md`: item 5's step 1 on dev; next decision D53.
 
 ### 0.43.4 — swapping a Log entry's photo (owner report)
 - Replacing a Log entry's photo with a new one in a single edit no longer fails with "Something went wrong" (decision

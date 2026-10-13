@@ -138,7 +138,7 @@ test('its photo can be swapped for a new one in a single edit', async () => {
   const before = await photoId();
   await page.goto(`/log/${ids['Swap Shot']}/edit`);
   await page.getByRole('button', { name: 'Open photo 1' }).click();
-  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove photo' }).click();
+  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove', exact: true }).click();
   await expect(page.locator('.pgrid .pcell')).toHaveCount(0);
   const jpeg = await page.evaluate(() => {
     const c = document.createElement('canvas');

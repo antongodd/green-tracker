@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D51 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D52 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D52), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D53), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D51.
+- Reopen any decision D1–D52.
 
 ## Testing notes
 
@@ -89,7 +89,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Playwright serves the **built** app: run `npm run build` after changing client code before running Playwright
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
-  start counting animations.
+  start counting animations. It waits for the page-load fade (`enter`) and a menu sliding up (`rise`); a new entrance
+  animation must be added to it. To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
 - `contrastFailures` only photographs the top 390×844. For long screens use `wholeScreenContrastFailures` (top and
   bottom, only text between the header and the tab bar). Prove a readability test bites by dimming the text.
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
@@ -100,6 +101,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
   `none`). Set an account's preset in a test with `PUT /api/appearance`.
+- Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out')` in
+  `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page). The cover is `.pslot.cover`.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
 
@@ -112,14 +115,14 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** 0.43.4: live plus the Log photo swap fix (D51) and notes-only changes (0.43.1–0.43.3). Smokes: on
-  for dev, hidden on live (D46).
+  (D50). **Dev:** 0.44.0: live plus the Log photo swap fix (D51), choosing the cover photo (D52) and notes-only changes
+  (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Fix swapping a Log entry's photo** (D51): **on dev** (0.43.4, 2026-10-13). Replacing a Log entry's photo with a new
-   one in a single edit used to fail with "Something went wrong" (live too, until it goes live). Old photo now removed
-   before the new one goes in.
+1. **Fix swapping a Log entry's photo** (D51): **on dev** (0.43.4, 2026-10-13), Anton confirmed it works on GT Dev.
+   Replacing a Log entry's photo in a single edit used to fail with "Something went wrong" (live too, until it goes
+   live).
 2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
    for live, update `test/domain/siteConfig.test.ts` and D46).
 3. **Leaderboard design rework**: continue when Anton brings it up.
@@ -129,9 +132,15 @@ section, so it must always be current.
    gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
    Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
    moments, what feel, on or off to start.
-5. **Photo section rework** (Anton's idea, 2026-10-13), for product and Log entry photos: let him **choose which
-   photo is shown** (today it's always the first, and photos can't be reordered), and tidy up how the photo section
-   looks (it feels a bit clumpy). Not planned yet: starts with iPhone mockups for him to pick from.
+5. **Photo section rework** (Anton's idea, 2026-10-13), in three steps, each tried on GT Dev before the next:
+   1. **Choosing the cover photo** (D52): **on dev** (0.44.0, 2026-10-13). Gold ring and ★ on the cover; Set as cover
+      in the viewer's bar (saved at once from the product page); ⋯ menu and press-and-hold drag in the editor.
+   2. **Zoom**: in the full-screen viewer only (yours and friends' photos): pinch up to 4×, double-tap for 2× and
+      back, drag to look around; swiping to the next photo only when zoomed out. Not started.
+   3. **Draw round a nug** in Remove background: offered at the start and after the AI's first try; draw rough loops
+      round one or more nugs, everything outside is dropped and the AI cuts a clean edge from the rest; Undo, Clear,
+      Draw again; two fingers zoom while drawing. Same AI (don't change the model). Designed for touching nugs and
+      cluttered backgrounds (Anton couldn't send example photos). Not started.
 
 ### Done (newest first)
 
