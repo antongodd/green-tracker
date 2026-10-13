@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.43.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
+**Current version:** 0.43.1 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
 
 ---
 
@@ -1057,6 +1057,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.43.1 — CLAUDE.md: where things stand and the to-do list
+- `CLAUDE.md`'s "Where things stand" now says live and dev are the same (0.43.0, Smokes hidden on live) and holds the
+  to-do list, which each new conversation reads to the owner at the start: the Log photo swap bug, the Smokes rework,
+  the Leaderboard design rework, and sound effects and haptics (the owner's idea, not planned yet).
+- The note about sessions started on `dev` now says a branch push *may* be refused (it worked after a restart).
 
 ### 0.43.0 — Return to Log (owner request)
 - A product on your Leaderboard can go back to your Log (decision D50): **product page → Return to Log**, between

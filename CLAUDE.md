@@ -53,8 +53,9 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   finished green, including the **"Live site serves this build"** step, and say it's live with exact iPhone steps.
 - Only merge when Anton says so.
 - After a merge, restart your working branch from the latest `dev` (same branch name; force-with-lease is fine).
-- If the session was started with dev as its branch, it can only push dev: a push of any other branch gets a 403.
-  Never push straight to dev; tell Anton at the start and ask how to proceed.
+- If the session was started with dev as its branch, a push of any other branch may get a 403 (it has also worked
+  after a session restart). Never push straight to dev: if a `claude/<topic>` branch can't be pushed, tell Anton and
+  ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
 ## Every change
@@ -104,9 +105,23 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Where things stand
 
-Keep this short and current.
+Keep this short and current. **Read the to-do list to Anton at the start of each conversation** and keep it updated.
 
-- **Live:** 0.40.x. Smokes is hidden there (D46); Privacy (D45) is on.
-- **Dev:** set up on Anton's phone, with his live data copied in. 0.41.0 (Leaderboard colours by score, D48) and 0.42.0
-  (the four colours as one set, D49) are on it. 0.43.0 (Return to Log, D50) is in a pull request.
-- **Next:** Smokes is on hold until Anton decides what he wants; Leaderboard design rework in progress.
+- **Live and dev are the same:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set
+  (D49), Return to Log (D50). The only difference is Smokes: on for dev, hidden on live (D46).
+
+### To-do list (suggested order; Anton decides)
+
+1. **Fix swapping a Log entry's photo.** Replacing a Log entry's photo with a new one in a single edit fails with
+   "Something went wrong" (live too). `planPhotoWrites` (`server/lib/photos.ts`) inserts the new photo row before
+   deleting the old one, and `photos_log_entry` is a unique index (one photo per entry). Removing the photo, saving,
+   then adding the new one works. A bug fix: its test must fail on the old code.
+2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
+   for live, update `test/domain/siteConfig.test.ts` and D46).
+3. **Leaderboard design rework**: continue when Anton brings it up.
+4. **Sound effects and haptics** (Anton's idea, 2026-10-13): make the app feel more interactive. Talked through, not
+   planned yet. Sounds: made in code (no downloads), obey the iPhone's silent switch, an on/off switch in More →
+   Appearance. Haptics: iPhone web apps can't vibrate the usual way; the iOS 18+ trick (flicking a hidden on/off switch
+   gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
+   Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
+   moments, what feel, on or off to start.
