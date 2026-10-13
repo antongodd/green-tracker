@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.43.2 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
+**Current version:** 0.43.3 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
 
 ---
 
@@ -1057,6 +1057,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.43.3 — CLAUDE.md: photo section rework on the to-do list (owner request)
+- The to-do list gets item 5, **Photo section rework**, for product and Log entry photos: choose which photo is shown,
+  and tidy up how the photo section looks. Notes only; no change to the app.
 
 ### 0.43.2 — CLAUDE.md: a Done list (owner request)
 - `CLAUDE.md`'s "Where things stand" gets a **Done** table under the to-do list (each finished item with its version,

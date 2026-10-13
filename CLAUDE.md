@@ -112,7 +112,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** the same app, plus notes-only changes (0.43.1, 0.43.2). The only difference in the app is Smokes: on
+  (D50). **Dev:** the same app, plus notes-only changes (0.43.1–0.43.3). The only difference in the app is Smokes: on
   for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
@@ -130,6 +130,9 @@ section, so it must always be current.
    gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
    Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
    moments, what feel, on or off to start.
+5. **Photo section rework** (Anton's idea, 2026-10-13), for product and Log entry photos: let him **choose which
+   photo is shown** (today it's always the first, and photos can't be reordered), and tidy up how the photo section
+   looks (it feels a bit clumpy). Not planned yet: starts with iPhone mockups for him to pick from.
 
 ### Done (newest first)
 
