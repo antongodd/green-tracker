@@ -36,7 +36,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   wait for "go ahead".
 - **Ask before adding scope.** Explain knock-on effects: other screens, data, export/restore, followers, privacy,
   and live vs dev.
-- **After each item** is on dev or live: post the updated to-do list and suggest what's next.
+- **After each item** is on dev or live: update the to-do list and Done in CLAUDE.md (see "Where things stand"), post it and suggest what's next.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
 
@@ -105,10 +105,15 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Where things stand
 
-Keep this short and current. **Read the to-do list to Anton at the start of each conversation** and keep it updated.
+Keep this short and current. **Read the to-do list to Anton at the start of each conversation** and keep it updated:
+when an item is merged into `dev`, mark it **on dev** (with the version and date); when it goes live, move it to
+**Done** with both dates. A new item Anton asks for goes on the list in the same pull request as other notes, or in a
+small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
+section, so it must always be current.
 
-- **Live and dev are the same:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set
-  (D49), Return to Log (D50). The only difference is Smokes: on for dev, hidden on live (D46).
+- **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
+  (D50). **Dev:** the same app, plus notes-only changes (0.43.1, 0.43.2). The only difference in the app is Smokes: on
+  for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -125,3 +130,16 @@ Keep this short and current. **Read the to-do list to Anton at the start of each
    gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
    Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
    moments, what feel, on or off to start.
+
+### Done (newest first)
+
+| Item | Version | Decision | On dev | Live |
+|---|---|---|---|---|
+| Return to Log | 0.43.0 | D50 | 2026-10-13 | 2026-10-13 |
+| The four colours as one set of cards | 0.42.0 | D49 | 2026-10-12 | 2026-10-13 |
+| Leaderboard colours by score | 0.41.0 | D48 | 2026-10-12 | 2026-10-13 |
+| CLAUDE.md: how we work | 0.40.1 | | 2026-10-12 | 2026-10-12 |
+| A private dev site | 0.40.0 | D47 | | 2026-10-12 |
+| Smokes off on the live site | 0.39.0 | D46 | | 2026-10-11 |
+
+Older releases: SPEC.md's changelog.
