@@ -1091,6 +1091,9 @@ None.
   nothing to tap but the photo.
 - Found while testing: with several photos, the viewer's swipe area couldn't be reached by keyboard (an accessibility
   check flagged it); it can now (arrow keys).
+- Found on GitHub's first run: the menu's accessibility check ran while the menu was still sliding up (half-faded text
+  read as low contrast). `settled()` now also waits for a menu's slide-up; reproduced by slowing animations tenfold,
+  which fails without the fix and passes with it.
 - Tests: `cover.test.ts` (5 server tests), `cover.spec.ts` (9 Playwright tests); `photos.spec.ts`, `cutout.spec.ts`,
   `logentry.spec.ts` and `quality.spec.ts` use the ⋯ menu and the viewer's bar (`photoAction` in `helpers.ts`).
 - `CLAUDE.md`: item 5's step 1 on dev; next decision D53.

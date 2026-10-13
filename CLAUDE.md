@@ -89,7 +89,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Playwright serves the **built** app: run `npm run build` after changing client code before running Playwright
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
-  start counting animations.
+  start counting animations. It waits for the page-load fade (`enter`) and a menu sliding up (`rise`); a new entrance
+  animation must be added to it. To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
 - `contrastFailures` only photographs the top 390×844. For long screens use `wholeScreenContrastFailures` (top and
   bottom, only text between the header and the tab bar). Prove a readability test bites by dimming the text.
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
