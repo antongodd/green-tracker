@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import { errorText } from '../api';
-import type { Podium } from '../../../shared/domain/leaderboard';
-import { Cluster, Glints, Score, Thumb, type RowProduct } from '../components/ProductRow';
+import { DEFAULT_APPEARANCE, scoreBand } from '../../../shared/domain/gems';
+import { Glints, RankCrown, rowClass } from '../components/Gems';
+import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { LeafGlass } from '../icons';
 import { passkeysSupported, signIn } from '../passkey';
 import { linkTo } from '../router';
@@ -10,9 +11,9 @@ import { takeDeletedNotice } from './Data';
 
 /** The welcome screen's example Leaderboard (D36): drawn with the real row parts, never anyone's data. */
 const EXAMPLES: { product: RowProduct; score: number }[] = [
-  { product: { id: 'eg1', name: 'Wedding Cake', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.4 },
-  { product: { id: 'eg2', name: 'Gelato 41', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.1 },
-  { product: { id: 'eg3', name: 'Zkittlez', productType: 'flower', strainType: 'indica', country: 'CA', countryOther: null, photos: [] }, score: 8.6 },
+  { product: { id: 'eg1', name: 'Wedding Cake', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.7 },
+  { product: { id: 'eg2', name: 'Gelato 41', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] }, score: 9.2 },
+  { product: { id: 'eg3', name: 'Zkittlez', productType: 'flower', strainType: 'indica', country: 'CA', countryOther: null, photos: [] }, score: 8.7 },
 ];
 
 function Showcase() {
@@ -20,12 +21,15 @@ function Showcase() {
     <figure class="showcase">
       <div class="fan" aria-hidden="true">
         {EXAMPLES.map(({ product, score }, i) => {
-          // The podium's three looks: rainbow, Diamond, Gold (D39).
-          const podium = (i + 1) as Podium;
+          // Three of the colours (D48) in the starting preset: Rainbow with the #1 mark, Amethyst, Sapphire.
+          const look = { band: scoreBand('overall', score), first: i === 0 };
           return (
-            <div key={product.id} class={`row tier p${podium} eg eg${i + 1}`}>
-              <Glints podium={podium} />
-              <span class="rk">{i + 1}</span>
+            <div key={product.id} class={`row${rowClass(look, DEFAULT_APPEARANCE)} eg eg${i + 1}`}>
+              <Glints band={look.band} appearance={DEFAULT_APPEARANCE} />
+              <span class="rk">
+                <RankCrown look={look} appearance={DEFAULT_APPEARANCE} />
+                {i + 1}
+              </span>
               <Thumb product={product} />
               <div class="mid">
                 <div class="name">{product.name}</div>

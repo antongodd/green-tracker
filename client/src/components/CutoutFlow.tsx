@@ -6,6 +6,7 @@ import { errorText } from '../api';
 import { loadImage } from '../images';
 import { Sheet } from './chrome';
 import { useLockScroll } from './PhotoViewer';
+import { useAppearance } from './Gems';
 
 export interface CutoutResult {
   cropped: Blob;
@@ -41,6 +42,7 @@ function tapAt(e: MouseEvent): { x: number; y: number } {
  * saves it the way it saves a crop. `source` is the photo's current cropped image.
  */
 export function CutoutFlow(p: { source: string | Blob; name?: string; onCancel: () => void; onApply: (r: CutoutResult) => Promise<void> }) {
+  const appearance = useAppearance();
   useLockScroll();
   const [stage, setStage] = useState<Stage>('start');
   const [progress, setProgress] = useState<{ got: number; total: number } | null>(null);
@@ -322,7 +324,8 @@ export function CutoutFlow(p: { source: string | Blob; name?: string; onCancel: 
         {stage === 'preview' && (
           <>
             {p.name && preview && (
-              <div class="row tier p1 cut-row" aria-hidden="true">
+              // The cut-out on a top row, in the top colour of your preset (D48).
+              <div class={`row tier band4 pal-${appearance.preset} cut-row`} aria-hidden="true">
                 <span class="rk">1</span>
                 <div class="thumb cut">
                   <img src={preview.url} alt="" />

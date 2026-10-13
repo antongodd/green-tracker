@@ -124,6 +124,8 @@ export function TypeMark(p: { icon: string | null; label: string; class?: string
 
 export const PlusIcon = icon('M12 4.5v15M4.5 12h15', { stroke: 2.6 });
 export const CrownIcon = icon('M3 18h18v2H3Zm1-2 1.6-9.2 4.4 4.2L12 5l2 6 4.4-4.2L20 16Z');
+/** Leaderboard colours (D48): a cut gem, for the Colours key and More → Appearance. */
+export const GemIcon = icon('M6.5 4h11L21 9l-9 11L3 9ZM3 9h18M8.5 9 12 20l3.5-11M9 4l-.5 5M15 4l.5 5', { stroke: 1.6 });
 export const ChevronDown = icon('M2.5 4.5 6 8l3.5-3.5', { stroke: 1.8, viewBox: '0 0 12 12' });
 export const LockIcon = icon('M7 10V7.5a5 5 0 0 1 10 0V10h.5A1.5 1.5 0 0 1 19 11.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20.5v-9A1.5 1.5 0 0 1 6.5 10Zm2.3 0h5.4V7.5a2.7 2.7 0 0 0-5.4 0Z', { evenodd: true });
 export const ExternalIcon = icon('M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3', { stroke: 1.6, viewBox: '0 0 16 16' });
@@ -193,6 +195,8 @@ export const DownloadIcon = icon('M12 4v11 M8 11l4 4 4-4 M5 14v4.5A1.5 1.5 0 0 0
 export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9 M10 13h4', { stroke: 2 });
 /** Privacy (D45): an eye. */
 export const EyeIcon = icon('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', { stroke: 2 });
+/** Return to Log (D50): an arrow curling back. */
+export const ReturnIcon = icon('M9 5 4 10l5 5 M4.5 10H14a5 5 0 0 1 0 10h-2', { stroke: 2 });
 export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5', { stroke: 2 });
 
 // Data screens (D40, 0.33.0).

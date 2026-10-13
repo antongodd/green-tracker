@@ -10,10 +10,10 @@ import { scoreHeat } from '../../../shared/domain/heat';
 import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
-import { ExternalIcon, LockIcon } from '../icons';
+import { ExternalIcon, LockIcon, ReturnIcon } from '../icons';
 import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
-import { podiumPlace } from '../../../shared/domain/leaderboard';
-import { podiumClass } from '../components/Podium';
+import { boardPlace } from '../../../shared/domain/leaderboard';
+import { pageClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
 import { loadView } from '../viewState';
 import { api } from '../api';
@@ -22,7 +22,9 @@ import { PhotoGrid, shownFromRecord } from '../components/PhotoGrid';
 import { Cropper, PhotoViewer } from '../components/PhotoViewer';
 import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
-import { cameFrom, linkTo, navigate, savedScroll } from '../router';
+import { cameFrom, linkTo, navigate, replaceHistory, savedScroll } from '../router';
+import { returnToLog } from '../logEntries';
+import { useOnline } from '../online';
 import { Skeleton } from '../components/Skeleton';
 import { SmokesCard } from './Smokes';
 import { useSmokes, withSmokeCounts } from '../smokes';
@@ -117,13 +119,16 @@ export function Profile(p: { id: string }) {
   const [product, setProduct] = useState<Product | undefined>(cachedProduct(p.id));
   const [error, setError] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmReturn, setConfirmReturn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const online = useOnline();
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
   const [savingCrop, setSavingCrop] = useState<string | null>(null);
   const [cuttingOut, setCuttingOut] = useState<number | null>(null);
   const path = `/products/${p.id}`;
-  // Its podium place (D22) comes from the same list and view as the Leaderboard.
+  // Its row (D22, D48) comes from the same list and view as the Leaderboard.
+  const appearance = useAppearance();
   const [list, setList] = useState(cachedProducts);
   // D46: where Smokes is off there's no Most used and no Smokes card.
   const smokesOn = useSmokesOn();
@@ -199,6 +204,22 @@ export function Profile(p: { id: string }) {
     setBusy(false);
   }
 
+  /** Return to Log (D50): it becomes a Log entry again, keeping everything else hidden; its page opens. */
+  async function moveToLog() {
+    setConfirmReturn(false);
+    setBusy(true);
+    setError('');
+    try {
+      const entry = await returnToLog(p.id);
+      // The product is gone from your list: Back from the entry goes to the Log, not here.
+      replaceHistory('/log');
+      navigate(`/log/${entry.id}`);
+    } catch (e) {
+      setError(errorText(e));
+      setBusy(false);
+    }
+  }
+
   if (!product) {
     return (
       <>
@@ -234,13 +255,13 @@ export function Profile(p: { id: string }) {
   ];
   const shown = details.filter(([, v]) => v);
   const ranked = list && (view.rankBy !== 'used' || smokes) ? withSmokeCounts([...list.filter((x) => x.id !== product.id), product], smokes ?? []) : null;
-  const podium = ranked && !product.archived ? podiumPlace(ranked, product.id, view) : null;
+  const place = ranked && !product.archived ? boardPlace(ranked, product.id, view) : null;
   const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
   return (
     <>
       <Header title={product.name} left={<BackButton to={back} />} right={!product.archived && <a class="hbtn" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>Edit</a>} />
-      <main class={`screen${podiumClass(podium)}`} data-podium={ranked ? podium ?? 'none' : undefined}>
+      <main class={`screen${pageClass(place, appearance)}`} data-band={ranked ? place?.band ?? 'none' : undefined}>
         <ProductHero
           name={product.name}
           productType={product.productType}
@@ -251,7 +272,8 @@ export function Profile(p: { id: string }) {
           overall={o}
           photo={product.photos[0] ? shownFromRecord(product.photos[0]) : null}
           onOpenPhoto={() => setViewing(0)}
-          podium={podium}
+          place={place}
+          appearance={appearance}
           view={view}
           whose="your"
           price={price !== null ? formatUnitPrice(product.productType, price) : null}
@@ -317,6 +339,10 @@ export function Profile(p: { id: string }) {
                 </span>
                 <input type="checkbox" role="switch" class="switch" checked={product.private} disabled={busy} onChange={(e) => toggle('private', e.currentTarget.checked)} />
               </label>
+              <button class="btn secondary" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
+                <ReturnIcon />
+                Return to Log
+              </button>
               <button class="btn danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
                 Archive
               </button>
@@ -355,6 +381,14 @@ export function Profile(p: { id: string }) {
       )}
       {cuttingOut !== null && product.photos[cuttingOut] && (
         <CutoutFlow source={shownFromRecord(product.photos[cuttingOut]!).image} name={product.name} onCancel={() => setCuttingOut(null)} onApply={(r) => saveCutout(cuttingOut, r)} />
+      )}
+      {confirmReturn && (
+        <Sheet
+          title={`Return “${product.name}” to your Log?`}
+          message="It leaves your Leaderboard and followers’ view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
+          options={[{ label: 'Return to Log', onSelect: moveToLog }]}
+          onCancel={() => setConfirmReturn(false)}
+        />
       )}
       {confirmArchive && (
         <Sheet

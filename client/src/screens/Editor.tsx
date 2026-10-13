@@ -96,7 +96,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const existing = p.id ? cachedProduct(p.id) : undefined;
   const [promotion] = useState(() => (p.promoteFrom ? takePromotion(p.promoteFrom) : null));
   const [form, setForm] = useState<Form | null>(() =>
-    promotion ? toForm(promotion.input, {}) : p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : p.promoteFrom ? null : toForm(emptyProductInput(), {}),
+    promotion ? toForm(promotion.input, promotion.ratings ?? {}) : p.id ? (existing ? toForm(productToInput(existing), existing.ratings) : null) : p.promoteFrom ? null : toForm(emptyProductInput(), {}),
   );
   const [error, setError] = useState('');
   // D42: the one purchase whose fields are open; a new one opens with the cursor in Amount.

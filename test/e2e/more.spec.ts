@@ -37,7 +37,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(10);
+  await expect(page.locator('main .list .li')).toHaveCount(11);
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
   const rows = await page.locator('main .list .li').evaluateAll((els) =>
     els.map((e) => ({ label: e.querySelector('.main')!.textContent, icon: !!e.querySelector('.li-ic svg'), tint: e.querySelector('.li-ic')?.classList[1] ?? null, href: e.getAttribute('href') })),
@@ -47,6 +47,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Recovery codes', icon: true, tint: 'amber', href: '/more/recovery-codes' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
     { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
+    { label: 'Leaderboard colours', icon: true, tint: 'gem', href: '/more/appearance' }, // D48
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },
     { label: 'Restore', icon: true, tint: 'teal', href: '/more/restore' },
     { label: 'Archive', icon: true, tint: 'green', href: '/more/archive' },
@@ -54,7 +55,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Sign out everywhere', icon: true, tint: 'green', href: null },
     { label: 'Delete account', icon: true, tint: 'red', href: '/more/delete' },
   ]);
-  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Data', 'Danger zone']);
+  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Appearance', 'Data', 'Danger zone']);
   expect(await page.locator('.li.dng .main').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(255, 107, 107)');
   await page.getByRole('link', { name: /Recovery codes/ }).click();
   await expect(page).toHaveURL(/\/more\/recovery-codes$/);

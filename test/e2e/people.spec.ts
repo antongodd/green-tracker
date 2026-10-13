@@ -64,10 +64,11 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.tile')).toHaveCount(2);
   await expect(fan.locator('.tile', { hasText: 'Total' })).toHaveCount(0);
   await expectTilesCentredAndWashed(fan);
-  // Their podium uses the same three tiers (D19, D39): Wedding Cake 9.1 → rainbow, Hash Rosin 8.8 → Diamond (D21).
-  await expect(fan.locator('.row', { hasText: 'Wedding Cake' })).toHaveClass(/\btier p1\b/);
-  await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier p2\b/);
-  await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.glint')).toHaveCount(3); // Diamond twinkles on their board too (D21)
+  // Their board wears the colours by score, in the fan's own preset (D48): Wedding Cake 9.1 → Amethyst
+  // with the #1 mark, Hash Rosin 8.8 → Sapphire.
+  await expect(fan.locator('.row', { hasText: 'Wedding Cake' })).toHaveClass(/\btier band3 pal-gems first\b/);
+  await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier band2 pal-gems\b/);
+  await expect(fan.locator('.row .glint')).toHaveCount(0); // only Metals' Diamond twinkles
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' }).locator('.meta')).toHaveText('Jungle Boys');
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);
   await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(0);
@@ -90,7 +91,7 @@ test('their profile shows identity, ratings and details only — no price, notes
   for (const hidden of ['Price history', 'Value for money', 'Private notes', 'Leafly', 'Secret Shop', '£']) {
     await expect(fan.getByText(hidden)).toHaveCount(0);
   }
-  for (const action of ['Edit', 'Archive', 'Private']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
+  for (const action of ['Edit', 'Archive', 'Private', 'Return to Log']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
   await expect(fan.getByRole('link', { name: 'Edit' })).toHaveCount(0);
   await shot(fan, '53-their-profile');
   await fan.getByRole('link', { name: 'Back' }).click();

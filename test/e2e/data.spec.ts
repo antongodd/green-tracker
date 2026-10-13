@@ -45,6 +45,11 @@ test('export everything, restore it after changes, then delete the account', asy
   for (const group of ['Account', 'Data', 'Danger zone']) await expect(page.locator('.lh', { hasText: group })).toBeVisible();
   await shot(page, '60-more');
 
+  // D48: your Leaderboard colours travel with your data.
+  const putAppearance = (a: object) => page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
+  expect(await putAppearance({ preset: 'metals', markFirst: false })).toBe(200);
+  await page.reload();
+
   // Export: one JSON file, photos embedded, no social or security data.
   await page.getByRole('link', { name: 'Export' }).click();
   const download = page.waitForEvent('download');
@@ -64,11 +69,13 @@ test('export everything, restore it after changes, then delete the account', asy
   expect(json.products.find((p) => p.name === 'Old Favourite')!.smokes).toEqual([{ date: '2026-09-02', time: '21:15', amount: 0.4, effect: 'Sleepy', createdAt: expect.any(Number) }]);
   expect(keeper.smokes).toEqual([]);
   expect(json.logEntries[0]!.smokes).toEqual([{ date: '2026-09-03', time: '08:00', amount: null, effect: null, createdAt: expect.any(Number) }]);
+  expect(json.appearance).toEqual({ preset: 'metals', markFirst: false });
   const text = readFileSync(path, 'utf8');
   for (const key of ['follows', 'followers', 'blocks', 'passkeys', 'recovery', 'gt.view', 'rankBy']) expect(text).not.toContain(`"${key}`);
 
   // Change things, then restore the file.
   await post(page, '/api/products', { ...emptyProductInput(), name: 'Added Later' });
+  expect(await putAppearance({ preset: 'prism', markFirst: true })).toBe(200);
   await page.goto('/more/restore');
   await page.getByLabel('Choose an export file').setInputFiles(path);
   const contents = page.getByRole('region', { name: 'File contents' });
@@ -82,6 +89,9 @@ test('export everything, restore it after changes, then delete the account', asy
   await expect(page).toHaveURL(/\/$/, { timeout: 20_000 });
   await expect(page.locator('.row')).toHaveCount(1);
   await expect(page.locator('.row')).toContainText('Keeper');
+  // The file's colours are back, straight away (Keeper is #1 and #1 isn't marked in the file).
+  await expect(page.locator('.row.first')).toHaveCount(0);
+  expect(await page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ preset: 'metals', markFirst: false });
   await expect(page.locator('.row .thumb img')).toHaveJSProperty('complete', true);
   await page.locator('.row').click();
   await expect(page.getByText('My notes')).toBeVisible();

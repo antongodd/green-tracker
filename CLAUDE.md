@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D47 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D50 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -53,11 +53,13 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   finished green, including the **"Live site serves this build"** step, and say it's live with exact iPhone steps.
 - Only merge when Anton says so.
 - After a merge, restart your working branch from the latest `dev` (same branch name; force-with-lease is fine).
+- If the session was started with dev as its branch, it can only push dev: a push of any other branch gets a 403.
+  Never push straight to dev; tell Anton at the start and ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D48), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D51), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -77,7 +79,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D47.
+- Reopen any decision D1–D50.
 
 ## Testing notes
 
@@ -93,11 +95,18 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
+- API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
+  10 an hour per address, so keep sign-ups per file modest.
+- Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
+  `none`). Set an account's preset in a test with `PUT /api/appearance`.
+- Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
+  `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
 
 ## Where things stand
 
 Keep this short and current.
 
 - **Live:** 0.40.x. Smokes is hidden there (D46); Privacy (D45) is on.
-- **Dev:** set up on Anton's phone, with his live data copied in.
-- **Next:** rework Smokes on dev, then re-release it to live when Anton is happy.
+- **Dev:** set up on Anton's phone, with his live data copied in. 0.41.0 (Leaderboard colours by score, D48) and 0.42.0
+  (the four colours as one set, D49) are on it. 0.43.0 (Return to Log, D50) is in a pull request.
+- **Next:** Smokes is on hold until Anton decides what he wants; Leaderboard design rework in progress.

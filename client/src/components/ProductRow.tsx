@@ -1,7 +1,8 @@
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { heatStyle } from '../heat';
-import { rankByCaption, type Podium, type RankBy } from '../../../shared/domain/leaderboard';
+import type { Band } from '../../../shared/domain/gems';
+import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';
 import { headlinePrice, type Purchase } from '../../../shared/domain/money';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
@@ -10,6 +11,7 @@ import { overall } from '../../../shared/domain/ratings';
 import { FlameIcon, LockIcon, TypeMark } from '../icons';
 import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
+import { Glints, RankCrown, rowClass, useAppearance } from './Gems';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** `2026-08-12` → `12 Aug 2026`. Dates are calendar days: no time zone involved. */
@@ -110,23 +112,12 @@ export function Score(p: { value: number | null; label?: string; text?: string; 
   );
 }
 
-/** Diamond (2nd place) twinkles now and then (D21): three glints in the row's corners, styled in styles.css. */
-export function Glints(p: { podium: Podium | null }) {
-  if (p.podium !== 2) return null;
-  return (
-    <>
-      <span class="glint g1" aria-hidden="true" />
-      <span class="glint g2" aria-hidden="true" />
-      <span class="glint g3" aria-hidden="true" />
-    </>
-  );
-}
-
 /**
  * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
  * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
  */
-export function ProductRow(p: { product: Product; rank: number; podium: Podium | null; rankBy?: RankBy; value?: number | null; list?: string }) {
+export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string }) {
+  const appearance = useAppearance();
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
   const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
@@ -135,9 +126,12 @@ export function ProductRow(p: { product: Product; rank: number; podium: Podium |
     openRow(e, href);
   };
   return (
-    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} {...heatStyle(p.podium, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
-      <Glints podium={p.podium} />
-      <span class="rk">{p.rank}</span>
+    <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
+      <Glints band={p.band} appearance={appearance} />
+      <span class="rk">
+        <RankCrown look={p} appearance={appearance} />
+        {p.rank}
+      </span>
       <Thumb product={p.product} />
       <div class="mid">
         <div class="name">{p.product.name}</div>

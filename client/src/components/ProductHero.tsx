@@ -7,10 +7,11 @@
 import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
-import type { Podium, ViewState } from '../../../shared/domain/leaderboard';
+import type { Appearance } from '../../../shared/domain/gems';
+import type { RankableProduct, RankedRow, ViewState } from '../../../shared/domain/leaderboard';
 import { productType } from '../../../shared/domain/productTypes';
 import { TypeMark } from '../icons';
-import { PhotoGlints, PodiumBadge } from './Podium';
+import { PhotoGlints, PlaceBadge } from './Gems';
 import type { ShownPhoto } from './PhotoViewer';
 import { StrainTag } from './ProductRow';
 
@@ -24,7 +25,9 @@ export function ProductHero(p: {
   overall: number | null;
   photo: ShownPhoto | null;
   onOpenPhoto: () => void;
-  podium: Podium | null;
+  /** Its row on the Leaderboard (D48): the colour, the badge and the #1 mark come from it. */
+  place: RankedRow<RankableProduct> | null;
+  appearance: Appearance;
   view: ViewState;
   whose: 'your' | 'their';
   /** Headline price, already formatted (your own page only). */
@@ -41,16 +44,16 @@ export function ProductHero(p: {
           {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
           <span class="hero-under" style={{ backgroundImage: `url("${p.photo.thumb}")` }} />
           <img src={p.photo.image} alt="" />
-          <PhotoGlints podium={p.podium} />
+          <PhotoGlints band={p.place?.band ?? null} appearance={p.appearance} />
         </button>
       ) : (
         <div class="hero-photo">
           {def.icon && <TypeMark icon={def.icon} label={def.label} />}
-          <PhotoGlints podium={p.podium} />
+          <PhotoGlints band={p.place?.band ?? null} appearance={p.appearance} />
         </div>
       )}
       <div class="hero">
-        <PodiumBadge podium={p.podium} view={p.view} whose={p.whose} />
+        <PlaceBadge place={p.place} view={p.view} whose={p.whose} appearance={p.appearance} />
         <div class="hero-head">
           <h1>{p.name}</h1>
           <div class={`hero-score${p.overall === null ? ' unrated' : ''}`}>

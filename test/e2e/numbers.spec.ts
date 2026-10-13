@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { signUp } from './helpers';
 
-// D28 (0.21.0): scores, ranks, stats tiles, podium badge numbers, rating values and value for
+// D28 (0.21.0): scores, ranks, stats tiles, colour badge numbers, rating values and value for
 // money use the iPhone's own rounded font (SF Pro Rounded, `ui-rounded`). Prices, amounts and
 // words keep the usual font. Chromium on Linux has no rounded font, so it draws the fallback:
 // this checks each number asks for it, not how it looks (the owner checks that on the iPhone).
@@ -35,8 +35,8 @@ test('scores, ranks and tiles use the rounded numbers; prices and names keep the
 
 test('on the product page and in the editor too', async () => {
   await page.goto(`/products/${id}`);
-  await expect(page.locator('main')).toHaveAttribute('data-podium', '1');
-  for (const sel of ['.hero-score b', '.podium-badge .n', '.rbar .v', '.vfm b']) await rounded(sel);
+  await expect(page.locator('main')).toHaveAttribute('data-band', '2'); // 8.9: Sapphire, #1 (D48)
+  for (const sel of ['.hero-score b', '.gem-badge .n', '.rbar .v', '.vfm b']) await rounded(sel);
   for (const sel of ['.hero h1', '.hero-price', '.purchase .u']) await usual(sel);
   await page.goto(`/products/${id}/edit`);
   await expect(page.locator('.rate-top .val').first()).toBeVisible();

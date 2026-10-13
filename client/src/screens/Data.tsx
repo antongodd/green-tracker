@@ -103,7 +103,7 @@ export function ExportScreen() {
               </li>
               <li class="yes">
                 <CheckIcon />
-                <span>Your privacy settings</span>
+                <span>Your privacy and appearance settings</span>
               </li>
               <li class="not">
                 <DashIcon />

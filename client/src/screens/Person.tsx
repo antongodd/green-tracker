@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
-import { leaderboardEmptyState, leaderboardTiles, podiumPlace, rankByCaption, rankProducts, type Podium, type ViewState } from '../../../shared/domain/leaderboard';
-import { podiumClass } from '../components/Podium';
+import type { Band } from '../../../shared/domain/gems';
+import { boardPlace, leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
+import { ColoursSheet, Glints, pageClass, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
 import { heatStyle } from '../heat';
 import { photoUrl } from '../../../shared/domain/photo';
@@ -14,7 +15,7 @@ import { ApiError, errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
-import { Cluster, formatRankValue, Glints, Score, Thumb } from '../components/ProductRow';
+import { Cluster, formatRankValue, Score, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
 import { FlameIcon, MoreIcon } from '../icons';
 import { dayLabel, smokeAmountText, timesCaption } from '../../../shared/domain/smoke';
@@ -37,7 +38,8 @@ const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto
 const boardPath = (username: string, preview?: boolean) => (preview ? '/more/privacy/preview' : `/u/${enc(username)}`);
 
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
-function SharedRow(p: { username: string; product: SharedProduct; rank: number; podium: Podium | null; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean }) {
+function SharedRow(p: { username: string; product: SharedProduct; rank: number; band: Band | null; first: boolean; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean }) {
+  const appearance = useAppearance();
   const href = `${boardPath(p.username, p.preview)}/p/${enc(p.product.id)}`;
   const key = `u:${p.username}`;
   const open = (e: MouseEvent) => {
@@ -45,9 +47,12 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
     openRow(e, href);
   };
   return (
-    <a class={`row${p.podium ? ` tier p${p.podium}` : ''}`} {...heatStyle(p.podium, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
-      <Glints podium={p.podium} />
-      <span class="rk">{p.rank}</span>
+    <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
+      <Glints band={p.band} appearance={appearance} />
+      <span class="rk">
+        <RankCrown look={p} appearance={appearance} />
+        {p.rank}
+      </span>
       <Thumb product={p.product} />
       <div class="mid">
         <div class="name">{p.product.name}</div>
@@ -153,6 +158,8 @@ export function Person(p: { username: string; preview?: boolean }) {
   const [error, setError] = useState<{ missing: boolean; text: string } | null>(null);
   const arrived = useRef(/^\/u\/[^/]+\/p\/|^\/more\/privacy\/preview\/p\//.test(cameFrom() ?? ''));
   const listKey = p.preview ? 'u:preview' : `u:${p.username}`;
+  // D48: the Colours key.
+  const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
     const show = (board: { products: SharedProduct[]; options: { mostUsed: boolean } }) => {
@@ -220,7 +227,7 @@ export function Person(p: { username: string; preview?: boolean }) {
         {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} used={mostUsed} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} used={mostUsed} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             {/* PRODUCTS and AVERAGE only — never TOTAL. */}
             <Tiles
               tiles={[
@@ -254,12 +261,13 @@ export function Person(p: { username: string; preview?: boolean }) {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} podium={r.podium} value={r.value} rankBy={view.rankBy} preview={p.preview} />
+              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy={view.rankBy} preview={p.preview} />
             ))}
           </div>
         )}
       </main>
       <TabBar active={tab} />
+      {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
     </>
   );
 }
@@ -310,10 +318,11 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const [product, setProduct] = useState<SharedProduct | null>(null);
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<number | null>(null);
-  // Its podium place on their board (D22), worked out only from what you can see, under the
+  // Its row on their board (D22, D48), worked out only from what you can see, under the
   // same Rank by as their board (Most used only when they share it, D45).
   const [list, setList] = useState<SharedProduct[] | null>(null);
   const [view, setView] = useState(() => loadOthersView());
+  const appearance = useAppearance();
 
   useEffect(() => {
     const board = p.preview ? fetchPreview() : api.theirBoard(p.username);
@@ -350,7 +359,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const country = countryDisplay(product.country, product.countryOther);
   const labels = productTypeLabel({ ...product, concentrateType: product.concentrateType ?? 'not_set' });
   const photos = product.photos.map(shown);
-  const podium = list ? podiumPlace(list, product.id, view) : null;
+  const place = list ? boardPlace(list, product.id, view) : null;
   const details: [string, string][] = (
     [
       ['Strain type', STRAIN_TYPES.find((s) => s.key === product.strainType)?.label ?? ''],
@@ -364,7 +373,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   return (
     <>
       <Header title={`@${p.username} / ${product.name}`} leaf={false} left={<BackButton to={backTo} />} />
-      <main class={`screen${podiumClass(podium)}`} data-podium={list ? podium ?? 'none' : undefined}>
+      <main class={`screen${pageClass(place, appearance)}`} data-band={list ? place?.band ?? 'none' : undefined}>
         <ProductHero
           name={product.name}
           productType={product.productType}
@@ -375,7 +384,8 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
           overall={o}
           photo={photos[0] ?? null}
           onOpenPhoto={() => setViewing(0)}
-          podium={podium}
+          place={place}
+          appearance={appearance}
           view={view}
           whose="their"
         />

@@ -76,9 +76,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--accent-soft); }
 .num { font-variant-numeric: tabular-nums; }
-/* The rounded numbers (D28): every score, rank, stats tile, podium badge number, rating value and
+/* The rounded numbers (D28): every score, rank, stats tile, colour badge number, rating value and
    value for money. Prices, amounts, dates and words keep the usual font. */
-.row .rk, .score b, .tile b, .hero-score b, .podium-badge .n, .rbar .v, .vfm b, .rate-top .val { font-family: var(--num-font); }
+.row .rk, .score b, .tile b, .hero-score b, .gem-badge .n, .rbar .v, .vfm b, .rate-top .val { font-family: var(--num-font); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- screen + motion ---------- */
@@ -299,50 +299,66 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
 .row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
 .row .rk { position: relative; }
-/* Heat (D30, 0.23.0): below the podium a row glows from the right in its score's colour
+/* Heat (D30, 0.23.0): below the colour bands (D48) a row glows from the right in its score's colour
    (amber at 4 and below → yellow-green → mint at 9 and above), with a matching edge, and the
    score takes the colour. Set per row as --heat (client/src/heat.ts); never on price or value
    for money rankings or unrated rows. */
 .row[data-heat] { background: linear-gradient(270deg, color-mix(in srgb, var(--heat) 22%, transparent), transparent 60%), var(--surface-1); border-color: color-mix(in srgb, var(--heat) 32%, transparent); }
 .row[data-heat] .score b { color: var(--heat); }
 
-/* ---------- podium tiers (D19 0.13.0; cool metals D21 0.15.0; three holo cards D39 0.32.0) ----------
-   p1 rainbow, p2 Diamond (ice blue and lilac), p3 Gold. Rated rows only
-   (shared/domain/leaderboard.ts). Each is a holo card: filled edge to edge with its
-   colours flowing under the same dark layer (70% → 86%, tinted per tier) that keeps the
-   text readable through the shimmer (measured: lighter layers failed), its edge, rank
-   number and score flowing through them too. A soft band of light sweeps down the
-   three rows in a cascade, first place on the same beat; Diamond twinkles (.glint).
-   Reduce Motion keeps the colours, stops the motion and hides the glints. */
+/* ---------- Leaderboard colours (D48, 0.41.0; replaces the podium by place of D19, D21, D39) ----------
+   A row's colour is earned by its score (shared/domain/gems.ts), in the preset you chose in
+   More → Appearance. Four bands, all holo cards of one kind since D49 (0.42.0), each a little
+   stronger than the one below (the dark layer over the colours thins as the score rises):
+     band1 8.0–8.4  the faintest card (90% → 95%), still;
+     band2 8.5–8.9  a faint card (86% → 93%), flowing;
+     band3 9.0–9.4  a card (80% → 90%), flowing;
+     band4 9.5–10   the full card (70% → 86%, as the old 1st place) with a band of light.
+   The rank number and score take the colours (the score flowing from band 2 up). The dark layers keep
+   the text readable through the colours (measured by the readability tests). Only Metals'
+   Diamond twinkles (.glint). Reduce Motion keeps the colours, stops the motion and the glints. */
 .row.tier { position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
-/* The tier colours, shared by the rows and the podium product pages (.tiered, D22). --dark tints
-   the layer over each card (green on the rainbow, blue on Diamond, warm on Gold). */
-.row.tier, .tiered { --tier-speed: 5s; --edge-speed: var(--tier-speed); --sheen: 0.18; --dark: 12, 20, 16;
+.row.tier, .tiered, .swatch, .gem-badge { --tier-speed: 5s; --sheen: 0.18; --dark: 12, 20, 16;
   --tier-grad: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1));
-  /* Text that flows through the colours (rank, score, badge number): the whole gradient, except
-     Gold's, whose darker shades are too dim for text (measured), so it uses its three lightest. */
-  --tier-text: var(--tier-grad); }
-.row.p1, .tiered.p1 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; --sheen-delay: 0s; }
-.row.p2, .tiered.p2 { --t1: #dff4ff; --t2: #a9dcff; --t3: #e9e0ff; --t4: #8fd0ff; --t5: #c6f3ff; --t6: #b8c8ff; --dark: 8, 16, 28; --sheen-delay: 0.35s; }
-.row.p3, .tiered.p3 { --t1: #ffe79a; --t2: #f5c451; --t3: #fff3c4; --t4: #e0a83a; --t5: #ffd977; --t6: #c9922e; --dark: 24, 16, 4; --sheen-delay: 0.7s;
-  --tier-text: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
-.row.tier {
+  /* Small text flows through the lighter shades only (the deep purples and blues failed the readability test). */
+  --tier-light: linear-gradient(90deg, var(--t1), var(--t3), var(--t5), var(--t1), var(--t3), var(--t5), var(--t1)); }
+/* The presets' colours, shared by the rows, product pages, the Colours key and Appearance.
+   --dark tints the layer over a holo card. Gems' Sapphire and Amethyst (D49): a brighter blue and a
+   softer lilac, under near-neutral layers (the violet-tinted one made Amethyst a purple slab on iPhone). */
+.pal-prism[class*="band"], .pal-gems.band4, .pal-metals.band4 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; }
+.pal-gems.band1, .pal-metals.band1 { --t1: #5ff2b0; --t2: #2fd893; --t3: #a8ffd9; --t4: #19b877; --t5: #7dffc8; --t6: #34e0a0; }
+.pal-gems.band2 { --t1: #a4c8ff; --t2: #7fb0ff; --t3: #d3e4ff; --t4: #5e98ff; --t5: #b8d6ff; --t6: #8dbaff; --dark: 10, 16, 26; }
+.pal-gems.band3 { --t1: #d4b8ff; --t2: #b598f0; --t3: #e6d6ff; --t4: #9a7ee0; --t5: #c6a8fa; --t6: #dccaff; --dark: 12, 14, 22; }
+.pal-metals.band2 { --t1: #ffd9cc; --t2: #f2a996; --t3: #ffe6dc; --t4: #d98a78; --t5: #f6c1b0; --t6: #e09a88; --dark: 28, 12, 10; }
+.pal-metals.band3 { --t1: #dff4ff; --t2: #a9dcff; --t3: #e9e0ff; --t4: #8fd0ff; --t5: #c6f3ff; --t6: #b8c8ff; --dark: 8, 16, 28; }
+.row.tier.band1, .swatch.band1 { --d1: 0.9; --d2: 0.95; }
+.row.tier.band2, .swatch.band2 { --d1: 0.86; --d2: 0.93; }
+.row.tier.band3, .swatch.band3 { --d1: 0.8; --d2: 0.9; }
+.row.tier.band4, .swatch.band4 { --d1: 0.7; --d2: 0.86; }
+.row.tier, .swatch[class*="band"] {
   background:
-    linear-gradient(115deg, rgba(var(--dark), 0.7), rgba(var(--dark), 0.86) 70%) padding-box,
+    linear-gradient(115deg, rgba(var(--dark), var(--d1)), rgba(var(--dark), var(--d2)) 70%) padding-box,
     var(--tier-grad) padding-box,
     var(--tier-grad) border-box;
   background-size: 100% 100%, 200% 100%, 200% 100%;
 }
-/* The shimmer passes behind the small grey lines, so they're a little brighter here
-   (measured by the podium readability test). */
+/* The colours pass behind the small grey lines, so they're a little brighter here
+   (measured by the readability test). */
 .row.tier .meta, .row.tier .score .cap { color: rgba(238, 244, 240, 0.84); }
-.row.tier .rk, .row.tier .score b { color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.row.tier .rk { font-size: 15px; }
-.row.tier::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+.row.tier .score b { color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+/* The rank number sits where a holo card is lightest, so it takes the colour's lightest shade, still (measured). */
+.row.tier .rk { font-size: 15px; color: var(--t3); }
+.row.tier.band4::after, .swatch.band4::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
-/* Diamond's glints: tiny four-point stars in the row's corners, clear of all text,
-   each on its own rhythm so they never fall into an obvious pattern. */
+.swatch { display: block; position: relative; isolation: isolate; overflow: hidden; height: 26px; border-radius: 8px; border: 1.5px solid transparent; }
+/* Your #1 (D48): a gold crown above its rank number and a soft halo around the row, in the
+   row's colour (gold on a row without one), gently breathing. Only on your own choice
+   (Appearance → Mark my #1). */
+.rank-crown { position: absolute; left: 50%; top: -17px; translate: -50% 0; width: 15px; height: 15px; color: #ffd36b; filter: drop-shadow(0 0 4px rgba(255, 211, 107, 0.6)); }
+.row.first { --halo: var(--t2, #ffd36b); box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 40%, transparent), 0 0 18px 1px color-mix(in srgb, var(--halo) 50%, transparent); }
+/* Diamond's glints (Metals): tiny four-point stars in the row's corners, clear of all text,
+   twinkling in turn. */
 .glint { position: absolute; z-index: -1; width: 10px; height: 10px; pointer-events: none; opacity: 0; }
 .glint::before, .glint::after { content: ""; position: absolute; left: 50%; top: 50%; border-radius: 1px; background: #fff; translate: -50% -50%; }
 .glint::before { width: 2px; height: 10px; }
@@ -351,9 +367,12 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .glint.g2 { right: 6px; top: 4px; }
 .glint.g3 { left: 62px; bottom: 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .row.tier { animation: tier-flow-holo var(--tier-speed) linear infinite; }
-  .row.tier .rk, .row.tier .score b { animation: tier-flow-text var(--edge-speed) linear infinite; }
-  .row.tier::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
+  .row.tier:not(.band1), .swatch[class*="band"]:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite; }
+  .row.tier:not(.band1) .score b { animation: tier-flow-text var(--tier-speed) linear infinite; }
+  .row.tier.band4::after, .swatch.band4::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; }
+  .row.first { animation: first-halo 3.2s ease-in-out infinite; }
+  /* A coloured #1 keeps its colour's motion and breathes too. */
+  .row.tier.first:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite, first-halo 3.2s ease-in-out infinite; }
   .glint.g1 { animation: tier-glint 2.9s ease-in-out infinite; }
   .glint.g2 { animation: tier-glint 3.7s ease-in-out 1.1s infinite; }
   .glint.g3 { animation: tier-glint 4.3s ease-in-out 2.3s infinite; }
@@ -363,6 +382,10 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 @keyframes tier-flow-text { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 @keyframes tier-sheen { 0% { background-position: 120% 0; } 60%, 100% { background-position: -60% 0; } }
 @keyframes tier-glint { 0%, 70%, 100% { opacity: 0; scale: 0.4; } 80% { opacity: 0.9; scale: 1; } 90% { opacity: 0.4; scale: 0.8; } }
+@keyframes first-halo {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 30%, transparent), 0 0 12px 0 color-mix(in srgb, var(--halo) 35%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 50%, transparent), 0 0 24px 3px color-mix(in srgb, var(--halo) 60%, transparent); }
+}
 .thumb { width: 54px; height: 54px; border-radius: 10px; box-shadow: var(--photo-edge); background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--accent-bright); flex: none; overflow: hidden; }
 .thumb svg { width: 50%; height: 50%; }
 .mid { min-width: 0; display: grid; gap: 3px; }
@@ -473,53 +496,51 @@ div.hero-photo { cursor: default; }
 .switch:checked { background: var(--accent); border-color: var(--accent); }
 .switch:checked::after { left: 22px; }
 
-/* ---------- podium product pages (D22, 0.16.0; the Poster, D27, 0.20.0; three holo tiers, D39, 0.32.0) ----------
-   A product in the top three (under the current filter and Rank by) carries its row's
-   tier onto its page: a holo badge like its row, a tier-coloured haze flowing through the
-   bottom of the photo behind the details, a score flowing through its colours, the tier's
-   shimmer across the photo, one sweep as it opens (1st, Diamond), and Diamond's glints.
-   Same colours, speeds and shimmer as the rows. Reduce Motion keeps the colours; no
-   motion, sweep or glints. */
+/* ---------- product pages in colour (D22, 0.16.0; the Poster, D27, 0.20.0; by score, D48, 0.41.0) ----------
+   A product whose row has a colour (under the current filter and Rank by) carries it onto
+   its page: a holo badge naming the colour and place, a haze flowing through the bottom
+   of the photo behind the details (stronger band by band), a score flowing through the
+   colours; from 9.0 the shimmer across the photo and one sweep as the page opens; Metals'
+   Diamond twinkles. Reduce Motion keeps the colours; no motion, sweep or glints. */
 .tiered .poster.cut .hero-photo, .tiered .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, color-mix(in srgb, var(--t2) 22%, transparent), transparent 60%), var(--surface-1); }
-.tiered.p1 { --haze: 0.14; } .tiered.p2 { --haze: 0.14; } .tiered.p3 { --haze: 0.12; }
+.tiered.band1 { --haze: 0.06; } .tiered.band2 { --haze: 0.09; } .tiered.band3 { --haze: 0.12; } .tiered.band4 { --haze: 0.14; }
 .tiered .hero::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
   background: var(--tier-grad); background-size: 200% 100%; opacity: var(--haze);
   -webkit-mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); mask: linear-gradient(180deg, transparent, #000 45%, #000 75%, transparent); }
-.tiered .hero-photo::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+.tiered.band3 .hero-photo::after, .tiered.band4 .hero-photo::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, var(--sheen)) 48%, rgba(255, 255, 255, calc(var(--sheen) / 4)) 56%, transparent 65%);
   background-size: 250% 100%; background-position: 120% 0; }
-.tiered .hero-score b { color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.podium-badge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 28px; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; line-height: 1.3;
-  position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
-.podium-badge svg { width: 15px; height: 15px; flex: none; margin-left: -2px; color: var(--t3); }
-.podium-badge .n { font-weight: 800; color: var(--t2); background: var(--tier-text); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-/* Each badge is its row's holo card; the small "#N" needs a darker layer behind it than the row (measured). */
-.tiered .podium-badge {
+.tiered .hero-score b { color: var(--t2); background: var(--tier-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+/* The badge is a holo card like a row ("Amethyst · #3 on your Leaderboard"); an uncoloured #1
+   ("#1 by Price") wears gold. The small text needs a darker layer than the row (measured). */
+.gem-badge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 28px; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; line-height: 1.3;
+  position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent;
   background:
     linear-gradient(115deg, rgba(var(--dark), 0.84), rgba(var(--dark), 0.92) 70%) padding-box,
     var(--tier-grad) padding-box,
     var(--tier-grad) border-box;
-  background-size: 100% 100%, 200% 100%, 200% 100%;
-}
-.tiered .hero-photo::after { z-index: 1; }
+  background-size: 100% 100%, 200% 100%, 200% 100%; }
+.gem-badge.plain { --t1: #ffe79a; --t2: #f5c451; --t3: #fff3c4; --t4: #e0a83a; --t5: #ffd977; --t6: #c9922e; --dark: 24, 16, 4; }
+.gem-badge svg { width: 15px; height: 15px; flex: none; margin-left: -2px; color: #ffd36b; }
+.gem-badge .n, .gem-badge .gem { font-weight: 800; color: var(--t2); background: var(--tier-light); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 /* Diamond's glints: in the photo below the header, clear of all text. */
 .hero-photo .glint { z-index: 2; }
 .hero-photo .glint.g1 { left: 16px; top: calc(var(--header-h) + 16px); }
 .hero-photo .glint.g2 { left: auto; right: 18px; top: calc(var(--header-h) + 24px); }
 .hero-photo .glint.g3 { left: auto; bottom: auto; right: 30px; top: calc(var(--header-h) + 150px); }
 @media (prefers-reduced-motion: no-preference) {
-  .tiered .hero::after { animation: tier-flow-text var(--edge-speed) linear infinite; }
-  .tiered .hero-photo::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; animation-delay: var(--sheen-delay); }
-  .tiered .hero-score b, .podium-badge .n { animation: tier-flow-text var(--edge-speed) linear infinite; }
-  .tiered .podium-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
+  .tiered .hero::after { animation: tier-flow-text var(--tier-speed) linear infinite; }
+  .tiered .hero-photo::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; }
+  .tiered .hero-score b, .gem-badge .n, .gem-badge .gem { animation: tier-flow-text var(--tier-speed) linear infinite; }
+  .gem-badge { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   /* One sweep across the photo as the page opens, then still. */
-  .tiered.p1 .hero-photo::before, .tiered.p2 .hero-photo::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  .tiered.band3 .hero-photo::before, .tiered.band4 .hero-photo::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
     background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--t1) 30%, transparent) 40%, color-mix(in srgb, var(--t3) 40%, transparent) 47%, rgba(255, 255, 255, 0.5) 50%, color-mix(in srgb, var(--t5) 40%, transparent) 53%, color-mix(in srgb, var(--t6) 30%, transparent) 60%, transparent 70%);
-    background-size: 260% 100%; animation: podium-arrive 1.2s ease-out 0.25s 1 both; }
+    background-size: 260% 100%; animation: tier-arrive 1.2s ease-out 0.25s 1 both; }
   /* Held while Photo grows is flying (transitions.ts), so it always runs just after the photo lands. */
   .vt-photo .tiered .hero-photo::before { animation-play-state: paused; }
 }
-@keyframes podium-arrive { 0% { opacity: 1; background-position: 130% 0; } 85% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
+@keyframes tier-arrive { 0% { opacity: 1; background-position: 130% 0; } 85% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
 
 /* ---------- editor (brief §6.6, §6.7, §6.11; P5) ---------- */
 .editor { display: grid; gap: 12px; padding: 12px 16px 0; max-width: 720px; margin: 0 auto; }
@@ -901,6 +922,7 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .li-ic.teal { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }
 .li-ic.red { background: rgba(255, 107, 107, 0.14); color: var(--danger); }
 .li-ic.violet { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
+.li-ic.gem { background: linear-gradient(135deg, rgba(95, 242, 176, 0.18), rgba(111, 155, 255, 0.18) 50%, rgba(192, 140, 255, 0.22)); color: #d9b3ff; }
 .more-gap { margin-top: 20px; }
 .more-foot { display: grid; justify-items: center; gap: 4px; padding: 24px 16px 8px; color: var(--text-2); font-size: 12px; }
 .more-foot svg { width: 22px; height: 22px; opacity: 0.75; }
@@ -970,6 +992,13 @@ label.btn:has(input:disabled) { opacity: 0.4; }
    cards like a product page. */
 .log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(5, 8, 7, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
 .entry-page .sect .btn svg { width: 18px; height: 18px; }
+/* Kept from your Leaderboard (D50): on an entry returned from the Leaderboard. */
+.kept-head { display: flex; gap: 12px; align-items: center; }
+.kept-head strong { display: block; font-size: 15px; }
+.kept-head .small { display: block; margin-top: 2px; }
+.kept-ic { flex: none; width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: var(--accent-bright); background: var(--accent-soft); }
+.kept-ic svg { width: 18px; height: 18px; }
+.sect .btn svg, .sect .btn.secondary svg { width: 18px; height: 18px; }
 
 /* ---------- Smokes (D43, 0.36.0) ----------
    The tab: a strip of the last 7 days (a bar per smoke, up to five), then every smoke under a
@@ -1070,6 +1099,32 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .priv-row.off { cursor: default; }
 .priv-row.off .switch { opacity: 0.5; }
 .priv-foot { text-align: left; padding: 16px 4px 0; }
+/* Appearance (D48): the three presets, each with its four colours, and the #1 mark with a sample row. */
+.preset { cursor: pointer; align-items: center; }
+.preset .main > span:first-child { font-size: 16px; font-weight: 600; }
+.preset .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.preset .strip-cell { display: grid; gap: 3px; justify-items: stretch; }
+.preset .swatch { height: 22px; border-radius: 6px; }
+.preset .strip-l { font-family: var(--num-font); font-size: 11px; color: var(--text-2); text-align: center; font-variant-numeric: tabular-nums; }
+.radio { appearance: none; -webkit-appearance: none; flex: none; width: 24px; height: 24px; margin: 0; border-radius: 50%; border: 2px solid var(--text-3); display: grid; place-items: center; cursor: pointer; }
+.radio:checked { border-color: var(--accent-bright); }
+.radio:checked::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-bright); }
+.radio:disabled { opacity: 0.5; }
+.sample-li { display: block; padding: 18px 12px 12px; }
+.sample-li .row { pointer-events: none; }
+/* The Colours key (D48): a round button beside Rank by with your four colours as a diamond of dots; it opens the key. */
+.pill.key { width: 38px; padding: 0; justify-content: center; }
+.kdots { display: grid; grid-template-columns: repeat(2, 7px); gap: 3px; rotate: 45deg; }
+.kdot { width: 7px; height: 7px; border-radius: 2px; background: linear-gradient(135deg, var(--t1), var(--t2), var(--t5)); box-shadow: 0 0 5px color-mix(in srgb, var(--t2) 60%, transparent); }
+.keysheet .key-list { list-style: none; margin: 0; padding: 14px 16px 4px; display: grid; gap: 10px; }
+.keysheet .key-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 15px; }
+.keysheet .key-list b { font-weight: 600; }
+.keysheet .range { font-family: var(--num-font); color: var(--text-2); font-size: 14px; font-variant-numeric: tabular-nums; }
+.swatch.heat { background: linear-gradient(270deg, rgba(111, 227, 154, 0.22), transparent 60%), var(--surface-1); border: 1px solid rgba(111, 227, 154, 0.32); }
+.swatch.crowned { display: grid; place-items: center; background: var(--surface-1); border: 1px solid rgba(255, 211, 107, 0.45); box-shadow: 0 0 10px rgba(255, 211, 107, 0.3); }
+.swatch.crowned svg { width: 16px; height: 16px; color: #ffd36b; }
+.keysheet .key-note { margin: 6px 16px 12px; font-size: 13px; color: var(--text-2); text-align: center; }
+.keysheet .grp a.opt { text-decoration: none; border-top: 1px solid var(--hairline); }
 /* On your own board as followers see it: a line saying so, linking back to Privacy. */
 .pv-note { max-width: 688px; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; color: var(--text-2);
   background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
