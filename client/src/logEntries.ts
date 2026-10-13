@@ -2,8 +2,8 @@
 import type { LogEntry, LogEntryInput } from '../../shared/domain/logEntry';
 import type { Product, ProductInput } from '../../shared/domain/product';
 import { api } from './api';
-import { cacheProduct } from './products';
-import { dropEntrySmokes, moveEntrySmokes } from './smokes';
+import { cacheProduct, forgetProduct } from './products';
+import { dropEntrySmokes, moveEntrySmokes, moveProductSmokes } from './smokes';
 
 const byId = new Map<string, LogEntry>();
 let list: LogEntry[] | null = null;
@@ -53,6 +53,14 @@ export async function promoteEntry(id: string, input: ProductInput): Promise<Pro
   forget(id);
   moveEntrySmokes(id, r.product.id);
   return cacheProduct(r.product);
+}
+
+/** Return to Log (D50): one atomic call turns the product back into an entry that keeps it. */
+export async function returnToLog(productId: string): Promise<LogEntry> {
+  const r = await api<{ entry: LogEntry }>('POST', `/log/return/${encodeURIComponent(productId)}`);
+  forgetProduct(productId);
+  moveProductSmokes(productId, r.entry.id);
+  return remember(r.entry);
 }
 
 export function clearEntryCache(): void {

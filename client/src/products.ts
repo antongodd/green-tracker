@@ -18,6 +18,12 @@ function remember(p: Product): Product {
   return p;
 }
 
+/** D50: a product returned to the Log is no longer one of your products. */
+export function forgetProduct(id: string): void {
+  byId.delete(id);
+  if (list) list = list.filter((p) => p.id !== id);
+}
+
 /** Updates the cache after a change made elsewhere (e.g. a profile crop). */
 export const cacheProduct = (p: Product): Product => remember(p);
 

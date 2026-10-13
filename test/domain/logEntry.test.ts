@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { emptyLogEntryInput, promotionInput, validateLogEntryInput } from '../../shared/domain/logEntry';
+import { emptyLogEntryInput, keptPromotionInput, promotionInput, returnedAmount, validateLogEntryInput } from '../../shared/domain/logEntry';
+import { emptyProductInput, type Product } from '../../shared/domain/product';
 
 describe('log entries', () => {
   it('uses the same defaults as a product: Flower, concentrate type Hash', () => {
@@ -34,5 +35,47 @@ describe('promotion pre-fill (§10.2)', () => {
     });
     expect(p).toMatchObject({ name: 'RS11', country: 'TH', productType: 'concentrate', concentrateType: 'other', concentrateTypeOther: 'Bubble hash', photos: [{ id: 'ph1', crop: null }] });
     expect(p).toMatchObject({ purchases: [], ratings: {}, source: null, dateTried: null, notes: null, strainType: null, private: false });
+  });
+});
+
+describe('Return to Log (D50)', () => {
+  it('the amount is all the purchases’ amounts added up; none with an amount is no amount', () => {
+    expect(returnedAmount([{ amount: 3.5 }, { amount: 3.5 }, { amount: null }])).toBe(7);
+    expect(returnedAmount([{ amount: 0.1 }, { amount: 0.2 }])).toBe(0.3); // no floating-point dust
+    expect(returnedAmount([{ amount: null }])).toBeNull();
+    expect(returnedAmount([])).toBeNull();
+    expect(returnedAmount([{ amount: 900_000 }, { amount: 900_000 }])).toBe(1_000_000); // within what an entry may hold
+  });
+
+  it('Add to leaderboard fills in everything kept, under the entry’s own name, type, country and photo (first)', () => {
+    const kept: Product = {
+      ...emptyProductInput(),
+      id: 'p1',
+      name: 'Old Name',
+      strainType: 'indica',
+      notes: 'Kept notes',
+      source: 'Club',
+      ratings: { look: 8, consistency: 7 },
+      purchases: [{ id: 'pu1', seq: 1, date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A' }],
+      photos: [{ id: 'ph2', version: 'v', crop: null, cutout: false }],
+      private: true,
+      archived: false,
+      createdAt: 1,
+      updatedAt: 2,
+    };
+    const entry = { ...emptyLogEntryInput(), name: 'New Name', productType: 'pre_roll' as const, country: 'ES', amount: 12, photos: [{ id: 'ph1', crop: null }] };
+    expect(keptPromotionInput(entry, kept)).toEqual({
+      ...emptyProductInput(),
+      name: 'New Name',
+      productType: 'pre_roll',
+      country: 'ES',
+      strainType: 'indica',
+      notes: 'Kept notes',
+      source: 'Club',
+      private: true,
+      ratings: { look: 8, consistency: 7 },
+      purchases: [{ id: 'pu1', date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A' }],
+      photos: [{ id: 'ph1', crop: null }, { id: 'ph2', crop: null }],
+    });
   });
 });

@@ -85,14 +85,23 @@ function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow
 const PRODUCT_COLUMNS = `id, name, strain_type, product_type, product_type_other, concentrate_type, concentrate_type_other,
   country, country_other, source, date_tried, leafly_link, notes, hit_time_minutes, archived, private, created_at, updated_at`;
 
-/** Loads the user's products (optionally one) with ratings and purchases, in three queries. */
-export async function load(db: D1Database, userId: string, where: { id?: string; archived?: boolean }): Promise<Product[]> {
-  const cond = where.id !== undefined ? 'AND id = ?2' : where.archived !== undefined ? 'AND archived = ?2' : '';
+/**
+ * A product kept by a Log entry (D50: returned to the Log) is hidden everywhere products
+ * show: the Leaderboard, the Archive, followers, and every route here.
+ */
+export const NOT_KEPT = (alias: string) => `NOT EXISTS (SELECT 1 FROM log_entries k WHERE k.kept_product_id = ${alias}.id)`;
+
+/**
+ * Loads the user's products (optionally one) with ratings and purchases, in three queries.
+ * `kept: true` loads only the products Log entries keep (D50) instead of the visible ones.
+ */
+export async function load(db: D1Database, userId: string, where: { id?: string; archived?: boolean; kept?: boolean }): Promise<Product[]> {
+  const cond = where.id !== undefined ? 'AND p.id = ?2' : where.archived !== undefined ? 'AND p.archived = ?2' : '';
   const arg = where.id ?? (where.archived === undefined ? undefined : where.archived ? 1 : 0);
   const bind = (sql: string) => (arg === undefined ? db.prepare(sql).bind(userId) : db.prepare(sql).bind(userId, arg));
-  const productCond = cond.replace('id =', 'p.id =').replace('archived =', 'p.archived =');
+  const productCond = `${cond} AND ${where.kept ? `NOT ${NOT_KEPT('p')}` : NOT_KEPT('p')}`;
   const [rows, ratings, purchases, photoRows] = await db.batch<unknown>([
-    bind(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE user_id = ?1 ${cond} ORDER BY created_at`),
+    bind(`SELECT ${PRODUCT_COLUMNS.split(',').map((c) => `p.${c.trim()}`).join(', ')} FROM products p WHERE p.user_id = ?1 ${productCond} ORDER BY p.created_at`),
     bind(`SELECT r.product_id, r.category, r.value FROM ratings r JOIN products p ON p.id = r.product_id WHERE r.user_id = ?1 ${productCond}`),
     bind(`SELECT pu.id, pu.product_id, pu.seq, pu.date, pu.amount, pu.total_paid, pu.supplier FROM purchases pu JOIN products p ON p.id = pu.product_id
           WHERE pu.user_id = ?1 ${productCond} ORDER BY pu.seq`),
@@ -209,14 +218,13 @@ products.post('/', async (c) => {
   return c.json({ product: await loadOne(db, userId, id) }, 201);
 });
 
-products.put('/:id', async (c) => {
-  const userId = c.var.user!.id;
-  const id = c.req.param('id');
-  const input = parseProduct(await jsonBody(c));
-  const db = c.env.DB;
-  await loadOne(db, userId, id); // 404 unless it's yours
-  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos);
-  await db.batch([
+/**
+ * The writes that save `input` over an existing product, for the caller's D1 batch. Also used
+ * by Add to leaderboard on an entry that keeps a product (D50), which adopts the entry's photo.
+ */
+export async function updateProductWrites(db: D1Database, userId: string, id: string, input: ProductInput, opts: { adoptFromLogEntry?: string } = {}) {
+  const photoPlan = await planPhotoWrites(db, userId, { productId: id }, input.photos, opts);
+  const statements = [
     db
       .prepare(
         `UPDATE products SET name = ?3, strain_type = ?4, product_type = ?5, product_type_other = ?6, concentrate_type = ?7, concentrate_type_other = ?8,
@@ -226,9 +234,20 @@ products.put('/:id', async (c) => {
       .bind(id, userId, ...FIELDS(input), Date.now()),
     ...(await childWrites(db, userId, id, input)),
     ...photoPlan.statements,
-  ]);
+  ];
+  return { statements, unusedKeys: photoPlan.unusedKeys };
+}
+
+products.put('/:id', async (c) => {
+  const userId = c.var.user!.id;
+  const id = c.req.param('id');
+  const input = parseProduct(await jsonBody(c));
+  const db = c.env.DB;
+  await loadOne(db, userId, id); // 404 unless it's yours (and not kept by a Log entry, D50)
+  const { statements, unusedKeys } = await updateProductWrites(db, userId, id, input);
+  await db.batch(statements);
   // Only after the batch has committed: files no longer used by any photo.
-  deleteLater(c.executionCtx, c.env.PHOTOS, photoPlan.unusedKeys);
+  deleteLater(c.executionCtx, c.env.PHOTOS, unusedKeys);
   return c.json({ product: await loadOne(db, userId, id) });
 });
 
@@ -239,7 +258,7 @@ for (const flag of ['private', 'archived'] as const) {
     if (typeof body.value !== 'boolean') fail(400, 'bad_request', 'The request could not be read.');
     const userId = c.var.user!.id;
     const id = c.req.param('id');
-    const res = await c.env.DB.prepare(`UPDATE products SET ${flag} = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4`)
+    const res = await c.env.DB.prepare(`UPDATE products SET ${flag} = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4 AND ${NOT_KEPT('products')}`)
       .bind(body.value ? 1 : 0, Date.now(), id, userId)
       .run();
     if (res.meta.changes !== 1) fail(404, 'not_found', 'That product doesn’t exist.');

@@ -10,7 +10,7 @@ import { scoreHeat } from '../../../shared/domain/heat';
 import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
-import { ExternalIcon, LockIcon } from '../icons';
+import { ExternalIcon, LockIcon, ReturnIcon } from '../icons';
 import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
 import { boardPlace } from '../../../shared/domain/leaderboard';
 import { pageClass, useAppearance } from '../components/Gems';
@@ -22,7 +22,9 @@ import { PhotoGrid, shownFromRecord } from '../components/PhotoGrid';
 import { Cropper, PhotoViewer } from '../components/PhotoViewer';
 import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
-import { cameFrom, linkTo, navigate, savedScroll } from '../router';
+import { cameFrom, linkTo, navigate, replaceHistory, savedScroll } from '../router';
+import { returnToLog } from '../logEntries';
+import { useOnline } from '../online';
 import { Skeleton } from '../components/Skeleton';
 import { SmokesCard } from './Smokes';
 import { useSmokes, withSmokeCounts } from '../smokes';
@@ -117,7 +119,9 @@ export function Profile(p: { id: string }) {
   const [product, setProduct] = useState<Product | undefined>(cachedProduct(p.id));
   const [error, setError] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmReturn, setConfirmReturn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const online = useOnline();
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
   const [savingCrop, setSavingCrop] = useState<string | null>(null);
@@ -198,6 +202,22 @@ export function Profile(p: { id: string }) {
       setError(errorText(e));
     }
     setBusy(false);
+  }
+
+  /** Return to Log (D50): it becomes a Log entry again, keeping everything else hidden; its page opens. */
+  async function moveToLog() {
+    setConfirmReturn(false);
+    setBusy(true);
+    setError('');
+    try {
+      const entry = await returnToLog(p.id);
+      // The product is gone from your list: Back from the entry goes to the Log, not here.
+      replaceHistory('/log');
+      navigate(`/log/${entry.id}`);
+    } catch (e) {
+      setError(errorText(e));
+      setBusy(false);
+    }
   }
 
   if (!product) {
@@ -319,6 +339,10 @@ export function Profile(p: { id: string }) {
                 </span>
                 <input type="checkbox" role="switch" class="switch" checked={product.private} disabled={busy} onChange={(e) => toggle('private', e.currentTarget.checked)} />
               </label>
+              <button class="btn secondary" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
+                <ReturnIcon />
+                Return to Log
+              </button>
               <button class="btn danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
                 Archive
               </button>
@@ -357,6 +381,14 @@ export function Profile(p: { id: string }) {
       )}
       {cuttingOut !== null && product.photos[cuttingOut] && (
         <CutoutFlow source={shownFromRecord(product.photos[cuttingOut]!).image} name={product.name} onCancel={() => setCuttingOut(null)} onApply={(r) => saveCutout(cuttingOut, r)} />
+      )}
+      {confirmReturn && (
+        <Sheet
+          title={`Return “${product.name}” to your Log?`}
+          message="It leaves your Leaderboard and followers’ view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
+          options={[{ label: 'Return to Log', onSelect: moveToLog }]}
+          onCancel={() => setConfirmReturn(false)}
+        />
       )}
       {confirmArchive && (
         <Sheet

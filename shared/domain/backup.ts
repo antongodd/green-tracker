@@ -53,7 +53,14 @@ export interface ExportLogEntry extends Omit<LogEntryInput, 'photos'> {
   createdAt: number;
   /** D43: absent in files made before 0.36.0. */
   smokes?: ExportSmoke[];
+  /**
+   * D50: the Leaderboard product a returned entry keeps (its other photos; its smokes are the
+   * entry's). Absent for an ordinary entry, and in files made before 0.43.0.
+   */
+  kept?: ExportKept;
 }
+
+export type ExportKept = Omit<ExportProduct, 'archived' | 'smokes'>;
 
 export interface ExportFile {
   format: typeof EXPORT_FORMAT;
@@ -85,6 +92,11 @@ export interface RestoreProduct extends ProductInput {
 export interface RestoreLogEntry extends LogEntryInput {
   createdAt: number;
   smokes?: RestoreSmoke[];
+  /** D50: absent → an ordinary entry. */
+  kept?: RestoreKept;
+}
+export interface RestoreKept extends ProductInput {
+  createdAt: number;
 }
 export interface RestorePayload {
   products: RestoreProduct[];
@@ -126,6 +138,8 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
   }
   for (const e of f.logEntries as Record<string, unknown>[]) {
     if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt) || !smokesOk(e.smokes)) return bad('A log entry in the file couldn’t be read.');
+    const k = e.kept as Record<string, unknown> | undefined;
+    if (k !== undefined && (!k || typeof k !== 'object' || !Array.isArray(k.photos) || !k.photos.every(photoOk) || !isTime(k.createdAt))) return bad('A log entry in the file couldn’t be read.');
     smokes += (e.smokes as unknown[] | undefined)?.length ?? 0;
   }
   if (smokes > RESTORE_LIMITS.smokes) return bad('The export file is too large to restore.');
@@ -187,7 +201,18 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     if (!isTime(raw.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
     const smokes = readSmokes(raw.smokes);
     if (typeof smokes === 'string') return bad(`Log entry ${i + 1}: ${smokes}`);
-    logEntries.push({ ...v.value, createdAt: raw.createdAt, smokes });
+    // D50: what a returned entry keeps, checked like any product.
+    let kept: RestoreKept | undefined;
+    if (raw.kept !== undefined) {
+      const k = raw.kept as Record<string, unknown> | null;
+      const kv = validateProductInput(k);
+      if (!kv.ok) return bad(`Log entry ${i + 1}: ${kv.message}`);
+      if (Object.values(kv.value.ratings).some((x) => x === null)) return bad(`Log entry ${i + 1}: a rating is missing its value.`);
+      if (!newPhotosOnly(kv.value.photos)) return bad(`Log entry ${i + 1}: a photo could not be read.`);
+      if (!isTime(k!.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
+      kept = { ...kv.value, createdAt: k!.createdAt };
+    }
+    logEntries.push({ ...v.value, createdAt: raw.createdAt, smokes, ...(kept ? { kept } : {}) });
   }
   if (smokeCount > RESTORE_LIMITS.smokes) return bad('Too much data to restore at once.');
   let privacy: Privacy | undefined;

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { NOT_KEPT } from './products';
 import { siteFeatures, type AppEnv } from '../env';
 import { addDays, validateSmokeInput, type Smoke, type SmokeInput } from '../../shared/domain/smoke';
 import { randomId } from '../lib/crypto';
@@ -58,7 +59,8 @@ async function parse(db: D1Database, userId: string, body: unknown): Promise<Smo
   if (!r.ok) fail(400, 'invalid_smoke', r.message);
   const v = r.value;
   const owned = v.productId
-    ? await db.prepare('SELECT 1 AS ok FROM products WHERE id = ?1 AND user_id = ?2').bind(v.productId, userId).first()
+    ? // D50: a product kept by a Log entry takes no smokes (they belong to the entry meanwhile).
+      await db.prepare(`SELECT 1 AS ok FROM products WHERE id = ?1 AND user_id = ?2 AND ${NOT_KEPT('products')}`).bind(v.productId, userId).first()
     : await db.prepare('SELECT 1 AS ok FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(v.logEntryId, userId).first();
   if (!owned) fail(404, 'not_found', v.productId ? 'That product doesn’t exist.' : 'That log entry doesn’t exist.');
   return v;

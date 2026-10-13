@@ -83,7 +83,7 @@ photos.use('*', requireUser());
  * Serves a photo file through an authorised request — never a public bucket URL.
  * - The owner: any variant of any of their photos.
  * - An approved follower (lib/social.ts canView): cropped or thumb only, of a photo
- *   on a product that is neither private nor archived, while the owner shares photos
+ *   on a product that is neither private nor archived (nor kept by a Log entry, D50), while the owner shares photos
  *   (D45). Never originals, never Log photos.
  * - Anyone else, or anything else: 403, the same whether or not the photo exists.
  * `private, no-cache` + ETag (lib/photos.ts serveImage), so access that has ended
@@ -94,15 +94,16 @@ photos.get('/:id/:variant', async (c) => {
   if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'Not found.');
   const me = c.var.user!.id;
   const row = await c.env.DB.prepare(
-    `SELECT ph.user_id, ph.original_set, ph.image_set, ph.product_id, p.private, p.archived
+    `SELECT ph.user_id, ph.original_set, ph.image_set, ph.product_id, p.private, p.archived,
+       EXISTS (SELECT 1 FROM log_entries k WHERE k.kept_product_id = ph.product_id) AS kept
      FROM photos ph LEFT JOIN products p ON p.id = ph.product_id WHERE ph.id = ?1`,
   )
     .bind(c.req.param('id'))
-    .first<{ user_id: string; original_set: string; image_set: string; product_id: string | null; private: number | null; archived: number | null }>();
+    .first<{ user_id: string; original_set: string; image_set: string; product_id: string | null; private: number | null; archived: number | null; kept: number }>();
   const denied: () => never = () => fail(403, 'not_authorised', 'You can’t see this photo.');
   if (!row) denied();
   if (row.user_id !== me) {
-    const shareable = variant !== 'original' && row.product_id !== null && row.private === 0 && row.archived === 0;
+    const shareable = variant !== 'original' && row.product_id !== null && row.private === 0 && row.archived === 0 && row.kept === 0; // D50: never a product kept by a Log entry
     if (!shareable || !(await canView(c.env.DB, me, row.user_id))) denied();
     // D45: an owner who doesn't share photos (or their Leaderboard) shares no photo files either.
     const privacy = await loadEffectivePrivacy(c.env.DB, row.user_id, siteFeatures(c.env));

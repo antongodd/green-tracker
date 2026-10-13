@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.42.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49)
+**Current version:** 0.43.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
 
 ---
 
@@ -117,6 +117,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D47 | **A private dev site** (2026-10-11; the owner wants to test new work on their phone before anyone else sees it, then push it live when ready; a Cloudflare Access lock, live data copied in once, an orange DEV label and "GT Dev"). | **Two sites from one codebase.** *Dev*: https://green-tracker-dev.green-tracker.workers.dev — only the owner gets in (Cloudflare Access: signing in with the owner's Cloudflare account), its own database and photos (never live data), Smokes on, an orange **DEV** label after the title on every screen and the sign-in screen, called **GT Dev** on the Home Screen. *Live*: unchanged. **Flow:** work goes in by pull request to the `dev` branch ("merge" → the dev site); "go live" → a release pull request from `dev` to `main`, the same tests, then live. A release is merged with a merge commit (not squashed) so `dev` and `main` stay in step. **Data:** the owner signs up on dev (passkeys belong to one address, so a separate account) and copies their own data in with Export on live and Restore on dev; nobody else's data is on dev. See §4 *Dev site*. |
 | D48 | **Leaderboard colours by score, a preset of your choice, and a crown and halo for #1** (2026-10-12; preset B "Gems" of https://claude.ai/artifact/KKHAxTqBACJsEGj2pJsBvH as where everyone starts, Prism and Metals as choices; "Crown" and "Halo" together for #1; badge "Amethyst · #3"; the owner's answers: saved to the account, the same bands everywhere, no colours for Price, Value for money and Most used, #1 still marked there in gold). Reopens D19, D21, D22, D30, D31 and D39 at the owner's request: the owner wanted more than a top three, earned by the score. | **Four bands** from the score as shown (one decimal place): **8.0–8.4** a dark row with a still coloured edge and glow; **8.5–8.9** the edge flows; **9.0–9.4** a holo card; **9.5–10** the full holo card with the shine (the old 1st place). Below 8 the heat glow (D30) as before; unrated never. Only scores out of 10 (Overall, any rating); Price, Value for money and Most used get none. **Presets** (More → **Appearance**, new, between Privacy and Data): **Gems** Emerald · Sapphire · Amethyst · Rainbow (where everyone starts), **Prism** one rainbow growing stronger, **Metals** Emerald · Rose gold · Diamond (twinkles) · Rainbow; no gold. **#1** (the top row with a value, in any ranking) wears a **gold crown** above its rank number and a **halo** round the row in its colour (gold without one), gently breathing; a switch **Mark my #1** turns both off. A **Colours** button beside Rank by (when ranking by a score) opens the key. **Product pages** of a coloured product carry it (glow, haze stronger band by band, holo badge **"Amethyst · #3 on your Leaderboard"**, the sweep from 9.0); an uncoloured #1 gets a gold badge ("#1 by Price"). The welcome screen's examples become Rainbow (crown and halo), Amethyst, Sapphire. **Saved to your account** (a new table, `migrations/0008_appearance.sql`), sent with who you are; **Export / Restore** carry it (an older file leaves yours alone); Delete account removes it. **Friends' boards** show in *your* preset; nothing about your appearance is ever sent to anyone else. Reduce Motion keeps the colours and stills them. See §4 *Leaderboard colours*. |
 | D49 | **The four colours as one set of cards; Gems' Sapphire and Amethyst rebalanced** (2026-10-12; option "A + Emerald" of https://claude.ai/artifact/Wh6t4N99LszTqEc55nDM9D, after the owner's iPhone screenshot showed Amethyst as a strong purple slab next to an edge-only Sapphire). Amends D48 at the owner's request. | **Every band is a holo card** under one dark layer that thins as the score rises: **8.0–8.4** the faintest (90% → 95%), still; **8.5–8.9** faint (86% → 93%), flowing; **9.0–9.4** (80% → 90%), flowing; **9.5–10** unchanged (70% → 86%, the shine). In every preset (the steps stay the same in all three; only colours differ). **Gems:** Sapphire a brighter blue, Amethyst a softer lilac, both under near-neutral layers instead of blue and violet ones; Emerald and Rainbow unchanged. Prism and Metals keep their colours. No data, export, privacy or follower change. See §4 *Leaderboard colours*. |
+| D50 | **Return to Log: a Leaderboard product can go back to being a Log entry, keeping everything else hidden** (2026-10-12; the owner put something on the Leaderboard by mistake and couldn't take it off without deleting it; option A "Kept card" of https://claude.ai/artifact/SdQCsaP7EoHJksH4PPyeDy, the button named **Return to Log**; the owner's answers: any product, not just ones that came from the Log; Add to leaderboard opens the editor filled in; the Kept card only on entries that were on the Leaderboard; Delete entry deletes the kept data too, with a warning; the amount is all its purchases added up). A step back from rebuild brief §10.2, where promotion only goes one way. | **Product page → Actions → Return to Log** (between Private and Archive; not on an archived product, which is un-archived first; waits for the connection offline) asks first ("It leaves your Leaderboard and followers' view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."), then the product is a Log entry and its page opens (Back goes to the Log). **The entry:** its name, type, concentrate type and country; its **first photo**; as its **amount**, all its purchases' amounts added up (none with an amount → no amount); **Logged** = when the product was first added; its **smokes** (D43) go with it. **Kept, hidden:** everything else (ratings, hidden ones too; purchases; notes; source, strain, date tried, Leafly, hit time, Private; the other photos), on the entry's page as a **Kept from your Leaderboard** card (Ratings "4 · Overall 8.8", Purchases "2 · £60.00", Notes, Other photos; rows with nothing are left out). An ordinary entry has no such card. **Add to leaderboard** opens the product editor with everything kept filled back in, under the entry's own name, type, country and photo (changes made in the Log win; the entry's photo first); Save puts back **the same product** (same place in time, same purchases), smokes included. **Delete entry** says what goes too ("…What's kept from your Leaderboard goes too: 2 ratings, 1 purchase, notes and 1 other photo.") and deletes it all. While it's in the Log the product is off the Leaderboard, its tiles, the Archive and Most used; **followers** lose it and its photo files at once; nothing about it can be changed except through the entry. **Export / Restore** carry it inside the entry (an older file has none). One new column, `log_entries.kept_product_id` (`migrations/0009_return_to_log.sql`). See §4 *Return to Log*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -225,7 +226,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     Discard returns to the entry, untouched. Save calls `POST /api/log/:id/promote`,
     which in one D1 batch creates the product, re-points the entry's photo to it
     (same row and files — moved, not copied, original included) and deletes the
-    entry. Afterwards Back goes to the Log, not the deleted entry. Reloading the
+    entry. *(Since 0.43.0, an entry returned from the Leaderboard saves over the product it keeps instead, D50.)* Afterwards Back goes to the Log, not the deleted entry. Reloading the
     promotion screen (nothing to promote) returns to the entry *(builder)*.
 - **People and following (Phase 7).**
   - *One access rule* (`server/lib/social.ts` `canView`): an **approved** follow and
@@ -608,6 +609,37 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   four swatches and 8.0+ … 9.5+), **Your #1** (**Mark my #1** switch and a sample row, Wedding Cake 9.7), a footnote; each
   change saves at once (`PUT`, then the session refresh) and goes back if the save fails; disabled offline. More: an
   **Appearance** group with **Leaderboard colours** (value: the preset). The welcome screen's examples: 9.7, 9.2, 8.7.
+- **Return to Log (D50, 0.43.0).** One new column, `log_entries.kept_product_id` → products ON DELETE SET NULL, unique
+  where set (`migrations/0009_return_to_log.sql`): the entry is an ordinary Log entry, and the product it points at is
+  *kept*: stored as it was, hidden everywhere products show. `NOT_KEPT(alias)` (`server/routes/products.ts`) is the one
+  rule: `load()` leaves kept products out (so `GET /api/products`, `?archived=1`, `/:id`, `PUT`, followers' boards and
+  pages, and the Privacy preview never see them) and `load(…, { kept: true })` loads only them; the Private and Archive
+  switches and a new smoke (`smokes.ts`) refuse one (404); a follower's photo request refuses its files (`photos.ts`).
+  `POST /api/log/return/:productId` (log.ts) in one batch inserts the entry (name, type, concentrate type, country,
+  `returnedAmount(purchases)` from `shared/domain/logEntry.ts`: the sum of the amounts, to 3 places, capped at
+  `PRODUCT_LIMITS.money`, null when none; `created_at` = the product's), re-points the product's first photo to it (the
+  same row and files) and moves its smokes to it; an archived product → 409 "Un-archive it first."; already kept or
+  not yours → 404. `LogEntry.kept` is the kept `Product` (null for an ordinary entry), sent with the entry and the Log.
+  Promotion of an entry with `kept` saves over that product (`updateProductWrites`, shared with `PUT /api/products/:id`,
+  adopting the entry's photo) instead of creating one, then moves the smokes back and deletes the entry; the client
+  pre-fills it with `keptPromotionInput(entry, kept)` (the kept product's input under the entry's name, type, country,
+  and photo first) and the kept ratings (hidden categories too, `Promotion.ratings`). Deleting the entry deletes the
+  kept product first (ratings, purchases and photo rows cascade) and every photo file of both. Export: each entry may
+  carry `kept` (`ExportKept`: an `ExportProduct` without `archived` and `smokes`; its photos are the other photos);
+  Restore validates it like a product and inserts it with the entry (`RestoreLogEntry.kept`, photos at positions 1 and
+  up); restore counts and progress include its photos. *Client:* `returnToLog(productId)` (logEntries.ts) forgets the
+  product (`forgetProduct`), moves its smokes in the cache (`moveProductSmokes`) and remembers the entry; Profile's Actions
+  (`Return to Log`, `ReturnIcon`, a `Sheet`) then `replaceHistory('/log')` and open `/log/:id`. LogEntry: a
+  `section.sect.kept` "Kept from your Leaderboard" (`.kept-head` with a `.kept-ic` tile; a `dl.kv` of Ratings under the
+  entry's current type with Overall, Purchases with the total paid, Notes, Other photos; empty rows left out) between
+  Details and Actions; `deleteMessage` adds the kept list. Tested: `test/api/returnToLog.test.ts` (10: the entry and what's
+  kept, hidden everywhere and refusing changes, followers and their photo files, archived and someone else's, no amounts or
+  photos, back as it was (same id, hidden rating, purchases, photo order, smokes, and again), changes made in the Log,
+  delete with every file, restore and a bad kept product); `test/domain/logEntry.test.ts` (the amount; the pre-fill);
+  `test/e2e/returntolog.spec.ts` (8: placing and the sheet with axe, the entry page and Kept card, Back to the Log, off
+  the Leaderboard, an old link; no card on an ordinary entry; axe and readability of the card (proved by dimming it);
+  Delete's message; Add to leaderboard back to the same product with its purchases, notes, photos and ratings; not on an
+  archived product, offline; Actions readable); `people.spec.ts` (no Return to Log on a friend's product).
 - **Privacy (D45, 0.38.0).** Rules in `shared/domain/privacy.ts`: `Privacy` (eight booleans), `DEFAULT_PRIVACY` (as before
   0.38.0), `PRIVACY_NEEDS` / `privacyEnabled` / `effectivePrivacy` (a switch whose prerequisite is off counts as off),
   `validatePrivacy` (a full set of booleans, unknown keys dropped), `privacySummary` (More's line). Table `privacy_settings`
@@ -1025,6 +1057,21 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.43.0 — Return to Log (owner request)
+- A product on your Leaderboard can go back to your Log (decision D50): **product page → Return to Log**, between
+  Private and Archive. It asks first.
+- It becomes a Log entry with its name, type, country and first photo; its **amount** is all its purchases added up
+  (3.5g + 3.5g = 7g). Everything else (ratings, purchases, notes, other photos) is **kept, hidden**, and its page shows a
+  **Kept from your Leaderboard** card listing it.
+- **Add to leaderboard** opens the editor with everything filled back in; Save puts back the same product, in the same
+  place. **Delete entry** warns that the kept data goes too.
+- While it's in the Log, followers don't see it or its photos. Export and Restore keep it as it is.
+- Found while testing, not changed (it happens on the live site too): replacing a Log entry's photo with a new one in a
+  single edit fails with "Something went wrong" (the new photo is added before the old one is removed, and an entry may
+  only have one). Removing the photo, saving, then adding the new one works.
+- Tests: `returnToLog.test.ts` (10 server tests), 2 in `logEntry.test.ts`, `returntolog.spec.ts` (8 Playwright tests);
+  `people.spec.ts` checks a friend's product has no Return to Log.
 
 ### 0.42.0 — the four colours as one set (owner request, with a screenshot)
 - On the iPhone, Amethyst came out as a strong purple block next to a much plainer Sapphire (decision D49).
