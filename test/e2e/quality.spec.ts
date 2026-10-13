@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { signUp, settled } from './helpers';
+import { signUp, settled, photoAction } from './helpers';
 
 // Release checks (Phase 9): accessibility (WCAG 2.1 AA via axe), the Content
 // Security Policy blocking nothing the app needs, security headers, the install
@@ -94,7 +94,7 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
     found.push(...(await axe(path)));
   }
   found.push(...(await axe(`/products/${productId}`, async () => void (await page.locator('.hero-photo').click()))));
-  found.push(...(await axe(`/products/${productId}`, async () => void (await page.getByRole('button', { name: 'Crop photo 1' }).click()))));
+  found.push(...(await axe(`/products/${productId}`, async () => void (await photoAction(page, 1, 'Crop')))));
   found.push(...(await axe('/', async () => void (await page.getByLabel('Type', { exact: true }).selectOption('pre_roll')))));
   await page.getByLabel('Type', { exact: true }).selectOption('all');
   found.push(...(await axe(`/products/${productId}/edit`, async () => void (await page.getByLabel('Country', { exact: true }).click()))));

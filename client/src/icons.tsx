@@ -148,6 +148,8 @@ export function CutoutIcon(p: P) {
 export const PencilIcon = icon('M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5Z M13.5 7l3 3', { stroke: 2 });
 export const LeafLineIcon = icon('M5 19C5 10 10 5 19.5 4.5 19 14 14 19 5 19Z M5 19l8-8', { stroke: 2 });
 export const PinIcon = icon('M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21Z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z', { stroke: 2 });
+/** The cover's star (D52), filled. */
+export const StarFillIcon = icon('M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z');
 export const StarIcon = icon('M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z', { stroke: 2 });
 export const ReceiptIcon = icon('M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z M9 8.5h6M9 12.5h6', { stroke: 2 });
 export const NoteIcon = icon('M5.5 3.5h9l4 4v12a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z M14.5 3.5v4h4 M8 12h8M8 16h5', { stroke: 2 });

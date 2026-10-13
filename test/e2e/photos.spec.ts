@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { shot, signUp } from './helpers';
+import { shot, signUp, photoAction } from './helpers';
 
 /** A real JPEG made in the browser: a gradient with a label, so crops are visible in screenshots. */
 async function makeJpeg(page: Page, w: number, h: number, colours: [string, string], label: string) {
@@ -78,7 +78,7 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   await shot(page, '30-viewer');
 
   // Crop the portrait square from the viewer: saved straight away from the profile.
-  await viewer.getByRole('button', { name: 'Crop this photo' }).click();
+  await viewer.getByRole('button', { name: 'Crop', exact: true }).click();
   const cropper = page.getByRole('dialog', { name: 'Crop photo' });
   await cropper.getByRole('radio', { name: 'Square' }).click();
   await shot(page, '31-cropper');
@@ -93,7 +93,7 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   expect(await naturalSize(page, (await photoUrls(page, 'cropped'))[1]!)).toEqual({ w: 900, h: 900 });
 
   // Reset to original from the profile.
-  await page.getByRole('button', { name: 'Crop photo 2' }).click();
+  await photoAction(page, 2, 'Crop');
   await cropper.getByRole('button', { name: 'Reset to original' }).click();
   await cropper.getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('Saving crop…')).toHaveCount(0, { timeout: 15_000 });
@@ -102,7 +102,7 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   // In the editor, a crop is only a draft: Cancel throws it away.
   const before = await photoUrls(page, 'cropped');
   await page.getByRole('link', { name: 'Edit' }).first().click();
-  await page.getByRole('button', { name: 'Crop photo 1' }).click();
+  await photoAction(page, 1, 'Crop');
   await cropper.getByRole('radio', { name: 'Square' }).click();
   await cropper.getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
@@ -114,12 +114,12 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
 
   // …and Save commits it. Remove the second photo in the same edit.
   await page.getByRole('link', { name: 'Edit' }).first().click();
-  await page.getByRole('button', { name: 'Crop photo 1' }).click();
+  await photoAction(page, 1, 'Crop');
   await cropper.getByRole('radio', { name: 'Square' }).click();
   await cropper.getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   await page.getByRole('button', { name: 'Open photo 2' }).click();
-  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove photo' }).click();
+  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove', exact: true }).click();
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).not.toHaveURL(/\/edit$/);
@@ -148,7 +148,7 @@ test('Square tapped before the photo has loaded still crops a square', async ({ 
     await route.continue();
   });
   await page.getByRole('link', { name: 'Edit' }).first().click();
-  await page.getByRole('button', { name: 'Crop photo 1' }).click();
+  await photoAction(page, 1, 'Crop');
   const cropper = page.getByRole('dialog', { name: 'Crop photo' });
   await expect(cropper.getByRole('button', { name: 'Apply' })).toBeDisabled();
   await cropper.getByRole('radio', { name: 'Square' }).click();

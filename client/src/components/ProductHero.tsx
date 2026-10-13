@@ -34,6 +34,9 @@ export function ProductHero(p: {
   price?: string | null;
   /** Private / Archived notes (your own page only). */
   notes?: ComponentChildren;
+  /** D52: the cover just replaced, faded out over the new one. */
+  fadeFrom?: string | null;
+  onFaded?: () => void;
 }) {
   const def = productType(p.productType);
   const kind = !p.photo ? ' plain' : p.photo.cutout ? ' cut' : '';
@@ -44,6 +47,7 @@ export function ProductHero(p: {
           {/* The thumbnail (already on the device) shows until the full photo arrives (D20). */}
           <span class="hero-under" style={{ backgroundImage: `url("${p.photo.thumb}")` }} />
           <img src={p.photo.image} alt="" />
+          {p.fadeFrom && <img key={p.fadeFrom} class="hero-old" src={p.fadeFrom} alt="" onAnimationEnd={p.onFaded} />}
           <PhotoGlints band={p.place?.band ?? null} appearance={p.appearance} />
         </button>
       ) : (

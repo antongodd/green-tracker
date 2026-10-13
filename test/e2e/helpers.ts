@@ -172,3 +172,18 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
  */
 export const settled = (page: Page) =>
   page.evaluate(() => Promise.all(document.getAnimations().filter((a) => (a as CSSAnimation).animationName === 'enter').map((a) => a.finished)));
+
+/**
+ * A grid photo's action (D52, 0.44.0): from its ⋯ menu in an editor, else (a product page) from
+ * the viewer's bar after opening the photo. "Cut out" is "Remove background" in the menu.
+ */
+export async function photoAction(page: Page, n: number, action: 'Crop' | 'Cut out') {
+  const more = page.getByRole('button', { name: `Options for photo ${n}` });
+  if (await more.count()) {
+    await more.click();
+    await page.locator('.sheet').getByRole('button', { name: action === 'Cut out' ? 'Remove background' : 'Crop', exact: true }).click();
+  } else {
+    await page.getByRole('button', { name: `Open photo ${n}` }).click();
+    await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: action, exact: true }).click();
+  }
+}
