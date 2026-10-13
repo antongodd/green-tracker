@@ -151,7 +151,7 @@ describe('Add to leaderboard brings it back', () => {
   it('with changes made in the Log: its name, type and photo; the purchases stay as they were', async () => {
     const p = await rich(me, 'Renamed Later');
     const e = (await returnToLog(me, p.id)).json.entry as LogEntry;
-    // Its photo removed in the Log (replacing a Log photo in one save is a separate, older problem).
+    // Its photo removed in the Log.
     const put = await me.req('PUT', `/api/log/${e.id}`, { ...logEntryToInput(e), name: 'Renamed Now', productType: 'pre_roll', amount: 12, photos: [] });
     expect(put.status, JSON.stringify(put.json)).toBe(200);
     const edited = put.json.entry as LogEntry;
@@ -160,6 +160,18 @@ describe('Add to leaderboard brings it back', () => {
     expect(back).toMatchObject({ id: p.id, name: 'Renamed Now', productType: 'pre_roll' });
     expect(back.purchases).toEqual(p.purchases);
     expect(back.photos.map((x) => x.id)).toEqual(p.photos.slice(1).map((x) => x.id));
+  });
+
+  it('its photo swapped for a new one in the Log (D51): the new one leads, the kept ones follow', async () => {
+    const p = await rich(me, 'Swapped In Log');
+    const e = (await returnToLog(me, p.id)).json.entry as LogEntry;
+    const put = await me.req('PUT', `/api/log/${e.id}`, { ...logEntryToInput(e), photos: [{ upload: await newSet(me, 'swapped-new'), crop: null }] });
+    expect(put.status, JSON.stringify(put.json)).toBe(200);
+    const edited = put.json.entry as LogEntry;
+    expect((await me.raw(photoUrl(p.photos[0]!, 'thumb'))).status).toBe(403);
+    const back = (await me.post(`/api/log/${e.id}/promote`, keptPromotionInput(logEntryToInput(edited), edited.kept!))).json.product as Product;
+    expect(back.photos.map((x) => x.id)).toEqual([edited.photo!.id, ...p.photos.slice(1).map((x) => x.id)]);
+    expect(text((await me.raw(photoUrl(back.photos[0]!, 'original'))).bytes)).toBe('swapped-new-original');
   });
 });
 

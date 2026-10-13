@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D50 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D51 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D51), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D52), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D50.
+- Reopen any decision D1–D51.
 
 ## Testing notes
 
@@ -112,15 +112,14 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** the same app, plus notes-only changes (0.43.1–0.43.3). The only difference in the app is Smokes: on
+  (D50). **Dev:** 0.43.4: live plus the Log photo swap fix (D51) and notes-only changes (0.43.1–0.43.3). Smokes: on
   for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Fix swapping a Log entry's photo.** Replacing a Log entry's photo with a new one in a single edit fails with
-   "Something went wrong" (live too). `planPhotoWrites` (`server/lib/photos.ts`) inserts the new photo row before
-   deleting the old one, and `photos_log_entry` is a unique index (one photo per entry). Removing the photo, saving,
-   then adding the new one works. A bug fix: its test must fail on the old code.
+1. **Fix swapping a Log entry's photo** (D51): **on dev** (0.43.4, 2026-10-13). Replacing a Log entry's photo with a new
+   one in a single edit used to fail with "Something went wrong" (live too, until it goes live). Old photo now removed
+   before the new one goes in.
 2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
    for live, update `test/domain/siteConfig.test.ts` and D46).
 3. **Leaderboard design rework**: continue when Anton brings it up.
