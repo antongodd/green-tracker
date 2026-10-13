@@ -37,6 +37,18 @@ describe('loose log entries', () => {
     expect(res.json.message).toBe('A log entry has one photo.');
   });
 
+  it('swaps its photo for a new one in a single edit (D51)', async () => {
+    const e = await create(me, { name: 'Swap Me', photos: [{ upload: await newSet(me, 'old'), crop: null }] });
+    const old = e.photo!;
+    const r = await me.req('PUT', `/api/log/${e.id}`, entry({ name: 'Swap Me', photos: [{ upload: await newSet(me, 'new'), crop: null }] }));
+    expect(r.status, JSON.stringify(r.json)).toBe(200);
+    const swapped = (r.json.entry as LogEntry).photo!;
+    expect(swapped.id).not.toBe(old.id);
+    expect(text((await me.raw(photoUrl(swapped, 'original'))).bytes)).toBe('new-original');
+    expect((await me.raw(photoUrl(old, 'thumb'))).status).toBe(403);
+    expect((await me.get(`/api/log/${e.id}`)).json.entry.photo.id).toBe(swapped.id);
+  });
+
   it('rejects a blank name and a zero amount', async () => {
     expect((await me.post('/api/log', entry({ name: ' ' }))).json.message).toBe('Give the entry a name.');
     expect((await me.post('/api/log', entry({ amount: 0 }))).json.message).toBe('Amount must be more than 0.');
