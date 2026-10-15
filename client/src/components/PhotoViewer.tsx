@@ -31,12 +31,23 @@ export function useLockScroll() {
   }, []);
 }
 
+/** D53: the most a photo zooms in (the saved photo is 1600px across: about its full detail on an iPhone). */
+export const MAX_ZOOM = 4;
+const DOUBLE_TAP_MS = 300;
+type Zoom = { s: number; x: number; y: number };
+const NO_ZOOM: Zoom = { s: 1, x: 0, y: 0 };
+
 /**
  * Full-screen viewer (brief §6.9): full-bleed black over header and tabs, close
  * top-left, swipe between photos (P8). D52 (0.44.0): a bar along the bottom with
  * Set as cover (a product's photos; "The cover" on the first), Crop, Cut out (D26;
  * Restore background on a photo already cut out) and, in an editor, Remove.
  * Someone else's photos get no bar.
+ * D53 (0.45.0): zoom. Pinch (1×–4×, the spot between the fingers stays put), double-tap
+ * for 2× there and back, drag to look around (the photo stops at its edges). Zoomed in,
+ * the top and the bar slide away ("clear view"); one tap brings them back. Swiping to
+ * another photo only when zoomed right out, so the viewer handles swipes itself (the
+ * phone's own scrolling can't be combined with pinching); a photo always starts at 1×.
  */
 export function PhotoViewer(p: {
   photos: ShownPhoto[];
@@ -49,35 +60,236 @@ export function PhotoViewer(p: {
   onCover?: (i: number) => void;
 }) {
   useLockScroll();
+  const stage = useRef<HTMLDivElement>(null);
   const strip = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(p.start);
+  const indexRef = useRef(p.start);
+  // The zoom lives in a ref and is drawn straight onto the photo (every frame of a pinch);
+  // state only says whether it's zoomed (clear view) and the scale for the "2.4×" note.
+  const zoom = useRef<Zoom>(NO_ZOOM);
+  const [zoomed, setZoomed] = useState(false);
+  const [controls, setControls] = useState(false);
+  const [scaleNote, setScaleNote] = useState<string | null>(null);
+  const noteTimer = useRef<ReturnType<typeof setTimeout>>();
+  const tapTimer = useRef<ReturnType<typeof setTimeout>>();
+  const hasBar = !!(p.onCover || p.onCrop || p.onCutout || p.onRemove);
 
-  useLayoutEffect(() => {
+  const img = () => strip.current?.children[indexRef.current]?.querySelector('img') ?? null;
+
+  /** Where the photo may sit at scale `s`: it covers the screen where it's bigger than it, else stays on it. */
+  function clamp(z: Zoom): Zoom {
+    const el = img();
+    const st = stage.current;
+    if (!el || !st) return NO_ZOOM;
+    const S = st.getBoundingClientRect();
+    // The photo's centre at 1×, measured without the zoom (offsets ignore transforms).
+    const slide = el.parentElement!;
+    const cx = slide.offsetLeft - indexRef.current * S.width + el.offsetLeft + el.offsetWidth / 2;
+    const cy = el.offsetTop + el.offsetHeight / 2;
+    const range = (size: number, centre: number, screen: number) => {
+      const half = (size * z.s) / 2;
+      const a = screen - half - centre;
+      const b = half - centre;
+      return [Math.min(a, b), Math.max(a, b)] as const;
+    };
+    const [xl, xh] = range(el.offsetWidth, cx, S.width);
+    const [yl, yh] = range(el.offsetHeight, cy, S.height);
+    return { s: z.s, x: Math.min(xh, Math.max(xl, z.x)), y: Math.min(yh, Math.max(yl, z.y)) };
+  }
+
+  /** The photo's centre on screen at 1× (for keeping the spot under the fingers). */
+  function centre() {
+    const el = img()!;
+    const S = stage.current!.getBoundingClientRect();
+    return { x: S.left + S.width / 2, y: S.top + el.offsetTop + el.offsetHeight / 2 };
+  }
+
+  function draw(z: Zoom, animate: boolean) {
+    zoom.current = z;
+    const el = img();
+    if (el) {
+      el.classList.toggle('glide', animate);
+      el.style.transform = z.s === 1 && !z.x && !z.y ? '' : `translate(${z.x}px, ${z.y}px) scale(${z.s})`;
+    }
+    const on = z.s > 1.01;
+    setZoomed(on);
+    if (!on) setControls(false);
+  }
+  function showScale(s: number) {
+    setScaleNote(`${s.toFixed(1)}×`);
+    clearTimeout(noteTimer.current);
+    noteTimer.current = setTimeout(() => setScaleNote(null), 900);
+  }
+
+  function slideTo(i: number, animate = true) {
+    const n = Math.min(p.photos.length - 1, Math.max(0, i));
+    // The photo being left goes back to 1× (unseen); the next one starts at 1×.
+    draw(NO_ZOOM, false);
+    indexRef.current = n;
+    setIndex(n);
     const el = strip.current!;
-    el.scrollLeft = p.start * el.clientWidth;
-  }, []);
+    el.classList.toggle('glide', animate);
+    el.style.transform = `translateX(${-n * 100}%)`;
+  }
+  useLayoutEffect(() => slideTo(p.start, false), []);
   // Attached before the first paint, so no key press can arrive before it.
   useLayoutEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') p.onClose();
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        const el = strip.current!;
-        el.scrollBy({ left: (e.key === 'ArrowRight' ? 1 : -1) * el.clientWidth, behavior: 'smooth' });
-      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') slideTo(indexRef.current + (e.key === 'ArrowRight' ? 1 : -1));
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // iPhone: a pinch must zoom the photo, never the whole page.
+    const noPageZoom = (e: Event) => e.preventDefault();
+    document.addEventListener('gesturestart', noPageZoom);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('gesturestart', noPageZoom);
+    };
   }, [p.onClose]);
+  useEffect(() => () => (clearTimeout(noteTimer.current), clearTimeout(tapTimer.current)), []);
 
-  const onScroll = () => {
+  // Gestures. Two fingers: pinch (and move). One finger: look around when zoomed, else swipe.
+  const pts = useRef(new Map<number, { x: number; y: number }>());
+  const g = useRef<{ pinch?: { d: number; m: { x: number; y: number }; z: Zoom }; pan?: { x: number; y: number; z: Zoom }; swipe?: { x: number; y: number }; moved: boolean; lastTap: number }>({ moved: false, lastTap: 0 });
+
+  function down(e: PointerEvent) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    stage.current!.setPointerCapture?.(e.pointerId);
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const s = g.current;
+    s.moved = false;
+    if (pts.current.size === 2) {
+      const [a, b] = [...pts.current.values()] as [{ x: number; y: number }, { x: number; y: number }];
+      s.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, z: zoom.current };
+      s.pan = s.swipe = undefined;
+      snapBack();
+    } else if (pts.current.size === 1) {
+      if (zoom.current.s > 1.01) s.pan = { x: e.clientX, y: e.clientY, z: zoom.current };
+      else s.swipe = { x: e.clientX, y: e.clientY };
+    }
+  }
+  function move(e: PointerEvent) {
+    if (!pts.current.has(e.pointerId)) return;
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const s = g.current;
+    if (s.pinch && pts.current.size === 2) {
+      s.moved = true;
+      const [a, b] = [...pts.current.values()] as [{ x: number; y: number }, { x: number; y: number }];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      // A little past the limits while pinching; it settles back on release.
+      const scale = Math.min(MAX_ZOOM * 1.15, Math.max(0.85, (s.pinch.z.s * d) / s.pinch.d));
+      const c = centre();
+      const k = scale / s.pinch.z.s;
+      draw({ s: scale, x: m.x - c.x - (s.pinch.m.x - c.x - s.pinch.z.x) * k, y: m.y - c.y - (s.pinch.m.y - c.y - s.pinch.z.y) * k }, false);
+      showScale(Math.min(MAX_ZOOM, Math.max(1, scale)));
+    } else if (s.pan) {
+      if (Math.hypot(e.clientX - s.pan.x, e.clientY - s.pan.y) > 6) s.moved = true;
+      draw(clamp({ s: s.pan.z.s, x: s.pan.z.x + e.clientX - s.pan.x, y: s.pan.z.y + e.clientY - s.pan.y }), false);
+    } else if (s.swipe) {
+      const dx = e.clientX - s.swipe.x;
+      if (Math.abs(dx) > 6) s.moved = true;
+      const i = indexRef.current;
+      const edge = (i === 0 && dx > 0) || (i === p.photos.length - 1 && dx < 0) ? 0.3 : 1;
+      const el = strip.current!;
+      el.classList.remove('glide');
+      el.style.transform = `translateX(calc(${-i * 100}% + ${dx * edge}px))`;
+    }
+  }
+  function snapBack() {
     const el = strip.current!;
-    setIndex(Math.min(p.photos.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth))));
-  };
+    el.classList.add('glide');
+    el.style.transform = `translateX(${-indexRef.current * 100}%)`;
+  }
+  function up(e: PointerEvent) {
+    if (!pts.current.has(e.pointerId)) return;
+    pts.current.delete(e.pointerId);
+    const s = g.current;
+    if (s.pinch) {
+      if (pts.current.size < 2) {
+        s.pinch = undefined;
+        const z = zoom.current;
+        draw(z.s < 1.02 ? NO_ZOOM : clamp({ ...z, s: Math.min(MAX_ZOOM, z.s) }), true);
+        // One finger still down: carry on looking around with it.
+        const rest = [...pts.current.values()][0];
+        if (rest) s.pan = { x: rest.x, y: rest.y, z: zoom.current };
+      }
+      return;
+    }
+    if (s.swipe) {
+      const dx = e.clientX - s.swipe.x;
+      s.swipe = undefined;
+      if (Math.abs(dx) > Math.min(60, stage.current!.clientWidth / 5)) slideTo(indexRef.current + (dx < 0 ? 1 : -1));
+      else snapBack();
+    }
+    s.pan = undefined;
+    if (!s.moved && e.type === 'pointerup') tap(e);
+  }
+  function tap(e: PointerEvent) {
+    const s = g.current;
+    const now = Date.now();
+    if (now - s.lastTap < DOUBLE_TAP_MS) {
+      clearTimeout(tapTimer.current);
+      s.lastTap = 0;
+      if (zoom.current.s > 1.01) draw(NO_ZOOM, true);
+      else {
+        const c = centre();
+        draw(clamp({ s: 2, x: -(e.clientX - c.x), y: -(e.clientY - c.y) }), true);
+        showScale(2);
+      }
+      return;
+    }
+    s.lastTap = now;
+    // One tap while zoomed: the buttons come back (or go again). Waits to be sure it isn't a double-tap.
+    tapTimer.current = setTimeout(() => zoom.current.s > 1.01 && setControls((v) => !v), DOUBLE_TAP_MS);
+  }
+  function wheel(e: WheelEvent) {
+    e.preventDefault();
+    const z = zoom.current;
+    const scale = Math.min(MAX_ZOOM, Math.max(1, z.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.003))));
+    if (scale === 1) return draw(NO_ZOOM, false);
+    const c = centre();
+    const k = scale / z.s;
+    draw(clamp({ s: scale, x: e.clientX - c.x - (e.clientX - c.x - z.x) * k, y: e.clientY - c.y - (e.clientY - c.y - z.y) * k }), false);
+    showScale(scale);
+  }
+  useEffect(() => {
+    const el = stage.current!;
+    el.addEventListener('wheel', wheel, { passive: false });
+    return () => el.removeEventListener('wheel', wheel);
+  }, []);
+
   const current = p.photos[index];
+  const clear = zoomed && !controls;
 
   return (
-    <div class="viewer" role="dialog" aria-modal="true" aria-label="Photo viewer">
-      <div class="viewer-top">
+    <div class={`viewer${hasBar ? ' has-bar' : ''}${clear ? ' clear' : ''}`} role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <div
+        class="viewer-stage"
+        ref={stage}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        tabIndex={0}
+        role="group"
+        aria-label={`Photos. Pinch or double-tap to zoom${zoomed ? `; zoomed in` : ''}.`}
+      >
+        <div class="viewer-strip" ref={strip}>
+          {p.photos.map((ph, i) => (
+            <div class="viewer-slide" key={ph.key}>
+              <img src={ph.image} alt={`Photo ${i + 1} of ${p.photos.length}${ph.cutout ? ', background removed' : ''}`} draggable={false} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {scaleNote && (
+        <span class="viewer-scale num" aria-hidden="true">
+          {scaleNote}
+        </span>
+      )}
+      <div class="viewer-top" inert={clear}>
         <button type="button" class="viewer-btn" onClick={p.onClose} aria-label="Close" autoFocus>
           <BackIcon />
         </button>
@@ -88,16 +300,9 @@ export function PhotoViewer(p: {
         )}
         <span class="viewer-btn" aria-hidden="true" />
       </div>
-      <div class="viewer-strip" ref={strip} onScroll={onScroll} tabIndex={0} role="group" aria-label="Photos">
-        {p.photos.map((ph, i) => (
-          <div class="viewer-slide" key={ph.key}>
-            <img src={ph.image} alt={`Photo ${i + 1} of ${p.photos.length}${ph.cutout ? ', background removed' : ''}`} draggable={false} />
-          </div>
-        ))}
-      </div>
       {/* Someone else's photos are read-only: no bar (brief §5). */}
       {(p.onCover || p.onCrop || p.onCutout || p.onRemove) && (
-        <div class="viewer-bar">
+        <div class="viewer-bar" inert={clear}>
           {p.onCover &&
             (index === 0 ? (
               <button type="button" class="on" disabled>
