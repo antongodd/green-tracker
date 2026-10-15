@@ -41,7 +41,8 @@ const toolbar = (page: Page) => viewer(page).locator('.viewer-bar').getByRole('b
 async function person(browser: Browser, prefix: string) {
   const page = await (await browser.newContext()).newPage();
   await page.setViewportSize({ width: 390, height: 844 });
-  return { page, name: await signUp(page, `${prefix}${Date.now().toString(36).slice(-6)}`) };
+  // Random as well as the time: repeated runs start several copies in the same millisecond.
+  return { page, name: await signUp(page, `${prefix}${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`) };
 }
 
 test.beforeAll(async ({ browser }) => {
