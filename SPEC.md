@@ -1097,6 +1097,8 @@ None.
   screen; one tap brings them back. Swiping to the next photo only when zoomed out.
 - Works for your photos, Log entry photos and friends' photos. Nothing is saved.
 - The viewer now handles swipes itself (the phone's own scrolling can't be combined with pinching).
+- Found while testing: repeated test runs started copies in the same millisecond, and their made-up usernames (from
+  the time only) clashed. `zoom.spec.ts` and `cover.spec.ts` now add random characters.
 - Tests: `zoom.spec.ts` (7 Playwright tests, two-finger pinches simulated with CDP touch events); the viewer tests in
   `photos.spec.ts`, `cover.spec.ts`, `cutout.spec.ts`, `hero.spec.ts` and `logentry.spec.ts` pass unchanged.
 - `CLAUDE.md`: item 5's step 1 confirmed by Anton, step 2 on dev; next decision D54.

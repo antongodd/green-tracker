@@ -97,6 +97,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
+- Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
+  start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or

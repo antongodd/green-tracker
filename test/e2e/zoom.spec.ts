@@ -66,7 +66,8 @@ const middle = async (page: Page) => {
 
 async function person(browser: Browser, prefix: string) {
   const page = await (await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } })).newPage();
-  return { page, name: await signUp(page, `${prefix}${Date.now().toString(36).slice(-6)}`) };
+  // Random as well as the time: repeated runs start several copies in the same millisecond.
+  return { page, name: await signUp(page, `${prefix}${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`) };
 }
 
 test.beforeAll(async ({ browser }) => {
