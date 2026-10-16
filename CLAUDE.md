@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D53 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D54 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D54), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D55), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D53.
+- Reopen any decision D1–D54.
 
 ## Testing notes
 
@@ -103,8 +103,11 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
   `none`). Set an account's preset in a test with `PUT /api/appearance`.
-- Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out')` in
-  `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page). The cover is `.pslot.cover`.
+- Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out' | 'Draw')` in
+  `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page; 'Cut out' then picks Find the bud
+  for me, 'Draw' picks Draw round it, D54). The cover is `.pslot.cover`.
+- Safe areas (notch, home bar): Chromium has none; set `--safe-top` / `--safe-bottom` on `document.documentElement`
+  to test them (`cutout.spec.ts`, the notch test).
 - Zoom (D53): simulate a pinch with CDP `Input.dispatchTouchEvent` (two `touchPoints`) on a context with
   `hasTouch: true` (`test/e2e/zoom.spec.ts`). `textBoxes` hides the text it measures: screenshot before it, not after.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
@@ -119,8 +122,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** 0.45.0: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53) and
-  notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
+  (D50). **Dev:** 0.46.0: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53),
+  draw round a nug (D54) and notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -140,13 +143,12 @@ section, so it must always be current.
    1. **Choosing the cover photo** (D52): **on dev** (0.44.0, 2026-10-13); Anton confirmed it works well on GT Dev.
       Gold ring and ★ on the cover; Set as cover in the viewer's bar (saved at once from the product page); ⋯ menu
       and press-and-hold drag in the editor.
-   2. **Zoom** (D53): **on dev** (0.45.0, 2026-10-15). In the full-screen viewer: pinch up to 4×, double-tap for 2×
-      and back, drag to look around; zoomed in, the buttons slide away (one tap brings them back); swiping to the
-      next photo only when zoomed out.
-   3. **Draw round a nug** in Remove background: offered at the start and after the AI's first try; draw rough loops
-      round one or more nugs, everything outside is dropped and the AI cuts a clean edge from the rest; Undo, Clear,
-      Draw again; two fingers zoom while drawing. Same AI (don't change the model). Designed for touching nugs and
-      cluttered backgrounds (Anton couldn't send example photos). Not started.
+   2. **Zoom** (D53): **on dev** (0.45.0, 2026-10-15); Anton: "looks really good". In the full-screen viewer:
+      pinch up to 4×, double-tap for 2× and back, drag to look around; zoomed in, the buttons slide away (one tap
+      brings them back); swiping to the next photo only when zoomed out.
+   3. **Draw round a nug** (D54): **on dev** (0.46.0, 2026-10-16). Remove background opens on Find the bud for me /
+      Draw round it; loops (Undo, Clear, pinch to zoom); the same AI cuts inside the loops; Draw again; offered
+      after the AI's try too. Also fixed: Remove background's room for the notch (lost in 0.45.0 on dev).
 
 ### Done (newest first)
 

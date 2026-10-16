@@ -179,15 +179,19 @@ export const settled = (page: Page) =>
 
 /**
  * A grid photo's action (D52, 0.44.0): from its ⋯ menu in an editor, else (a product page) from
- * the viewer's bar after opening the photo. "Cut out" is "Remove background" in the menu.
+ * the viewer's bar after opening the photo. "Cut out" is "Remove background" in the menu; since
+ * 0.46.0 (D54) Remove background opens on a choice, and "Cut out" picks Find the bud for me,
+ * "Draw" picks Draw round it.
  */
-export async function photoAction(page: Page, n: number, action: 'Crop' | 'Cut out') {
+export async function photoAction(page: Page, n: number, action: 'Crop' | 'Cut out' | 'Draw') {
   const more = page.getByRole('button', { name: `Options for photo ${n}` });
   if (await more.count()) {
     await more.click();
-    await page.locator('.sheet').getByRole('button', { name: action === 'Cut out' ? 'Remove background' : 'Crop', exact: true }).click();
+    await page.locator('.sheet').getByRole('button', { name: action === 'Crop' ? 'Crop' : 'Remove background', exact: true }).click();
   } else {
     await page.getByRole('button', { name: `Open photo ${n}` }).click();
-    await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: action, exact: true }).click();
+    await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: action === 'Crop' ? 'Crop' : 'Cut out', exact: true }).click();
   }
+  if (action === 'Crop') return;
+  await page.getByRole('dialog', { name: 'Remove background' }).getByRole('button', { name: action === 'Draw' ? 'Draw round it' : 'Find the bud for me' }).click();
 }

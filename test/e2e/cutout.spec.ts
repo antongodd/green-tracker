@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
-import { shot, signUp, settled, photoAction } from './helpers';
+import { contrastFailures, photoAction, settled, shot, signUp, textBoxes } from './helpers';
 
 // Remove background (D26). Most tests use a quick stand-in for the AI (anything that
 // differs from the photo's border colour is a "thing"); the last test runs the real one.
@@ -182,7 +182,7 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
   await expect(flow(page).getByRole('img', { name: 'The cut-out' })).toBeVisible();
   const whole = await flow(page).getByRole('img', { name: 'The cut-out' }).evaluate((i) => (i as HTMLImageElement).naturalWidth);
   expect(whole).toBeGreaterThan(900); // the tray is in it
-  await flow(page).getByRole('button', { name: 'Not right? Tap the bud in your photo' }).click();
+  await flow(page).getByRole('button', { name: 'Or tap the bud in your photo' }).click();
   await expect(flow(page).getByRole('img', { name: 'Your photo. Tap the bud to zoom in on it.' })).toBeVisible();
   await tapAt(page, '.cut-tap', 0.5, 0.5);
   await expect(flow(page).getByRole('heading', { name: 'Preview' })).toBeVisible();
@@ -202,7 +202,7 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
   // Again, then Save.
   await page.getByRole('banner').getByRole('link', { name: 'Edit' }).click();
   await photoAction(page, 1, 'Cut out');
-  await flow(page).getByRole('button', { name: 'Not right? Tap the bud in your photo' }).click();
+  await flow(page).getByRole('button', { name: 'Or tap the bud in your photo' }).click();
   await tapAt(page, '.cut-tap', 0.5, 0.5);
   await flow(page).getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('Uploading…')).toHaveCount(0);
@@ -397,4 +397,171 @@ test('the real AI: asks before downloading, keeps it on the phone, and cuts out 
   await expect(flow(page)).toHaveAttribute('data-stage', /^(loading|cutting|pick|preview)$/);
   await expect(page.getByRole('dialog', { name: 'Download the background remover?' })).toHaveCount(0);
   expect(csp).toEqual([]);
+});
+
+// Draw round it (D54, 0.46.0): loops drawn round the buds; the AI is shown just that part,
+// and anything outside the loops is dropped.
+
+// Two buds touching (one thing to the stand-in AI): green on the left, purple on the right.
+const touching = (page: Page) =>
+  scene(page, 'touching', 1200, 900, '#efe9dc', [
+    { kind: 'circle', x: 0.38, y: 0.5, r: 0.2, colour: '#4f7a2c' },
+    { kind: 'circle', x: 0.62, y: 0.5, r: 0.2, colour: '#7a3f8a' },
+  ]);
+/** The colours (r, g, b, a) of an image URL at points given in fractions. */
+const colours = (page: Page, url: string, points: [number, number][]) =>
+  page.evaluate(
+    async ({ url, points }) => {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const c = document.createElement('canvas');
+      [c.width, c.height] = [img.naturalWidth, img.naturalHeight];
+      const x = c.getContext('2d')!;
+      x.drawImage(img, 0, 0);
+      return points.map(([fx, fy]) => [...x.getImageData(Math.floor(fx * (c.width - 1)), Math.floor(fy * (c.height - 1)), 1, 1).data]);
+    },
+    { url, points },
+  );
+/** A loop drawn with the mouse round a point of the photo (fractions), radius in fractions of its width. */
+async function loop(page: Page, fx: number, fy: number, r: number, steps = 32) {
+  const c = flow(page).locator('.draw-stage canvas').first();
+  await expect(c).toBeVisible();
+  const b = (await c.boundingBox())!;
+  const at = (i: number) => [b.x + (fx + Math.cos((i / steps) * Math.PI * 2) * r) * b.width, b.y + fy * b.height + Math.sin((i / steps) * Math.PI * 2) * r * b.width] as const;
+  await page.mouse.move(...at(0));
+  await page.mouse.down();
+  for (let i = 1; i <= steps; i++) await page.mouse.move(...at(i));
+  await page.mouse.up();
+}
+
+test('Draw round it: opens on a choice; a loop keeps only the bud inside it, even touching another', async ({ page }) => {
+  await fakeAi(page);
+  await signUp(page);
+  const id = await newProduct(page, 'Two touching', await touching(page));
+  await page.getByRole('button', { name: /^Open photo 1\b/ }).click();
+  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Cut out', exact: true }).click();
+  // The choice.
+  await expect(flow(page).getByRole('button', { name: 'Find the bud for me' })).toBeVisible();
+  await settled(page);
+  await shot(page, '140-cutout-choice');
+  await flow(page).getByRole('button', { name: 'Draw round it' }).click();
+  await expect(flow(page).getByRole('heading', { name: 'Draw round it' })).toBeVisible();
+  const cut = flow(page).getByRole('button', { name: 'Cut out' });
+  await expect(cut).toBeDisabled();
+  await expect(flow(page).getByText('Draw a loop round each bud you want.')).toBeVisible();
+  // Round the green bud (x 276–636px of 1200), clear of the purple one (from 564px): 276–540px.
+  await loop(page, 0.34, 0.5, 0.11);
+  await expect(flow(page).getByText('1 bud marked.')).toBeVisible();
+  await expect(cut).toBeEnabled();
+  await shot(page, '141-cutout-loop');
+  await cut.click();
+  await expect(flow(page).getByRole('heading', { name: 'Preview' })).toBeVisible();
+  const url = (await flow(page).getByRole('img', { name: 'The cut-out' }).getAttribute('src'))!;
+  // In the middle: the green bud. Nothing purple anywhere across the middle row.
+  const row = await colours(page, url, Array.from({ length: 21 }, (_, i) => [i / 20, 0.5] as [number, number]));
+  const [r, g, b, a] = row[10]!;
+  expect(a).toBe(255);
+  expect(g).toBeGreaterThan(r!);
+  expect(g).toBeGreaterThan(b!);
+  for (const [pr, pg, pb, pa] of row) if (pa! > 200) expect(pr! > pg! && pb! > pg!, `purple at ${pr},${pg},${pb}`).toBe(false);
+  await expect(flow(page).getByRole('button', { name: 'Not right? Draw again' })).toBeVisible();
+  await flow(page).getByRole('button', { name: 'Apply' }).click();
+  await expect(flow(page)).toHaveCount(0);
+  await expect.poll(async () => (await product(page, id)).photos[0].cutout).toBe(true);
+});
+
+test('Draw round it: two loops keep two buds; Undo, Clear and Draw again; a tap isn’t a loop', async ({ page }) => {
+  await fakeAi(page);
+  await signUp(page);
+  await newProduct(page, 'Two apart', await twoThings(page));
+  await photoAction(page, 1, 'Draw');
+  const cut = flow(page).getByRole('button', { name: 'Cut out' });
+  await tapAt(page, '.draw-stage canvas:not(.draw-over)', 0.5, 0.5);
+  await expect(cut).toBeDisabled(); // a tap doesn't count
+  await loop(page, 0.68, 0.62, 0.22); // the bud
+  await loop(page, 0.21, 0.21, 0.16); // the lighter
+  await expect(flow(page).getByText('2 buds marked.')).toBeVisible();
+  await flow(page).getByRole('button', { name: 'Undo' }).click();
+  await expect(flow(page).getByText('1 bud marked.')).toBeVisible();
+  await flow(page).getByRole('button', { name: 'Clear' }).click();
+  await expect(cut).toBeDisabled();
+  await expect(flow(page).getByRole('button', { name: 'Undo' })).toBeDisabled();
+  // Both again: the cut-out is framed round both (wider than the bud alone).
+  await loop(page, 0.68, 0.62, 0.22);
+  await loop(page, 0.21, 0.21, 0.16);
+  await cut.click();
+  await expect(flow(page).getByRole('heading', { name: 'Preview' })).toBeVisible();
+  const both = await flow(page).getByRole('img', { name: 'The cut-out' }).evaluate((i) => (i as HTMLImageElement).naturalWidth);
+  // Draw again keeps the loops; Undo the lighter's and cut again: just the bud, a smaller frame.
+  await flow(page).getByRole('button', { name: 'Not right? Draw again' }).click();
+  await expect(flow(page).getByText('2 buds marked.')).toBeVisible();
+  await flow(page).getByRole('button', { name: 'Undo' }).click();
+  await cut.click();
+  await expect(flow(page).getByRole('heading', { name: 'Preview' })).toBeVisible();
+  const one = await flow(page).getByRole('img', { name: 'The cut-out' }).evaluate((i) => (i as HTMLImageElement).naturalWidth);
+  expect(one).toBeLessThan(both * 0.8);
+  // Nothing inside a loop: it says so and stays on the drawing.
+  await flow(page).getByRole('button', { name: 'Not right? Draw again' }).click();
+  await flow(page).getByRole('button', { name: 'Clear' }).click();
+  await loop(page, 0.45, 0.85, 0.06); // empty table
+  await cut.click();
+  await expect(flow(page).getByRole('alert')).toHaveText('No bud found inside your loop. Draw round the bud again.');
+  await expect(flow(page).getByRole('heading', { name: 'Draw round it' })).toBeVisible();
+});
+
+test('Draw round it after the AI’s own try, and two fingers zoom while drawing', async ({ page }) => {
+  await fakeAi(page);
+  const context = page.context();
+  await signUp(page);
+  await newProduct(page, 'After the AI', await twoThings(page));
+  await photoAction(page, 1, 'Cut out');
+  await expect(flow(page).getByRole('heading', { name: 'Tap the bud' })).toBeVisible();
+  await flow(page).getByRole('button', { name: 'Not right? Draw round it' }).click();
+  await expect(flow(page).getByRole('heading', { name: 'Draw round it' })).toBeVisible();
+  // Two fingers: the photo zooms (and nothing is drawn).
+  const stage = (await flow(page).locator('.draw-stage').boundingBox())!;
+  const cdp = await context.newCDPSession(page);
+  const [cx, cy] = [stage.x + stage.width / 2, stage.y + stage.height / 2];
+  const two = (d: number) => [
+    { x: cx - d / 2, y: cy, id: 1 },
+    { x: cx + d / 2, y: cy, id: 2 },
+  ];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(60) });
+  for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(60 + i * 15) });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  const scale = await flow(page).locator('.draw-stage canvas').first().evaluate((c) => c.getBoundingClientRect().width / (c as HTMLElement).offsetWidth);
+  expect(scale).toBeGreaterThan(2.5);
+  await expect(flow(page).getByRole('button', { name: 'Cut out' })).toBeDisabled();
+  // Zoomed in, a loop still lands where it's drawn on the photo: round the bud, which is cut out.
+  const c = (await flow(page).locator('.draw-stage canvas').first().boundingBox())!;
+  const bud = { x: c.x + 0.68 * c.width, y: c.y + 0.62 * c.height };
+  // The bud may be partly off screen at this zoom: a small loop round its visible middle part is enough.
+  const vis = { x: Math.min(Math.max(bud.x, stage.x + 60), stage.x + stage.width - 60), y: Math.min(Math.max(bud.y, stage.y + 60), stage.y + stage.height - 60) };
+  await page.mouse.move(vis.x + 40, vis.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 24; i++) await page.mouse.move(vis.x + Math.cos((i / 24) * Math.PI * 2) * 40, vis.y + Math.sin((i / 24) * Math.PI * 2) * 40);
+  await page.mouse.up();
+  await expect(flow(page).getByText('1 bud marked.')).toBeVisible();
+});
+
+test('Remove background stays clear of the iPhone’s notch and home bar; drawing is readable and accessible', async ({ page }) => {
+  await fakeAi(page);
+  await signUp(page);
+  await newProduct(page, 'Notch', await twoThings(page));
+  // A phone with a notch: the safe areas the app reads (Chromium has none of its own).
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--safe-top', '47px');
+    document.documentElement.style.setProperty('--safe-bottom', '34px');
+  });
+  await photoAction(page, 1, 'Draw');
+  const box = await flow(page).evaluate((el) => ({ pt: getComputedStyle(el).paddingTop, pb: getComputedStyle(el).paddingBottom, display: getComputedStyle(el).display }));
+  expect(box).toEqual({ pt: '47px', pb: '34px', display: 'flex' });
+  // The bottom buttons sit at the bottom of the screen, above the home bar.
+  const bottom = (await flow(page).locator('.cut-bottom').boundingBox())!;
+  expect(Math.abs(bottom.y + bottom.height - (844 - 34))).toBeLessThan(2);
+  await loop(page, 0.68, 0.62, 0.22);
+  await settled(page);
+  expect((await new AxeBuilder({ page }).include('.cutflow').analyze()).violations.map((v) => v.id)).toEqual([]);
+  expect(await contrastFailures(page, await textBoxes(page, '.cutflow .cut-hint, .cutflow .cut-title, .cutflow .cut-tools .btn'))).toEqual([]);
 });
