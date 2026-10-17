@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { edgeShare, findPieces, frameSquare, FRAME_PADDING, keptBounds, normaliseMask, pieceAt, zoomSquare, CUTOUT_MODEL } from '../../shared/domain/cutout';
+import { edgeShare, findPieces, frameSquare, FRAME_PADDING, keptBounds, normaliseMask, pieceAt, zoomSquare, CUTOUT_MODEL, insideLoops, keepInside, LOOP_MARGIN, loopArea, loopRegion, realLoops, type Point } from '../../shared/domain/cutout';
 
 // Remove background (D26): the maths on the AI's mask.
 
@@ -117,5 +117,58 @@ describe('the model files', () => {
     expect(sizes.reduce((s, n) => s + n, 0)).toBe(CUTOUT_MODEL.bytes);
     // Workers static assets serve files up to 25 MiB.
     for (const n of sizes) expect(n).toBeLessThanOrEqual(25 * 1024 * 1024);
+  });
+});
+
+// Draw round it (D54): loops drawn on the photo.
+const circle = (cx: number, cy: number, r: number, n = 48): Point[] => Array.from({ length: n }, (_, i) => ({ x: cx + Math.cos((i / n) * Math.PI * 2) * r, y: cy + Math.sin((i / n) * Math.PI * 2) * r }));
+const square = (x: number, y: number, s: number): Point[] => [{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }];
+
+describe('loops', () => {
+  it('a tap or a line is not a loop; a real loop is', () => {
+    expect(loopArea(square(0, 0, 10))).toBe(100);
+    expect(realLoops([[{ x: 5, y: 5 }], [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 200, y: 0 }], square(0, 0, 5), square(0, 0, 40)])).toEqual([square(0, 0, 40)]);
+  });
+
+  it('the AI is shown the part round the loops, with a margin, inside the photo', () => {
+    expect(loopRegion([], 1000, 800)).toBeNull();
+    const r = loopRegion([square(100, 200, 100)], 1000, 800)!;
+    const m = 100 * LOOP_MARGIN;
+    expect(r).toEqual({ x: 100 - m, y: 200 - m, w: 100 + 2 * m, h: 100 + 2 * m });
+    // Two loops: one region round both. Near the edge: clipped to the photo.
+    expect(loopRegion([square(0, 0, 50), square(900, 700, 100)], 1000, 800)).toEqual({ x: 0, y: 0, w: 1000, h: 800 });
+  });
+
+  it('marks the mask pixels inside the loops, and only those', () => {
+    const region = { x: 0, y: 0, w: 100, h: 100 };
+    const inside = insideLoops([circle(30, 50, 20), square(70, 10, 20)], region, 100);
+    const at = (x: number, y: number) => inside[y * 100 + x];
+    expect(at(30, 50)).toBe(1); // the circle's middle
+    expect(at(30, 32)).toBe(1); // just inside its top
+    expect(at(30, 25)).toBe(0); // just outside
+    expect(at(55, 50)).toBe(0); // between the two
+    expect(at(80, 20)).toBe(1); // the square
+    expect(at(80, 40)).toBe(0);
+    // About the circle's and the square's areas.
+    const n = inside.reduce((s, v) => s + v, 0);
+    expect(Math.abs(n - (Math.PI * 400 + 400))).toBeLessThan(40);
+  });
+
+  it('works in the region’s own pixels when the region is part of the photo, stretched', () => {
+    // A 200 × 100 region from (400, 300), shown to the AI as a 50 × 50 mask.
+    const inside = insideLoops([square(400, 300, 100)], { x: 400, y: 300, w: 200, h: 100 }, 50);
+    expect(inside[10 * 50 + 10]).toBe(1); // left half: the loop
+    expect(inside[10 * 50 + 40]).toBe(0); // right half: outside it
+  });
+
+  it('two touching things: only what’s inside the loop is kept', () => {
+    // One "thing" to the AI (two touching blobs), 0–49 and 50–99 across.
+    const alpha = mask(100, [[0, 20, 100, 60]]);
+    const kept = keepInside(alpha, insideLoops([square(-5, 15, 52)], { x: 0, y: 0, w: 100, h: 100 }, 100));
+    const p = findPieces(kept, 100);
+    expect(p.ids).toHaveLength(1);
+    const b = keptBounds(p, kept, new Set(p.ids))!;
+    expect(b.x).toBeCloseTo(0, 2);
+    expect(b.x + b.w).toBeLessThanOrEqual(0.48);
   });
 });

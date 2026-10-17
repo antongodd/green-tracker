@@ -121,6 +121,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D51 | **Swapping a Log entry's photo in one edit works** (2026-10-13; a bug the owner hit, found while testing 0.43.0, on the live site too). A bug fix; no behaviour is chosen. | Replacing a Log entry's photo with a new one and saving used to fail with "Something went wrong": the save added the new photo before removing the old one, and an entry may hold only one (`photos_log_entry` is unique). **Removed photos now go first**, in the same all-or-nothing save, so a failed save still changes nothing. Product photos (no such limit) and Add to leaderboard / Return to Log (which move a photo, never doubling an entry's) weren't affected; they use the same order now. No data, export, privacy or follower change. See §4 *Photos*. |
 | D52 | **Choosing the cover photo, and a tidier photo section** (2026-10-13; layout C "Even grid" of https://claude.ai/artifact/7Eo1e8aHBrWXaYm2b28GCZ, step 1 of the owner's photo rework; the owner's answers: both Set as cover and drag, saved at once from the product page, a star (not a "Cover" label), new photos at the end, removing the cover makes the next one the cover, Log entries keep one photo). Replaces §4's "no reordering" and D26's grid buttons. | **The cover is a product's first photo**, shown everywhere a product has one photo (Leaderboard rows, the Poster, the Log, tiles, followers' view, Return to Log). The Photos grid stays three even squares to a row; the cover is first, with a **gold ring and a ★**. **Product page:** tap a photo → a bar along the bottom of the viewer: **Set as cover** (saved at once: the viewer closes, the big photo fades over to the new cover, "Cover updated"; "The cover" on the first), **Crop**, **Cut out** (Restore background on a cut-out). **Editor:** **⋯** on each photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold a photo and drag it**; the first is the cover; Save keeps the order, Cancel doesn't; the viewer's bar adds **Remove**. Removing the cover makes the next photo the cover; new photos go at the end. The grid's round Crop and Remove background buttons are gone. **Log entries** keep one photo: ⋯ without Set as cover, no star. **A friend's photos:** the ring and star, no ⋯, no bar. **No database change**; Export/Restore keep the order; followers see the new cover (only if photos are shared, D45). See §4 *Photos*. |
 | D53 | **Zooming into a photo** (2026-10-15; option A "Clear view" of https://claude.ai/artifact/2n1jb4sYgqXX92iguZSNrc, step 2 of the owner's photo rework; the owner's earlier answers: up to 4×, double-tap for 2×, the viewer only). | In the **full-screen viewer** (your products, Log entries, friends' products, editors): **pinch** 1×–4× (the spot between the fingers stays put), **double-tap** for 2× where you tap and again to go back, **drag** to look around (the photo stops at its edges). Zoomed in, the top and the bottom bar **slide away**; a small "2.4×" shows while pinching; **one tap** brings the buttons back. **Swiping** to another photo only when zoomed right out; every photo starts at 1×. Not on the product page's big photo (a tap still opens the viewer). Zooming shows the saved photo (up to 1600px across, about its full detail at 4× on an iPhone; cut-outs are smaller, a little softer). Nothing is saved; no data, export, privacy or follower change (friends zoom only the version they already get). Reduce Motion: no glides. See §4 *Photos*. |
+| D54 | **Draw round a nug in Remove background** (2026-10-16; option A "Loop" of https://claude.ai/artifact/1XApeYBHvJXjhiUEKyc5Ak, step 3 of the owner's photo rework; the owner's earlier answers: the AI cuts a clean edge inside the drawing, offered at the start and after the AI's try, several loops, Undo / Clear / Draw again, two fingers zoom, no brushes). Adds to D26; the model is unchanged. | **Remove background opens on a choice:** **Find the bud for me** (as before) or **Draw round it**. Draw a rough **loop** round each bud to keep; letting go joins it up and darkens the rest; **Undo**, **Clear**; **pinch** to zoom while drawing. **Cut out** shows the same AI only the part round the loops and drops anything outside them, so touching buds can be separated (loop through the gap); then the usual Preview → **Apply**, or **Not right? Draw again**. After the AI's own try: **Not right? Draw round it** (and "Or tap the bud in your photo"). Same results as any cut-out: the original is kept, Restore background undoes it, rows, pages, followers and Export/Restore as D26. Drawing needs a finger or mouse; Find the bud for me and Tap the bud remain for VoiceOver and keyboard. No data change. See §4 *Remove background*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -1036,6 +1037,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the tap opening People at your card (and on People: top, search cleared).
 
 - **Remove background (D26, 0.19.0).**
+  - *Draw round it* (D54, 0.46.0): the flow opens on a choice, **Find the bud for me** (the
+    AI on the whole photo, as before) or **Draw round it** (`DrawLoops`): one finger draws a
+    loop (joined up on release; the outside darkens), two fingers zoom up to 4×; Undo, Clear;
+    Cut out once a real loop exists (`realLoops`: 3+ points and 100+ px², so a tap or a line
+    doesn't count). The AI is shown `loopRegion` (round all loops plus `LOOP_MARGIN` 8%,
+    inside the photo, stretched to 768 like the whole photo), then `insideLoops` (scanline
+    fill, even-odd per loop) and `keepInside` drop the mask outside the loops; every piece left
+    is kept and framed as usual. Nothing inside → "No bud found inside your loop". The model,
+    its size and cache are unchanged. After the AI's own try, Tap the bud and its preview
+    offer "Not right? Draw round it" (and "Or tap the bud in your photo"); a loops preview
+    offers "Not right? Draw again" (the loops are kept). The download question comes after
+    the choice. `.viewer.cutflow` keeps the flow's own layout clear of the notch and home bar
+    (D53's viewer rule had removed it on dev).
   - *The AI*: ISNet "general use" (IS-Net, Apache-2.0; ONNX export from the rembg project,
     MIT), made phone-sized by `scripts/make-cutout-model.py` (output committed in
     `client/public/ai/`, four 12 MB parts named by hash; the script records every step).
@@ -1090,6 +1104,20 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.46.0 — draw round a nug (owner request)
+- Step 3 of the photo rework (decision D54). **Remove background** now opens on a choice: **Find the bud for me** or
+  **Draw round it**. Draw a loop round each nug you want (Undo, Clear, two fingers to zoom), tap **Cut out**: the same
+  AI cuts a clean edge from inside your loops and drops the rest, so touching nugs can be separated.
+- After the AI's own try: **Not right? Draw round it**. From a drawn preview: **Not right? Draw again**.
+- Found while building: zoom (0.45.0) had taken away Remove background's room for the iPhone's notch and home bar, so
+  its top buttons could sit under the clock on dev. Fixed, with a test that pretends to have a notch (it fails
+  without the fix).
+- Tests: 5 unit tests (the loops' region, inside/outside, touching buds), 4 Playwright tests in `cutout.spec.ts`
+  (a loop keeps only the bud inside it; two loops, Undo, Clear, Draw again, a tap isn't a loop, nothing inside;
+  after the AI's try and pinch-zoom while drawing; the notch, axe and contrast). `photoAction(…, 'Cut out')` now
+  picks Find the bud for me; `'Draw'` picks Draw round it.
+- `CLAUDE.md`: zoom confirmed by Anton; step 3 on dev; next decision D55.
 
 ### 0.45.0 — zooming into a photo (owner request)
 - Step 2 of the photo rework (decision D53). In the full-screen photo viewer: **pinch** to zoom (up to 4×),
