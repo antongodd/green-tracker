@@ -1112,6 +1112,11 @@ None.
 
 ## 6. Changelog
 
+### 0.46.3 — CLAUDE.md: fonts and colours on the to-do list (owner request)
+- The to-do list's Leaderboard design rework now includes a font and colour rework for the whole app: the font of the
+  numbers in the Leaderboard's top banners (Products, Average, Total), and colours that feel mismatched. Notes only; no
+  change to the app.
+
 ### 0.46.2 — CLAUDE.md: 0.46.1 is live
 - `CLAUDE.md`: the Log photo swap fix (D51), the photo rework (D52–D54) and the late-load fix (D55) went live on
   2026-10-18 (release #61) and move from the to-do list to Done. Notes only; no change to the app.
