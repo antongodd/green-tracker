@@ -1115,6 +1115,9 @@ None.
 ### 0.46.2 — CLAUDE.md: 0.46.1 is live
 - `CLAUDE.md`: the Log photo swap fix (D51), the photo rework (D52–D54) and the late-load fix (D55) went live on
   2026-10-18 (release #61) and move from the to-do list to Done. Notes only; no change to the app.
+- Test fix: `zoom.spec.ts`'s double-tap sent its two taps one after another; on a busy machine they landed up to
+  303ms apart, past the app's 300ms double-tap window, so the photo didn't zoom (seen once at 4 workers). The four
+  touch events are now sent together (measured 0–8ms apart under the same load). The app is unchanged.
 
 ### 0.46.1 — a slow page load can't undo your change (owner request)
 - Bug fix (decision D55, on the live site too). Flicking **Private** (or **Set as cover**) just after a product page

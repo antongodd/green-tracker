@@ -109,7 +109,9 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Safe areas (notch, home bar): Chromium has none; set `--safe-top` / `--safe-bottom` on `document.documentElement`
   to test them (`cutout.spec.ts`, the notch test).
 - Zoom (D53): simulate a pinch with CDP `Input.dispatchTouchEvent` (two `touchPoints`) on a context with
-  `hasTouch: true` (`test/e2e/zoom.spec.ts`). `textBoxes` hides the text it measures: screenshot before it, not after.
+  `hasTouch: true` (`test/e2e/zoom.spec.ts`). A double-tap must send its touch events together (`doubleTap`): sent one
+  by one, a busy machine spreads them past the 300ms window. `textBoxes` hides the text it measures: screenshot before
+  it, not after.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
