@@ -688,14 +688,18 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   not when the list isn't loaded), `LogEditor.save` and Profile's `moveToLog` (`log`), LogEntry's `remove`,
   `EditorPhotos.remove` and People's profile photo `remove` (`delete`). *Ticks:* `ticksSupported()` is
   `'switch' in HTMLInputElement.prototype` (iOS 18+ Safari). Only a real tap on the switch or its label ticks, so
-  `components/Tick.tsx` renders `label.tick[aria-hidden]` filling its button (`.has-tick` is `position: relative`) with a
-  1px transparent `input[type=checkbox][switch][tabindex=-1]`; the input's own click stops propagating, so the button
-  acts once. On the Save buttons (not while saving), the viewer's Remove, and `Sheet` options with `tick: true`
-  (Delete entry, Remove photo ×2, Return to Log). The app's switches spread `switchAttr()` (`switch` while Ticks is on).
+  `components/Tick.tsx` renders an empty `label.tick[for=gt-tick][aria-hidden]` filling its button (`.has-tick` is
+  `position: relative`); it labels one hidden `input#gt-tick.tick-switch[type=checkbox][switch][tabindex=-1]`
+  (`TickSwitch`, rendered once in main.tsx, fixed, 1px, transparent) outside every button, because a control inside a
+  button fails axe's nested-interactive (a label isn't a control). The label's click stops propagating and presses its
+  button with `setTimeout(() => button.click())`: a label flips its control only after its click has been dispatched,
+  and the button's handler would already have redrawn (Saving…, a sheet closing) and taken the label away (found in
+  testing: no flip). Keyboard and VoiceOver press the button itself, with no tick. On the Save buttons (while enabled),
+  the viewer's Remove, and `Sheet` options with `tick: true` (Delete entry, Remove photo ×2, Return to Log). The app's switches spread `switchAttr()` (`switch` while Ticks is on).
   `AppearanceScreen` gains `SoundsSection` (`section[aria-labelledby=ap-sounds]`: Sounds and, where supported, Ticks
   switches; then `ap-sound-set` radios while Sounds is on, a click plays `save` in that set; footnote "Saved on this
   phone only"); a change redraws the whole screen. Tests: `sounds.spec.ts` (each moment's sound; Appearance; ticks with
-  the switch control pretended into Chromium: the tick fills Save, one PUT, one DELETE, axe).
+  the switch control pretended into Chromium: the label fills Save, the tap flips `#gt-tick`, one PUT, one DELETE, axe).
 - **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
   change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
   optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`

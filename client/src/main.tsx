@@ -6,7 +6,8 @@ import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
 import { installPress } from './press';
-import { installSounds } from './sounds';
+import { installSounds, ticksSupported } from './sounds';
+import { TickSwitch } from './components/Tick';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
@@ -199,6 +200,7 @@ render(
   <>
     <App />
     <OfflineBanner />
+    {ticksSupported() && <TickSwitch />}
   </>,
   document.getElementById('app')!,
 );

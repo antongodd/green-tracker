@@ -33,7 +33,12 @@ async function open(browser: Browser, opts: { ticks?: boolean } = {}): Promise<P
   return page;
 }
 
-const heard = (page: Page) => page.evaluate(() => (window as unknown as { sounds: string[] }).sounds.splice(0));
+const heard = (page: Page) => page.evaluate(() => [...(window as unknown as { sounds: string[] }).sounds]);
+/** Waits for exactly these sounds (since the last check), then starts counting again. */
+async function expectHeard(page: Page, sounds: string[]) {
+  await expect.poll(() => heard(page)).toEqual(sounds);
+  await page.evaluate(() => (window as unknown as { sounds: string[] }).sounds.splice(0));
+}
 const post = (page: Page, path: string, body: unknown): Promise<any> =>
   page.evaluate(async ({ path, body }) => (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json(), { path, body });
 const upload = (page: Page) =>
@@ -70,21 +75,21 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
 
   // The first product rated is your #1; a lower one is a plain save; a higher one takes #1.
   await addProduct(page, 'Alpha', '8');
-  expect(await heard(page)).toEqual(['first:soft']);
+  await expectHeard(page, ['first:soft']);
   await addProduct(page, 'Beta', '7');
-  expect(await heard(page)).toEqual(['save:soft']);
+  await expectHeard(page, ['save:soft']);
   await addProduct(page, 'Gamma', '9.5');
-  expect(await heard(page)).toEqual(['first:soft']);
+  await expectHeard(page, ['first:soft']);
   // Saving the #1 again: it was already #1.
-  await page.getByRole('link', { name: 'Edit' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('link', { name: 'Edit' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page).toHaveURL(/\/products\/[^/]+$/);
-  await expect.poll(() => heard(page)).toEqual(['save:soft']);
+  await expectHeard(page, ['save:soft']);
 
   // Flicking a switch.
   await page.getByRole('switch', { name: /Private/ }).click();
   await expect(page.getByRole('switch', { name: /Private/ })).toBeChecked();
-  expect(await heard(page)).toEqual(['switch:soft']);
+  await expectHeard(page, ['switch:soft']);
 
   // Saving to the Log, then deleting the entry.
   await page.getByRole('link', { name: 'Log' }).click();
@@ -92,12 +97,12 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   await page.getByLabel('Name').fill('Sour Diesel');
   await page.getByRole('button', { name: 'Save to log' }).click();
   await expect(page.locator('.lrow', { hasText: 'Sour Diesel' })).toBeVisible();
-  expect(await heard(page)).toEqual(['log:soft']);
+  await expectHeard(page, ['log:soft']);
   await page.locator('.lrow', { hasText: 'Sour Diesel' }).click();
   await page.getByRole('button', { name: 'Delete entry' }).click();
   await page.locator('.sheet').getByRole('button', { name: 'Delete entry' }).click();
   await expect(page.locator('.lrow', { hasText: 'Sour Diesel' })).toHaveCount(0);
-  expect(await heard(page)).toEqual(['delete:soft']);
+  await expectHeard(page, ['delete:soft']);
 
   // Removing a photo in the editor.
   const made = await post(page, '/api/products', { ...emptyProductInput(), name: 'Delta', photos: [{ upload: await upload(page), crop: null }] });
@@ -105,7 +110,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   await page.getByRole('button', { name: 'Options for photo 1' }).click();
   await page.locator('.sheet').getByRole('button', { name: 'Remove photo' }).click();
   await expect(page.getByRole('button', { name: /^Options for photo/ })).toHaveCount(0);
-  expect(await heard(page)).toEqual(['delete:soft']);
+  await expectHeard(page, ['delete:soft']);
   await page.context().close();
 });
 
@@ -124,26 +129,26 @@ test('More → Appearance: Sounds on to start, Soft or Woody, saved on this phon
   // Tapping a sound plays it, even the one already chosen.
   await page.getByRole('radio', { name: /Woody/ }).click();
   await page.getByRole('radio', { name: /Woody/ }).click();
-  expect(await heard(page)).toEqual(['save:woody', 'save:woody']);
+  await expectHeard(page, ['save:woody', 'save:woody']);
   await page.reload();
   await expect(page.getByRole('radio', { name: /Woody/ })).toBeChecked();
 
   // Off: the choice of sound hides, and nothing plays (not even the switches).
   await sounds.click();
   await expect(sounds).not.toBeChecked();
-  await expect(page.getByRole('radio')).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: /Soft|Woody/ })).toHaveCount(0);
   await page.getByRole('switch', { name: 'Mark my #1' }).click();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).not.toBeChecked();
+  await expectHeard(page, []); // a switch's sound plays as it flips, so there'd be one by now
   await page.reload();
   await expect(sounds).not.toBeChecked();
-  expect(await heard(page)).toEqual([]);
   await sounds.click();
-  expect(await heard(page)).toEqual(['switch:woody']);
+  await expectHeard(page, ['switch:woody']);
   await expect(page.getByRole('radio', { name: /Woody/ })).toBeChecked();
   await page.context().close();
 });
 
-test('ticks: a hidden switch in Save and Delete entry, each acts once; the app’s switches tick; Ticks off removes them', async ({ browser }) => {
+test('ticks: a label of the hidden switch fills Save and Delete entry, each acts once; the app’s switches tick; Ticks off removes them', async ({ browser }) => {
   const page = await open(browser, { ticks: true });
   const made = await post(page, '/api/products', { ...emptyProductInput(), name: 'Tick Kush', ratings: { look: 8 } });
   const entry = await post(page, '/api/log', { ...emptyLogEntryInput(), name: 'Tick Entry' });
@@ -159,25 +164,30 @@ test('ticks: a hidden switch in Save and Delete entry, each acts once; the app�
   // Save: the tick fills the button, and the save happens once.
   await page.goto(`/products/${made.product.id}/edit`);
   const save = page.getByRole('button', { name: 'Save', exact: true });
-  await expect(save.locator('label.tick input[type=checkbox][switch]')).toHaveCount(1);
+  // An invisible label of the one hidden switch, outside the button.
+  await expect(save.locator('label.tick[for=gt-tick]')).toHaveCount(1);
+  await expect(page.locator('input#gt-tick[type=checkbox][switch]')).toHaveCount(1);
+  // It fills the button inside its 1px border, so wherever your finger lands, it lands on the label.
   const [b, l] = await Promise.all([save.boundingBox(), save.locator('label.tick').boundingBox()]);
-  expect(l).toEqual(b);
+  expect([l!.x - b!.x, l!.y - b!.y, b!.width - l!.width, b!.height - l!.height]).toEqual([1, 1, 2, 2]);
   await expect(page.locator('input.switch[switch]')).toHaveCount(1); // Private
   expect(await axe(page)).toEqual([]);
   await save.click();
   await expect(page).toHaveURL(new RegExp(`/products/${made.product.id}$`));
+  await expect(page.locator('#gt-tick')).toBeChecked(); // the tap flipped the hidden switch
   expect(calls.splice(0)).toEqual([`PUT /api/products/${made.product.id}`]);
+  await expectHeard(page, ['save:soft']);
 
   // Delete entry: the sheet's button ticks, and deletes once.
   await page.goto(`/log/${entry.entry.id}`);
   await page.getByRole('button', { name: 'Delete entry' }).click();
   const confirm = page.locator('.sheet').getByRole('button', { name: 'Delete entry' });
-  await expect(confirm.locator('label.tick input[switch]')).toHaveCount(1);
+  await expect(confirm.locator('label.tick[for=gt-tick]')).toHaveCount(1);
   expect(await axe(page)).toEqual([]);
   await confirm.click();
   await expect(page).toHaveURL(/\/log$/);
   expect(calls.splice(0)).toEqual([`DELETE /api/log/${entry.entry.id}`]);
-  expect(await heard(page)).toEqual(['save:soft', 'delete:soft']);
+  await expectHeard(page, ['delete:soft']);
 
   // Ticks off: no hidden switches, and the app's switches stop ticking.
   await page.goto('/more/appearance');

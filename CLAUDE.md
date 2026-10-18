@@ -117,7 +117,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Sounds and ticks (D56): each sound played sends a `gt-sound` event (`{ moment, set }`); collect them with an init
   script (`sounds.spec.ts`). Chromium has no iOS switch control, so no ticks: pretend it in with
   `Object.defineProperty(HTMLInputElement.prototype, 'switch', …)`. A new big moment calls `play()` after it succeeds,
-  and its button gets `<Tick />` (`.has-tick`) or a `Sheet` option `tick: true`.
+  and its button gets `<Tick />` (`.has-tick`) or a `Sheet` option `tick: true`. Never put a real control inside a
+  button (axe nested-interactive): the tick is a label pointing at the one hidden switch `#gt-tick`.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.

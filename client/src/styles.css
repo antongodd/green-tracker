@@ -1174,7 +1174,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 /* A follower's Smokes card (D45): the flame beside the count. */
 .smk-count b .flame { width: 20px; height: 20px; color: var(--warning); margin-right: 4px; vertical-align: -2px; }
 
-/* Ticks (D56): a hidden iPhone switch filling a button, so your finger lands on it. */
+/* Ticks (D56): a label filling a button, so your finger lands on the hidden switch's label. */
 .has-tick { position: relative; }
 .tick { position: absolute; inset: 0; border-radius: inherit; cursor: inherit; }
-.tick input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.tick-switch { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
