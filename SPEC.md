@@ -5,7 +5,7 @@ a changelog. Updated with every change. Behaviour is defined by
 `green-tracker-rebuild-brief.md` and look/feel by `green-tracker-design-brief.md`;
 this document records how they were implemented and every decision made on top.
 
-**Current version:** 0.43.0 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
+**Current version:** 0.43.3 (all phases done; Smokes, Most used and Privacy; Smokes switched off on the live site, D46; a private dev site, D47; Leaderboard colours by score, D48, balanced as four cards, D49; Return to Log, D50)
 
 ---
 
@@ -118,6 +118,11 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D48 | **Leaderboard colours by score, a preset of your choice, and a crown and halo for #1** (2026-10-12; preset B "Gems" of https://claude.ai/artifact/KKHAxTqBACJsEGj2pJsBvH as where everyone starts, Prism and Metals as choices; "Crown" and "Halo" together for #1; badge "Amethyst · #3"; the owner's answers: saved to the account, the same bands everywhere, no colours for Price, Value for money and Most used, #1 still marked there in gold). Reopens D19, D21, D22, D30, D31 and D39 at the owner's request: the owner wanted more than a top three, earned by the score. | **Four bands** from the score as shown (one decimal place): **8.0–8.4** a dark row with a still coloured edge and glow; **8.5–8.9** the edge flows; **9.0–9.4** a holo card; **9.5–10** the full holo card with the shine (the old 1st place). Below 8 the heat glow (D30) as before; unrated never. Only scores out of 10 (Overall, any rating); Price, Value for money and Most used get none. **Presets** (More → **Appearance**, new, between Privacy and Data): **Gems** Emerald · Sapphire · Amethyst · Rainbow (where everyone starts), **Prism** one rainbow growing stronger, **Metals** Emerald · Rose gold · Diamond (twinkles) · Rainbow; no gold. **#1** (the top row with a value, in any ranking) wears a **gold crown** above its rank number and a **halo** round the row in its colour (gold without one), gently breathing; a switch **Mark my #1** turns both off. A **Colours** button beside Rank by (when ranking by a score) opens the key. **Product pages** of a coloured product carry it (glow, haze stronger band by band, holo badge **"Amethyst · #3 on your Leaderboard"**, the sweep from 9.0); an uncoloured #1 gets a gold badge ("#1 by Price"). The welcome screen's examples become Rainbow (crown and halo), Amethyst, Sapphire. **Saved to your account** (a new table, `migrations/0008_appearance.sql`), sent with who you are; **Export / Restore** carry it (an older file leaves yours alone); Delete account removes it. **Friends' boards** show in *your* preset; nothing about your appearance is ever sent to anyone else. Reduce Motion keeps the colours and stills them. See §4 *Leaderboard colours*. |
 | D49 | **The four colours as one set of cards; Gems' Sapphire and Amethyst rebalanced** (2026-10-12; option "A + Emerald" of https://claude.ai/artifact/Wh6t4N99LszTqEc55nDM9D, after the owner's iPhone screenshot showed Amethyst as a strong purple slab next to an edge-only Sapphire). Amends D48 at the owner's request. | **Every band is a holo card** under one dark layer that thins as the score rises: **8.0–8.4** the faintest (90% → 95%), still; **8.5–8.9** faint (86% → 93%), flowing; **9.0–9.4** (80% → 90%), flowing; **9.5–10** unchanged (70% → 86%, the shine). In every preset (the steps stay the same in all three; only colours differ). **Gems:** Sapphire a brighter blue, Amethyst a softer lilac, both under near-neutral layers instead of blue and violet ones; Emerald and Rainbow unchanged. Prism and Metals keep their colours. No data, export, privacy or follower change. See §4 *Leaderboard colours*. |
 | D50 | **Return to Log: a Leaderboard product can go back to being a Log entry, keeping everything else hidden** (2026-10-12; the owner put something on the Leaderboard by mistake and couldn't take it off without deleting it; option A "Kept card" of https://claude.ai/artifact/SdQCsaP7EoHJksH4PPyeDy, the button named **Return to Log**; the owner's answers: any product, not just ones that came from the Log; Add to leaderboard opens the editor filled in; the Kept card only on entries that were on the Leaderboard; Delete entry deletes the kept data too, with a warning; the amount is all its purchases added up). A step back from rebuild brief §10.2, where promotion only goes one way. | **Product page → Actions → Return to Log** (between Private and Archive; not on an archived product, which is un-archived first; waits for the connection offline) asks first ("It leaves your Leaderboard and followers' view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."), then the product is a Log entry and its page opens (Back goes to the Log). **The entry:** its name, type, concentrate type and country; its **first photo**; as its **amount**, all its purchases' amounts added up (none with an amount → no amount); **Logged** = when the product was first added; its **smokes** (D43) go with it. **Kept, hidden:** everything else (ratings, hidden ones too; purchases; notes; source, strain, date tried, Leafly, hit time, Private; the other photos), on the entry's page as a **Kept from your Leaderboard** card (Ratings "4 · Overall 8.8", Purchases "2 · £60.00", Notes, Other photos; rows with nothing are left out). An ordinary entry has no such card. **Add to leaderboard** opens the product editor with everything kept filled back in, under the entry's own name, type, country and photo (changes made in the Log win; the entry's photo first); Save puts back **the same product** (same place in time, same purchases), smokes included. **Delete entry** says what goes too ("…What's kept from your Leaderboard goes too: 2 ratings, 1 purchase, notes and 1 other photo.") and deletes it all. While it's in the Log the product is off the Leaderboard, its tiles, the Archive and Most used; **followers** lose it and its photo files at once; nothing about it can be changed except through the entry. **Export / Restore** carry it inside the entry (an older file has none). One new column, `log_entries.kept_product_id` (`migrations/0009_return_to_log.sql`). See §4 *Return to Log*. |
+| D51 | **Swapping a Log entry's photo in one edit works** (2026-10-13; a bug the owner hit, found while testing 0.43.0, on the live site too). A bug fix; no behaviour is chosen. | Replacing a Log entry's photo with a new one and saving used to fail with "Something went wrong": the save added the new photo before removing the old one, and an entry may hold only one (`photos_log_entry` is unique). **Removed photos now go first**, in the same all-or-nothing save, so a failed save still changes nothing. Product photos (no such limit) and Add to leaderboard / Return to Log (which move a photo, never doubling an entry's) weren't affected; they use the same order now. No data, export, privacy or follower change. See §4 *Photos*. |
+| D52 | **Choosing the cover photo, and a tidier photo section** (2026-10-13; layout C "Even grid" of https://claude.ai/artifact/7Eo1e8aHBrWXaYm2b28GCZ, step 1 of the owner's photo rework; the owner's answers: both Set as cover and drag, saved at once from the product page, a star (not a "Cover" label), new photos at the end, removing the cover makes the next one the cover, Log entries keep one photo). Replaces §4's "no reordering" and D26's grid buttons. | **The cover is a product's first photo**, shown everywhere a product has one photo (Leaderboard rows, the Poster, the Log, tiles, followers' view, Return to Log). The Photos grid stays three even squares to a row; the cover is first, with a **gold ring and a ★**. **Product page:** tap a photo → a bar along the bottom of the viewer: **Set as cover** (saved at once: the viewer closes, the big photo fades over to the new cover, "Cover updated"; "The cover" on the first), **Crop**, **Cut out** (Restore background on a cut-out). **Editor:** **⋯** on each photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold a photo and drag it**; the first is the cover; Save keeps the order, Cancel doesn't; the viewer's bar adds **Remove**. Removing the cover makes the next photo the cover; new photos go at the end. The grid's round Crop and Remove background buttons are gone. **Log entries** keep one photo: ⋯ without Set as cover, no star. **A friend's photos:** the ring and star, no ⋯, no bar. **No database change**; Export/Restore keep the order; followers see the new cover (only if photos are shared, D45). See §4 *Photos*. |
+| D53 | **Zooming into a photo** (2026-10-15; option A "Clear view" of https://claude.ai/artifact/2n1jb4sYgqXX92iguZSNrc, step 2 of the owner's photo rework; the owner's earlier answers: up to 4×, double-tap for 2×, the viewer only). | In the **full-screen viewer** (your products, Log entries, friends' products, editors): **pinch** 1×–4× (the spot between the fingers stays put), **double-tap** for 2× where you tap and again to go back, **drag** to look around (the photo stops at its edges). Zoomed in, the top and the bottom bar **slide away**; a small "2.4×" shows while pinching; **one tap** brings the buttons back. **Swiping** to another photo only when zoomed right out; every photo starts at 1×. Not on the product page's big photo (a tap still opens the viewer). Zooming shows the saved photo (up to 1600px across, about its full detail at 4× on an iPhone; cut-outs are smaller, a little softer). Nothing is saved; no data, export, privacy or follower change (friends zoom only the version they already get). Reduce Motion: no glides. See §4 *Photos*. |
+| D54 | **Draw round a nug in Remove background** (2026-10-16; option A "Loop" of https://claude.ai/artifact/1XApeYBHvJXjhiUEKyc5Ak, step 3 of the owner's photo rework; the owner's earlier answers: the AI cuts a clean edge inside the drawing, offered at the start and after the AI's try, several loops, Undo / Clear / Draw again, two fingers zoom, no brushes). Adds to D26; the model is unchanged. | **Remove background opens on a choice:** **Find the bud for me** (as before) or **Draw round it**. Draw a rough **loop** round each bud to keep; letting go joins it up and darkens the rest; **Undo**, **Clear**; **pinch** to zoom while drawing. **Cut out** shows the same AI only the part round the loops and drops anything outside them, so touching buds can be separated (loop through the gap); then the usual Preview → **Apply**, or **Not right? Draw again**. After the AI's own try: **Not right? Draw round it** (and "Or tap the bud in your photo"). Same results as any cut-out: the original is kept, Restore background undoes it, rows, pages, followers and Export/Restore as D26. Drawing needs a finger or mouse; Find the bud for me and Tap the bud remain for VoiceOver and keyboard. No data change. See §4 *Remove background*. |
+| D55 | **A slow page load can't undo your change** (2026-10-18; found while testing 0.44.0, on the live site too; the owner asked for the fix). A bug fix; no behaviour is chosen. | Opening a product page shows the app's copy at once and asks the server for a fresh one. If you flicked **Private** or **Archive**, tapped **Set as cover**, or saved a crop or cut-out before that answer arrived, the older copy landed afterwards and put the page (and the app's memory, so Back and the Leaderboard) back as it was until the next visit; the change itself was always saved. Now an answer that started before your change is ignored. No data change. See §4 *Late loads*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -178,7 +183,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     re-cropping it again discards pending sets immediately; any left over are swept
     after a day. Files a save makes unused (old crops, removed photos) are deleted
     only after the batch commits. Promotion (Phase 6) will just re-point `log_entry_id`
-    → `product_id` on the row.
+    → `product_id` on the row. `planPhotoWrites` (`server/lib/photos.ts`) puts the deletes of
+    removed photos **first** in the batch (D51, 0.43.4): a Log entry holds one photo
+    (`photos_log_entry` is unique), so swapping it must free the place before the new row goes
+    in; before 0.43.4 the insert came first and the whole save failed. Tested (`log.test.ts`,
+    `returnToLog.test.ts`, `logentry.spec.ts`; all three fail without the fix).
   - *Where a crop is saved* (brief §11): from the profile or its viewer → at once
     (`POST /api/photos/:id/crop`); from the editor or its viewer → on Save, with the
     viewer showing the unsaved crop; Cancel discards it.
@@ -188,12 +197,38 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     and revoked access can't keep showing cached photos. Uploads must be JPEG
     (checked by signature), ≤ 8MB per image and ≤ 1MB per thumbnail. *(Since 0.19.0 a
     cut-out's image and thumbnail are PNG instead, D26.)*
-  - *Removing photos* happens in the editor (viewer → Remove photo), applied on Save
-    *(builder: the brief doesn't mention deletion)*. There's no reordering: photos
-    keep the order they were added, and the first is the hero and list thumbnail
-    *(builder; can be added if wanted)*.
+  - *Removing photos* happens in the editor (viewer → Remove, or ⋯ → Remove photo), applied
+    on Save *(builder: the brief doesn't mention deletion)*.
+  - *The cover* (D52, 0.44.0): a product's first photo is its cover, the hero and list
+    thumbnail everywhere (rows, the Poster, the Log, tiles, followers, Return to Log). The
+    grid marks it with a gold ring (`--star`) and a ★ (`.pslot.cover`). **Set as cover**:
+    from your product page, the viewer's bar → `POST /api/photos/:id/cover` (saved at once;
+    moves the photo to position 0 and renumbers the others in order; 404 for anyone else's
+    photo, a Log entry's, or one a returned entry keeps, D50); the old cover fades out over
+    the new one (`.hero-old`) and a "Cover updated" toast shows. In the editor: ⋯ → Set as
+    cover, or **press and hold** a photo (300ms) and drag it (`PhotoGrid` `onMove`; the
+    others slide out of the way; the page doesn't scroll while dragging; a drag isn't a tap);
+    Save sends the new order through `planPhotoWrites` like any edit. No database change:
+    `photos.position` already held the order; Export lists photos in order and Restore keeps
+    the file's order. Log entries keep one photo and have no cover.
+  - *Photo actions* (D52): the grid's round Crop and Remove background buttons are gone. In an
+    editor each photo has ⋯ (Set as cover, Crop, Remove/Restore background, Remove photo; a Log
+    entry's has no Set as cover). The viewer has a bar along the bottom: Set as cover ("The
+    cover" on the first), Crop, Cut out (Restore background on a cut-out) and, in an editor,
+    Remove. A friend's photos have no ⋯ and no bar. The viewer's strip is focusable (arrow
+    keys) for keyboard users.
   - *Viewer*: full-bleed black over header and tabs, close top-left, swipe between
-    photos (P8, native scroll-snap), `n / N` counter, Crop this photo. *Cropper*:
+    photos (P8), `n / N` counter, Crop this photo. *Zoom* (D53, 0.45.0): the viewer
+    handles every gesture itself (`PhotoViewer`; native scroll-snap can't be combined with
+    pinching): pinch 1×–4× (`MAX_ZOOM`; the point between the fingers stays put; a little
+    past the limits while pinching, settling back on release), double-tap for 2× at the tap
+    (the spot stays under the finger, as in iOS Photos) and back, one-finger drag while zoomed
+    (clamped so the photo covers the screen where it's bigger than it), swipe to another photo
+    only at 1× (rubber-band at the ends; arrow keys too); every photo starts at 1×. Zoomed,
+    the top and the bar slide away and are `inert` ("clear view"); one tap toggles them; a
+    "2.4×" note shows for 0.9s. The stage fills the screen and the slides are padded clear
+    of the top and the bar, so a photo at 1× sits where it did. `gesturestart` is cancelled
+    so a pinch never zooms the page. Reduce Motion: no glides. *Cropper*:
     Cancel · Free | Square · Apply, corner handles with 44px touch areas, drag to
     move, dimmed surround, Reset to original (→ no crop).
     Apply waits for the photo to load; Square tapped before then is squared again in the
@@ -640,6 +675,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the Leaderboard, an old link; no card on an ordinary entry; axe and readability of the card (proved by dimming it);
   Delete's message; Add to leaderboard back to the same product with its purchases, notes, photos and ratings; not on an
   archived product, offline; Actions readable); `people.spec.ts` (no Return to Log on a friend's product).
+- **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
+  change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
+  optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`
+  the answer if it moved; Profile's opening fetch also drops it rather than `setProduct`. A change's own response is the
+  fresh copy. Tests: `staleload.spec.ts` (Private and Set as cover with the opening GET held back until after the
+  change; both fail without the fix).
 - **Privacy (D45, 0.38.0).** Rules in `shared/domain/privacy.ts`: `Privacy` (eight booleans), `DEFAULT_PRIVACY` (as before
   0.38.0), `PRIVACY_NEEDS` / `privacyEnabled` / `effectivePrivacy` (a switch whose prerequisite is off counts as off),
   `validatePrivacy` (a full set of booleans, unknown keys dropped), `privacySummary` (More's line). Table `privacy_settings`
@@ -1003,6 +1044,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the tap opening People at your card (and on People: top, search cleared).
 
 - **Remove background (D26, 0.19.0).**
+  - *Draw round it* (D54, 0.46.0): the flow opens on a choice, **Find the bud for me** (the
+    AI on the whole photo, as before) or **Draw round it** (`DrawLoops`): one finger draws a
+    loop (joined up on release; the outside darkens), two fingers zoom up to 4×; Undo, Clear;
+    Cut out once a real loop exists (`realLoops`: 3+ points and 100+ px², so a tap or a line
+    doesn't count). The AI is shown `loopRegion` (round all loops plus `LOOP_MARGIN` 8%,
+    inside the photo, stretched to 768 like the whole photo), then `insideLoops` (scanline
+    fill, even-odd per loop) and `keepInside` drop the mask outside the loops; every piece left
+    is kept and framed as usual. Nothing inside → "No bud found inside your loop". The model,
+    its size and cache are unchanged. After the AI's own try, Tap the bud and its preview
+    offer "Not right? Draw round it" (and "Or tap the bud in your photo"); a loops preview
+    offers "Not right? Draw again" (the loops are kept). The download question comes after
+    the choice. `.viewer.cutflow` keeps the flow's own layout clear of the notch and home bar
+    (D53's viewer rule had removed it on dev).
   - *The AI*: ISNet "general use" (IS-Net, Apache-2.0; ONNX export from the rembg project,
     MIT), made phone-sized by `scripts/make-cutout-model.py` (output committed in
     `client/public/ai/`, four 12 MB parts named by hash; the script records every step).
@@ -1057,6 +1111,84 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.46.1 — a slow page load can't undo your change (owner request)
+- Bug fix (decision D55, on the live site too). Flicking **Private** (or **Set as cover**) just after a product page
+  opened could flick back for a moment when the page's slower first load arrived; Back and the Leaderboard could show
+  the old version too. Your change was always saved. Now that late, older copy is ignored. Crops, cut-outs and Archive
+  on the product page are covered the same way.
+- Tests: 2 Playwright tests in `staleload.spec.ts` that hold the page's first load back until after the change; both
+  fail on 0.46.0.
+- `CLAUDE.md`: draw round a nug confirmed by Anton; this fix on the list; next decision D56.
+
+### 0.46.0 — draw round a nug (owner request)
+- Step 3 of the photo rework (decision D54). **Remove background** now opens on a choice: **Find the bud for me** or
+  **Draw round it**. Draw a loop round each nug you want (Undo, Clear, two fingers to zoom), tap **Cut out**: the same
+  AI cuts a clean edge from inside your loops and drops the rest, so touching nugs can be separated.
+- After the AI's own try: **Not right? Draw round it**. From a drawn preview: **Not right? Draw again**.
+- Found while building: zoom (0.45.0) had taken away Remove background's room for the iPhone's notch and home bar, so
+  its top buttons could sit under the clock on dev. Fixed, with a test that pretends to have a notch (it fails
+  without the fix).
+- Tests: 5 unit tests (the loops' region, inside/outside, touching buds), 4 Playwright tests in `cutout.spec.ts`
+  (a loop keeps only the bud inside it; two loops, Undo, Clear, Draw again, a tap isn't a loop, nothing inside;
+  after the AI's try and pinch-zoom while drawing; the notch, axe and contrast). `photoAction(…, 'Cut out')` now
+  picks Find the bud for me; `'Draw'` picks Draw round it.
+- `CLAUDE.md`: zoom confirmed by Anton; step 3 on dev; next decision D55.
+
+### 0.45.0 — zooming into a photo (owner request)
+- Step 2 of the photo rework (decision D53). In the full-screen photo viewer: **pinch** to zoom (up to 4×),
+  **double-tap** for 2× and back, **drag** to look around. Zoomed in, the buttons slide away so the photo fills the
+  screen; one tap brings them back. Swiping to the next photo only when zoomed out.
+- Works for your photos, Log entry photos and friends' photos. Nothing is saved.
+- The viewer now handles swipes itself (the phone's own scrolling can't be combined with pinching).
+- Found while testing: repeated test runs started copies in the same millisecond, and their made-up usernames (from
+  the time only) clashed. `zoom.spec.ts` and `cover.spec.ts` now add random characters.
+- Tests: `zoom.spec.ts` (7 Playwright tests, two-finger pinches simulated with CDP touch events); the viewer tests in
+  `photos.spec.ts`, `cover.spec.ts`, `cutout.spec.ts`, `hero.spec.ts` and `logentry.spec.ts` pass unchanged.
+- `CLAUDE.md`: item 5's step 1 confirmed by Anton, step 2 on dev; next decision D54.
+
+### 0.44.0 — choosing the cover photo (owner request)
+- Step 1 of the photo rework (decision D52). A product's **cover** (its first photo) is marked in the Photos grid with
+  a gold ring and a star.
+- **Product page:** open a photo and tap **Set as cover** in the new bar along the bottom (with Crop and Cut out). It
+  saves at once: the big photo fades over to the new cover and your Leaderboard row follows.
+- **Editor:** tap **⋯** on a photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold** a photo
+  and drag it; the first is the cover. Removing the cover makes the next photo the cover.
+- The two round buttons on every photo are gone. Log entries keep one photo (⋯, no cover). A friend's photos: the star,
+  nothing to tap but the photo.
+- Found while testing: with several photos, the viewer's swipe area couldn't be reached by keyboard (an accessibility
+  check flagged it); it can now (arrow keys).
+- Found on GitHub's first run: the menu's accessibility check ran while the menu was still sliding up (half-faded text
+  read as low contrast). `settled()` now also waits for a menu's slide-up; reproduced by slowing animations tenfold,
+  which fails without the fix and passes with it.
+- Tests: `cover.test.ts` (5 server tests), `cover.spec.ts` (9 Playwright tests); `photos.spec.ts`, `cutout.spec.ts`,
+  `logentry.spec.ts` and `quality.spec.ts` use the ⋯ menu and the viewer's bar (`photoAction` in `helpers.ts`).
+- `CLAUDE.md`: item 5's step 1 on dev; next decision D53.
+
+### 0.43.4 — swapping a Log entry's photo (owner report)
+- Replacing a Log entry's photo with a new one in a single edit no longer fails with "Something went wrong" (decision
+  D51). The old photo is now removed before the new one goes in (an entry holds one photo); still one all-or-nothing
+  save. The workaround (remove, save, then add) is no longer needed.
+- Checked: product photos, Add to leaderboard and Return to Log weren't affected.
+- Tests: 1 in `log.test.ts`, 1 in `returnToLog.test.ts` (a returned entry's swapped photo leads when it goes back),
+  1 in `logentry.spec.ts` (the swap on screen); each fails on 0.43.3.
+- `CLAUDE.md`: item 1 marked on dev; next decision D52.
+
+### 0.43.3 — CLAUDE.md: photo section rework on the to-do list (owner request)
+- The to-do list gets item 5, **Photo section rework**, for product and Log entry photos: choose which photo is shown,
+  and tidy up how the photo section looks. Notes only; no change to the app.
+
+### 0.43.2 — CLAUDE.md: a Done list (owner request)
+- `CLAUDE.md`'s "Where things stand" gets a **Done** table under the to-do list (each finished item with its version,
+  decision, and when it reached dev and live), filled in back to 0.39.0, and the rule that keeps it current: an item
+  merged into `dev` is marked "on dev"; when it goes live it moves to Done.
+- A separate "Green Tracker to-do list" conversation answers the owner's "what's done, what's next" from this section.
+
+### 0.43.1 — CLAUDE.md: where things stand and the to-do list
+- `CLAUDE.md`'s "Where things stand" now says live and dev are the same (0.43.0, Smokes hidden on live) and holds the
+  to-do list, which each new conversation reads to the owner at the start: the Log photo swap bug, the Smokes rework,
+  the Leaderboard design rework, and sound effects and haptics (the owner's idea, not planned yet).
+- The note about sessions started on `dev` now says a branch push *may* be refused (it worked after a restart).
 
 ### 0.43.0 — Return to Log (owner request)
 - A product on your Leaderboard can go back to your Log (decision D50): **product page → Return to Log**, between

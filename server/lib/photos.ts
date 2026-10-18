@@ -42,6 +42,8 @@ const cropArgs = (c: Crop | null) => (c ? [c.x, c.y, c.w, c.h, c.square ? 1 : 0]
  * Plans the writes that make a record's photos match `inputs` (in order), inside the
  * caller's D1 batch. Returns the statements plus the R2 keys that become unused once
  * the batch has committed (delete them afterwards, never before).
+ * Removed photos are deleted first (D51): a Log entry may hold only one photo
+ * (`photos_log_entry` is unique), so a swap must free its place before the new row goes in.
  */
 export async function planPhotoWrites(
   db: D1Database,
@@ -79,13 +81,20 @@ export async function planPhotoWrites(
   const now = Date.now();
   const statements: D1PreparedStatement[] = [];
   const unusedKeys: string[] = [];
-  const kept = new Set<string>();
+  const kept = new Set(inputs.map((i) => i.id).filter((id): id is string => !!id));
+
+  // Photos left out of the list are deleted, with every file they use.
+  for (const row of existing) {
+    if (kept.has(row.id)) continue;
+    statements.push(db.prepare('DELETE FROM photos WHERE id = ?1 AND user_id = ?2').bind(row.id, userId));
+    unusedKeys.push(...setKeys(userId, row.original_set));
+    if (row.image_set !== row.original_set) unusedKeys.push(...imageKeys(userId, row.image_set));
+  }
 
   inputs.forEach((input, position) => {
     if (input.id) {
       const row = byId.get(input.id);
       if (!row) fail(400, 'invalid_photos', 'That photo no longer exists. Please reopen the editor.');
-      kept.add(row.id);
       if (adopted.includes(row)) {
         statements.push(
           db.prepare(`UPDATE photos SET ${col} = ?1, ${col === 'product_id' ? 'log_entry_id' : 'product_id'} = NULL, updated_at = ?2 WHERE id = ?3 AND user_id = ?4`).bind(ownerId, now, row.id, userId),
@@ -120,14 +129,6 @@ export async function planPhotoWrites(
       );
     }
   });
-
-  // Photos left out of the list are deleted, with every file they use.
-  for (const row of existing) {
-    if (kept.has(row.id)) continue;
-    statements.push(db.prepare('DELETE FROM photos WHERE id = ?1 AND user_id = ?2').bind(row.id, userId));
-    unusedKeys.push(...setKeys(userId, row.original_set));
-    if (row.image_set !== row.original_set) unusedKeys.push(...imageKeys(userId, row.image_set));
-  }
   return { statements, unusedKeys };
 }
 

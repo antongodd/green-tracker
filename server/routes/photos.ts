@@ -6,6 +6,7 @@ import { deleteLater, imageKeys, isJpeg, isPng, newSetId, PHOTO_COLUMNS, photoKe
 import { requireUser } from '../lib/session';
 import { canView } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
+import { loadOne, NOT_KEPT } from './products';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -140,4 +141,28 @@ photos.post('/:id/crop', async (c) => {
   ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, imageKeys(userId, row.image_set));
   return c.json({ photo: toPhotoRecord({ ...row, image_set: upload, crop_x: c0?.x ?? null, crop_y: c0?.y ?? null, crop_w: c0?.w ?? null, crop_h: c0?.h ?? null, crop_square: c0?.square ? 1 : 0, cutout: up.cutout }) });
+});
+
+/**
+ * Set as cover (D52), from your product page: saved straight away. The cover is simply
+ * the first photo, so this moves the photo to the front and keeps the others in order.
+ * Only your own product photos; not a Log entry's, nor one a Log entry keeps (D50).
+ */
+photos.post('/:id/cover', async (c) => {
+  const userId = c.var.user!.id;
+  const id = c.req.param('id');
+  const db = c.env.DB;
+  const row = await db
+    .prepare(`SELECT ph.product_id FROM photos ph JOIN products p ON p.id = ph.product_id WHERE ph.id = ?1 AND ph.user_id = ?2 AND ${NOT_KEPT('p')}`)
+    .bind(id, userId)
+    .first<{ product_id: string }>();
+  if (!row) fail(404, 'not_found', 'That photo no longer exists.');
+  const { results } = await db.prepare('SELECT id, position FROM photos WHERE product_id = ?1 AND user_id = ?2 ORDER BY position').bind(row.product_id, userId).all<{ id: string; position: number }>();
+  const order = [id, ...results.map((r) => r.id).filter((x) => x !== id)];
+  const now = Date.now();
+  const moves = order.flatMap((pid, position) =>
+    results.find((r) => r.id === pid)!.position === position ? [] : [db.prepare('UPDATE photos SET position = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4').bind(position, now, pid, userId)],
+  );
+  if (moves.length) await db.batch(moves);
+  return c.json({ product: await loadOne(db, userId, row.product_id) });
 });

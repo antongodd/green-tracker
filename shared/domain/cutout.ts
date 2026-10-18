@@ -203,3 +203,81 @@ export function zoomSquare(width: number, height: number, tx: number, ty: number
   const s = Math.min(side, width, height);
   return { x: Math.max(0, Math.min(width - s, tx - s / 2)), y: Math.max(0, Math.min(height - s, ty - s / 2)), side: s };
 }
+
+// Draw round it (D54, 0.46.0): loops drawn on the photo, in its pixels.
+
+export interface Point {
+  x: number;
+  y: number;
+}
+/** Room around the loops when showing the AI just that part: this share of their larger side. */
+export const LOOP_MARGIN = 0.08;
+/** A loop must have at least this many points and enclose at least this many square pixels to count. */
+const LOOP_MIN_POINTS = 3;
+const LOOP_MIN_AREA = 100;
+
+/** A loop's area (shoelace; self-crossing loops count their net area). */
+export function loopArea(loop: readonly Point[]): number {
+  let a = 0;
+  for (let i = 0; i < loop.length; i++) {
+    const p = loop[i]!;
+    const q = loop[(i + 1) % loop.length]!;
+    a += p.x * q.y - q.x * p.y;
+  }
+  return Math.abs(a) / 2;
+}
+
+/** The loops worth keeping: a tap or a scribble with no inside doesn't count. */
+export const realLoops = (loops: readonly (readonly Point[])[]): Point[][] => loops.filter((l) => l.length >= LOOP_MIN_POINTS && loopArea(l) >= LOOP_MIN_AREA).map((l) => [...l]);
+
+/**
+ * The part of a W × H photo the AI is shown for these loops: round them all, with
+ * LOOP_MARGIN of room, inside the photo. Null when there's no loop.
+ */
+export function loopRegion(loops: readonly (readonly Point[])[], width: number, height: number): { x: number; y: number; w: number; h: number } | null {
+  const pts = loops.flat();
+  if (!pts.length) return null;
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const m = Math.max(x1 - x0, y1 - y0) * LOOP_MARGIN;
+  const x = Math.max(0, Math.floor(x0 - m));
+  const y = Math.max(0, Math.floor(y0 - m));
+  const w = Math.min(width, Math.ceil(x1 + m)) - x;
+  const h = Math.min(height, Math.ceil(y1 + m)) - y;
+  return w > 0 && h > 0 ? { x, y, w, h } : null;
+}
+
+/**
+ * Which pixels of a size × size mask (covering `region` of the photo, stretched) lie
+ * inside any loop: 1 inside, 0 outside. Row by row, filling between the loop's
+ * crossings (even-odd within a loop; loops add up).
+ */
+export function insideLoops(loops: readonly (readonly Point[])[], region: { x: number; y: number; w: number; h: number }, size: number): Uint8Array {
+  const inside = new Uint8Array(size * size);
+  for (const loop of loops) {
+    for (let row = 0; row < size; row++) {
+      const py = region.y + ((row + 0.5) / size) * region.h;
+      const xs: number[] = [];
+      for (let i = 0; i < loop.length; i++) {
+        const a = loop[i]!;
+        const b = loop[(i + 1) % loop.length]!;
+        if (a.y <= py !== b.y <= py) xs.push(a.x + ((py - a.y) / (b.y - a.y)) * (b.x - a.x));
+      }
+      xs.sort((p, q) => p - q);
+      for (let k = 0; k + 1 < xs.length; k += 2) {
+        const from = Math.max(0, Math.ceil(((xs[k]! - region.x) / region.w) * size - 0.5));
+        const to = Math.min(size - 1, Math.floor(((xs[k + 1]! - region.x) / region.w) * size - 0.5));
+        for (let col = from; col <= to; col++) inside[row * size + col] = 1;
+      }
+    }
+  }
+  return inside;
+}
+
+/** The AI's mask with everything outside the loops dropped. */
+export function keepInside(alpha: Float32Array, inside: Uint8Array): Float32Array {
+  const out = new Float32Array(alpha.length);
+  for (let i = 0; i < alpha.length; i++) if (inside[i]) out[i] = alpha[i]!;
+  return out;
+}

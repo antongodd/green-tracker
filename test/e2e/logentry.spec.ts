@@ -130,6 +130,34 @@ test('Edit, top right or in Actions, opens the form; Cancel and Save to log come
   ids['Lemon Haze Reserve'] = ids['Lemon Haze']!;
 });
 
+// Bug fix (D51, 0.43.4): replacing the photo in a single edit failed with "Something went wrong"
+// (the new photo went in before the old one came out, and an entry holds one).
+test('its photo can be swapped for a new one in a single edit', async () => {
+  await entry('Swap Shot', { productType: 'flower', photos: [{ upload: await upload('photo'), crop: null }] });
+  const photoId = () => page.evaluate(async (id) => ((await (await fetch(`/api/log/${id}`)).json()) as { entry: { photo: { id: string } } }).entry.photo.id, ids['Swap Shot']!);
+  const before = await photoId();
+  await page.goto(`/log/${ids['Swap Shot']}/edit`);
+  await page.getByRole('button', { name: 'Open photo 1' }).click();
+  await page.getByRole('dialog', { name: 'Photo viewer' }).getByRole('button', { name: 'Remove', exact: true }).click();
+  await expect(page.locator('.pgrid .pcell')).toHaveCount(0);
+  const jpeg = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    [c.width, c.height] = [800, 600];
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#b9d36c';
+    x.fillRect(0, 0, 800, 600);
+    return c.toDataURL('image/jpeg', 0.9).split(',')[1]!;
+  });
+  await page.getByLabel('Add photo').setInputFiles([{ name: 'new.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') }]);
+  await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
+  await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
+  await page.getByRole('button', { name: 'Save to log' }).click();
+  await expect(page).toHaveURL(new RegExp(`/log/${ids['Swap Shot']}$`));
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.locator('.hero-photo img')).toBeVisible();
+  expect(await photoId()).not.toBe(before);
+});
+
 test('tapping the photo opens it full screen', async () => {
   await open('Lemon Haze Reserve');
   await page.locator('.hero-photo').click();

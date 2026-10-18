@@ -11,7 +11,7 @@ import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
 import { ExternalIcon, LockIcon, ReturnIcon } from '../icons';
-import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
+import { cacheProduct, cachedProduct, cachedProducts, changeMark, changing, fetchProduct, fetchProducts, setFlag } from '../products';
 import { boardPlace } from '../../../shared/domain/leaderboard';
 import { pageClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
@@ -126,6 +126,9 @@ export function Profile(p: { id: string }) {
   const [cropping, setCropping] = useState<number | null>(null);
   const [savingCrop, setSavingCrop] = useState<string | null>(null);
   const [cuttingOut, setCuttingOut] = useState<number | null>(null);
+  // D52: the cover it replaced fades out over the new one; a short note says it's saved.
+  const [oldCover, setOldCover] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const path = `/products/${p.id}`;
   // Its row (D22, D48) comes from the same list and view as the Leaderboard.
   const appearance = useAppearance();
@@ -144,6 +147,7 @@ export function Profile(p: { id: string }) {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
+    changing(current.id);
     setCropping(null);
     setSavingCrop(note);
     setError('');
@@ -167,15 +171,48 @@ export function Profile(p: { id: string }) {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
+    changing(current.id);
     const upload = await uploadSet({ ...r, cutout: true });
     const res = await api<{ photo: PhotoRecord }>('POST', `/photos/${encodeURIComponent(photo.id)}/crop`, { upload, crop: photo.crop });
     setProduct(cacheProduct({ ...current, photos: current.photos.map((x) => (x.id === photo.id ? res.photo : x)) }));
     setCuttingOut(null);
   }
 
+  /** Set as cover (D52), saved straight away: the photo moves to the front. */
+  async function saveCover(index: number) {
+    const current = product;
+    const photo = current?.photos[index];
+    if (!current || !photo) return;
+    changing(current.id);
+    setViewing(null);
+    setError('');
+    const was = current.photos[0] ? shownFromRecord(current.photos[0]).image : null;
+    // Show it straight away; put it back if the save fails.
+    setOldCover(was);
+    setProduct({ ...current, photos: [photo, ...current.photos.filter((x) => x.id !== photo.id)] });
+    try {
+      const r = await api<{ product: Product }>('POST', `/photos/${encodeURIComponent(photo.id)}/cover`);
+      setProduct(cacheProduct(r.product));
+      setNote('Cover updated');
+    } catch (e) {
+      setOldCover(null);
+      setProduct(current);
+      setError(errorText(e));
+    }
+  }
   useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(null), 2000);
+    return () => clearTimeout(t);
+  }, [note]);
+
+  useEffect(() => {
+    // D55: if you change it while this loads (Private, a new cover…), this older copy is dropped.
+    const mark = changeMark(p.id);
     fetchProduct(p.id)
-      .then(setProduct)
+      .then((fresh) => {
+        if (changeMark(p.id) === mark) setProduct(fresh);
+      })
       .catch((e) => setError(errorText(e)));
   }, [p.id]);
 
@@ -193,6 +230,7 @@ export function Profile(p: { id: string }) {
     setBusy(true);
     setError('');
     setConfirmArchive(false);
+    changing(p.id);
     // Show the new state straight away; put it back if the save fails.
     setProduct((cur) => cur && { ...cur, [flag]: value });
     try {
@@ -271,6 +309,8 @@ export function Profile(p: { id: string }) {
           country={country}
           overall={o}
           photo={product.photos[0] ? shownFromRecord(product.photos[0]) : null}
+          fadeFrom={oldCover}
+          onFaded={() => setOldCover(null)}
           onOpenPhoto={() => setViewing(0)}
           place={place}
           appearance={appearance}
@@ -297,7 +337,7 @@ export function Profile(p: { id: string }) {
         {product.photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
-            <PhotoGrid photos={product.photos.map(shownFromRecord)} onOpen={setViewing} onCrop={setCropping} onCutout={setCuttingOut} />
+            <PhotoGrid photos={product.photos.map(shownFromRecord)} cover onOpen={setViewing} />
             {savingCrop && <p class="small">{savingCrop}</p>}
           </section>
         )}
@@ -374,7 +414,13 @@ export function Profile(p: { id: string }) {
             setViewing(null);
             saveCrop(i, product.photos[i]!.crop, 'Restoring background…');
           }}
+          onCover={online ? saveCover : undefined}
         />
+      )}
+      {note && (
+        <p class="toast" role="status">
+          {note}
+        </p>
       )}
       {cropping !== null && product.photos[cropping] && (
         <Cropper original={shownFromRecord(product.photos[cropping]!).original} crop={product.photos[cropping]!.crop} onCancel={() => setCropping(null)} onApply={(crop) => saveCrop(cropping, crop)} />

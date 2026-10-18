@@ -394,7 +394,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
-            <PhotoGrid photos={photos} onOpen={setViewing} />
+            <PhotoGrid photos={photos} cover onOpen={setViewing} />
           </section>
         )}
         {details.length > 0 && (

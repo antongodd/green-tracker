@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D50 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D55 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -36,7 +36,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   wait for "go ahead".
 - **Ask before adding scope.** Explain knock-on effects: other screens, data, export/restore, followers, privacy,
   and live vs dev.
-- **After each item** is on dev or live: post the updated to-do list and suggest what's next.
+- **After each item** is on dev or live: update the to-do list and Done in CLAUDE.md (see "Where things stand"), post it and suggest what's next.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
 
@@ -53,13 +53,14 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   finished green, including the **"Live site serves this build"** step, and say it's live with exact iPhone steps.
 - Only merge when Anton says so.
 - After a merge, restart your working branch from the latest `dev` (same branch name; force-with-lease is fine).
-- If the session was started with dev as its branch, it can only push dev: a push of any other branch gets a 403.
-  Never push straight to dev; tell Anton at the start and ask how to proceed.
+- If the session was started with dev as its branch, a push of any other branch may get a 403 (it has also worked
+  after a session restart). Never push straight to dev: if a `claude/<topic>` branch can't be pushed, tell Anton and
+  ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D51), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D56), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -79,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D50.
+- Reopen any decision D1–D55.
 
 ## Testing notes
 
@@ -88,25 +89,82 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Playwright serves the **built** app: run `npm run build` after changing client code before running Playwright
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
-  start counting animations.
+  start counting animations. It waits for the page-load fade (`enter`) and a menu sliding up (`rise`); a new entrance
+  animation must be added to it. To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
 - `contrastFailures` only photographs the top 390×844. For long screens use `wholeScreenContrastFailures` (top and
   bottom, only text between the header and the tab bar). Prove a readability test bites by dimming the text.
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
+- Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
+  start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
   `none`). Set an account's preset in a test with `PUT /api/appearance`.
+- Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out' | 'Draw')` in
+  `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page; 'Cut out' then picks Find the bud
+  for me, 'Draw' picks Draw round it, D54). The cover is `.pslot.cover`.
+- Safe areas (notch, home bar): Chromium has none; set `--safe-top` / `--safe-bottom` on `document.documentElement`
+  to test them (`cutout.spec.ts`, the notch test).
+- Zoom (D53): simulate a pinch with CDP `Input.dispatchTouchEvent` (two `touchPoints`) on a context with
+  `hasTouch: true` (`test/e2e/zoom.spec.ts`). `textBoxes` hides the text it measures: screenshot before it, not after.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
+- Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
+  starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
+  with `route.fetch()`, make the change, then release it.
 
 ## Where things stand
 
-Keep this short and current.
+Keep this short and current. **Read the to-do list to Anton at the start of each conversation** and keep it updated:
+when an item is merged into `dev`, mark it **on dev** (with the version and date); when it goes live, move it to
+**Done** with both dates. A new item Anton asks for goes on the list in the same pull request as other notes, or in a
+small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
+section, so it must always be current.
 
-- **Live:** 0.40.x. Smokes is hidden there (D46); Privacy (D45) is on.
-- **Dev:** set up on Anton's phone, with his live data copied in. 0.41.0 (Leaderboard colours by score, D48) and 0.42.0
-  (the four colours as one set, D49) are on it. 0.43.0 (Return to Log, D50) is in a pull request.
-- **Next:** Smokes is on hold until Anton decides what he wants; Leaderboard design rework in progress.
+- **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
+  (D50). **Dev:** 0.46.1: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53),
+  draw round a nug (D54), the late-load fix (D55) and notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
+
+### To-do list (suggested order; Anton decides)
+
+1. **Fix swapping a Log entry's photo** (D51): **on dev** (0.43.4, 2026-10-13), Anton confirmed it works on GT Dev.
+   Replacing a Log entry's photo in a single edit used to fail with "Something went wrong" (live too, until it goes
+   live).
+2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
+   for live, update `test/domain/siteConfig.test.ts` and D46).
+3. **Leaderboard design rework**: continue when Anton brings it up.
+4. **Sound effects and haptics** (Anton's idea, 2026-10-13): make the app feel more interactive. Talked through, not
+   planned yet. Sounds: made in code (no downloads), obey the iPhone's silent switch, an on/off switch in More →
+   Appearance. Haptics: iPhone web apps can't vibrate the usual way; the iOS 18+ trick (flicking a hidden on/off switch
+   gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
+   Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
+   moments, what feel, on or off to start.
+5. **Photo section rework** (Anton's idea, 2026-10-13), in three steps, each tried on GT Dev before the next:
+   1. **Choosing the cover photo** (D52): **on dev** (0.44.0, 2026-10-13); Anton confirmed it works well on GT Dev.
+      Gold ring and ★ on the cover; Set as cover in the viewer's bar (saved at once from the product page); ⋯ menu
+      and press-and-hold drag in the editor.
+   2. **Zoom** (D53): **on dev** (0.45.0, 2026-10-15); Anton: "looks really good". In the full-screen viewer:
+      pinch up to 4×, double-tap for 2× and back, drag to look around; zoomed in, the buttons slide away (one tap
+      brings them back); swiping to the next photo only when zoomed out.
+   3. **Draw round a nug** (D54): **on dev** (0.46.0, 2026-10-16); Anton: "looks good and works well". Remove background opens on Find the bud for me /
+      Draw round it; loops (Undo, Clear, pinch to zoom); the same AI cuts inside the loops; Draw again; offered
+      after the AI's try too. Also fixed: Remove background's room for the notch (lost in 0.45.0 on dev).
+6. **Fix a slow page load undoing your change** (D55, found while testing; Anton asked for it 2026-10-18): **on dev**
+   (0.46.1, 2026-10-18). Flicking Private (or Set as cover) just after a product page opened could flick back for a
+   moment (live too, until it goes live). Then Anton wants to **go live** with items 1, 5 and 6.
+
+### Done (newest first)
+
+| Item | Version | Decision | On dev | Live |
+|---|---|---|---|---|
+| Return to Log | 0.43.0 | D50 | 2026-10-13 | 2026-10-13 |
+| The four colours as one set of cards | 0.42.0 | D49 | 2026-10-12 | 2026-10-13 |
+| Leaderboard colours by score | 0.41.0 | D48 | 2026-10-12 | 2026-10-13 |
+| CLAUDE.md: how we work | 0.40.1 | | 2026-10-12 | 2026-10-12 |
+| A private dev site | 0.40.0 | D47 | | 2026-10-12 |
+| Smokes off on the live site | 0.39.0 | D46 | | 2026-10-11 |
+
+Older releases: SPEC.md's changelog.

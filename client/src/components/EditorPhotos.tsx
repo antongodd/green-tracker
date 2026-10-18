@@ -7,6 +7,7 @@ import { discardUpload, loadImage, prepareNewPhoto, renderCrop, uploadSet } from
 import { PhotoGrid, shownFromRecord } from './PhotoGrid';
 import { Cropper, PhotoViewer, type ShownPhoto } from './PhotoViewer';
 import { CutoutFlow, type CutoutResult } from './CutoutFlow';
+import { Sheet } from './chrome';
 
 /** A photo in the editor: saved (id), new (upload with its original), or saved with an unsaved crop. */
 export interface PhotoDraft extends ShownPhoto {
@@ -46,6 +47,9 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
   const [cuttingOut, setCuttingOut] = useState<number | null>(null);
+  const [options, setOptions] = useState<number | null>(null);
+  // D52: a product's first photo is its cover; a Log entry's single photo has none.
+  const covers = max > 1;
   const latest = useRef(p.drafts);
   latest.current = p.drafts;
 
@@ -111,6 +115,15 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
     setCuttingOut(null);
   }
 
+  /** D52: moves a photo to a new place; the first is the cover. Saved with the rest on Save. */
+  function move(from: number, to: number) {
+    p.setDrafts((list) => {
+      const next = [...list];
+      next.splice(to, 0, ...next.splice(from, 1));
+      return next;
+    });
+  }
+
   function remove(index: number) {
     const draft = p.drafts[index];
     if (!draft) return;
@@ -124,9 +137,10 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
       <GroupHead icon={CameraLineIcon} label={max === 1 ? 'Photo' : 'Photos'} />
       <PhotoGrid
         photos={p.drafts}
+        cover={covers}
         onOpen={setViewing}
-        onCrop={setCropping}
-        onCutout={setCuttingOut}
+        onMore={setOptions}
+        onMove={covers ? move : undefined}
         status={(i) => {
           const d = p.drafts[i]!;
           return d.status === 'uploading' ? 'Uploading…' : d.status === 'error' ? '!Failed' : null;
@@ -163,6 +177,28 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
             setViewing(null);
             crop(i, p.drafts[i]!.crop);
           }}
+          onCover={
+            covers
+              ? (i) => {
+                  setViewing(null);
+                  move(i, 0);
+                }
+              : undefined
+          }
+        />
+      )}
+      {options !== null && p.drafts[options] && (
+        <Sheet
+          title={covers ? `Photo ${options + 1}${options === 0 ? ' · the cover' : ''}` : 'Photo'}
+          options={[
+            ...(covers && options > 0 ? [{ label: 'Set as cover', onSelect: () => (setOptions(null), move(options, 0)) }] : []),
+            { label: 'Crop', onSelect: () => (setOptions(null), setCropping(options)) },
+            p.drafts[options]!.cutout
+              ? { label: 'Restore background', onSelect: () => (setOptions(null), crop(options, p.drafts[options]!.crop)) }
+              : { label: 'Remove background', onSelect: () => (setOptions(null), setCuttingOut(options)) },
+            { label: 'Remove photo', danger: true, onSelect: () => (setOptions(null), remove(options)) },
+          ]}
+          onCancel={() => setOptions(null)}
         />
       )}
       {cuttingOut !== null && p.drafts[cuttingOut] && (
