@@ -17,6 +17,7 @@ import { useOnline } from '../online';
 import { fetchPreview, fetchPrivacy, savePrivacy } from '../privacy';
 import { linkTo } from '../router';
 import { useSmokesOn } from '../session';
+import { switchAttr } from '../sounds';
 
 interface Switch {
   key: PrivacyKey;
@@ -172,6 +173,7 @@ export function PrivacyScreen() {
                           type="checkbox"
                           role="switch"
                           class="switch"
+                          {...switchAttr()}
                           aria-label={sw.label}
                           checked={s[sw.key] && enabled}
                           disabled={!enabled || busy || !online}
