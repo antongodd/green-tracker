@@ -123,6 +123,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D53 | **Zooming into a photo** (2026-10-15; option A "Clear view" of https://claude.ai/artifact/2n1jb4sYgqXX92iguZSNrc, step 2 of the owner's photo rework; the owner's earlier answers: up to 4×, double-tap for 2×, the viewer only). | In the **full-screen viewer** (your products, Log entries, friends' products, editors): **pinch** 1×–4× (the spot between the fingers stays put), **double-tap** for 2× where you tap and again to go back, **drag** to look around (the photo stops at its edges). Zoomed in, the top and the bottom bar **slide away**; a small "2.4×" shows while pinching; **one tap** brings the buttons back. **Swiping** to another photo only when zoomed right out; every photo starts at 1×. Not on the product page's big photo (a tap still opens the viewer). Zooming shows the saved photo (up to 1600px across, about its full detail at 4× on an iPhone; cut-outs are smaller, a little softer). Nothing is saved; no data, export, privacy or follower change (friends zoom only the version they already get). Reduce Motion: no glides. See §4 *Photos*. |
 | D54 | **Draw round a nug in Remove background** (2026-10-16; option A "Loop" of https://claude.ai/artifact/1XApeYBHvJXjhiUEKyc5Ak, step 3 of the owner's photo rework; the owner's earlier answers: the AI cuts a clean edge inside the drawing, offered at the start and after the AI's try, several loops, Undo / Clear / Draw again, two fingers zoom, no brushes). Adds to D26; the model is unchanged. | **Remove background opens on a choice:** **Find the bud for me** (as before) or **Draw round it**. Draw a rough **loop** round each bud to keep; letting go joins it up and darkens the rest; **Undo**, **Clear**; **pinch** to zoom while drawing. **Cut out** shows the same AI only the part round the loops and drops anything outside them, so touching buds can be separated (loop through the gap); then the usual Preview → **Apply**, or **Not right? Draw again**. After the AI's own try: **Not right? Draw round it** (and "Or tap the bud in your photo"). Same results as any cut-out: the original is kept, Restore background undoes it, rows, pages, followers and Export/Restore as D26. Drawing needs a finger or mouse; Find the bud for me and Tap the bud remain for VoiceOver and keyboard. No data change. See §4 *Remove background*. |
 | D55 | **A slow page load can't undo your change** (2026-10-18; found while testing 0.44.0, on the live site too; the owner asked for the fix). A bug fix; no behaviour is chosen. | Opening a product page shows the app's copy at once and asks the server for a fresh one. If you flicked **Private** or **Archive**, tapped **Set as cover**, or saved a crop or cut-out before that answer arrived, the older copy landed afterwards and put the page (and the app's memory, so Back and the Leaderboard) back as it was until the next visit; the change itself was always saved. Now an answer that started before your change is ignored. No data change. See §4 *Late loads*. |
+| D56 | **Sounds and ticks** (2026-10-18; the owner's idea of 2026-10-13, tried on his iPhone with the test page https://claude.ai/artifact/UcgKz5k1uAPAhgj7zN3PR9: he chose Soft, kind of liked Woody, disliked Glassy; 60% volume about right; sounds stayed quiet on silent; the real switch and a hidden switch under his finger ticked, a switch flipped from code didn't; then the app's way (Tick D: a label in the button for a switch elsewhere, the button pressed a moment later) ticked too. His answers: subtle, only big moments, on to start, a separate Ticks switch, saved on each phone, photo deletes too, a choice of Soft or Woody). | Quiet **sounds made in code** (nothing downloaded) when you **flick a switch**, **save a product** (a short fanfare instead when that save makes it **#1** on your Leaderboard by Overall), **save a Log entry** or **Return to Log**, and **delete** a Log entry or a photo (in an editor, or your profile photo). Every other tap is silent. Quiet when the iPhone is on silent, and it doesn't pause your music. **Ticks** on iPhones with iOS 18+: a light tick as you tap a switch, Save, Save to log, Delete entry, Remove photo or Return to Log (the tick comes with the tap, so a new #1 has no tick of its own). **More → Appearance → Sounds and ticks:** **Sounds** and **Ticks** switches, both on to start, and **Soft** or **Woody** (tap to hear). Ticks is hidden where the phone can't tick. Saved **on this phone only**: no data change, nothing in Export/Restore, nothing for followers; a new phone starts with both on. Smokes (on hold) has no sounds. See §4 *Sounds and ticks*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -675,6 +676,30 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the Leaderboard, an old link; no card on an ordinary entry; axe and readability of the card (proved by dimming it);
   Delete's message; Add to leaderboard back to the same product with its purchases, notes, photos and ratings; not on an
   archived product, offline; Actions readable); `people.spec.ts` (no Return to Log on a friend's product).
+- **Sounds and ticks (D56, 0.47.0).** `client/src/sounds.ts`: `play(moment, set?)` (`switch`, `save`, `log`, `delete`,
+  `first`; sets `soft`, `woody`, the owner's picks from the test page) builds each sound from sine voices (Woody adds a
+  4× partial and a band-passed noise knock) on one lazily made `AudioContext` (master gain 0.54, the test page's 60%),
+  after setting `navigator.audioSession.type = 'ambient'` where it exists (silent switch, mixes with music); it sleeps
+  (`suspend`) 10s after the last sound or touch. `installSounds()` (main.tsx): every `pointerdown` wakes it (a sound
+  after a save comes after the server answers, outside the tap), and a `change` on any `input.switch` plays `switch`.
+  Each play dispatches a `gt-sound` event (`{ moment, set }`) for the tests. Settings in localStorage: `gt-sounds`,
+  `gt-ticks` (`'off'` turns off; anything else is on) and `gt-sound-set`. Moments: `Editor.save` (`first` when the
+  saved product is #1 by Overall over `cachedProducts()` (`rankProducts`, filter All) and wasn't before, `topProduct()`;
+  not when the list isn't loaded), `LogEditor.save` and Profile's `moveToLog` (`log`), LogEntry's `remove`,
+  `EditorPhotos.remove` and People's profile photo `remove` (`delete`). *Ticks:* `ticksSupported()` is
+  `'switch' in HTMLInputElement.prototype` (iOS 18+ Safari). Only a real tap on the switch or its label ticks, so
+  `components/Tick.tsx` renders an empty `label.tick[for=gt-tick][aria-hidden]` filling its button (`.has-tick` is
+  `position: relative`); it labels one hidden `input#gt-tick.tick-switch[type=checkbox][switch][tabindex=-1]`
+  (`TickSwitch`, rendered once in main.tsx, fixed, 1px, transparent) outside every button, because a control inside a
+  button fails axe's nested-interactive (a label isn't a control). The label's click stops propagating and presses its
+  button with `setTimeout(() => button.click())`: a label flips its control only after its click has been dispatched,
+  and the button's handler would already have redrawn (Saving…, a sheet closing) and taken the label away (found in
+  testing: no flip). Keyboard and VoiceOver press the button itself, with no tick. On the Save buttons (while enabled),
+  the viewer's Remove, and `Sheet` options with `tick: true` (Delete entry, Remove photo ×2, Return to Log). The app's switches spread `switchAttr()` (`switch` while Ticks is on).
+  `AppearanceScreen` gains `SoundsSection` (`section[aria-labelledby=ap-sounds]`: Sounds and, where supported, Ticks
+  switches; then `ap-sound-set` radios while Sounds is on, a click plays `save` in that set; footnote "Saved on this
+  phone only"); a change redraws the whole screen. Tests: `sounds.spec.ts` (each moment's sound; Appearance; ticks with
+  the switch control pretended into Chromium: the label fills Save, the tap flips `#gt-tick`, one PUT, one DELETE, axe).
 - **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
   change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
   optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`
@@ -1111,6 +1136,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.47.0 — sounds and ticks (owner request)
+- New (decision D56). Quiet sounds when you flick a switch, save a product (a short fanfare when it becomes your #1),
+  save to the Log or Return to Log, and delete a Log entry or a photo. Made in code; quiet on silent.
+- Ticks on iPhones with iOS 18+: a light tick as you tap a switch, Save, Save to log, Delete entry, Remove photo or
+  Return to Log.
+- More → Appearance → Sounds and ticks: Sounds and Ticks switches (both on to start) and Soft or Woody. Saved on this
+  phone only; no data, export or follower change.
+- Tests: `sounds.spec.ts` (3 Playwright tests). `CLAUDE.md`: sounds and ticks on dev; next decision D57.
 
 ### 0.46.3 — CLAUDE.md: fonts and colours on the to-do list (owner request)
 - The to-do list's Leaderboard design rework now includes a font and colour rework for the whole app: the font of the

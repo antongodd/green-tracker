@@ -20,6 +20,7 @@ import { Skeleton } from '../components/Skeleton';
 import { BoardLineIcon, PencilIcon, ReturnIcon, TrashIcon, TypeMark } from '../icons';
 import { cachedEntry, deleteEntry, fetchEntry } from '../logEntries';
 import { useOnline } from '../online';
+import { play } from '../sounds';
 import { startPromotion } from '../promotion';
 import { back, linkTo, navigate } from '../router';
 import { formatDate, useSmokesOn } from '../session';
@@ -128,6 +129,7 @@ export function LogEntryPage(p: { id: string }) {
     setError('');
     try {
       await deleteEntry(p.id);
+      play('delete');
       back('/log');
     } catch (e) {
       setError(errorText(e));
@@ -216,7 +218,7 @@ export function LogEntryPage(p: { id: string }) {
         <Sheet
           title={`Delete “${entry.name}”?`}
           message={deleteMessage(smokesOf(cachedSmokes() ?? [], `e:${entry.id}`).length, !!entry.photo, entry.kept)}
-          options={[{ label: 'Delete entry', danger: true, onSelect: remove }]}
+          options={[{ label: 'Delete entry', danger: true, tick: true, onSelect: remove }]}
           onCancel={() => setConfirmDelete(false)}
         />
       )}

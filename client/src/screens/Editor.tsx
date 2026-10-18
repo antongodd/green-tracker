@@ -15,7 +15,10 @@ import { GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../comp
 import { formatIsoDate, todayIso } from '../components/ProductRow';
 import { ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
 import { scoreHeat } from '../../../shared/domain/heat';
-import { cachedProduct, fetchProduct, saveProduct } from '../products';
+import { cachedProduct, cachedProducts, fetchProduct, saveProduct } from '../products';
+import { rankProducts } from '../../../shared/domain/leaderboard';
+import { play, switchAttr } from '../sounds';
+import { Tick } from '../components/Tick';
 import { useOnline } from '../online';
 import { back, navigate, replaceHistory } from '../router';
 import { promoteEntry } from '../logEntries';
@@ -85,6 +88,14 @@ function toInput(f: Form, drafts: PhotoDraft[]): ProductInput | string {
     purchases.push({ ...(d.id ? { id: d.id } : {}), date: d.date || null, amount, totalPaid, supplier: d.supplier || null });
   }
   return { ...f, ratings, purchases, photos };
+}
+
+/** Your #1 by Overall (the Leaderboard's opening view): its id, null if nothing is rated, undefined if not loaded. */
+function topProduct(): string | null | undefined {
+  const list = cachedProducts();
+  if (!list) return undefined;
+  const top = rankProducts(list, { filter: 'all', rankBy: 'overall' })[0];
+  return top?.first ? top.product.id : null;
 }
 
 /**
@@ -182,9 +193,12 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     const checked = validateProductInput(input);
     if (!checked.ok) return fail(checked.message);
     setSaving(true);
+    const topBefore = topProduct();
     try {
       const product = p.promoteFrom ? await promoteEntry(p.promoteFrom, checked.value) : await saveProduct(p.id, checked.value);
       saved.current = true; // the pending uploads now belong to the product
+      // D56: a fanfare when this save puts it at the top of your Leaderboard, else the save sound.
+      play(topBefore !== undefined && topBefore !== product.id && topProduct() === product.id ? 'first' : 'save');
       if (p.id) back(`/products/${product.id}`);
       else if (p.promoteFrom) {
         // The entry is gone: drop its editor from history, then open the new product.
@@ -339,7 +353,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                 Private
                 <span class="small">Hidden from your followers</span>
               </span>
-              <input type="checkbox" role="switch" class="switch" checked={form.private} onChange={(e) => set('private', e.currentTarget.checked)} />
+              <input type="checkbox" role="switch" class="switch" {...switchAttr()} checked={form.private} onChange={(e) => set('private', e.currentTarget.checked)} />
             </label>
           </section>
           <button type="submit" hidden />
@@ -352,8 +366,9 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={save} disabled={saving || drafts.some((d) => d.status === 'uploading') || !online}>
+          <button class="btn primary has-tick" onClick={save} disabled={saving || drafts.some((d) => d.status === 'uploading') || !online}>
             {saving ? 'Saving…' : drafts.some((d) => d.status === 'uploading') ? 'Uploading photos…' : 'Save'}
+            {!saving && !drafts.some((d) => d.status === 'uploading') && online && <Tick />}
           </button>
         </div>
       </div>

@@ -29,6 +29,7 @@ import { Skeleton } from '../components/Skeleton';
 import { SmokesCard } from './Smokes';
 import { useSmokes, withSmokeCounts } from '../smokes';
 import { useSmokesOn } from '../session';
+import { play, switchAttr } from '../sounds';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
 export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 'hitTimeMinutes'> }) {
@@ -249,6 +250,7 @@ export function Profile(p: { id: string }) {
     setError('');
     try {
       const entry = await returnToLog(p.id);
+      play('log');
       // The product is gone from your list: Back from the entry goes to the Log, not here.
       replaceHistory('/log');
       navigate(`/log/${entry.id}`);
@@ -377,7 +379,7 @@ export function Profile(p: { id: string }) {
                   Private
                   <span class="small">Hidden from your followers</span>
                 </span>
-                <input type="checkbox" role="switch" class="switch" checked={product.private} disabled={busy} onChange={(e) => toggle('private', e.currentTarget.checked)} />
+                <input type="checkbox" role="switch" class="switch" {...switchAttr()} checked={product.private} disabled={busy} onChange={(e) => toggle('private', e.currentTarget.checked)} />
               </label>
               <button class="btn secondary" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
                 <ReturnIcon />
@@ -432,7 +434,7 @@ export function Profile(p: { id: string }) {
         <Sheet
           title={`Return “${product.name}” to your Log?`}
           message="It leaves your Leaderboard and followers’ view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
-          options={[{ label: 'Return to Log', onSelect: moveToLog }]}
+          options={[{ label: 'Return to Log', tick: true, onSelect: moveToLog }]}
           onCancel={() => setConfirmReturn(false)}
         />
       )}

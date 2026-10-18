@@ -2,6 +2,7 @@ import type { ComponentChildren } from 'preact';
 import { BackIcon, BoardIcon, BoardLineIcon, FlameIcon, FlameLineIcon, LeafGlass, LogIcon, LogLineIcon, MoreIcon, MoreLineIcon, PeopleIcon, PeopleLineIcon } from '../icons';
 import { back, linkTo } from '../router';
 import { useSession, useSmokesOn } from '../session';
+import { Tick } from './Tick';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
@@ -83,6 +84,8 @@ export function TabBar(p: { active: Tab | null }) {
 export interface SheetOption {
   label: string;
   danger?: boolean;
+  /** A light tick as you tap it (D56): deleting, Return to Log. */
+  tick?: boolean;
   onSelect: () => void;
 }
 
@@ -100,8 +103,9 @@ export function Sheet(p: { title?: string; message?: string; options: SheetOptio
             </div>
           )}
           {p.options.map((o) => (
-            <button type="button" key={o.label} class={`opt${o.danger ? ' dng' : ''}`} onClick={o.onSelect}>
+            <button type="button" key={o.label} class={`opt${o.danger ? ' dng' : ''}${o.tick ? ' has-tick' : ''}`} onClick={o.onSelect}>
               {o.label}
+              {o.tick && <Tick />}
             </button>
           ))}
         </div>

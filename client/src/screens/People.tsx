@@ -12,6 +12,7 @@ import * as api from '../people';
 import { ownOriginalUrl, prepareOriginal, removeProfilePhoto, saveProfilePhoto } from '../profilePhoto';
 import { linkTo, navigate } from '../router';
 import { useSession } from '../session';
+import { play } from '../sounds';
 import { EmptyCard } from '../components/EmptyCard';
 import { Skeleton } from '../components/Skeleton';
 
@@ -129,6 +130,7 @@ function MeCard(p: { followers?: number; following?: number }) {
     setError('');
     try {
       await removeProfilePhoto();
+      play('delete');
       await refresh();
     } catch (e) {
       setError(errorText(e));
@@ -183,7 +185,7 @@ function MeCard(p: { followers?: number; following?: number }) {
         />
       )}
       {menu === 'remove' && (
-        <Sheet title="Remove your profile photo?" message="People will see your letter instead." options={[{ label: 'Remove photo', danger: true, onSelect: remove }]} onCancel={() => setMenu(null)} />
+        <Sheet title="Remove your profile photo?" message="People will see your letter instead." options={[{ label: 'Remove photo', danger: true, tick: true, onSelect: remove }]} onCancel={() => setMenu(null)} />
       )}
       {framing && <AvatarCropper original={framing.original} crop={framing.crop} busy={busy} error={error} onCancel={() => (setFraming(null), setError(''))} onApply={apply} />}
     </div>

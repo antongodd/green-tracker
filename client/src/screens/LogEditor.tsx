@@ -12,6 +12,8 @@ import { GroupHead, Select, TextField } from '../components/inputs';
 import { LeafLineIcon, PencilIcon, PinIcon, ScaleIcon } from '../icons';
 import { cachedEntry, fetchEntry, saveEntry } from '../logEntries';
 import { useOnline } from '../online';
+import { play } from '../sounds';
+import { Tick } from '../components/Tick';
 import { back, navigate } from '../router';
 
 interface Form extends Omit<LogEntryInput, 'amount' | 'photos'> {
@@ -95,6 +97,7 @@ export function LogEditor(p: { id: string | null }) {
     setBusy(true);
     try {
       await saveEntry(p.id, input);
+      play('log');
       handedOff.current = true;
       back(home);
     } catch (e) {
@@ -154,8 +157,9 @@ export function LogEditor(p: { id: string | null }) {
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={save} disabled={busy || uploading || !online}>
+          <button class="btn primary has-tick" onClick={save} disabled={busy || uploading || !online}>
             {busy ? 'Saving…' : uploading ? 'Uploading photo…' : 'Save to log'}
+            {!busy && !uploading && online && <Tick />}
           </button>
         </div>
       </div>
