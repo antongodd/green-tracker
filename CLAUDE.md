@@ -126,14 +126,17 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.46.2: live plus this notes-only
-  change. Smokes: on for dev, hidden on live (D46).
+- **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.46.3: live plus notes-only
+  changes (0.46.2, 0.46.3). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
 1. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
    for live, update `test/domain/siteConfig.test.ts` and D46).
-2. **Leaderboard design rework**: continue when Anton brings it up.
+2. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
+   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
+   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
+   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
 3. **Sound effects and haptics** (Anton's idea, 2026-10-13): make the app feel more interactive. Talked through, not
    planned yet. Sounds: made in code (no downloads), obey the iPhone's silent switch, an on/off switch in More →
    Appearance. Haptics: iPhone web apps can't vibrate the usual way; the iOS 18+ trick (flicking a hidden on/off switch
