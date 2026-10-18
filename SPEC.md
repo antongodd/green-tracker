@@ -122,6 +122,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D52 | **Choosing the cover photo, and a tidier photo section** (2026-10-13; layout C "Even grid" of https://claude.ai/artifact/7Eo1e8aHBrWXaYm2b28GCZ, step 1 of the owner's photo rework; the owner's answers: both Set as cover and drag, saved at once from the product page, a star (not a "Cover" label), new photos at the end, removing the cover makes the next one the cover, Log entries keep one photo). Replaces §4's "no reordering" and D26's grid buttons. | **The cover is a product's first photo**, shown everywhere a product has one photo (Leaderboard rows, the Poster, the Log, tiles, followers' view, Return to Log). The Photos grid stays three even squares to a row; the cover is first, with a **gold ring and a ★**. **Product page:** tap a photo → a bar along the bottom of the viewer: **Set as cover** (saved at once: the viewer closes, the big photo fades over to the new cover, "Cover updated"; "The cover" on the first), **Crop**, **Cut out** (Restore background on a cut-out). **Editor:** **⋯** on each photo (Set as cover, Crop, Remove background, Remove photo), or **press and hold a photo and drag it**; the first is the cover; Save keeps the order, Cancel doesn't; the viewer's bar adds **Remove**. Removing the cover makes the next photo the cover; new photos go at the end. The grid's round Crop and Remove background buttons are gone. **Log entries** keep one photo: ⋯ without Set as cover, no star. **A friend's photos:** the ring and star, no ⋯, no bar. **No database change**; Export/Restore keep the order; followers see the new cover (only if photos are shared, D45). See §4 *Photos*. |
 | D53 | **Zooming into a photo** (2026-10-15; option A "Clear view" of https://claude.ai/artifact/2n1jb4sYgqXX92iguZSNrc, step 2 of the owner's photo rework; the owner's earlier answers: up to 4×, double-tap for 2×, the viewer only). | In the **full-screen viewer** (your products, Log entries, friends' products, editors): **pinch** 1×–4× (the spot between the fingers stays put), **double-tap** for 2× where you tap and again to go back, **drag** to look around (the photo stops at its edges). Zoomed in, the top and the bottom bar **slide away**; a small "2.4×" shows while pinching; **one tap** brings the buttons back. **Swiping** to another photo only when zoomed right out; every photo starts at 1×. Not on the product page's big photo (a tap still opens the viewer). Zooming shows the saved photo (up to 1600px across, about its full detail at 4× on an iPhone; cut-outs are smaller, a little softer). Nothing is saved; no data, export, privacy or follower change (friends zoom only the version they already get). Reduce Motion: no glides. See §4 *Photos*. |
 | D54 | **Draw round a nug in Remove background** (2026-10-16; option A "Loop" of https://claude.ai/artifact/1XApeYBHvJXjhiUEKyc5Ak, step 3 of the owner's photo rework; the owner's earlier answers: the AI cuts a clean edge inside the drawing, offered at the start and after the AI's try, several loops, Undo / Clear / Draw again, two fingers zoom, no brushes). Adds to D26; the model is unchanged. | **Remove background opens on a choice:** **Find the bud for me** (as before) or **Draw round it**. Draw a rough **loop** round each bud to keep; letting go joins it up and darkens the rest; **Undo**, **Clear**; **pinch** to zoom while drawing. **Cut out** shows the same AI only the part round the loops and drops anything outside them, so touching buds can be separated (loop through the gap); then the usual Preview → **Apply**, or **Not right? Draw again**. After the AI's own try: **Not right? Draw round it** (and "Or tap the bud in your photo"). Same results as any cut-out: the original is kept, Restore background undoes it, rows, pages, followers and Export/Restore as D26. Drawing needs a finger or mouse; Find the bud for me and Tap the bud remain for VoiceOver and keyboard. No data change. See §4 *Remove background*. |
+| D55 | **A slow page load can't undo your change** (2026-10-18; found while testing 0.44.0, on the live site too; the owner asked for the fix). A bug fix; no behaviour is chosen. | Opening a product page shows the app's copy at once and asks the server for a fresh one. If you flicked **Private** or **Archive**, tapped **Set as cover**, or saved a crop or cut-out before that answer arrived, the older copy landed afterwards and put the page (and the app's memory, so Back and the Leaderboard) back as it was until the next visit; the change itself was always saved. Now an answer that started before your change is ignored. No data change. See §4 *Late loads*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -674,6 +675,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the Leaderboard, an old link; no card on an ordinary entry; axe and readability of the card (proved by dimming it);
   Delete's message; Add to leaderboard back to the same product with its purchases, notes, photos and ratings; not on an
   archived product, offline; Actions readable); `people.spec.ts` (no Return to Log on a friend's product).
+- **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
+  change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
+  optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`
+  the answer if it moved; Profile's opening fetch also drops it rather than `setProduct`. A change's own response is the
+  fresh copy. Tests: `staleload.spec.ts` (Private and Set as cover with the opening GET held back until after the
+  change; both fail without the fix).
 - **Privacy (D45, 0.38.0).** Rules in `shared/domain/privacy.ts`: `Privacy` (eight booleans), `DEFAULT_PRIVACY` (as before
   0.38.0), `PRIVACY_NEEDS` / `privacyEnabled` / `effectivePrivacy` (a switch whose prerequisite is off counts as off),
   `validatePrivacy` (a full set of booleans, unknown keys dropped), `privacySummary` (More's line). Table `privacy_settings`
@@ -1104,6 +1111,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.46.1 — a slow page load can't undo your change (owner request)
+- Bug fix (decision D55, on the live site too). Flicking **Private** (or **Set as cover**) just after a product page
+  opened could flick back for a moment when the page's slower first load arrived; Back and the Leaderboard could show
+  the old version too. Your change was always saved. Now that late, older copy is ignored. Crops, cut-outs and Archive
+  on the product page are covered the same way.
+- Tests: 2 Playwright tests in `staleload.spec.ts` that hold the page's first load back until after the change; both
+  fail on 0.46.0.
+- `CLAUDE.md`: draw round a nug confirmed by Anton; this fix on the list; next decision D56.
 
 ### 0.46.0 — draw round a nug (owner request)
 - Step 3 of the photo rework (decision D54). **Remove background** now opens on a choice: **Find the bud for me** or
