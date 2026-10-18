@@ -1112,6 +1112,10 @@ None.
 
 ## 6. Changelog
 
+### 0.46.2 — CLAUDE.md: 0.46.1 is live
+- `CLAUDE.md`: the Log photo swap fix (D51), the photo rework (D52–D54) and the late-load fix (D55) went live on
+  2026-10-18 (release #61) and move from the to-do list to Done. Notes only; no change to the app.
+
 ### 0.46.1 — a slow page load can't undo your change (owner request)
 - Bug fix (decision D55, on the live site too). Flicking **Private** (or **Set as cover**) just after a product page
   opened could flick back for a moment when the page's slower first load arrived; Back and the Leaderboard could show
