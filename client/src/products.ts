@@ -5,6 +5,17 @@ import { api } from './api';
 
 const byId = new Map<string, Product>();
 let list: Product[] | null = null;
+// D55: when each product was last changed on this device, so a fetch that started earlier
+// can't put the old version back on screen or in the cache.
+const changes = new Map<string, number>();
+let tick = 0;
+
+/** Call as a change to a product starts (before showing it), so older fetches are ignored. */
+export function changing(id: string): void {
+  changes.set(id, ++tick);
+}
+/** Compare before and after a fetch: if it differs, a change started meanwhile. */
+export const changeMark = (id: string): number => changes.get(id) ?? 0;
 
 function remember(p: Product): Product {
   byId.set(p.id, p);
@@ -43,16 +54,21 @@ export async function fetchArchived(): Promise<Product[]> {
   return r.products;
 }
 
+/** A product, fresh from the server; not cached if it was changed here while this loaded (D55). */
 export async function fetchProduct(id: string): Promise<Product> {
-  return remember((await api<{ product: Product }>('GET', `/products/${encodeURIComponent(id)}`)).product);
+  const mark = changeMark(id);
+  const r = await api<{ product: Product }>('GET', `/products/${encodeURIComponent(id)}`);
+  return changeMark(id) === mark ? remember(r.product) : r.product;
 }
 
 export async function saveProduct(id: string | null, input: ProductInput): Promise<Product> {
+  if (id) changing(id);
   const r = id ? await api<{ product: Product }>('PUT', `/products/${encodeURIComponent(id)}`, input) : await api<{ product: Product }>('POST', '/products', input);
   return remember(r.product);
 }
 
 export async function setFlag(id: string, flag: 'private' | 'archived', value: boolean): Promise<Product> {
+  changing(id);
   return remember((await api<{ product: Product }>('POST', `/products/${encodeURIComponent(id)}/${flag}`, { value })).product);
 }
 

@@ -11,7 +11,7 @@ import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
 import { ExternalIcon, LockIcon, ReturnIcon } from '../icons';
-import { cacheProduct, cachedProduct, cachedProducts, fetchProduct, fetchProducts, setFlag } from '../products';
+import { cacheProduct, cachedProduct, cachedProducts, changeMark, changing, fetchProduct, fetchProducts, setFlag } from '../products';
 import { boardPlace } from '../../../shared/domain/leaderboard';
 import { pageClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
@@ -147,6 +147,7 @@ export function Profile(p: { id: string }) {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
+    changing(current.id);
     setCropping(null);
     setSavingCrop(note);
     setError('');
@@ -170,6 +171,7 @@ export function Profile(p: { id: string }) {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
+    changing(current.id);
     const upload = await uploadSet({ ...r, cutout: true });
     const res = await api<{ photo: PhotoRecord }>('POST', `/photos/${encodeURIComponent(photo.id)}/crop`, { upload, crop: photo.crop });
     setProduct(cacheProduct({ ...current, photos: current.photos.map((x) => (x.id === photo.id ? res.photo : x)) }));
@@ -181,6 +183,7 @@ export function Profile(p: { id: string }) {
     const current = product;
     const photo = current?.photos[index];
     if (!current || !photo) return;
+    changing(current.id);
     setViewing(null);
     setError('');
     const was = current.photos[0] ? shownFromRecord(current.photos[0]).image : null;
@@ -204,8 +207,12 @@ export function Profile(p: { id: string }) {
   }, [note]);
 
   useEffect(() => {
+    // D55: if you change it while this loads (Private, a new cover…), this older copy is dropped.
+    const mark = changeMark(p.id);
     fetchProduct(p.id)
-      .then(setProduct)
+      .then((fresh) => {
+        if (changeMark(p.id) === mark) setProduct(fresh);
+      })
       .catch((e) => setError(errorText(e)));
   }, [p.id]);
 
@@ -223,6 +230,7 @@ export function Profile(p: { id: string }) {
     setBusy(true);
     setError('');
     setConfirmArchive(false);
+    changing(p.id);
     // Show the new state straight away; put it back if the save fails.
     setProduct((cur) => cur && { ...cur, [flag]: value });
     try {

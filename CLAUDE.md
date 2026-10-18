@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D54 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D55 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D55), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D56), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D54.
+- Reopen any decision D1–D55.
 
 ## Testing notes
 
@@ -112,6 +112,9 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   `hasTouch: true` (`test/e2e/zoom.spec.ts`). `textBoxes` hides the text it measures: screenshot before it, not after.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
+- Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
+  starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
+  with `route.fetch()`, make the change, then release it.
 
 ## Where things stand
 
@@ -122,8 +125,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** 0.46.0: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53),
-  draw round a nug (D54) and notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
+  (D50). **Dev:** 0.46.1: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53),
+  draw round a nug (D54), the late-load fix (D55) and notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -146,9 +149,12 @@ section, so it must always be current.
    2. **Zoom** (D53): **on dev** (0.45.0, 2026-10-15); Anton: "looks really good". In the full-screen viewer:
       pinch up to 4×, double-tap for 2× and back, drag to look around; zoomed in, the buttons slide away (one tap
       brings them back); swiping to the next photo only when zoomed out.
-   3. **Draw round a nug** (D54): **on dev** (0.46.0, 2026-10-16). Remove background opens on Find the bud for me /
+   3. **Draw round a nug** (D54): **on dev** (0.46.0, 2026-10-16); Anton: "looks good and works well". Remove background opens on Find the bud for me /
       Draw round it; loops (Undo, Clear, pinch to zoom); the same AI cuts inside the loops; Draw again; offered
       after the AI's try too. Also fixed: Remove background's room for the notch (lost in 0.45.0 on dev).
+6. **Fix a slow page load undoing your change** (D55, found while testing; Anton asked for it 2026-10-18): **on dev**
+   (0.46.1, 2026-10-18). Flicking Private (or Set as cover) just after a product page opened could flick back for a
+   moment (live too, until it goes live). Then Anton wants to **go live** with items 1, 5 and 6.
 
 ### Done (newest first)
 
