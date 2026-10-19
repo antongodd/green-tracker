@@ -1149,6 +1149,10 @@ None.
 
 ## 6. Changelog
 
+### 0.48.2 — CLAUDE.md: 0.48.1 is live
+- `CLAUDE.md`: sounds and ticks (D56–D58) went live on 2026-10-19 (release #69) and move from the to-do list to Done.
+  Notes only; no change to the app.
+
 ### 0.48.1 — sounds quiet on silent (owner report)
 - Decision D58. On GT Dev the sounds now stay quiet when your iPhone is on silent (0.48.0 fixed it by setting the
   quiet-on-silent mode before every sound). The Silent test card is gone, and the Sounds note says again that it's
