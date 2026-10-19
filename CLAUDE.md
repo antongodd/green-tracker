@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D56 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D57 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D57), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D58), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D56.
+- Reopen any decision D1–D57.
 
 ## Testing notes
 
@@ -118,7 +118,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
   script (`sounds.spec.ts`). Chromium has no iOS switch control, so no ticks: pretend it in with
   `Object.defineProperty(HTMLInputElement.prototype, 'switch', …)`. A new big moment calls `play()` after it succeeds,
   and its button gets `<Tick />` (`.has-tick`) or a `Sheet` option `tick: true`. Never put a real control inside a
-  button (axe nested-interactive): the tick is a label pointing at the one hidden switch `#gt-tick`.
+  button (axe nested-interactive): the tick is a label pointing at the one hidden switch `#gt-tick`. The browser-test
+  servers say they're live: answer `/api/auth/me` with `site: 'dev'` (`page.route`) to see dev-only things.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -131,14 +132,16 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.47.0: live plus sounds and ticks
-  (D56) and notes-only changes (0.46.2, 0.46.3, 0.47.1, 0.47.2). Smokes: on for dev, hidden on live (D46).
+- **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.48.0: live plus sounds and ticks
+  (D56, D57) and notes-only changes (0.46.2, 0.46.3, 0.47.1, 0.47.2). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Sounds and ticks** (Anton's idea, 2026-10-13): **on dev** (0.47.0, D56, 2026-10-18). Anton to try it on GT Dev
-   in the Home Screen app: do the sounds play, stay quiet on silent, and do the ticks work there (they worked in Safari
-   on the test page)? If ticks don't work in the Home Screen app, hide the Ticks switch. Then "go live".
+1. **Sounds and ticks** (Anton's idea, 2026-10-13): **on dev** (0.47.0, D56, 2026-10-18; own screen and a Silent
+   test, 0.48.0, D57, 2026-10-19). Tried on GT Dev in the Home Screen app: sounds play and ticks work, but sounds play
+   on silent. Next: Anton runs the Silent test (More → Sounds and ticks, dev only, with the iPhone on silent) and says
+   which tests stay quiet; switch `SESSION` in `client/src/sounds.ts` to that one and remove the card (if none, the
+   Sounds note says it plays on silent, asking Anton first). Then "go live".
 2. **Brands and suppliers** (Anton's idea, 2026-10-19; how it develops is still open), for **both** fields: the
    product's **Source** (the brand) and each purchase's **Supplier** (where he bought it, e.g. a coffeeshop; followers
    never see suppliers, D2/D45). (a) See every product he's tried from one brand or supplier. (b) Suggestions as he

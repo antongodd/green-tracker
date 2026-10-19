@@ -60,30 +60,53 @@ export const switchAttr = (): Record<string, boolean> => ({ switch: ticks() });
 
 // ---- The sound maker ----
 
+/**
+ * The iPhone's sound mode for the app (navigator.audioSession, Safari 16.4+). "ambient" should be
+ * quiet on silent and leave your music playing, but on 0.47.0 the Home Screen app still played on
+ * silent (Anton, 2026-10-19). The dev site's Silent test (D57) plays the save sound in each mode.
+ */
+type SessionType = 'ambient' | 'auto' | 'transient';
+export const SILENT_TESTS: SessionType[] = ['ambient', 'auto', 'transient'];
+const SESSION: SessionType = 'ambient';
+
+function setSession(type: SessionType): void {
+  try {
+    const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+    if (session && session.type !== type) session.type = type;
+  } catch {
+    // Older Safari: nothing to set.
+  }
+}
+
 let ctx: AudioContext | null = null;
-let master: GainNode | null = null;
 let idle: ReturnType<typeof setTimeout> | undefined;
 const IDLE_MS = 10_000; // then the sound maker sleeps, so it costs no battery
 
+const AudioCtx = (): typeof AudioContext | undefined => window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+/** Each sound maker's volume: 60% on the test page, which Anton found about right. */
+const volumes = new WeakMap<BaseAudioContext, GainNode>();
+function volume(c: BaseAudioContext): GainNode {
+  let g = volumes.get(c);
+  if (!g) {
+    g = c.createGain();
+    g.gain.value = 0.54;
+    g.connect(c.destination);
+    volumes.set(c, g);
+  }
+  return g;
+}
+
 function audio(): AudioContext | null {
+  setSession(SESSION);
   if (!ctx) {
-    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AC = AudioCtx();
     if (!AC) return null;
-    // "Ambient": quiet when the iPhone is on silent, and it doesn't pause your music.
-    try {
-      const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
-      if (session) session.type = 'ambient';
-    } catch {
-      // Older Safari: nothing to set.
-    }
     try {
       ctx = new AC();
     } catch {
       return null;
     }
-    master = ctx.createGain();
-    master.gain.value = 0.54; // 60% on the test page, which Anton found about right
-    master.connect(ctx.destination);
   }
   if (ctx.state !== 'running') ctx.resume().catch(() => {});
   clearTimeout(idle);
@@ -103,7 +126,7 @@ function voice(c: AudioContext, t: number, freq: number, { dur = 0.12, gain = 0.
   g.gain.setValueAtTime(0.0001, t);
   g.gain.exponentialRampToValueAtTime(gain, t + 0.004);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  g.connect(master!);
+  g.connect(volume(c));
   for (const [mult, amp] of partials) {
     const o = c.createOscillator();
     o.type = 'sine';
@@ -131,7 +154,7 @@ function knock(c: AudioContext, t: number, centre: number, gain: number) {
   f.Q.value = 3;
   const g = c.createGain();
   g.gain.value = gain;
-  src.connect(f).connect(g).connect(master!);
+  src.connect(f).connect(g).connect(volume(c));
   src.start(t);
 }
 
@@ -214,4 +237,20 @@ export function installSounds(): void {
     const t = e.target as HTMLElement | null;
     if (t instanceof HTMLInputElement && t.classList.contains('switch')) play('switch');
   });
+}
+
+/** The dev site's Silent test (D57): the Soft save sound in one sound mode, on a sound maker of its own. */
+export function silentTest(type: SessionType): void {
+  const AC = AudioCtx();
+  if (!AC) return;
+  ctx?.suspend().catch(() => {});
+  setSession(type);
+  window.dispatchEvent(new CustomEvent('gt-silent-test', { detail: { type } }));
+  try {
+    const c = new AC();
+    SETS.soft.save(c, c.currentTime + 0.05);
+    setTimeout(() => c.close().catch(() => {}), 1500);
+  } catch {
+    // Nothing to hear.
+  }
 }

@@ -124,6 +124,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D54 | **Draw round a nug in Remove background** (2026-10-16; option A "Loop" of https://claude.ai/artifact/1XApeYBHvJXjhiUEKyc5Ak, step 3 of the owner's photo rework; the owner's earlier answers: the AI cuts a clean edge inside the drawing, offered at the start and after the AI's try, several loops, Undo / Clear / Draw again, two fingers zoom, no brushes). Adds to D26; the model is unchanged. | **Remove background opens on a choice:** **Find the bud for me** (as before) or **Draw round it**. Draw a rough **loop** round each bud to keep; letting go joins it up and darkens the rest; **Undo**, **Clear**; **pinch** to zoom while drawing. **Cut out** shows the same AI only the part round the loops and drops anything outside them, so touching buds can be separated (loop through the gap); then the usual Preview → **Apply**, or **Not right? Draw again**. After the AI's own try: **Not right? Draw round it** (and "Or tap the bud in your photo"). Same results as any cut-out: the original is kept, Restore background undoes it, rows, pages, followers and Export/Restore as D26. Drawing needs a finger or mouse; Find the bud for me and Tap the bud remain for VoiceOver and keyboard. No data change. See §4 *Remove background*. |
 | D55 | **A slow page load can't undo your change** (2026-10-18; found while testing 0.44.0, on the live site too; the owner asked for the fix). A bug fix; no behaviour is chosen. | Opening a product page shows the app's copy at once and asks the server for a fresh one. If you flicked **Private** or **Archive**, tapped **Set as cover**, or saved a crop or cut-out before that answer arrived, the older copy landed afterwards and put the page (and the app's memory, so Back and the Leaderboard) back as it was until the next visit; the change itself was always saved. Now an answer that started before your change is ignored. No data change. See §4 *Late loads*. |
 | D56 | **Sounds and ticks** (2026-10-18; the owner's idea of 2026-10-13, tried on his iPhone with the test page https://claude.ai/artifact/UcgKz5k1uAPAhgj7zN3PR9: he chose Soft, kind of liked Woody, disliked Glassy; 60% volume about right; sounds stayed quiet on silent; the real switch and a hidden switch under his finger ticked, a switch flipped from code didn't; then the app's way (Tick D: a label in the button for a switch elsewhere, the button pressed a moment later) ticked too. His answers: subtle, only big moments, on to start, a separate Ticks switch, saved on each phone, photo deletes too, a choice of Soft or Woody). | Quiet **sounds made in code** (nothing downloaded) when you **flick a switch**, **save a product** (a short fanfare instead when that save makes it **#1** on your Leaderboard by Overall), **save a Log entry** or **Return to Log**, and **delete** a Log entry or a photo (in an editor, or your profile photo). Every other tap is silent. Quiet when the iPhone is on silent, and it doesn't pause your music. **Ticks** on iPhones with iOS 18+: a light tick as you tap a switch, Save, Save to log, Delete entry, Remove photo or Return to Log (the tick comes with the tap, so a new #1 has no tick of its own). **More → Appearance → Sounds and ticks:** **Sounds** and **Ticks** switches, both on to start, and **Soft** or **Woody** (tap to hear). Ticks is hidden where the phone can't tick. Saved **on this phone only**: no data change, nothing in Export/Restore, nothing for followers; a new phone starts with both on. Smokes (on hold) has no sounds. See §4 *Sounds and ticks*. |
+| D57 | **Sounds and ticks get their own screen; a Silent test on dev** (2026-10-19; the owner tried 0.47.0 on GT Dev in the Home Screen app: sounds play and ticks work, but sounds still play on silent; and he didn't like the switches under Leaderboard colours. He picked option A of https://claude.ai/artifact/G8S2GHgowxq88SsZ95iEtF). Changes D56's place. | **More → Appearance** gains a second row, **Sounds and ticks** (On / Off), opening its own screen with the Sounds and Ticks switches and Soft or Woody; Leaderboard colours is colours only again. The Sounds note no longer promises silence on silent. On the **dev site only**, a **Silent test** card plays the save sound in each of three iPhone sound modes (Test 1 is what the app uses now) so the owner can say which stays quiet on silent; the app then uses that one and the card goes. Same settings, still saved on this phone; no data, export or follower change. See §4 *Sounds and ticks*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -700,6 +701,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   switches; then `ap-sound-set` radios while Sounds is on, a click plays `save` in that set; footnote "Saved on this
   phone only"); a change redraws the whole screen. Tests: `sounds.spec.ts` (each moment's sound; Appearance; ticks with
   the switch control pretended into Chromium: the label fills Save, the tap flips `#gt-tick`, one PUT, one DELETE, axe).
+- **Sounds and ticks screen and Silent test (D57, 0.48.0).** `screens/Sounds.tsx`: `SoundsScreen` at `/more/sounds`
+  (main.tsx) holds what D56 put in Appearance (`section[aria-label="Sounds and ticks"]` with the Sounds and Ticks
+  switches, then `#ap-sound-set` radios while Sounds is on, footnote); More's Appearance group adds
+  `Row label="Sounds and ticks"` (value On / Off from `sounds().on`, `SoundIcon`, tint green). On the dev site
+  (`me.site === 'dev'`) a `#silent-test` section has three buttons, `silentTest(type)` for `SILENT_TESTS`
+  (`ambient`, the app's `SESSION`; `auto`; `transient`): it sets `navigator.audioSession.type`, plays Soft's save on a
+  new `AudioContext` (closed after 1.5s) and dispatches `gt-silent-test`. `sounds.ts` now sets the session type
+  before every play (so a test's type doesn't stick) and gives each context its own volume node (`volume(c)`).
+  Tests: `sounds.spec.ts` (the screen, the More row, the Silent test with `/api/auth/me` answered as dev, none on
+  live), `more.spec.ts` (12 rows).
 - **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
   change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
   optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`
@@ -1136,6 +1147,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.48.0 — sounds and ticks on their own screen; a silent test (owner request)
+- Decision D57. **More → Sounds and ticks** (under Appearance) opens its own screen with the Sounds and Ticks
+  switches and Soft or Woody. Leaderboard colours is back to just colours.
+- Sounds still played with the iPhone on silent in the Home Screen app. On GT Dev only, a **Silent test** card on
+  the new screen tries three iPhone sound modes; the app will use the one that stays quiet.
+- Tests: `sounds.spec.ts` (4 Playwright tests), `more.spec.ts`. `CLAUDE.md`: next decision D58.
 
 ### 0.47.2 — CLAUDE.md: a website for the app on the to-do list (owner request)
 - The to-do list gets item 5, **A website for the app**: a page at a separate address showing what Green Tracker is,

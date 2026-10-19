@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { LIVE_PORT } from '../../playwright.config';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
 import { settled, signUp, wholeScreenContrastFailures } from './helpers';
@@ -114,17 +115,39 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   await page.context().close();
 });
 
-test('More → Appearance: Sounds on to start, Soft or Woody, saved on this phone; off means silence', async ({ browser }) => {
+test('More → Sounds and ticks, its own screen (D57): Sounds on to start, Soft or Woody, saved on this phone; off means silence', async ({ browser }) => {
   const page = await open(browser);
+  // The browser tests' servers say they're the live site; this one says dev, as the dev site does (dev-site.spec.ts).
+  await page.route('**/api/auth/me', async (route) => {
+    const res = await route.fetch();
+    await route.fulfill({ response: res, json: { ...(await res.json()), site: 'dev' } });
+  });
+  // Leaderboard colours is back to colours only.
   await page.goto('/more/appearance');
+  await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Sounds' })).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: /Soft|Woody/ })).toHaveCount(0);
+
+  await page.goto('/more');
+  const row = page.getByRole('link', { name: /Sounds and ticks/ });
+  await expect(row).toContainText('On');
+  await row.click();
+  await expect(page).toHaveURL(/\/more\/sounds$/);
   const sounds = page.getByRole('switch', { name: 'Sounds' });
   await expect(sounds).toBeChecked();
   // No ticks on a phone that can't tick.
   await expect(page.getByRole('switch', { name: 'Ticks' })).toHaveCount(0);
   await expect(page.getByRole('radio', { name: /Soft/ })).toBeChecked();
   expect(await axe(page)).toEqual([]);
-  const worst = await wholeScreenContrastFailures(page, '/more/appearance', '#ap-sounds, #ap-sound-set, .sound-set .main > span, .priv-row .main > span, .priv-foot');
+  const worst = await wholeScreenContrastFailures(page, '/more/sounds', '#ap-sound-set, .sound-set .main > span, .priv-row .main > span, .priv-foot, #silent-test, .silent-how, .silent-tests .btn');
   expect(worst, worst.join('\n')).toEqual([]);
+
+  // The dev site's Silent test plays the save sound in each sound mode.
+  const tests = page.locator('.silent-tests .btn');
+  await expect(tests).toHaveText(['Test 1 (now)', 'Test 2', 'Test 3']);
+  await page.evaluate(() => addEventListener('gt-silent-test', (e) => (window as unknown as { sounds: string[] }).sounds.push(`silent:${(e as CustomEvent).detail.type}`)));
+  for (let i = 0; i < 3; i++) await tests.nth(i).click();
+  await expectHeard(page, ['silent:ambient', 'silent:auto', 'silent:transient']);
 
   // Tapping a sound plays it, even the one already chosen.
   await page.getByRole('radio', { name: /Woody/ }).click();
@@ -137,10 +160,14 @@ test('More → Appearance: Sounds on to start, Soft or Woody, saved on this phon
   await sounds.click();
   await expect(sounds).not.toBeChecked();
   await expect(page.getByRole('radio', { name: /Soft|Woody/ })).toHaveCount(0);
+  await expectHeard(page, []);
+  await page.getByRole('link', { name: 'Back' }).first().click();
+  await expect(page.getByRole('link', { name: /Sounds and ticks/ })).toContainText('Off');
+  await page.goto('/more/appearance');
   await page.getByRole('switch', { name: 'Mark my #1' }).click();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).not.toBeChecked();
   await expectHeard(page, []); // a switch's sound plays as it flips, so there'd be one by now
-  await page.reload();
+  await page.goto('/more/sounds');
   await expect(sounds).not.toBeChecked();
   await sounds.click();
   await expectHeard(page, ['switch:woody']);
@@ -157,7 +184,7 @@ test('ticks: a label of the hidden switch fills Save and Delete entry, each acts
     if (r.url().includes('/api/') && r.method() !== 'GET') calls.push(`${r.method()} ${new URL(r.url()).pathname}`);
   });
 
-  await page.goto('/more/appearance');
+  await page.goto('/more/sounds');
   await expect(page.getByRole('switch', { name: 'Ticks' })).toBeChecked();
   await expect(page.locator('input.switch:not([switch])')).toHaveCount(0);
 
@@ -190,7 +217,7 @@ test('ticks: a label of the hidden switch fills Save and Delete entry, each acts
   await expectHeard(page, ['delete:soft']);
 
   // Ticks off: no hidden switches, and the app's switches stop ticking.
-  await page.goto('/more/appearance');
+  await page.goto('/more/sounds');
   await page.getByRole('switch', { name: 'Ticks' }).click();
   await expect(page.getByRole('switch', { name: 'Ticks' })).not.toBeChecked();
   await expect(page.locator('input.switch[switch]')).toHaveCount(0);
@@ -198,5 +225,17 @@ test('ticks: a label of the hidden switch fills Save and Delete entry, each acts
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   await expect(page.locator('label.tick')).toHaveCount(0);
   await expect(page.locator('input.switch[switch]')).toHaveCount(0);
+  await page.context().close();
+});
+
+test('the live site has Sounds and ticks but no Silent test', async ({ browser }) => {
+  const page = await (await browser.newContext({ baseURL: `http://localhost:${LIVE_PORT}` })).newPage();
+  await signUp(page, name('sndl'));
+  await page.goto('/more');
+  await page.getByRole('link', { name: /Sounds and ticks/ }).click();
+  await expect(page.getByRole('switch', { name: 'Sounds' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: /Soft/ })).toBeChecked();
+  await expect(page.getByRole('heading', { name: /Silent test/ })).toHaveCount(0);
+  await expect(page.locator('.silent-tests')).toHaveCount(0);
   await page.context().close();
 });

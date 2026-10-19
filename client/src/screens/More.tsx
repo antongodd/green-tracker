@@ -5,7 +5,7 @@ import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
@@ -15,6 +15,7 @@ import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
 import { formatDate, useSession, useSmokesOn } from '../session';
 import { PRESETS } from '../../../shared/domain/gems';
 import { useAppearance } from '../components/Gems';
+import { sounds } from '../sounds';
 
 declare const __APP_VERSION__: string;
 
@@ -136,11 +137,13 @@ export function More() {
             <Row label="What followers see" sub={privacy ? privacySummary(privacy, { smokes: smokesOn }) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
           </div>
         </div>
-        {/* D48: how the app looks for you. */}
+        {/* D48: how the app looks for you; D57: and sounds. */}
         <div class="lh cap">Appearance</div>
         <div class="wrap">
           <div class="list">
             <Row label="Leaderboard colours" value={PRESETS[appearance.preset].label} to="/more/appearance" icon={GemIcon} tint="gem" />
+            {/* D57: sounds and ticks have their own screen; saved on this phone. */}
+            <Row label="Sounds and ticks" value={sounds().on ? 'On' : 'Off'} to="/more/sounds" icon={SoundIcon} />
           </div>
         </div>
         <div class="lh cap">Data</div>
