@@ -54,10 +54,17 @@ async function drag(page: Page, from: { x: number; y: number }, to: { x: number;
   await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   void page;
 }
+const sessions = new WeakMap<Page, CDPSession>();
+/**
+ * Two quick taps. The four touch events are sent together (they still arrive in order): sent
+ * one after another, a busy machine spread the taps up to 303ms apart, past the app's 300ms
+ * double-tap window, so they counted as two single taps.
+ */
 async function doubleTap(page: Page, x: number, y: number) {
-  await page.touchscreen.tap(x, y);
-  await page.waitForTimeout(90);
-  await page.touchscreen.tap(x, y);
+  let s = sessions.get(page);
+  if (!s) sessions.set(page, (s = await page.context().newCDPSession(page)));
+  const send = (type: 'touchStart' | 'touchEnd') => s.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchStart' ? [{ x, y, id: 1 }] : [] });
+  await Promise.all([send('touchStart'), send('touchEnd'), send('touchStart'), send('touchEnd')]);
 }
 const middle = async (page: Page) => {
   const v = (await page.viewportSize())!;

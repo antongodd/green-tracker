@@ -8,6 +8,7 @@ import { PhotoGrid, shownFromRecord } from './PhotoGrid';
 import { Cropper, PhotoViewer, type ShownPhoto } from './PhotoViewer';
 import { CutoutFlow, type CutoutResult } from './CutoutFlow';
 import { Sheet } from './chrome';
+import { play } from '../sounds';
 
 /** A photo in the editor: saved (id), new (upload with its original), or saved with an unsaved crop. */
 export interface PhotoDraft extends ShownPhoto {
@@ -130,6 +131,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
     if (draft.upload) discardUpload(draft.upload);
     p.setDrafts((list) => list.filter((d) => d.key !== draft.key));
     setViewing(null);
+    play('delete');
   }
 
   return (
@@ -196,7 +198,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
             p.drafts[options]!.cutout
               ? { label: 'Restore background', onSelect: () => (setOptions(null), crop(options, p.drafts[options]!.crop)) }
               : { label: 'Remove background', onSelect: () => (setOptions(null), setCuttingOut(options)) },
-            { label: 'Remove photo', danger: true, onSelect: () => (setOptions(null), remove(options)) },
+            { label: 'Remove photo', danger: true, tick: true, onSelect: () => (setOptions(null), remove(options)) },
           ]}
           onCancel={() => setOptions(null)}
         />

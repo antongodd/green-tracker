@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D55 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D58 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D56), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D59), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D55.
+- Reopen any decision D1–D58.
 
 ## Testing notes
 
@@ -109,9 +109,18 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Safe areas (notch, home bar): Chromium has none; set `--safe-top` / `--safe-bottom` on `document.documentElement`
   to test them (`cutout.spec.ts`, the notch test).
 - Zoom (D53): simulate a pinch with CDP `Input.dispatchTouchEvent` (two `touchPoints`) on a context with
-  `hasTouch: true` (`test/e2e/zoom.spec.ts`). `textBoxes` hides the text it measures: screenshot before it, not after.
+  `hasTouch: true` (`test/e2e/zoom.spec.ts`). A double-tap must send its touch events together (`doubleTap`): sent one
+  by one, a busy machine spreads them past the 300ms window. `textBoxes` hides the text it measures: screenshot before
+  it, not after.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
+- Sounds and ticks (D56): each sound played sends a `gt-sound` event (`{ moment, set }`); collect them with an init
+  script (`sounds.spec.ts`). Chromium has no iOS switch control, so no ticks: pretend it in with
+  `Object.defineProperty(HTMLInputElement.prototype, 'switch', …)`. A new big moment calls `play()` after it succeeds,
+  and its button gets `<Tick />` (`.has-tick`) or a `Sheet` option `tick: true`. Never put a real control inside a
+  button (axe nested-interactive): the tick is a label pointing at the one hidden switch `#gt-tick`. The browser-test
+  servers say they're live: answer `/api/auth/me` with `site: 'dev'` (`page.route`) to see dev-only things.
+  `navigator.audioSession` (Safari's sound mode) can be pretended in the same init script (`sounds.spec.ts`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -124,42 +133,39 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.43.0 (2026-10-13): Leaderboard colours by score (D48), the four colours as one set (D49), Return to Log
-  (D50). **Dev:** 0.46.1: live plus the Log photo swap fix (D51), choosing the cover photo (D52), zoom (D53),
-  draw round a nug (D54), the late-load fix (D55) and notes-only changes (0.43.1–0.43.3). Smokes: on for dev, hidden on live (D46).
+- **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.48.1: live plus sounds and ticks
+  (D56–D58) and notes-only changes (0.46.2, 0.46.3, 0.47.1, 0.47.2). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Fix swapping a Log entry's photo** (D51): **on dev** (0.43.4, 2026-10-13), Anton confirmed it works on GT Dev.
-   Replacing a Log entry's photo in a single edit used to fail with "Something went wrong" (live too, until it goes
-   live).
-2. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
+1. **Sounds and ticks** (Anton's idea, 2026-10-13): **on dev** (0.47.0, D56, 2026-10-18; own screen, 0.48.0, D57;
+   quiet on silent, 0.48.1, D58, 2026-10-19). Checked by Anton on GT Dev in the Home Screen app: sounds play, ticks
+   work, quiet on silent. Ready to "go live".
+2. **Brands and suppliers** (Anton's idea, 2026-10-19; how it develops is still open), for **both** fields: the
+   product's **Source** (the brand) and each purchase's **Supplier** (where he bought it, e.g. a coffeeshop; followers
+   never see suppliers, D2/D45). (a) See every product he's tried from one brand or supplier. (b) Suggestions as he
+   types, like Country: offer the ones he's already used (he goes to the same few coffeeshops and retyping is tedious).
+   (c) Work out how to avoid duplicates: often there's no brand (especially from an Amsterdam coffeeshop), so Source
+   and Supplier hold the same name, and the same place could show up twice. Plan first, then iPhone mockups.
+3. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
+   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
+   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
+   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
+4. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
+   Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
+   Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
+5. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
    for live, update `test/domain/siteConfig.test.ts` and D46).
-3. **Leaderboard design rework**: continue when Anton brings it up.
-4. **Sound effects and haptics** (Anton's idea, 2026-10-13): make the app feel more interactive. Talked through, not
-   planned yet. Sounds: made in code (no downloads), obey the iPhone's silent switch, an on/off switch in More →
-   Appearance. Haptics: iPhone web apps can't vibrate the usual way; the iOS 18+ trick (flicking a hidden on/off switch
-   gives one light tick) may work, untested in the Home Screen app, and Apple could stop it. First step: a test page
-   Anton opens on his iPhone to compare sound sets and try the tick; then a plan. Open questions: every tap or only big
-   moments, what feel, on or off to start.
-5. **Photo section rework** (Anton's idea, 2026-10-13), in three steps, each tried on GT Dev before the next:
-   1. **Choosing the cover photo** (D52): **on dev** (0.44.0, 2026-10-13); Anton confirmed it works well on GT Dev.
-      Gold ring and ★ on the cover; Set as cover in the viewer's bar (saved at once from the product page); ⋯ menu
-      and press-and-hold drag in the editor.
-   2. **Zoom** (D53): **on dev** (0.45.0, 2026-10-15); Anton: "looks really good". In the full-screen viewer:
-      pinch up to 4×, double-tap for 2× and back, drag to look around; zoomed in, the buttons slide away (one tap
-      brings them back); swiping to the next photo only when zoomed out.
-   3. **Draw round a nug** (D54): **on dev** (0.46.0, 2026-10-16); Anton: "looks good and works well". Remove background opens on Find the bud for me /
-      Draw round it; loops (Undo, Clear, pinch to zoom); the same AI cuts inside the loops; Draw again; offered
-      after the AI's try too. Also fixed: Remove background's room for the notch (lost in 0.45.0 on dev).
-6. **Fix a slow page load undoing your change** (D55, found while testing; Anton asked for it 2026-10-18): **on dev**
-   (0.46.1, 2026-10-18). Flicking Private (or Set as cover) just after a product page opened could flick back for a
-   moment (live too, until it goes live). Then Anton wants to **go live** with items 1, 5 and 6.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A slow page load can't undo your change | 0.46.1 | D55 | 2026-10-18 | 2026-10-18 |
+| Photo rework 3: draw round a nug | 0.46.0 | D54 | 2026-10-16 | 2026-10-18 |
+| Photo rework 2: zoom | 0.45.0 | D53 | 2026-10-15 | 2026-10-18 |
+| Photo rework 1: choosing the cover photo | 0.44.0 | D52 | 2026-10-13 | 2026-10-18 |
+| Fix swapping a Log entry's photo | 0.43.4 | D51 | 2026-10-13 | 2026-10-18 |
 | Return to Log | 0.43.0 | D50 | 2026-10-13 | 2026-10-13 |
 | The four colours as one set of cards | 0.42.0 | D49 | 2026-10-12 | 2026-10-13 |
 | Leaderboard colours by score | 0.41.0 | D48 | 2026-10-12 | 2026-10-13 |

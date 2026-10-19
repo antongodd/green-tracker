@@ -6,6 +6,8 @@ import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
 import { installPress } from './press';
+import { installSounds, ticksSupported } from './sounds';
+import { TickSwitch } from './components/Tick';
 import { SessionContext } from './session';
 import { CodesStep, CreateAccount } from './screens/CreateAccount';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
@@ -25,6 +27,7 @@ import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
+import { SoundsScreen } from './screens/Sounds';
 import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
@@ -172,6 +175,9 @@ function App() {
         case '/more/appearance':
           screen = <AppearanceScreen />;
           break;
+        case '/more/sounds':
+          screen = <SoundsScreen />;
+          break;
         case '/more/archive':
           screen = <Archive />;
           break;
@@ -198,8 +204,10 @@ render(
   <>
     <App />
     <OfflineBanner />
+    {ticksSupported() && <TickSwitch />}
   </>,
   document.getElementById('app')!,
 );
 registerServiceWorker();
 installPress();
+installSounds();

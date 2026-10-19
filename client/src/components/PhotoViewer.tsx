@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Crop } from '../../../shared/domain/photo';
 import { BackIcon, CropIcon, CutoutIcon, StarFillIcon, StarIcon, TrashIcon } from '../icons';
+import { Tick } from './Tick';
 
 /** A photo as the screens show it: server URLs, or local previews for unsaved edits. */
 export interface ShownPhoto {
@@ -329,8 +330,9 @@ export function PhotoViewer(p: {
             </button>
           )}
           {p.onRemove && (
-            <button type="button" class="dng" onClick={() => p.onRemove!(index)}>
+            <button type="button" class="dng has-tick" onClick={() => p.onRemove!(index)}>
               <TrashIcon /> Remove
+              <Tick />
             </button>
           )}
         </div>

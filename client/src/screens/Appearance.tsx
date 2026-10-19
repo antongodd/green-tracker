@@ -1,6 +1,6 @@
 // Appearance (D48, 0.41.0; More → Appearance): your Leaderboard colours preset and the
 // #1 mark. Saved to your account at once, so they follow you to a new phone; a friend's
-// board shows in your colours too.
+// board shows in your colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
 import { useState } from 'preact/hooks';
 import { BAND_FLOORS, PRESET_KEYS, PRESETS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
@@ -10,6 +10,7 @@ import { Glints, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { useOnline } from '../online';
 import { useSession } from '../session';
+import { switchAttr } from '../sounds';
 
 const BANDS: Band[] = [1, 2, 3, 4];
 
@@ -104,7 +105,7 @@ export function AppearanceScreen() {
                   <span>Mark my #1</span>
                   <span class="sub">A crown and a halo on your top product, whatever its colour.</span>
                 </span>
-                <input type="checkbox" role="switch" class="switch" aria-label="Mark my #1" checked={a.markFirst} disabled={!online} onChange={(e) => change({ ...a, markFirst: e.currentTarget.checked })} />
+                <input type="checkbox" role="switch" class="switch" {...switchAttr()} aria-label="Mark my #1" checked={a.markFirst} disabled={!online} onChange={(e) => change({ ...a, markFirst: e.currentTarget.checked })} />
               </label>
               <div class="li sample-li">
                 <SampleRow appearance={a} />
