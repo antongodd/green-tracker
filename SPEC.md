@@ -126,6 +126,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D56 | **Sounds and ticks** (2026-10-18; the owner's idea of 2026-10-13, tried on his iPhone with the test page https://claude.ai/artifact/UcgKz5k1uAPAhgj7zN3PR9: he chose Soft, kind of liked Woody, disliked Glassy; 60% volume about right; sounds stayed quiet on silent; the real switch and a hidden switch under his finger ticked, a switch flipped from code didn't; then the app's way (Tick D: a label in the button for a switch elsewhere, the button pressed a moment later) ticked too. His answers: subtle, only big moments, on to start, a separate Ticks switch, saved on each phone, photo deletes too, a choice of Soft or Woody). | Quiet **sounds made in code** (nothing downloaded) when you **flick a switch**, **save a product** (a short fanfare instead when that save makes it **#1** on your Leaderboard by Overall), **save a Log entry** or **Return to Log**, and **delete** a Log entry or a photo (in an editor, or your profile photo). Every other tap is silent. Quiet when the iPhone is on silent, and it doesn't pause your music. **Ticks** on iPhones with iOS 18+: a light tick as you tap a switch, Save, Save to log, Delete entry, Remove photo or Return to Log (the tick comes with the tap, so a new #1 has no tick of its own). **More → Appearance → Sounds and ticks:** **Sounds** and **Ticks** switches, both on to start, and **Soft** or **Woody** (tap to hear). Ticks is hidden where the phone can't tick. Saved **on this phone only**: no data change, nothing in Export/Restore, nothing for followers; a new phone starts with both on. Smokes (on hold) has no sounds. See §4 *Sounds and ticks*. |
 | D57 | **Sounds and ticks get their own screen; a Silent test on dev** (2026-10-19; the owner tried 0.47.0 on GT Dev in the Home Screen app: sounds play and ticks work, but sounds still play on silent; and he didn't like the switches under Leaderboard colours. He picked option A of https://claude.ai/artifact/G8S2GHgowxq88SsZ95iEtF). Changes D56's place. | **More → Appearance** gains a second row, **Sounds and ticks** (On / Off), opening its own screen with the Sounds and Ticks switches and Soft or Woody; Leaderboard colours is colours only again. The Sounds note no longer promises silence on silent. On the **dev site only**, a **Silent test** card plays the save sound in each of three iPhone sound modes (Test 1 is what the app uses now) so the owner can say which stays quiet on silent; the app then uses that one and the card goes. Same settings, still saved on this phone; no data, export or follower change. See §4 *Sounds and ticks*. |
 | D58 | **Sounds stay quiet on silent; the Silent test goes** (2026-10-19; the owner ran D57's Silent test on GT Dev in the Home Screen app: all three tests stayed quiet on silent, and so did the app's own sounds on 0.48.0). Completes D57. | 0.48.0 sets the iPhone's quiet-on-silent sound mode ("ambient") before every sound instead of once when the sound maker starts; that is what fixed it, so the mode stays "ambient". The dev-only Silent test card is removed, and the Sounds note says again: "Silent when your iPhone is on silent." No data, export or follower change. See §4 *Sounds and ticks screen*. |
+| D59 | **Brands and suppliers** (2026-10-19; option A "Suggestions under the box" of https://claude.ai/artifact/NWcqS5v8Dnxu4S8Trus2yc; the owner's answers: with no brand he types the coffeeshop's name in Source; a name's page shows brand and bought-there together, tagged; both a product-page link and a More list; renaming or merging names only if needed later; archived products left out; followers can tap Source). Source (the brand) and each purchase's Supplier (where it was bought) are one list of names. | **Suggestions:** while you type in Source or a purchase's Supplier, up to 4 names you've used (in either field, on products that aren't archived) show under the box as buttons, most used first, narrowing to names whose words (or the whole name) start with what's typed; a tap fills the box and keeps the keyboard; in Supplier the product's Source comes first. **No duplicates:** capitals, accents, spaces and punctuation don't count ("barneys" = "Barney's", "Greenhouse" = "Green House"), so typing a name you use in another spelling says "Saved as “…”, the name you already use" and leaving the box saves that spelling; a new name is saved as typed, capitalised (as before). 4+ letters that match nothing but are a letter or two from a name: "Did you mean". **A name's page** (`/brands/<name>`): tap a product page's Source (Details) or a purchase's Supplier (Price history): everything with that name, as its Source and/or bought there, ranked by Overall, each tagged **Brand** / **Bought here**; tiles Products, Average and (when you bought there) **Spent here**; private products included, archived left out; older spellings of the same name are counted together. **More → Brands & suppliers** (Data, above Archive, with how many names): every name with its products, "Brand", "Shop" or "Brand and shop", and its average; Search; sort Most products, Best average, A–Z. **Followers:** your Source on your product page opens your shared products with that Source (Products, Average); never suppliers, prices or Bought here; nothing to tap when Source isn't shared (D45). Nothing new is stored: no database, export, restore or server change; what followers receive is unchanged. See §4 *Brands and suppliers*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -678,6 +679,28 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   the Leaderboard, an old link; no card on an ordinary entry; axe and readability of the card (proved by dimming it);
   Delete's message; Add to leaderboard back to the same product with its purchases, notes, photos and ratings; not on an
   archived product, offline; Actions readable); `people.spec.ts` (no Return to Log on a friend's product).
+- **Brands and suppliers (D59, 0.49.0).** `shared/domain/names.ts`: `nameKey` (`normaliseSearch` without spaces),
+  `usedNames(products)` (non-archived; per name: the spelling used most, ties to a capitalised one then A–Z; `products`,
+  `brand`, `shop` counts, each product once), `suggestNames(used, typed, { first })` (`SUGGESTION_LIMIT` 4; nothing typed
+  → the most used; `matchesName`: the key or a word starts with it; an exact key → no names, `savedAs` when spelt
+  differently; no match and 4+ letters → near misses, 1 letter apart under 6 letters else 2, also against the name's
+  start: `typo`), `canonicalName` (the used spelling, else `autoCapitalise`), `productsNamed`, `nameRoles`, `spentAt`,
+  `nameRoleText`. Editor (`screens/Editor.tsx`): `used` from `cachedProducts()` (fetched if not loaded); Source's and
+  each Supplier's `TextField` (new `onFocus`; `onBlur` gets the event) set `suggesting`; `components/NameSuggestions.tsx`
+  draws inside the field's `.two-col` (`.two-col > .suggest`: full width, below both boxes, next in Tab order); its
+  buttons `preventDefault` on `pointerdown` so a tap never takes focus from the box (the keyboard stays), then focus the
+  box. Leaving the box (`leaveSource` / `leaveSupplier`, not when focus moves into `.suggest[data-for]`) closes it and
+  saves `canonicalName`. Product pages: `components/NameLink.tsx` (`brandPath(name, board?)`, `.namelink`, green with a
+  chevron) on Details' Source and Price history's supplier (`Profile.tsx`) and a friend's Source (`SharedProfile`, to
+  `<board>/brands/<name>`). `screens/Brands.tsx`: `BrandPage` (`/brands/:name`; `rankProducts` Overall over
+  `productsNamed`; `ProductRow`'s new `meta` replaced by `RoleTags`, `.role.brand` / `.role.shop`; Back to
+  `/more/brands` or `/`, tab More when opened from under /more, else Leaderboard), `BrandsList` (`/more/brands`; search
+  `#brand-search` with `matchesName`; `.brand-sort` pills with `aria-pressed`); `screens/Person.tsx`: `TheirBrandPage`
+  (`/u/:username/brands/:name`, `/more/privacy/preview/brands/:name`: their board's products by Source key, `SharedRow`,
+  Products and Average tiles). More: `Row label="Brands & suppliers"` (`StoreIcon`, value = how many names). Tests:
+  `test/domain/names.test.ts`; `test/e2e/brands.spec.ts` (suggestions, keyboard, typo, spelling saved, Supplier's
+  Source first, both links, the page's tags and tiles, More's list, a follower's page, Source not shared, the
+  preview; axe; whole-screen contrast of the tags, shown to fail with them dimmed); `more.spec.ts` (13 rows).
 - **Sounds and ticks (D56, 0.47.0).** `client/src/sounds.ts`: `play(moment, set?)` (`switch`, `save`, `log`, `delete`,
   `first`; sets `soft`, `woody`, the owner's picks from the test page) builds each sound from sine voices (Woody adds a
   4× partial and a band-passed noise knock) on one lazily made `AudioContext` (master gain 0.54, the test page's 60%),
@@ -1148,6 +1171,14 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.49.0 — brands and suppliers (owner request)
+- Decision D59. While you type in Source or a purchase's Supplier, the names you've already used show under the box;
+  one tap fills it. The same name in other capitals or spelling ("barneys") is saved as the one you use ("Barney's"),
+  and a typo asks "Did you mean". Tap a product page's Source or Supplier to see everything from that brand or bought
+  there, tagged, with what you spent there; More → Brands & suppliers lists every name. Followers can tap your Source
+  to see your products from that brand, never where you bought them. Nothing new is stored.
+- `CLAUDE.md`: brands and suppliers is on dev.
 
 ### 0.48.2 — CLAUDE.md: 0.48.1 is live
 - `CLAUDE.md`: sounds and ticks (D56–D58) went live on 2026-10-19 (release #69) and move from the to-do list to Done.

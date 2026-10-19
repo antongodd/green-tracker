@@ -37,7 +37,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(12);
+  await expect(page.locator('main .list .li')).toHaveCount(13);
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
   const rows = await page.locator('main .list .li').evaluateAll((els) =>
     els.map((e) => ({ label: e.querySelector('.main')!.textContent, icon: !!e.querySelector('.li-ic svg'), tint: e.querySelector('.li-ic')?.classList[1] ?? null, href: e.getAttribute('href') })),
@@ -51,6 +51,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Sounds and ticks', icon: true, tint: 'green', href: '/more/sounds' }, // D57
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },
     { label: 'Restore', icon: true, tint: 'teal', href: '/more/restore' },
+    { label: 'Brands & suppliers', icon: true, tint: 'green', href: '/more/brands' }, // D59
     { label: 'Archive', icon: true, tint: 'green', href: '/more/archive' },
     { label: 'Sign out', icon: true, tint: 'green', href: null },
     { label: 'Sign out everywhere', icon: true, tint: 'green', href: null },

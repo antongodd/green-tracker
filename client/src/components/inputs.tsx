@@ -60,6 +60,7 @@ const input = (p: Parameters<typeof TextField>[0]) => (
     autoCapitalize={p.autoCapitalize}
     autoComplete="off"
     onInput={(e) => p.onInput(e.currentTarget.value)}
+    onFocus={p.onFocus}
     onBlur={p.onBlur}
   />
 );
@@ -69,7 +70,8 @@ export function TextField(p: {
   label: string;
   value: string;
   onInput: (v: string) => void;
-  onBlur?: () => void;
+  onBlur?: (e: FocusEvent) => void;
+  onFocus?: () => void;
   placeholder?: string;
   type?: string;
   inputMode?: 'decimal' | 'text' | 'url';

@@ -30,6 +30,8 @@ import { Avatar } from '../components/Avatar';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
 import { Skeleton } from '../components/Skeleton';
+import { brandPath, NameLink } from '../components/NameLink';
+import { nameKey, productsNamed } from '../../../shared/domain/names';
 
 const enc = encodeURIComponent;
 const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null, cutout: ph.cutout });
@@ -369,6 +371,8 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
       ['Source', product.source ?? ''],
     ] as [string, string][]
   ).filter(([, v]) => v);
+  // D59: their Source opens their products from that brand (only ever Source, never where they bought it).
+  const value = (k: string, v: string) => (k === 'Source' ? <NameLink name={v} to={brandPath(v, backTo)} /> : v);
 
   return (
     <>
@@ -400,13 +404,75 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
         {details.length > 0 && (
           <section class="sect" aria-label="Details">
             <span class="cap">Details</span>
-            <dl class="kv">{details.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}</dl>
+            <dl class="kv">{details.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{value(k, v)}</dd>])}</dl>
           </section>
         )}
         {p.preview && <PreviewNote />}
       </main>
       <TabBar active={tab} />
       {viewing !== null && <PhotoViewer photos={photos} start={viewing} onClose={() => setViewing(null)} />}
+    </>
+  );
+}
+
+/**
+ * Their products from one brand (D59), from their board as you see it: only products whose
+ * Source is that brand, so nothing about where they bought anything. With Source not shared
+ * (D45) nothing matches.
+ */
+export function TheirBrandPage(p: { username: string; name: string; preview?: boolean }) {
+  const [products, setProducts] = useState<SharedProduct[] | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    (p.preview ? fetchPreview() : api.theirBoard(p.username))
+      .then((b) => setProducts(b.products))
+      .catch((e) => setError(errorText(e)));
+  }, [p.username, p.preview]);
+  const key = nameKey(p.name);
+  const named = products ? productsNamed(products, key).map((r) => r.product) : [];
+  const name = named.find((x) => x.source)?.source ?? p.name;
+  const rows = rankProducts(named, { filter: 'all', rankBy: 'overall' });
+  const tiles = leaderboardTiles(named);
+  const backTo = boardPath(p.username, p.preview);
+  const tab = p.preview ? 'more' : 'people';
+  return (
+    <>
+      <Header title={name} leaf={false} left={<BackButton to={backTo} />} />
+      <main class="screen">
+        {p.preview && <PreviewNote />}
+        {!products && !error && <Skeleton kind="board" />}
+        {error && (
+          <div class="empty">
+            <h2>Not available</h2>
+            <p>{error}</p>
+          </div>
+        )}
+        {products && named.length === 0 && (
+          <EmptyCard art="filter" title={`Nothing from ${name}`}>
+            <p>@{p.username} hasn’t shared any products from {name}.</p>
+          </EmptyCard>
+        )}
+        {named.length > 0 && (
+          <>
+            <p class="lead brand-lead">
+              <strong>@{p.username}</strong>’s products from {name}.
+            </p>
+            {/* PRODUCTS and AVERAGE only, as on their board: never prices or where they bought it. */}
+            <Tiles
+              tiles={[
+                { value: String(tiles.products), label: 'Products' },
+                { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
+              ]}
+            />
+            <div class="rows">
+              {rows.map((r) => (
+                <SharedRow key={r.product.id} username={p.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy="overall" preview={p.preview} />
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+      <TabBar active={tab} />
     </>
   );
 }
