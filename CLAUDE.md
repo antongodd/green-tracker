@@ -132,7 +132,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.47.0: live plus sounds and ticks
-  (D56) and notes-only changes (0.46.2, 0.46.3, 0.47.1). Smokes: on for dev, hidden on live (D46).
+  (D56) and notes-only changes (0.46.2, 0.46.3, 0.47.1, 0.47.2). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -151,6 +151,9 @@ section, so it must always be current.
    types, like Country: offer the ones he's already used (he goes to the same few coffeeshops and retyping is tedious).
    (c) Work out how to avoid duplicates: often there's no brand (especially from an Amsterdam coffeeshop), so Source
    and Supplier hold the same name, and the same place could show up twice. Plan first, then iPhone mockups.
+5. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
+   Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
+   Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
 
 ### Done (newest first)
 
