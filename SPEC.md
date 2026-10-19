@@ -1137,6 +1137,11 @@ None.
 
 ## 6. Changelog
 
+### 0.47.1 — CLAUDE.md: brands and suppliers on the to-do list (owner request)
+- The to-do list gets item 4, **Brands and suppliers**, for both Source and Supplier: see every product from one brand
+  or supplier, suggestions as you type (like Country), and a way to avoid duplicates when there's no brand and both
+  fields hold the same coffeeshop. Notes only; no change to the app.
+
 ### 0.47.0 — sounds and ticks (owner request)
 - New (decision D56). Quiet sounds when you flick a switch, save a product (a short fanfare when it becomes your #1),
   save to the Log or Return to Log, and delete a Log entry or a photo. Made in code; quiet on silent.
