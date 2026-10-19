@@ -132,25 +132,28 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.46.1 (2026-10-18): everything up to the late-load fix (D55). **Dev:** 0.47.0: live plus sounds and ticks
-  (D56) and notes-only changes (0.46.2, 0.46.3, 0.47.1). Smokes: on for dev, hidden on live (D46).
+  (D56) and notes-only changes (0.46.2, 0.46.3, 0.47.1, 0.47.2). Smokes: on for dev, hidden on live (D46).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
-   for live, update `test/domain/siteConfig.test.ts` and D46).
-2. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
-   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
-   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
-   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
-3. **Sounds and ticks** (Anton's idea, 2026-10-13): **on dev** (0.47.0, D56, 2026-10-18). Anton to try it on GT Dev
+1. **Sounds and ticks** (Anton's idea, 2026-10-13): **on dev** (0.47.0, D56, 2026-10-18). Anton to try it on GT Dev
    in the Home Screen app: do the sounds play, stay quiet on silent, and do the ticks work there (they worked in Safari
    on the test page)? If ticks don't work in the Home Screen app, hide the Ticks switch. Then "go live".
-4. **Brands and suppliers** (Anton's idea, 2026-10-19; how it develops is still open), for **both** fields: the
+2. **Brands and suppliers** (Anton's idea, 2026-10-19; how it develops is still open), for **both** fields: the
    product's **Source** (the brand) and each purchase's **Supplier** (where he bought it, e.g. a coffeeshop; followers
    never see suppliers, D2/D45). (a) See every product he's tried from one brand or supplier. (b) Suggestions as he
    types, like Country: offer the ones he's already used (he goes to the same few coffeeshops and retyping is tedious).
    (c) Work out how to avoid duplicates: often there's no brand (especially from an Amsterdam coffeeshop), so Source
    and Supplier hold the same name, and the same place could show up twice. Plan first, then iPhone mockups.
+3. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
+   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
+   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
+   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
+4. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
+   Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
+   Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
+5. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
+   for live, update `test/domain/siteConfig.test.ts` and D46).
 
 ### Done (newest first)
 

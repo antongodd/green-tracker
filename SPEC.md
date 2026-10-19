@@ -1137,6 +1137,12 @@ None.
 
 ## 6. Changelog
 
+### 0.47.2 — CLAUDE.md: a website for the app on the to-do list (owner request)
+- The to-do list gets item 5, **A website for the app**: a page at a separate address showing what Green Tracker is,
+  linking to the app with Home Screen steps.
+- The list is reordered as the owner asked: Sounds and ticks, Brands and suppliers, Leaderboard design rework, A
+  website for the app, Smokes rework. Notes only; no change to the app.
+
 ### 0.47.1 — CLAUDE.md: brands and suppliers on the to-do list (owner request)
 - The to-do list gets item 4, **Brands and suppliers**, for both Source and Supplier: see every product from one brand
   or supplier, suggestions as you type (like Country), and a way to avoid duplicates when there's no brand and both
