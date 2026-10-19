@@ -61,15 +61,13 @@ export const switchAttr = (): Record<string, boolean> => ({ switch: ticks() });
 // ---- The sound maker ----
 
 /**
- * The iPhone's sound mode for the app (navigator.audioSession, Safari 16.4+). "ambient" should be
- * quiet on silent and leave your music playing, but on 0.47.0 the Home Screen app still played on
- * silent (Anton, 2026-10-19). The dev site's Silent test (D57) plays the save sound in each mode.
+ * The iPhone's sound mode for the app (navigator.audioSession, Safari 16.4+): "ambient" is quiet on
+ * silent and leaves your music playing. Set before every sound, not only once: set once (0.47.0) the
+ * Home Screen app still played on silent; set every time (0.48.0) it stays quiet (Anton, D58).
  */
-type SessionType = 'ambient' | 'auto' | 'transient';
-export const SILENT_TESTS: SessionType[] = ['ambient', 'auto', 'transient'];
-const SESSION: SessionType = 'ambient';
+const SESSION = 'ambient';
 
-function setSession(type: SessionType): void {
+function setSession(type: string): void {
   try {
     const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
     if (session && session.type !== type) session.type = type;
@@ -237,20 +235,4 @@ export function installSounds(): void {
     const t = e.target as HTMLElement | null;
     if (t instanceof HTMLInputElement && t.classList.contains('switch')) play('switch');
   });
-}
-
-/** The dev site's Silent test (D57): the Soft save sound in one sound mode, on a sound maker of its own. */
-export function silentTest(type: SessionType): void {
-  const AC = AudioCtx();
-  if (!AC) return;
-  ctx?.suspend().catch(() => {});
-  setSession(type);
-  window.dispatchEvent(new CustomEvent('gt-silent-test', { detail: { type } }));
-  try {
-    const c = new AC();
-    SETS.soft.save(c, c.currentTime + 0.05);
-    setTimeout(() => c.close().catch(() => {}), 1500);
-  } catch {
-    // Nothing to hear.
-  }
 }

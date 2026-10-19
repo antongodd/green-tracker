@@ -1145,7 +1145,6 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .preset .strip-cell { display: grid; gap: 3px; justify-items: stretch; }
 .preset .swatch { height: 22px; border-radius: 6px; }
 .sound-set { cursor: pointer; align-items: center; }
-.silent-tests { display: grid; gap: 8px; margin-top: 8px; }
 .sound-set .main > span:first-child { font-size: 16px; font-weight: 600; }
 .preset .strip-l { font-family: var(--num-font); font-size: 11px; color: var(--text-2); text-align: center; font-variant-numeric: tabular-nums; }
 .radio { appearance: none; -webkit-appearance: none; flex: none; width: 24px; height: 24px; margin: 0; border-radius: 50%; border: 2px solid var(--text-3); display: grid; place-items: center; cursor: pointer; }

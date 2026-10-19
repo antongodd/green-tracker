@@ -125,6 +125,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D55 | **A slow page load can't undo your change** (2026-10-18; found while testing 0.44.0, on the live site too; the owner asked for the fix). A bug fix; no behaviour is chosen. | Opening a product page shows the app's copy at once and asks the server for a fresh one. If you flicked **Private** or **Archive**, tapped **Set as cover**, or saved a crop or cut-out before that answer arrived, the older copy landed afterwards and put the page (and the app's memory, so Back and the Leaderboard) back as it was until the next visit; the change itself was always saved. Now an answer that started before your change is ignored. No data change. See §4 *Late loads*. |
 | D56 | **Sounds and ticks** (2026-10-18; the owner's idea of 2026-10-13, tried on his iPhone with the test page https://claude.ai/artifact/UcgKz5k1uAPAhgj7zN3PR9: he chose Soft, kind of liked Woody, disliked Glassy; 60% volume about right; sounds stayed quiet on silent; the real switch and a hidden switch under his finger ticked, a switch flipped from code didn't; then the app's way (Tick D: a label in the button for a switch elsewhere, the button pressed a moment later) ticked too. His answers: subtle, only big moments, on to start, a separate Ticks switch, saved on each phone, photo deletes too, a choice of Soft or Woody). | Quiet **sounds made in code** (nothing downloaded) when you **flick a switch**, **save a product** (a short fanfare instead when that save makes it **#1** on your Leaderboard by Overall), **save a Log entry** or **Return to Log**, and **delete** a Log entry or a photo (in an editor, or your profile photo). Every other tap is silent. Quiet when the iPhone is on silent, and it doesn't pause your music. **Ticks** on iPhones with iOS 18+: a light tick as you tap a switch, Save, Save to log, Delete entry, Remove photo or Return to Log (the tick comes with the tap, so a new #1 has no tick of its own). **More → Appearance → Sounds and ticks:** **Sounds** and **Ticks** switches, both on to start, and **Soft** or **Woody** (tap to hear). Ticks is hidden where the phone can't tick. Saved **on this phone only**: no data change, nothing in Export/Restore, nothing for followers; a new phone starts with both on. Smokes (on hold) has no sounds. See §4 *Sounds and ticks*. |
 | D57 | **Sounds and ticks get their own screen; a Silent test on dev** (2026-10-19; the owner tried 0.47.0 on GT Dev in the Home Screen app: sounds play and ticks work, but sounds still play on silent; and he didn't like the switches under Leaderboard colours. He picked option A of https://claude.ai/artifact/G8S2GHgowxq88SsZ95iEtF). Changes D56's place. | **More → Appearance** gains a second row, **Sounds and ticks** (On / Off), opening its own screen with the Sounds and Ticks switches and Soft or Woody; Leaderboard colours is colours only again. The Sounds note no longer promises silence on silent. On the **dev site only**, a **Silent test** card plays the save sound in each of three iPhone sound modes (Test 1 is what the app uses now) so the owner can say which stays quiet on silent; the app then uses that one and the card goes. Same settings, still saved on this phone; no data, export or follower change. See §4 *Sounds and ticks*. |
+| D58 | **Sounds stay quiet on silent; the Silent test goes** (2026-10-19; the owner ran D57's Silent test on GT Dev in the Home Screen app: all three tests stayed quiet on silent, and so did the app's own sounds on 0.48.0). Completes D57. | 0.48.0 sets the iPhone's quiet-on-silent sound mode ("ambient") before every sound instead of once when the sound maker starts; that is what fixed it, so the mode stays "ambient". The dev-only Silent test card is removed, and the Sounds note says again: "Silent when your iPhone is on silent." No data, export or follower change. See §4 *Sounds and ticks screen*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -701,16 +702,16 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   switches; then `ap-sound-set` radios while Sounds is on, a click plays `save` in that set; footnote "Saved on this
   phone only"); a change redraws the whole screen. Tests: `sounds.spec.ts` (each moment's sound; Appearance; ticks with
   the switch control pretended into Chromium: the label fills Save, the tap flips `#gt-tick`, one PUT, one DELETE, axe).
-- **Sounds and ticks screen and Silent test (D57, 0.48.0).** `screens/Sounds.tsx`: `SoundsScreen` at `/more/sounds`
+- **Sounds and ticks screen (D57, 0.48.0; D58, 0.48.1).** `screens/Sounds.tsx`: `SoundsScreen` at `/more/sounds`
   (main.tsx) holds what D56 put in Appearance (`section[aria-label="Sounds and ticks"]` with the Sounds and Ticks
   switches, then `#ap-sound-set` radios while Sounds is on, footnote); More's Appearance group adds
-  `Row label="Sounds and ticks"` (value On / Off from `sounds().on`, `SoundIcon`, tint green). On the dev site
-  (`me.site === 'dev'`) a `#silent-test` section has three buttons, `silentTest(type)` for `SILENT_TESTS`
-  (`ambient`, the app's `SESSION`; `auto`; `transient`): it sets `navigator.audioSession.type`, plays Soft's save on a
-  new `AudioContext` (closed after 1.5s) and dispatches `gt-silent-test`. `sounds.ts` now sets the session type
-  before every play (so a test's type doesn't stick) and gives each context its own volume node (`volume(c)`).
-  Tests: `sounds.spec.ts` (the screen, the More row, the Silent test with `/api/auth/me` answered as dev, none on
-  live), `more.spec.ts` (12 rows).
+  `Row label="Sounds and ticks"` (value On / Off from `sounds().on`, `SoundIcon`, tint green). `sounds.ts` sets
+  `navigator.audioSession.type = 'ambient'` (`setSession(SESSION)`) at the start of every `audio()` call, not only
+  when the context is made: set once (0.47.0), the Home Screen app played on silent; set every time, it is quiet
+  (D58). Each context has its own volume node (`volume(c)`). 0.48.0's dev-only Silent test (`silentTest`, three
+  buttons trying `ambient`, `auto`, `transient`) was removed in 0.48.1: all three were quiet. Tests: `sounds.spec.ts`
+  (the screen and the More row; with `navigator.audioSession` pretended in, a sound sets `ambient` again after it
+  was changed; fails when it is set once), `more.spec.ts` (12 rows).
 - **Late loads (D55, 0.46.1).** `client/src/products.ts` keeps a per-product change mark: `changing(id)` (called as a
   change starts: `setFlag`, `saveProduct`, and Profile's `toggle`, `saveCrop`, `saveCutout`, `saveCover` before their
   optimistic `setProduct`) and `changeMark(id)`. `fetchProduct` reads the mark before the GET and doesn't `remember`
@@ -1147,6 +1148,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.48.1 — sounds quiet on silent (owner report)
+- Decision D58. On GT Dev the sounds now stay quiet when your iPhone is on silent (0.48.0 fixed it by setting the
+  quiet-on-silent mode before every sound). The Silent test card is gone, and the Sounds note says again that it's
+  silent on silent.
+- Tests: `sounds.spec.ts` checks the mode is set before every sound (fails when it's set only once). `CLAUDE.md`:
+  next decision D59.
 
 ### 0.48.0 — sounds and ticks on their own screen; a silent test (owner request)
 - Decision D57. **More → Sounds and ticks** (under Appearance) opens its own screen with the Sounds and Ticks
