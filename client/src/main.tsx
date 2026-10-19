@@ -27,6 +27,7 @@ import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
+import { SoundsScreen } from './screens/Sounds';
 import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
@@ -173,6 +174,9 @@ function App() {
           break;
         case '/more/appearance':
           screen = <AppearanceScreen />;
+          break;
+        case '/more/sounds':
+          screen = <SoundsScreen />;
           break;
         case '/more/archive':
           screen = <Archive />;

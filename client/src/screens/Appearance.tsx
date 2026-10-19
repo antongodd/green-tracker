@@ -1,6 +1,6 @@
 // Appearance (D48, 0.41.0; More → Appearance): your Leaderboard colours preset and the
 // #1 mark. Saved to your account at once, so they follow you to a new phone; a friend's
-// board shows in your colours too. Sounds and ticks (D56, 0.47.0) are saved on this phone only.
+// board shows in your colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
 import { useState } from 'preact/hooks';
 import { BAND_FLOORS, PRESET_KEYS, PRESETS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
@@ -10,7 +10,7 @@ import { Glints, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { useOnline } from '../online';
 import { useSession } from '../session';
-import { play, setSoundsOn, setSoundSet, setTicksOn, SOUND_SETS, sounds, switchAttr, ticks, ticksSupported } from '../sounds';
+import { switchAttr } from '../sounds';
 
 const BANDS: Band[] = [1, 2, 3, 4];
 
@@ -43,8 +43,6 @@ export function AppearanceScreen() {
   const [shown, setShown] = useState<Appearance | null>(null);
   const [error, setError] = useState('');
   const online = useOnline();
-  // Sounds and ticks live on this phone (D56): a change redraws the screen, so every switch here ticks or not.
-  const [, redraw] = useState(0);
   const a = shown ?? saved;
 
   async function change(next: Appearance) {
@@ -121,74 +119,8 @@ export function AppearanceScreen() {
             always the top colour, wherever it is.
           </p>
         </div>
-        <SoundsSection changed={() => redraw((n) => n + 1)} />
       </main>
       <TabBar active="more" />
-    </>
-  );
-}
-
-/** Sounds and ticks (D56): saved on this phone at once, nothing sent to the server. */
-function SoundsSection(p: { changed: () => void }) {
-  const now = sounds();
-  const update = (f: () => void) => (f(), p.changed());
-  return (
-    <>
-      <section aria-labelledby="ap-sounds">
-        <h2 class="lh cap" id="ap-sounds">
-          Sounds and ticks
-        </h2>
-        <div class="wrap">
-          <div class="list">
-            <label class="li priv-row">
-              <span class="main">
-                <span>Sounds</span>
-                <span class="sub">Quiet sounds when you save, delete or get a new #1. Silent when your iPhone is on silent.</span>
-              </span>
-              <input type="checkbox" role="switch" class="switch" {...switchAttr()} aria-label="Sounds" checked={now.on} onChange={(e) => update(() => setSoundsOn(e.currentTarget.checked))} />
-            </label>
-            {ticksSupported() && (
-              <label class="li priv-row">
-                <span class="main">
-                  <span>Ticks</span>
-                  <span class="sub">A light tick you can feel as you tap.</span>
-                </span>
-                <input type="checkbox" role="switch" class="switch" {...switchAttr()} aria-label="Ticks" checked={ticks()} onChange={(e) => update(() => setTicksOn(e.currentTarget.checked))} />
-              </label>
-            )}
-          </div>
-        </div>
-      </section>
-      {now.on && (
-        <section aria-labelledby="ap-sound-set">
-          <h2 class="lh cap" id="ap-sound-set">
-            Sound
-          </h2>
-          <div class="wrap">
-            <div class="list" role="radiogroup" aria-labelledby="ap-sound-set">
-              {SOUND_SETS.map((s) => (
-                <label key={s.key} class="li sound-set">
-                  <span class="main">
-                    <span>{s.label}</span>
-                    <span class="sub">{s.description}</span>
-                  </span>
-                  <input
-                    type="radio"
-                    class="radio"
-                    name="sound-set"
-                    value={s.key}
-                    checked={now.set === s.key}
-                    onClick={() => update(() => (setSoundSet(s.key), play('save', s.key)))}
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-      <div class="wrap">
-        <p class="footnote priv-foot">Saved on this phone only{now.on ? '. Tap a sound to hear it.' : '.'}</p>
-      </div>
     </>
   );
 }
