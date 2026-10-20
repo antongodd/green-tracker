@@ -162,7 +162,17 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
   await expect(viewer.getByRole('button', { name: 'Cut out' })).toHaveCount(0);
   await viewer.getByRole('button', { name: 'Restore background' }).click();
-  await expect(page.locator('.hero-photo:not(.cut) img')).toBeVisible();
+  // Failed once on GitHub (PR #74) and never here: if it fails again, say what the screen showed.
+  await expect(page.locator('.hero-photo:not(.cut) img'))
+    .toBeVisible()
+    .catch(async (e) => {
+      const shown = await page.evaluate(() => ({
+        url: location.pathname,
+        hero: document.querySelector('.hero-photo')?.className ?? 'none',
+        notes: [...document.querySelectorAll('.error, .sect .small, [role="dialog"]')].map((el) => `${el.className}: ${el.textContent?.slice(0, 120)}`),
+      }));
+      throw new Error(`${(e as Error).message}\nOn screen: ${JSON.stringify(shown)}`);
+    });
   await expect.poll(async () => (await product(page, id)).photos[0].cutout).toBe(false);
   const restored = (await product(page, id)).photos[0];
   expect(restored.crop).toEqual(before.crop);

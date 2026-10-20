@@ -698,7 +698,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   pennies); `brands.spec.ts` (tiles and card lines with Spent, Most spent and a big buy that reorders it, a tall photo
   filling its box exactly, shown to fail on 0.51.1's CSS); `motion.spec.ts` (Sources → a brand and Settings → Export,
   scrolled, back by swipe and by the Back button: the entry is `'auto'` and it lands to the pixel; tab switches start at
-  the top; fails on 0.51.1's router).
+  the top; fails on 0.51.1's router). Test fixes: `wholeScreenContrastFailures` waits for `networkidle` before
+  measuring (Settings' privacy summary arriving ~0.3s late moved the headings between measuring and photographing them;
+  reproduced by delaying `/api/privacy`); `cutout.spec.ts`'s Restore background step, which failed once on CI (PR #74) and
+  never locally (repeats, 2 CPUs beside the real AI, delayed answers), now reports what was on screen if it fails.
 - **Sources and Settings tabs (D61, 0.51.0).** `chrome.tsx`: `Tab` gains `'sources'`; `TABS` Leaderboard, Log, Sources
   (`/sources`, `SourcesIcon` / `SourcesLineIcon`), People, Settings (key `'more'`, path `/more`, `SettingsIcon` /
   `SettingsLineIcon`; `MoreLineIcon` and D59's `StoreIcon` gone). `main.tsx`: `/sources` and `/more/brands` → `BrandsList`.
