@@ -133,9 +133,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.51.0: live plus brands and suppliers
-  (D59), Smokes removed (D60), the Sources and Settings tabs (D61) and a notes-only change (0.48.2). Anton will say when
-  to take it all live together.
+- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.51.1: live plus brands and suppliers
+  (D59), Smokes removed (D60), the Sources and Settings tabs (D61) and notes-only changes (0.48.2, 0.51.1). Anton will
+  say when to take it all live together.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -155,6 +155,12 @@ section, so it must always be current.
 5. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
    Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
    Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
+6. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
+   (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
+   converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
+   can be compared. Plan first.
+7. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+   the details in the working conversation.
 
 ### Done (newest first)
 
