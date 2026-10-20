@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalName, nameKey, productsNamed, spentAt, suggestNames, usedNames, type NamedProduct } from '../../shared/domain/names';
+import { canonicalName, nameKey, productsNamed, spentOn, suggestNames, usedNames, type NamedProduct } from '../../shared/domain/names';
 
 const buy = (supplier: string | null, totalPaid = 10) => ({ supplier, totalPaid });
 const p = (source: string | null, suppliers: (string | null)[] = [], archived = false) => ({ source, purchases: suppliers.map((s) => buy(s)), archived });
@@ -92,8 +92,17 @@ describe('brands and suppliers (D59)', () => {
       ['Grasshopper', true, false],
       [null, false, true],
     ]);
-    expect(spentAt(PRODUCTS, key)).toBe(30);
-    expect(spentAt(PRODUCTS, nameKey('Archived Shop'))).toBe(0);
     expect(productsNamed(PRODUCTS, nameKey('Archived Brand'))).toEqual([]);
+  });
+
+  it('adds up what was spent on a name, as a brand and where it was bought, each purchase once (D62)', () => {
+    // Grasshopper: its own two purchases (brand and shop at once: counted once), the one at
+    // Barney's (its brand) and the one bought there with no brand.
+    expect(spentOn(PRODUCTS, nameKey('Grasshopper'))).toBe(40);
+    expect(spentOn(PRODUCTS, nameKey("Barney's"))).toBe(10); // a supplier only
+    expect(spentOn(PRODUCTS, nameKey('Cookies'))).toBe(10); // a brand only, bought elsewhere
+    expect(spentOn(PRODUCTS, nameKey('Dutch Passion'))).toBe(0); // never bought
+    expect(spentOn(PRODUCTS, nameKey('Archived Shop'))).toBe(0);
+    expect(spentOn([{ source: 'A', purchases: [buy('B', 12.345), buy(null, 0.1), buy('a', 0.2)] }], nameKey('a'))).toBe(12.65);
   });
 });

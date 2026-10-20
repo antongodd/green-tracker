@@ -148,12 +148,19 @@ export function productsNamed<P extends NamedProduct>(products: readonly P[], ke
   return products.filter((p) => !p.archived).map((product) => ({ product, ...nameRoles(product, key) })).filter((r) => r.brand || r.shop);
 }
 
-/** What you paid at this supplier: every purchase there, added up (archived products left out). */
-export function spentAt(products: readonly (NamedProduct & { purchases?: readonly { supplier: string | null; totalPaid: number }[] })[], key: string): number {
+type Spending = NamedProduct & { purchases?: readonly { supplier: string | null; totalPaid: number }[] };
+
+/**
+ * What you spent on this name, as a brand and/or where you bought (D62): every purchase of a
+ * product with it as its Source, and every purchase bought there, each counted once
+ * (archived products left out).
+ */
+export function spentOn(products: readonly Spending[], key: string): number {
   let total = 0;
   for (const p of products) {
     if (p.archived) continue;
-    for (const x of p.purchases ?? []) if (x.supplier && nameKey(x.supplier) === key) total += x.totalPaid;
+    const brand = !!p.source && nameKey(p.source) === key;
+    for (const x of p.purchases ?? []) if (brand || (x.supplier && nameKey(x.supplier) === key)) total += x.totalPaid;
   }
   return Math.round(total * 100) / 100;
 }

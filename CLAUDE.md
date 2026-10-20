@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D61 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D62 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D62), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D63), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +80,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D61.
+- Reopen any decision D1–D62.
 
 ## Testing notes
 
@@ -133,8 +133,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.51.1: live plus brands and suppliers
-  (D59), Smokes removed (D60), the Sources and Settings tabs (D61) and notes-only changes (0.48.2, 0.51.1). Anton will
+- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.52.0: live plus brands and suppliers
+  (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62) and
+  notes-only changes (0.48.2, 0.51.1). Anton will
   say when to take it all live together.
 
 ### To-do list (suggested order; Anton decides)
@@ -148,6 +149,9 @@ section, so it must always be current.
 3. **Sources and Settings tabs** (Anton, 2026-10-20): **on dev** (0.51.0, D61, 2026-10-20). Tabs **Leaderboard ·
    Log · Sources · People · Settings**; Sources shows each brand and supplier as a card (option B) with its best
    product's photo; Settings is More renamed. The keyboard closes after tapping a suggestion.
+   **Then** (Anton, 2026-10-20, from his screenshot and recording): **on dev** (0.52.0, D62, 2026-10-20). Cards and
+   name pages show what he spent ("N products · £X spent", a Spent tile, a **Most spent** sort); card photos no longer
+   cut off; swiping back from any scrolled screen shows the screen underneath (not black) and lands where he was.
 4. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
    2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
    banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy

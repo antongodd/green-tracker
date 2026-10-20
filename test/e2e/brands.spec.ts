@@ -25,19 +25,19 @@ const product = async (name: string, over: Partial<ProductInput>) => {
   return p;
 };
 /** A real JPEG set uploaded from inside the page. */
-const upload = (page: Page, colour: string): Promise<string> =>
-  page.evaluate(async (c) => {
+const upload = (page: Page, colour: string, w = 300, h = 200): Promise<string> =>
+  page.evaluate(async ({ c, w, h }) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 300;
-    canvas.height = 200;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = c;
-    ctx.fillRect(0, 0, 300, 200);
+    ctx.fillRect(0, 0, w, h);
     const blob = await new Promise<Blob>((r) => canvas.toBlob((b) => r(b!), 'image/jpeg', 0.8));
     const form = new FormData();
     for (const part of ['original', 'cropped', 'thumb']) form.append(part, blob, `${part}.jpg`);
     return ((await (await fetch('/api/uploads', { method: 'POST', body: form })).json()) as { upload: string }).upload;
-  }, colour);
+  }, { c: colour, w, h });
 const rated = (n: number) => ({ look: n, smell: n, taste: n, burn: n });
 const buy = (supplier: string, totalPaid: number) => ({ date: '2026-10-01', amount: 2, totalPaid, supplier });
 const axe = async (page: Page) => {
@@ -64,8 +64,8 @@ test.beforeAll(async ({ browser }) => {
   const f = await person(browser, 'bf');
   fan = f.page;
   // Grasshopper: the brand of three (one private), where two were bought (one typed in small letters).
-  // Grasshopper's best product has a photo: its card shows it (D61).
-  const amnesia = await product('Amnesia Haze', { source: 'Grasshopper', ratings: rated(9), purchases: [buy('Grasshopper', 24)], photos: [{ upload: await upload(owner, '#3b8a4a'), crop: null }] });
+  // Grasshopper's best product has a photo, tall like a phone's: its card shows it (D61), all of it inside the card (0.52.0).
+  const amnesia = await product('Amnesia Haze', { source: 'Grasshopper', ratings: rated(9), purchases: [buy('Grasshopper', 24)], photos: [{ upload: await upload(owner, '#3b8a4a', 900, 1200), crop: null }] });
   ids.amnesiaPhoto = amnesia.photos[0].id;
   await product('Super Lemon Haze', { ratings: rated(8), purchases: [buy('grasshopper', 30)] });
   await product('Cheese', { source: 'Grasshopper', ratings: rated(7) });
@@ -168,14 +168,14 @@ test("a product page's Source opens everything from that name, together and tagg
   await expect(owner).toHaveURL(/\/brands\/Grasshopper$/);
   await expect(owner.locator('.hdr .title')).toHaveText('Grasshopper');
   await expect(owner.locator('.brand-lead')).toHaveText('Everything from Grasshopper, or bought there.');
-  // Archived left out; private ones are yours, so they're here. Spent here: 24 + 30 (not the archived 99).
+  // Archived left out; private ones are yours, so they're here. Spent: 24 + 30 (not the archived 99).
   expect(await brandRows(owner, 4)).toEqual([
     ['Amnesia Haze', 'Brand + Bought here'],
     ['Super Lemon Haze', 'Bought here'],
     ['Cheese', 'Brand'],
     ['Secret Bud', 'Brand'],
   ]);
-  expect(await tiles(owner)).toEqual(['Products 4', 'Average 7.5', 'Spent here £54.00']);
+  expect(await tiles(owner)).toEqual(['Products 4', 'Average 7.5', 'Spent £54.00']);
   await expect(owner.locator('.nav .tab[aria-current="page"]')).toContainText('Leaderboard');
   expect(await axe(owner)).toEqual([]);
   await shot(owner, '161-brand-page'); // before the contrast check, which hides the text it measures
@@ -194,12 +194,12 @@ test('a purchase’s Supplier opens what you bought there', async () => {
     ['Gelato', 'Bought here'],
     ['Brand New', 'Bought here'],
   ]);
-  expect(await tiles(owner)).toEqual(['Products 2', 'Average 8.5', 'Spent here £35.00']);
-  // Only a brand: no Spent here.
+  expect(await tiles(owner)).toEqual(['Products 2', 'Average 8.5', 'Spent £35.00']);
+  // Only a brand: what its products cost, wherever they were bought (D62): Gelato 15 + Brand New 20, both at Barney's.
   await owner.goto('/brands/Cookies');
   await expect(owner.locator('.brand-lead')).toHaveText('Everything from Cookies.');
   await expect(owner.locator('.rows .row')).toHaveCount(2);
-  expect(await tiles(owner)).toEqual(['Products 2', 'Average 8.5']);
+  expect(await tiles(owner)).toEqual(['Products 2', 'Average 8.5', 'Spent £35.00']);
   // A name nobody uses any more.
   await owner.goto('/brands/Old%20Brand');
   await expect(owner.getByRole('heading', { name: 'Nothing from Old Brand' })).toBeVisible();
@@ -215,15 +215,20 @@ test('the Sources tab: every name as a card with its best product’s photo, to 
   const card = (name: string) => owner.locator('.scard', { has: owner.locator('.nm', { hasText: name }) });
   // Most products first, then A–Z.
   await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
-  await expect(card('Grasshopper').locator('.sub')).toHaveText('4 products · best: Amnesia Haze');
+  // How many, what you spent on it (D62), then the best.
+  await expect(card('Grasshopper').locator('.sub')).toHaveText(['4 products · £54.00 spent', 'best: Amnesia Haze']);
   await expect(card('Grasshopper').locator('.role')).toHaveText(['Brand', 'Bought here']);
   await expect(card('Grasshopper').locator('.avg')).toHaveText('Average 7.5');
-  await expect(card("Barney's").locator('.sub')).toHaveText('2 products · best: Gelato');
+  await expect(card("Barney's").locator('.sub')).toHaveText(['2 products · £35.00 spent', 'best: Gelato']);
+  await expect(card('Cookies').locator('.sub')).toHaveText(['2 products · £35.00 spent', 'best: Gelato']);
   await expect(card("Barney's").locator('.role')).toHaveText(['Bought here']);
   await expect(card('Cookies').locator('.role')).toHaveText(['Brand']);
   // The best product's photo, or its type's mark without one.
   await expect(card('Grasshopper').locator('.scard-ph img')).toHaveAttribute('src', new RegExp(ids.amnesiaPhoto!));
   await expect(card('Grasshopper').locator('.scard-ph img')).toHaveJSProperty('complete', true);
+  // The whole photo box is filled and nothing spills out of it (0.52.0: a tall photo was cut off).
+  const [ph, img] = [(await card('Grasshopper').locator('.scard-ph').boundingBox())!, (await card('Grasshopper').locator('.scard-ph img').boundingBox())!];
+  expect([img.x, img.y, img.width, img.height].map(Math.round)).toEqual([ph.x, ph.y, ph.width, ph.height].map(Math.round));
   await expect(card('Cookies').locator('.scard-ph svg')).toHaveCount(1);
   // Two a row.
   const [a, b] = [(await card('Grasshopper').boundingBox())!, (await card("Barney's").boundingBox())!];
@@ -234,6 +239,20 @@ test('the Sources tab: every name as a card with its best product’s photo, to 
   await expect(names()).toHaveText(["Barney's", 'Cookies', 'Grasshopper']);
   await owner.getByRole('button', { name: 'Best average' }).click();
   await expect(names()).toHaveText(["Barney's", 'Cookies', 'Grasshopper']);
+  // Most spent (D62): Grasshopper's £54, then Barney's and Cookies, £35 each (A–Z). A big buy puts Cookies first.
+  await owner.getByRole('button', { name: 'Most spent' }).click();
+  await expect(owner.getByRole('button', { name: 'Most spent' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
+  const biscotti = await product('Biscotti', { source: 'Cookies', ratings: rated(5), purchases: [{ date: '2026-10-02', amount: 10, totalPaid: 100, supplier: null }], private: true });
+  await owner.reload();
+  await owner.getByRole('button', { name: 'Most spent' }).click();
+  await expect(card('Cookies').locator('.sub').first()).toHaveText('3 products · £135.00 spent');
+  await expect(names()).toHaveText(['Cookies', 'Grasshopper', "Barney's"]);
+  // Archived, it's left out again (and out of the tests after this one).
+  await call(owner, 'POST', `/api/products/${biscotti.id}/archived`, { value: true });
+  await owner.reload();
+  await owner.getByRole('button', { name: 'Most spent' }).click();
+  await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
   await owner.getByLabel('Search').fill('coo');
   await expect(names()).toHaveText(['Cookies']);
   await owner.getByLabel('Search').fill('zzz');

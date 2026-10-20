@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { formatGBP, formatScore } from '../../../shared/domain/format';
 import { leaderboardTiles, rankProducts } from '../../../shared/domain/leaderboard';
-import { matchesName, nameKey, productsNamed, spentAt, usedNames } from '../../../shared/domain/names';
+import { matchesName, nameKey, productsNamed, spentOn, usedNames } from '../../../shared/domain/names';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
@@ -50,10 +50,11 @@ export function RoleTags(p: { brand: boolean; shop: boolean }) {
   );
 }
 
-type Sort = 'products' | 'average' | 'az';
+type Sort = 'products' | 'average' | 'spent' | 'az';
 const SORTS: { key: Sort; label: string }[] = [
   { key: 'products', label: 'Most products' },
   { key: 'average', label: 'Best average' },
+  { key: 'spent', label: 'Most spent' },
   { key: 'az', label: 'A–Z' },
 ];
 
@@ -61,7 +62,7 @@ const SORTS: { key: Sort; label: string }[] = [
  * The Sources tab (D61, option B "Cards"; D59's list before it): every name in your products'
  * Source and purchases' Supplier, one list for both, two cards a row. Each card: the photo of its
  * best product (by Overall; the type's mark without one), the name and its average, how many
- * products and the best one, and Brand / Bought here. Archived ones left out.
+ * products and what you spent on it (D62), the best one, and Brand / Bought here. Archived ones left out.
  */
 export function BrandsList() {
   const { products, error } = useProducts();
@@ -70,10 +71,11 @@ export function BrandsList() {
   const names = (products ? usedNames(products) : []).map((n) => {
     const named = productsNamed(products!, n.key).map((r) => r.product);
     const top = rankProducts(named, { filter: 'all', rankBy: 'overall' })[0]!;
-    return { ...n, average: leaderboardTiles(named).average, best: top.value === null ? null : top.product, cover: top.product };
+    return { ...n, average: leaderboardTiles(named).average, spent: spentOn(products!, n.key), best: top.value === null ? null : top.product, cover: top.product };
   });
   const shown = names.filter((n) => matchesName(n.name, query));
   if (sort === 'az') shown.sort((a, b) => a.name.localeCompare(b.name));
+  if (sort === 'spent') shown.sort((a, b) => b.spent - a.spent || a.name.localeCompare(b.name));
   if (sort === 'average') shown.sort((a, b) => (a.average === b.average ? 0 : a.average === null ? 1 : b.average === null ? -1 : b.average - a.average) || a.name.localeCompare(b.name));
   return (
     <>
@@ -118,9 +120,9 @@ export function BrandsList() {
                     </span>
                   </span>
                   <span class="sub">
-                    {n.products} {n.products === 1 ? 'product' : 'products'}
-                    {n.best && ` · best: ${n.best.name}`}
+                    {n.products} {n.products === 1 ? 'product' : 'products'} · {formatGBP(n.spent)} spent
                   </span>
+                  {n.best && <span class="sub best">best: {n.best.name}</span>}
                   <RoleTags brand={n.brand > 0} shop={n.shop > 0} />
                 </a>
               ))}
@@ -137,7 +139,7 @@ export function BrandsList() {
 /**
  * One brand or supplier (D59): every product with it as its Source or a purchase's Supplier,
  * together, best first, tagged Brand / Bought here; tiles for products, average and what you
- * spent there. Archived products are left out.
+ * spent on it (D62: as a brand and where you bought, each purchase once). Archived products are left out.
  */
 export function BrandPage(p: { name: string }) {
   const key = nameKey(p.name);
@@ -191,7 +193,7 @@ export function BrandPage(p: { name: string }) {
               tiles={[
                 { value: String(tiles.products), label: 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
-                ...(shop ? [{ value: formatGBP(spentAt(products!, key)), label: 'Spent here' }] : []),
+                { value: formatGBP(spentOn(products!, key)), label: 'Spent' },
               ]}
             />
             <div class="rows">
