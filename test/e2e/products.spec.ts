@@ -156,7 +156,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('dialog').getByRole('button', { name: 'Archive' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('.row')).toHaveCount(1);
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await expect(page.getByRole('link', { name: /Archive\s*1/ })).toBeVisible();
   await page.getByRole('link', { name: /Archive/ }).click();
   await expect(page.locator('.row')).toContainText('Gelato 41 OG');

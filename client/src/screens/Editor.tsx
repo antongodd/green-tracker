@@ -188,15 +188,16 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     focusAmount.current = key;
   };
   // Leaving Source or Supplier (not for its suggestions) saves the spelling you already use (D59).
+  // Read from the latest form: a picked suggestion and the blur that follows it land together (D61).
   const leaveSource = (e?: FocusEvent) => {
     if (e && intoSuggestions(e.relatedTarget, 'source')) return;
     setSuggesting(null);
-    set('source', canonicalName(form.source ?? '', used));
+    setForm((f) => (f ? { ...f, source: canonicalName(f.source ?? '', used) } : f));
   };
   const leaveSupplier = (d: PurchaseDraft, e?: FocusEvent) => {
     if (e && intoSuggestions(e.relatedTarget, `${d.key}-supplier`)) return;
     setSuggesting(null);
-    setPurchase(d.key, { supplier: canonicalName(d.supplier, used) });
+    setForm((f) => (f ? { ...f, purchases: f.purchases.map((x) => (x.key === d.key ? { ...x, supplier: canonicalName(x.supplier, used) } : x)) } : f));
   };
   const o = overall(form.productType, form.ratings);
   const count = ratedCount(form.productType, form.ratings);
@@ -340,7 +341,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                         <TextField id={`${d.key}-supplier`} label="Supplier" value={d.supplier} onInput={(v) => setPurchase(d.key, { supplier: v })} onFocus={() => setSuggesting(`${d.key}-supplier`)} onBlur={(e) => leaveSupplier(d, e)} autoCapitalize="words" />
                         {suggesting === `${d.key}-supplier` && (
                           // The product's Source comes first: with no brand, it's often where it was bought.
-                          <NameSuggestions for={`${d.key}-supplier`} label="Supplier" typed={d.supplier} used={used} first={form.source} onPick={(name) => setPurchase(d.key, { supplier: name })} onLeave={() => leaveSupplier(d)} />
+                          <NameSuggestions for={`${d.key}-supplier`} label="Supplier" typed={d.supplier} used={used} first={form.source} onPick={(name) => setForm((f) => (f ? { ...f, purchases: f.purchases.map((x) => (x.key === d.key ? { ...x, supplier: name } : x)) } : f))} onLeave={() => leaveSupplier(d)} />
                         )}
                       </div>
                       <div class="pcard-foot">

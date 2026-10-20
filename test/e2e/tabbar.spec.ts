@@ -38,15 +38,15 @@ test.beforeAll(async ({ browser }) => {
   ({ page: fan } = await person(browser, 'fan'));
 });
 
-test('four tabs, no Smokes (D60), each a quarter of the bar', async () => {
+test('five tabs: Sources third, Settings last (D61), each a fifth of the bar', async () => {
   await page.goto('/');
   // Wait for the bar itself: on a busy machine the app is still starting when the page loads (0.36.0 CI).
-  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'People', 'More']);
-  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Log', 'People', 'More']);
+  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'Sources', 'People', 'Settings']);
+  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Log', 'Sources', 'People', 'Settings']);
   const widths = await page.locator('.nav .tab').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width));
-  for (const w of widths) expect(w).toBeCloseTo(390 / 4, 0);
+  for (const w of widths) expect(w).toBeCloseTo(390 / 5, 0);
   // Each name fits its tab.
-  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 4).map((e) => e.textContent));
+  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 5).map((e) => e.textContent));
   expect(clipped).toEqual([]);
 });
 
@@ -57,7 +57,7 @@ test('the old Smokes addresses open the Leaderboard', async () => {
   }
 });
 
-for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/people', 'People'], ['/more', 'More']] as const) {
+for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/sources', 'Sources'], ['/people', 'People'], ['/more', 'Settings']] as const) {
   test(`on ${label}: only its tab is solid, glowing and underlined; the others are outlines`, async () => {
     await page.goto(path);
     await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(new RegExp(`^${label}`));

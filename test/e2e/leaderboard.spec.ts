@@ -200,7 +200,7 @@ test('coming back from a product lands on the tapped row; tab switches start at 
   await expect.poll(async () => Math.abs((await row.boundingBox())!.y - before)).toBeLessThan(12);
 
   // Tab switches start at the top.
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(rows()).toHaveCount(16);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);

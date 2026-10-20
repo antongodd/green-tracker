@@ -66,6 +66,10 @@ export const BoardIcon = icon('M9 7.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V20H9Z M2.5 1
 export const LogIcon = icon('M6 2.5h11.5a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 6 2.5Z M8.5 7.25h8v1.5h-8Z M8.5 11.25h8v1.5h-8Z M8.5 15.25h5v1.5h-5Z', { evenodd: true });
 export const PeopleIcon = icon('M9 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M1.5 19.5c0-3.3 3.4-5.5 7.5-5.5s7.5 2.2 7.5 5.5v.5a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5Z M16.5 11.2a3.3 3.3 0 1 0-1.1-6.4 5.5 5.5 0 0 1 0 6.2c.35.13.72.2 1.1.2Z M18 20.5h4a.5.5 0 0 0 .5-.5v-.4c0-2.6-2.3-4.4-5.4-4.8 1 1.1 1.4 2.4 1.4 3.8Z');
 export const MoreIcon = icon('M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M19 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z');
+/** The Sources tab (D61): a shop front with its awning, the door cut out. */
+export const SourcesIcon = icon('M5 3.5h14l2 6.2c0 1.6-1.3 2.8-2.9 2.8-1.2 0-2.2-.7-2.7-1.7-.5 1-1.6 1.7-2.8 1.7s-2.3-.7-2.8-1.7c-.5 1-1.5 1.7-2.7 1.7C4.3 12.5 3 11.3 3 9.7Z M5.5 14h13v6.5h-13Z M10 16.5h4v4h-4Z', { evenodd: true });
+/** The Settings tab (D61): a gear, its middle cut out. */
+export const SettingsIcon = icon('M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.6a7.5 7.5 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.6h4.2l.4-2.6a7.5 7.5 0 0 0 2.6-1.5l2.3 1 2-3.4Z M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z', { evenodd: true });
 
 // UI
 export const BackIcon = icon('M15 4.5 7.5 12l7.5 7.5', { stroke: 2.4 });
@@ -180,7 +184,9 @@ const tabLine = (d: string) =>
   };
 export const LogLineIcon = tabLine('M6.3 3.35h11.2a1.65 1.65 0 0 1 1.65 1.65v14.5a1.65 1.65 0 0 1-1.65 1.65H6.3a1.45 1.45 0 0 1-1.45-1.45V4.8A1.45 1.45 0 0 1 6.3 3.35Z M8.85 8h7.3 M8.85 12h7.3 M8.85 16h4.3');
 export const PeopleLineIcon = tabLine('M9 11.1a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z M2.35 19.9c0-3.1 3-5.1 6.65-5.1s6.65 2 6.65 5.1Z M16.1 4.6a3.2 3.2 0 0 1 0 6.2 M17.7 14.9c2.3.5 4 2.1 4 4.4v.6h-2.9');
-export const MoreLineIcon = tabLine('M5 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M12 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z M19 10.4a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z');
+// Sources and Settings (D61, 0.51.0): a shop front and a gear, in place of More's three dots.
+export const SourcesLineIcon = tabLine('M4 9.5 5.5 4h13L20 9.5 M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0 M5.5 12v8h13v-8 M10 20v-4.5h4V20');
+export const SettingsLineIcon = tabLine('M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.6a7.5 7.5 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.6h4.2l.4-2.6a7.5 7.5 0 0 0 2.6-1.5l2.3 1 2-3.4Z');
 
 // More screen rows (D38, 0.31.0): outlines in the editors' heading style.
 export const KeyIcon = icon('M8 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z M12.5 12H21 M18 12v3 M21 12v2', { stroke: 2 });
@@ -191,8 +197,6 @@ export const DevicesIcon = icon('M4.5 5h10a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1
 export const UploadIcon = icon('M12 15V4 M8 8l4-4 4 4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
 export const DownloadIcon = icon('M12 4v11 M8 11l4 4 4-4 M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14', { stroke: 2 });
 export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9 M10 13h4', { stroke: 2 });
-/** Brands and suppliers (D59): a shop front with an awning. */
-export const StoreIcon = icon('M4 9.5 5.5 4h13L20 9.5 M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0 M5.5 12v8h13v-8 M10 20v-4.5h4V20', { stroke: 2 });
 /** Privacy (D45): an eye. */
 export const EyeIcon = icon('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', { stroke: 2 });
 /** Return to Log (D50): an arrow curling back. */
