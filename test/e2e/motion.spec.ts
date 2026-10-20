@@ -353,6 +353,55 @@ test('a loose Log entry opened from a scrolled Log keeps the phone’s picture o
   await page.setViewportSize({ width: 390, height: 844 });
 });
 
+test('swiping back from any scrolled screen keeps the phone’s picture of it and lands where you were (0.52.0)', async () => {
+  // Owner's recording: scrolled down on Sources, opened a brand, swiped back: the swipe showed
+  // black and the screen started at the top. Only lists kept their place (0.19.2, 0.19.4).
+  // No ratings: these sit at the bottom of the Leaderboard, out of the other tests' way.
+  for (let i = 0; i < 8; i++) await post('/api/products', { ...emptyProductInput(), name: `Sourced ${i + 1}`, source: `Maker ${i + 1}` });
+  await page.setViewportSize({ width: 390, height: 460 });
+  const screens = [
+    { at: '/sources', ready: page.locator('.scard'), count: 8, tap: page.locator('.scard', { hasText: 'Maker 5' }), opens: /\/brands\/Maker%205$/ },
+    { at: '/more', ready: page.getByRole('link', { name: 'Export' }), count: 1, tap: page.getByRole('link', { name: 'Export' }), opens: /\/more\/export$/ },
+  ];
+  for (const s of screens) {
+    for (const how of ['swipe', 'Back button'] as const) {
+      await page.goto(s.at);
+      await expect(s.ready).toHaveCount(s.count);
+      await screenSettled();
+      // Settings fills in its numbers and summaries as they load: wait until nothing moves.
+      let last = -1;
+      await expect.poll(async () => {
+        const y = (await s.tap.boundingBox())!.y;
+        const same = y === last;
+        last = y;
+        return same;
+      }, { intervals: [300] }).toBe(true);
+      // Scrolled down, with what's tapped in the middle of the screen.
+      await s.tap.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 200));
+      const box = (await s.tap.boundingBox())!;
+      const scrolled = await page.evaluate(() => window.scrollY);
+      expect(scrolled, `${s.at} scrolls`).toBeGreaterThan(50);
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(page).toHaveURL(s.opens);
+      expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual'); // the new screen's own: it starts at the top
+      expect(await page.evaluate(() => window.scrollY)).toBe(0);
+      if (how === 'swipe') await page.goBack(); // what a swipe from the edge does
+      else await page.getByRole('link', { name: 'Back' }).click();
+      await expect(page).toHaveURL(new RegExp(`${s.at}$`));
+      // Its entry restores its own scroll, so the phone shows its picture of it during the swipe…
+      expect(await page.evaluate(() => history.scrollRestoration), `${s.at} ${how}`).toBe('auto');
+      // …and it lands exactly where it was.
+      await expect.poll(async () => Math.abs((await s.tap.boundingBox())!.y - box.y), `${s.at} ${how}`).toBeLessThanOrEqual(1);
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrolled);
+    }
+  }
+  // Switching tabs still starts the next screen at the top.
+  await page.getByRole('link', { name: 'Sources', exact: true }).click();
+  await expect(page).toHaveURL(/\/sources$/);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+});
+
 test('swiping back (the browser’s Back) shows the list without its entrance fade; other changes keep it', async () => {
   await page.goto('/');
   await expect(row('Photo Kush')).toBeVisible();
