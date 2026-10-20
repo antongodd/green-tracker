@@ -32,3 +32,10 @@ run (`scripts/copy-ai-engine.mjs`). See SPEC §4 *Remove background*.
 
 Merging to `main` deploys automatically (GitHub Actions: tests → migrations → deploy → live check).
 It needs the repository secret `CLOUDFLARE_API_TOKEN`. To deploy by hand: `CLOUDFLARE_API_TOKEN=… npm run deploy`.
+
+## Website
+
+`site/` is the website for people who haven't got the app yet (D63): plain files in `site/public/`, deployed as
+their own Worker (`site/wrangler.jsonc`). CI deploys the preview from `dev` and the public site
+(https://green-tracker-site.green-tracker.workers.dev) from `main`. Its tests are `test/e2e/website.spec.ts`. See SPEC
+§4 *Website*.
