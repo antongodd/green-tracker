@@ -13,7 +13,6 @@ export * from './photo';
 export * from './logEntry';
 export * from './social';
 export * from './backup';
-export * from './smoke';
 export * from './privacy';
 export * from './gems';
 export * from './names';

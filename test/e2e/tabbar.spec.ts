@@ -1,8 +1,8 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { contrastFailures, shot, signUp, textBoxes } from './helpers';
 
-// D35 (0.28.0): the tab bar's icons (P1's podium, notebook, people, dots; D43's flame for Smokes
-// since 0.36.0) are slim outlines; the tab you're on shows its solid icon, in green, glowing, with a
+// D35 (0.28.0): the tab bar's icons (P1's podium, notebook, people, dots; the Smokes tab went in
+// 0.50.0, D60) are slim outlines; the tab you're on shows its solid icon, in green, glowing, with a
 // short glowing green line under its name, in place of D18's green bubble. The People badge is unchanged.
 test.describe.configure({ mode: 'serial' });
 let page: Page, fan: Page;
@@ -38,19 +38,26 @@ test.beforeAll(async ({ browser }) => {
   ({ page: fan } = await person(browser, 'fan'));
 });
 
-test('five tabs, Smokes second (D43), each a fifth of the bar', async () => {
+test('four tabs, no Smokes (D60), each a quarter of the bar', async () => {
   await page.goto('/');
   // Wait for the bar itself: on a busy machine the app is still starting when the page loads (0.36.0 CI).
-  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Smokes', 'Log', 'People', 'More']);
-  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Smokes', 'Log', 'People', 'More']);
+  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'People', 'More']);
+  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Log', 'People', 'More']);
   const widths = await page.locator('.nav .tab').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width));
-  for (const w of widths) expect(w).toBeCloseTo(390 / 5, 0);
+  for (const w of widths) expect(w).toBeCloseTo(390 / 4, 0);
   // Each name fits its tab.
-  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 5).map((e) => e.textContent));
+  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 4).map((e) => e.textContent));
   expect(clipped).toEqual([]);
 });
 
-for (const [path, label] of [['/', 'Leaderboard'], ['/smokes', 'Smokes'], ['/log', 'Log'], ['/people', 'People'], ['/more', 'More']] as const) {
+test('the old Smokes addresses open the Leaderboard', async () => {
+  for (const path of ['/smokes', '/smokes/new']) {
+    await page.goto(path);
+    await expect(page.locator('.nav .tab[aria-current="page"]'), path).toHaveText(/^Leaderboard/);
+  }
+});
+
+for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/people', 'People'], ['/more', 'More']] as const) {
   test(`on ${label}: only its tab is solid, glowing and underlined; the others are outlines`, async () => {
     await page.goto(path);
     await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(new RegExp(`^${label}`));
@@ -77,7 +84,7 @@ test('the People badge still shows follow requests', async () => {
 });
 
 test('tab names are readable, current and not', async () => {
-  for (const path of ['/log', '/smokes']) {
+  for (const path of ['/log', '/people']) {
     await page.goto(path);
     await page.locator('.nav .tab[aria-current="page"]').waitFor();
     expect(await contrastFailures(page, await textBoxes(page, '.nav .tab-l'), 1), path).toEqual([]);

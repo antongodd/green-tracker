@@ -1,5 +1,3 @@
-import type { SiteFeatures } from '../shared/domain/privacy';
-
 export interface Env {
   DB: D1Database;
   PHOTOS: R2Bucket;
@@ -8,8 +6,6 @@ export interface Env {
   RP_ID: string;
   /** The exact origin the app is served from, e.g. https://green-tracker.green-tracker.workers.dev */
   ORIGIN: string;
-  /** "on": this site has Smokes (D43, D46). Unset on the live site until Smokes is re-released. */
-  SMOKES?: string;
   /** "dev" on the dev site (D47): the app shows its DEV label. Unset on the live site. */
   SITE?: string;
   /** Test servers only: raises the sign-up limit. Never set in production (default 10 an hour). */
@@ -30,6 +26,3 @@ export type AppEnv = {
   Bindings: Env;
   Variables: { user: SessionUser | null; session: Session | null };
 };
-
-/** This site's features (D46): the dev site has Smokes; the live site doesn't until it's re-released. */
-export const siteFeatures = (env: Env): SiteFeatures => ({ smokes: env.SMOKES === 'on' });

@@ -123,7 +123,7 @@ log.put('/:id', async (c) => {
 });
 
 /**
- * Loose entries are hard-deleted (behind a confirmation in the app), photo files and smokes (D43)
+ * Loose entries are hard-deleted (behind a confirmation in the app), photo files
  * included, and (D50) the product a returned entry keeps, with its ratings, purchases and photos.
  */
 log.delete('/:id', async (c) => {
@@ -136,7 +136,7 @@ log.delete('/:id', async (c) => {
     .bind(userId, id, entry.kept?.id ?? null)
     .all<PhotoRow>();
   await db.batch([
-    // The kept product first (its ratings, purchases and photo rows cascade), then the entry (its photo row and smokes cascade).
+    // The kept product first (its ratings, purchases and photo rows cascade), then the entry (its photo row cascades).
     ...(entry.kept ? [db.prepare('DELETE FROM products WHERE id = ?1 AND user_id = ?2').bind(entry.kept.id, userId)] : []),
     db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(id, userId),
   ]);
@@ -147,7 +147,7 @@ log.delete('/:id', async (c) => {
 /**
  * Promotion (brief §10.2): on Save, atomically — one D1 batch, all or nothing —
  * create the product, re-assign the photo to it (moved, not copied; its original
- * travels too), move its smokes to it (D43), and delete the loose entry. Nothing is written before this call.
+ * travels too), and delete the loose entry. Nothing is written before this call.
  * D50: an entry that keeps a product saves over that product instead, so it comes back as it was.
  */
 log.post('/:id/promote', async (c) => {
@@ -161,8 +161,6 @@ log.post('/:id/promote', async (c) => {
     : await createProductWrites(db, userId, input, { adoptFromLogEntry: entryId });
   await db.batch([
     ...saved.statements,
-    // Its smokes (D43) move to the product, before the entry goes (they'd cascade with it).
-    db.prepare('UPDATE smokes SET product_id = ?1, log_entry_id = NULL, updated_at = ?4 WHERE log_entry_id = ?2 AND user_id = ?3').bind(saved.id, entryId, userId, Date.now()),
     db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(entryId, userId),
   ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, saved.unusedKeys);
@@ -171,8 +169,7 @@ log.post('/:id/promote', async (c) => {
 
 /**
  * Return to Log (D50): a Leaderboard product becomes a Log entry again, atomically. The entry
- * takes its name, type and country, the product's first photo (moved, not copied), its smokes
- * (D43), and as its amount all its purchases' amounts added up; its Logged date is when the
+ * takes its name, type and country, the product's first photo (moved, not copied), and as its amount all its purchases' amounts added up; its Logged date is when the
  * product was first added. Everything else stays on the product, which the entry keeps hidden
  * until Add to leaderboard (above) brings it back. Archived products are un-archived first.
  */
@@ -206,7 +203,6 @@ log.post('/return/:productId', async (c) => {
         product.id,
       ),
     ...(first ? [db.prepare('UPDATE photos SET product_id = NULL, log_entry_id = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4').bind(id, now, first.id, userId)] : []),
-    db.prepare('UPDATE smokes SET log_entry_id = ?1, product_id = NULL, updated_at = ?2 WHERE product_id = ?3 AND user_id = ?4').bind(id, now, product.id, userId),
   ]);
   return c.json({ entry: await loadEntry(db, userId, id) }, 201);
 });

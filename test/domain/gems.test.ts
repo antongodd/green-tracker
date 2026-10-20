@@ -17,11 +17,10 @@ describe('Leaderboard colours by score (D48)', () => {
     expect(scoreBand('overall', (8.3 + 8.7) / 2)).toBe(2);
   });
 
-  it('only scores out of 10 get a band: any rating, never price, value for money, Most used or unrated', () => {
+  it('only scores out of 10 get a band: any rating, never price, value for money or unrated', () => {
     expect(scoreBand('taste', 9.2)).toBe(3);
     expect(scoreBand('price', 9.6)).toBeNull();
     expect(scoreBand('vfm', 9.6)).toBeNull();
-    expect(scoreBand('used', 12)).toBeNull();
     expect(scoreBand('overall', null)).toBeNull();
   });
 

@@ -136,10 +136,10 @@ test('labels fit at 375px for every filter × Rank by combination; short forms o
       const m = await page.locator('.controls').evaluate((el) => ({ overflow: el.scrollWidth > el.clientWidth + 1, text: el.textContent }));
       expect(m.overflow, `${t} × ${r}`).toBe(false);
       // The Colours key (D48) sits beside Rank by only when ranking by a score.
-      await expect(page.locator('.controls .pill.key'), `${t} × ${r}`).toHaveCount(['price', 'vfm', 'used'].includes(r) ? 0 : 1);
+      await expect(page.locator('.controls .pill.key'), `${t} × ${r}`).toHaveCount(['price', 'vfm'].includes(r) ? 0 : 1);
       // Colours follow the score as shown, only for scores out of 10 (D48); the #1 mark goes on the top row when it has a value.
       const got = await rows().evaluateAll((els) => els.map((e) => ({ band: [...e.classList].find((c) => /^band\d$/.test(c)) ?? null, first: e.classList.contains('first'), score: e.querySelector('.score b')!.textContent!, unrated: !!e.querySelector('.score.unrated') })));
-      const scored = !['price', 'vfm', 'used'].includes(r);
+      const scored = !['price', 'vfm'].includes(r);
       const want = (g: (typeof got)[number]) => {
         const v = Number(g.score);
         if (!scored || g.unrated || v < 8) return null;
@@ -215,11 +215,17 @@ test('coming back from a product lands on the tapped row; tab switches start at 
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
-test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at its new position', async () => {
+/**
+ * §17: re-rates the product at `place` (a Filler: only Look) to `look`, enough for 2nd, then comes back. `slow` plays every
+ * animation at a fifth of its speed, as a busy phone might: the Back flight then outlasts the
+ * app's first second of undoing the list's own late scroll restore (0.50.0: once on a 4-worker run).
+ */
+async function rerate(place: number, look: string, slow: boolean) {
   await page.setViewportSize({ width: 390, height: 560 }); // short, so 2nd is off screen where 8th was
   await page.goto('/');
-  const eighth = rows().nth(7);
-  await expect(eighth.locator('.rk')).toHaveText('8');
+  const eighth = rows().nth(place - 1);
+  await expect(eighth.locator('.rk')).toHaveText(String(place));
+  await expect(eighth.locator('.name')).toHaveText(/^Filler/);
   const name = (await eighth.locator('.name').textContent())!;
   await eighth.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   const listScroll = await page.evaluate(() => window.scrollY);
@@ -228,7 +234,7 @@ test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at 
   await page.getByRole('link', { name: 'Edit' }).first().click();
   // 8.7 puts it second, behind Gelato 41's 8.9.
   await page.getByRole('button', { name: /^Look: .*Tap to type/ }).click();
-  await page.getByLabel('Look (1 to 10)').fill('8.7');
+  await page.getByLabel('Look (1 to 10)').fill(look);
   await page.getByLabel('Look (1 to 10)').press('Enter');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name })).toBeVisible();
@@ -240,11 +246,25 @@ test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at 
       const late = () => (document.documentElement.classList.contains('vt-photo') ? setTimeout(late, 10) : setTimeout(() => window.scrollTo(0, y), 30));
       setTimeout(late, 10);
     }, { once: true }), listScroll);
+  const cdp = slow ? await page.context().newCDPSession(page) : null;
+  if (cdp) {
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.2 });
+  }
   await page.getByRole('link', { name: 'Back' }).click();
 
   const row = page.locator('.row', { hasText: name });
   await expect(row.locator('.rk')).toHaveText('2');
+  if (cdp) await expect(page.locator('html.vt-photo')).toHaveCount(0, { timeout: 10_000 });
   await page.waitForTimeout(1000); // past the late restore, and the app undoing it
   await expect(row).toBeInViewport();
+  if (cdp) {
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    await cdp.detach();
+  }
   await page.setViewportSize({ width: 390, height: 844 });
-});
+}
+
+test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at its new position', () => rerate(8, '8.7', false));
+// The first one's Filler is now 2nd, so the 9th is the next Filler; 8.8 puts it 2nd in turn.
+test('§17, slowly: the same with a slow Back flight (a busy phone)', () => rerate(9, '8.8', true));

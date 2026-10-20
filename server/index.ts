@@ -10,7 +10,6 @@ import { log } from './routes/log';
 import { people } from './routes/people';
 import { data } from './routes/data';
 import { profile } from './routes/profile';
-import { smokes } from './routes/smokes';
 import { privacy } from './routes/privacy';
 import { appearance } from './routes/appearance';
 
@@ -56,7 +55,6 @@ app.route('/log', log);
 app.route('/people', people);
 app.route('/data', data);
 app.route('/profile', profile);
-app.route('/smokes', smokes);
 app.route('/privacy', privacy);
 app.route('/appearance', appearance);
 

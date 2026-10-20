@@ -15,11 +15,11 @@ export const BAND_FLOORS = [8, 8.5, 9, 9.5] as const;
 /**
  * The band of a row's ranked value, or null. Worked out from the score as shown (one
  * decimal place), so a row that reads "8.5" is always in the 8.5 band. Only scores out of
- * 10 get one (Overall and the rating categories): price, value for money and Most used
- * aren't scores, and an unrated row has nothing to colour.
+ * 10 get one (Overall and the rating categories): price and value for money aren't
+ * scores, and an unrated row has nothing to colour.
  */
 export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
-  if (value === null || rankBy === 'price' || rankBy === 'vfm' || rankBy === 'used') return null;
+  if (value === null || rankBy === 'price' || rankBy === 'vfm') return null;
   const shown = round(value, 1);
   for (let b = BAND_FLOORS.length; b >= 1; b--) if (shown >= BAND_FLOORS[b - 1]!) return b as Band;
   return null;

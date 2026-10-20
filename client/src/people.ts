@@ -1,5 +1,5 @@
 // Client calls for People (brief §5). Usernames go into URLs encoded.
-import type { PersonCard, SharedBoardOptions, SharedProduct } from '../../shared/domain/social';
+import type { PersonCard, SharedProduct } from '../../shared/domain/social';
 import { api } from './api';
 
 const u = (username: string) => `/people/u/${encodeURIComponent(username)}`;
@@ -22,7 +22,6 @@ export const approve = (username: string) => api('POST', `/people/requests/${enc
 export const decline = (username: string) => api('POST', `/people/requests/${encodeURIComponent(username)}/decline`);
 export const removeFollower = (username: string) => api('DELETE', `/people/followers/${encodeURIComponent(username)}`);
 
-/** Their board: what they share (D45), and whether it offers Most used. */
-export const theirBoard = (username: string) =>
-  api<{ products: SharedProduct[]; options?: SharedBoardOptions }>('GET', `${u(username)}/products`).then((r) => ({ products: r.products, options: r.options ?? { mostUsed: false } }));
+/** Their board: what they share (D45). */
+export const theirBoard = (username: string) => api<{ products: SharedProduct[] }>('GET', `${u(username)}/products`).then((r) => ({ products: r.products }));
 export const theirProduct = (username: string, id: string) => api<{ product: SharedProduct }>('GET', `${u(username)}/products/${encodeURIComponent(id)}`).then((r) => r.product);

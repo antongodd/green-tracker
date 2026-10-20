@@ -9,6 +9,6 @@
     { "binding": "DB", "database_name": "green-tracker", "database_id": "local-test", "migrations_dir": "../../migrations" }
   ],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
-  // Set up like the dev site (Smokes on, D46; SITE dev, D47); a second server runs like live.
-  "vars": { "RP_ID": "localhost", "ORIGIN": "http://localhost", "SMOKES": "on", "SITE": "dev" }
+  // Set up like the dev site (SITE dev, D47).
+  "vars": { "RP_ID": "localhost", "ORIGIN": "http://localhost", "SITE": "dev" }
 }
