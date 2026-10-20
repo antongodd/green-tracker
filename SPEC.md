@@ -1211,6 +1211,11 @@ None.
 
 ## 6. Changelog
 
+### 0.51.1 — CLAUDE.md: currency settings and edible value for money on the to-do list (owner request)
+- The to-do list gets item 6, **Currency settings** (a currency per purchase and a main currency for the account,
+  converted so prices can be compared), and item 7, **Edible value for money rework**. Notes only; no change to the
+  app.
+
 ### 0.51.0 — Sources and Settings tabs (owner request)
 - Decision D61. Five tabs again: Leaderboard, Log, **Sources** and People, then **Settings** (More, renamed, with a
   gear). Sources shows every brand and supplier as a card with its best product's photo, average and tags, with search
