@@ -26,6 +26,7 @@ import { cameFrom, linkTo, navigate, replaceHistory, savedScroll } from '../rout
 import { returnToLog } from '../logEntries';
 import { useOnline } from '../online';
 import { Skeleton } from '../components/Skeleton';
+import { brandPath, NameLink } from '../components/NameLink';
 import { SmokesCard } from './Smokes';
 import { useSmokes, withSmokeCounts } from '../smokes';
 import { useSmokesOn } from '../session';
@@ -88,7 +89,8 @@ function PriceHistory(p: { product: Product }) {
             </span>
             <span class="u">{up === null ? '' : formatUnitPrice(type, up)}</span>
             <span class="s">{[pu.amount !== null ? formatAmount(type, pu.amount) : null, formatGBP(pu.totalPaid)].filter(Boolean).join(' · ')}</span>
-            <span class="s r">{pu.supplier ?? ''}</span>
+            {/* D59: where you bought it opens everything from there. */}
+            <span class="s r">{pu.supplier ? <NameLink name={pu.supplier} to={brandPath(pu.supplier)} /> : ''}</span>
           </div>
         );
       })}
@@ -360,7 +362,7 @@ export function Profile(p: { id: string }) {
           <section class="sect" aria-label="Details">
             <span class="cap">Details</span>
             <dl class="kv">
-              {shown.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}
+              {shown.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{k === 'Source' ? <NameLink name={v} to={brandPath(v)} /> : v}</dd>])}
             </dl>
           </section>
         )}

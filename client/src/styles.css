@@ -641,6 +641,16 @@ input[type="date"].input::-webkit-date-and-time-value, input[type="time"].input:
 .pill svg { width: 12px; height: 12px; color: var(--text-2); flex: none; }
 .pill.active { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
 .pill.active .k, .pill.active svg { color: var(--accent-bright); }
+/* Brands and suppliers (D59): the names you've used, under Source or Supplier while you type; pills
+   that wrap and never run past the box. */
+.suggest { display: grid; gap: 6px; margin-top: -4px; }
+/* In a two-column row it spans both, on its own line below them. */
+.two-col > .suggest { grid-column: 1 / -1; order: 1; }
+.suggest .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.suggest .chip { max-width: 100%; min-width: 0; }
+.suggest .chip .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.suggest .chip .n { color: var(--text-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.suggest-cap { font-size: 12px; font-weight: 600; color: var(--warning); }
 /* The real select covers the pill, transparent; 16px so iOS never zooms. */
 .pill select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; border: 0; cursor: pointer; appearance: none; -webkit-appearance: none; }
 .pill:has(select:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1178,3 +1188,20 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .has-tick { position: relative; }
 .tick { position: absolute; inset: 0; border-radius: inherit; cursor: inherit; }
 .tick-switch { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+
+/* ---------- brands and suppliers (D59) ---------- */
+/* A Source or Supplier on a product page: green, with an arrow, opening that name's page. The
+   padding gives a taller tap area without moving the line. */
+.namelink { display: inline-flex; align-items: center; gap: 2px; padding: 8px 0; margin: -8px 0; color: var(--accent-bright); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.namelink .chev { width: 12px; height: 12px; flex: none; }
+.brand-lead { padding: 14px 16px 10px; max-width: 720px; margin: 0 auto; }
+.brands-top { display: grid; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
+.brand-sort { display: flex; flex-wrap: wrap; gap: 8px; }
+.list.brands .nm { font-weight: 600; }
+.list.brands .avg { font-family: var(--num-font); font-size: 20px; font-weight: 700; color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+.list.brands .none { color: var(--text-2); }
+/* Brand / Bought here, in place of a row's price · Source line. */
+.meta.roles { gap: 6px; }
+.role { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; }
+.role.brand { background: var(--accent-soft); color: var(--accent-bright); }
+.role.shop { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }

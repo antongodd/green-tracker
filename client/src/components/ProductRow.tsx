@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { heatStyle } from '../heat';
@@ -114,9 +115,10 @@ export function Score(p: { value: number | null; label?: string; text?: string; 
 
 /**
  * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
- * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
+ * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default. `meta` replaces the
+ * metadata line (a brand's page shows Brand / Bought here there, D59).
  */
-export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string }) {
+export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string; meta?: ComponentChildren }) {
   const appearance = useAppearance();
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
@@ -136,7 +138,7 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
       <div class="mid">
         <div class="name">{p.product.name}</div>
         <Cluster product={p.product} showLock />
-        <MetaLine product={p.product} />
+        {p.meta ?? <MetaLine product={p.product} />}
       </div>
       <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} flame={rankBy === 'used'} />
     </a>
