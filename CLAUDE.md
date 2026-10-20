@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D62 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D63 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -19,6 +19,11 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 | Who can open it | everyone | only Anton (Cloudflare Access, policy "Cloudflare account": he signs in with his Cloudflare login) |
 | Data | the real data | its own D1 `green-tracker-dev` and R2 `green-tracker-dev-photos`; never live data |
 | Looks | normal | orange **DEV** label after the title; "GT Dev" on the Home Screen |
+
+**The website (D63)** is separate from the app: plain files in `site/`, its own Worker. Public at
+https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
+https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site). It loads nothing from
+anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses.
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
   `CLOUDFLARE_ENV=dev` (`npm run deploy:dev`). CI deploys `dev` → dev site, `main` → live site. **Never deploy by hand.**
@@ -60,7 +65,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D63), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D64), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,7 +85,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D62.
+- Reopen any decision D1–D63.
 
 ## Testing notes
 
@@ -134,7 +139,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.52.0: live plus brands and suppliers
-  (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62) and
+  (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62), the website (D63, 0.53.0) and
   notes-only changes (0.48.2, 0.51.1). Anton will
   say when to take it all live together.
 
@@ -152,13 +157,16 @@ section, so it must always be current.
    **Then** (Anton, 2026-10-20, from his screenshot and recording): **on dev** (0.52.0, D62, 2026-10-20). Cards and
    name pages show what he spent ("N products · £X spent", a Spent tile, a **Most spent** sort); card photos no longer
    cut off; swiping back from any scrolled screen shows the screen underneath (not black) and lands where he was.
+   Checked by Anton on GT Dev (0.52.0): "it all works".
 4. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
    2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
    banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
    fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
-5. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
-   Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
-   Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
+5. **A website for the app** (Anton's idea, 2026-10-19): **on dev** (0.53.0, D63, 2026-10-20), as a preview at
+   https://green-tracker-site-dev.green-tracker.workers.dev; public at https://green-tracker-site.green-tracker.workers.dev
+   with the next "go live". Look A "Aurora Glass" (glass, drifting lights, a floating iPhone), punchy stoner-friendly
+   words, a rate-it slider, Home Screen steps, Sign up free; for friends and anyone with the link; made-up products only;
+   no tracking. Anton locks the preview once in Cloudflare (steps given), then checks it on his iPhone.
 6. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they

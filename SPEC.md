@@ -34,6 +34,7 @@ this document records how they were implemented and every decision made on top.
 | `npm run db:migrate:local` | Apply migrations to the local D1 |
 | `npm run deploy` | Build, apply remote migrations, deploy — normally run by GitHub Actions on every push to `main` (needs `CLOUDFLARE_API_TOKEN` in the environment; the account ID is in `wrangler.jsonc`) |
 | `npm run deploy:dev` | The same for the dev site (D47): builds with `CLOUDFLARE_ENV=dev`, migrates `green-tracker-dev`, deploys `green-tracker-dev`. Normally run by GitHub Actions on every push to `dev` |
+| `npm run deploy:site` / `deploy:site:dev` | The website (D63): deploys `site/` to `green-tracker-site` (from `main`) or its preview `green-tracker-site-dev` (from `dev`). Normally run by GitHub Actions |
 | `npm run deploy:embedded` | Same, but embeds the client files in the Worker instead of using Workers static assets. For the cloud build environment, whose proxy breaks the assets upload (see §4, Deployment) |
 
 ### Cloudflare resources
@@ -46,6 +47,8 @@ this document records how they were implemented and every decision made on top.
 | Worker (dev site, D47) | `green-tracker-dev` | https://green-tracker-dev.green-tracker.workers.dev (Cloudflare Access: members of the owner's Cloudflare account only) |
 | D1 (dev site, WEUR) | `green-tracker-dev` | `d4126bea-f68d-4c76-a44e-d5f802f4be3a` |
 | R2 (dev site) | `green-tracker-dev-photos` | |
+| Worker (website, D63) | `green-tracker-site` | https://green-tracker-site.green-tracker.workers.dev (files only) |
+| Worker (website preview, D63) | `green-tracker-site-dev` | https://green-tracker-site-dev.green-tracker.workers.dev (Cloudflare Access, like the dev site) |
 
 ## 2. Build phases
 
@@ -131,6 +134,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D61 | **Sources and Settings tabs** (2026-10-20; the owner wanted Brands & suppliers easier to reach and More split out as Settings once Smokes went; option B "Cards" of https://claude.ai/artifact/Jewo7GPGQ8cFAaQdZFfofn for Sources, Settings as drawn; the sort buttons kept; the tab named Sources, the owner's choice). Changes D59's More row and list; D6's tabs. | **Tabs:** Leaderboard · Log · **Sources** (a shop front) · People · **Settings** (a gear; More renamed, its screens keep their addresses). **Sources** (`/sources`; `/more/brands` still opens it): "Brands & suppliers" with Search and the three sort buttons, then two cards a row: the photo of the name's best product (by Overall; a cut-out without its box; the type's mark without a photo), the name and its average, "N products · best: …", and Brand / Bought here; a card opens the name's page, which keeps Sources lit (from a product page, the Leaderboard). **Settings** (titled so) is More without the Brands & suppliers row. **Suggestions (D59):** a tap fills the box and closes the keyboard; Enter on a focused suggestion returns to the box. Nothing stored; no export, follower or privacy change. See §4 *Sources and Settings tabs*. |
 | D62 | **What you spent on each brand and supplier; whole card photos; swiping back lands where you were** (2026-10-20; the owner's screenshot and screen recording of GT Dev 0.51.0: Sources' photos were cut off, swiping back from a brand opened from a scrolled Sources showed black and came back at the top, and he'd seen it on other screens; he asked to see what he spent at a brand or supplier; his answers: a **Most spent** sort, yes; the card wording "N products · £X spent", sure). Changes D59's Spent here tile and D61's cards. | **Spent** is everything you paid for a name's products: every purchase of a product with it as its Source, and every purchase bought there, each purchase counted once (archived products left out). **Sources cards:** "N products · £X spent", then "best: …" on its own line; a fourth sort, **Most spent** (ties A–Z). **A name's page:** a **Spent** tile for every name (it was Spent here, only for where you bought). Followers still see no prices or suppliers. **Card photos** fill their box, nothing cut off. **Back, everywhere:** every screen you leave keeps its scroll for the iPhone, so swiping back shows that screen instead of black, and coming back (swipe or the Back button) lands where you were; new screens and tab switches still start at the top. Nothing stored; no data, export, restore, follower or privacy change. See §4 *Spent, card photos and Back*. |
 
+| D63 | **A website for the app** (2026-10-20; to-do item 5; look A "Aurora Glass" of https://claude.ai/artifact/AkwHtCE8iVw8d9yyqEK2qR; the owner's answers: for friends and anyone who finds the link, sign-up open ("Sign up free"), the free `workers.dev` address, punchy and friendly ("like a stoner wrote it"), no age or legal note, no link to it from the app; he asked for it to look really good: the app's style but glassy, futuristic, with cool animations and dark colours not only green). | **A one-page site at its own address**, https://green-tracker-site.green-tracker.workers.dev, for people who haven't got the app: the headline "Rate your stash. Remember the fire.", a floating glass iPhone with a made-up Leaderboard, four things it does (ranked top shelf, Log, Sources, mates' picks), a **Go on, rate it** slider that gives a made-up product the colours its score earns in the app (D48, D30), three steps to add it to the iPhone Home Screen in Safari, a note that Android and computers work in the browser, and **Sign up free** (the live app's sign-up). **Products shown are all made up**; nobody's data is used. **Nothing from anywhere else:** fonts (Unbounded, Manrope; SIL OFL) are stored with the site; no tracking, analytics or cookies; strict security headers. Reduce Motion: still. A link-preview picture for WhatsApp and iMessage. **Separate from the app:** its own folder (`site/`), its own Worker of files only (no code, data or accounts); the app is unchanged. **Preview:** `green-tracker-site-dev`, deployed from `dev` and locked with Cloudflare Access like the dev site; the public site is deployed from `main`, so it goes public with the next "go live". See §4 *Website*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1225,12 +1229,41 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     no second question).
   - *Couldn't check here*: the Home Screen app's memory limit and download storage on the
     owner's iPhone (the test page ran inside the Claude app), and how it feels by hand.
+- **Website (D63, 0.53.0).** `site/public/` is the whole site: `index.html`, `site.css`, `site.js` (the rise of each block
+  as it scrolls in, visible before then; the rate-it slider, the row taking the app's band and heat colours), `404.html`
+  ("Lost the lighter?"), `og.png` (the link-preview picture, 1200 × 630, drawn from `site/og.html` with the site's own
+  styles; to redraw it, serve `og.html` beside `public/` and photograph it at that size), the app's `favicon.svg` and
+  `apple-touch-icon.png` (copies), `fonts/` (Unbounded and Manrope, latin, with `OFL.txt`) and `_headers` (CSP `'self'`
+  only, `connect-src 'none'`, no inline script or style). `site/wrangler.jsonc`: a Worker of static assets only,
+  `green-tracker-site`, with `env.dev` → `green-tracker-site-dev`; `preview_urls` off. **CI:** `deploy-dev` deploys the
+  preview after the dev site; `deploy` (main) deploys the website after the live site, writing `version.txt` (version +
+  commit; git-ignored) and checking the public address serves it (**"Website serves this build"**). The preview is
+  locked by the owner once in Cloudflare (the Worker's workers.dev address → Cloudflare Access), so it gets no outside
+  check. All links to the app are absolute (`https://green-tracker.green-tracker.workers.dev/`, `/signup` for Sign up
+  free). Look: the app's dark green and Aurora, with drifting green, teal and violet lights (`.l1`–`.l5`; not `.b1`…,
+  which are the Leaderboard's band classes), frosted glass cards, a gradient headline in lighter tints (readable over
+  the lights). Wider than 900px: the phone beside the words, cards two across.
+  - *Tests* (`test/e2e/website.spec.ts`; the site is served from the folder under a made-up address with its own
+    `_headers`, every other address noted and refused): nothing loads from anywhere else and nothing breaks its security
+    rules; the stored fonts are used; both Sign up free buttons and Open app go to the live app; the link-preview
+    picture is 1200 × 630; axe at the top and the bottom; **every word readable over the moving lights**, judged at six
+    moments every 600px down the page (proved to catch dimmed text); nothing spills sideways at 320, 390 and 430px; the
+    slider's colours and words; "Put it on my iPhone" reaches the steps; Reduce Motion stops every animation; the lost
+    page.
+  - *Couldn't check here*: how it looks and moves on a real iPhone (the glass blur and the drifting lights), and the
+    link preview in WhatsApp and iMessage (it needs the public address).
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.53.0 — a website for the app (owner request)
+- Decision D63. A one-page website at its own address, look A "Aurora Glass": what Green Tracker is, a rate-it slider,
+  how to put it on the iPhone Home Screen, and Sign up free. Made-up products only; nothing loads from anywhere else,
+  no tracking. A preview from `dev` (locked like the dev site), the public site from `main`. The app is unchanged.
+- `CLAUDE.md`: on dev; item 3 checked by Anton on GT Dev; the website in the sites table.
 
 ### 0.52.0 — what you spent on brands and suppliers; whole card photos; swiping back lands where you were (owner request)
 - Decision D62. Sources cards say what you spent on each name ("N products · £X spent", best on the next line), with
