@@ -9,7 +9,7 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { overall } from '../../../shared/domain/ratings';
-import { FlameIcon, LockIcon, TypeMark } from '../icons';
+import { LockIcon, TypeMark } from '../icons';
 import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
 import { Glints, RankCrown, rowClass, useAppearance } from './Gems';
@@ -86,15 +86,14 @@ export function MetaLine(p: { product: Product }) {
   );
 }
 
-/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp, Most used a whole count. */
+/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp. */
 export function formatRankValue(rankBy: RankBy, value: number): string {
-  if (rankBy === 'used') return String(Math.round(value));
   if (rankBy === 'price') return formatGBP(value);
   if (rankBy === 'vfm') return formatVFM(value);
   return formatScore(value);
 }
 
-export function Score(p: { value: number | null; label?: string; text?: string; flame?: boolean }) {
+export function Score(p: { value: number | null; label?: string; text?: string }) {
   if (p.value === null) {
     return (
       <div class="score unrated">
@@ -104,9 +103,7 @@ export function Score(p: { value: number | null; label?: string; text?: string; 
     );
   }
   return (
-    <div class={`score${p.flame ? ' used' : ''}`}>
-      {/* Most used (D44, option C): the Smokes flame in amber before the count. */}
-      {p.flame && <FlameIcon class="flame" />}
+    <div class="score">
       <b>{p.text ?? formatScore(p.value)}</b>
       <span class="cap">{p.label ?? 'Overall'}</span>
     </div>
@@ -140,7 +137,7 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
         <Cluster product={p.product} showLock />
         {p.meta ?? <MetaLine product={p.product} />}
       </div>
-      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} flame={rankBy === 'used'} />
+      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} />
     </a>
   );
 }

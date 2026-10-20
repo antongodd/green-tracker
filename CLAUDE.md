@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D59 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D60 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -19,12 +19,12 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 | Who can open it | everyone | only Anton (Cloudflare Access, policy "Cloudflare account": he signs in with his Cloudflare login) |
 | Data | the real data | its own D1 `green-tracker-dev` and R2 `green-tracker-dev-photos`; never live data |
 | Looks | normal | orange **DEV** label after the title; "GT Dev" on the Home Screen |
-| Smokes (D43/D44) | **off** (D46) | **on** |
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
   `CLOUDFLARE_ENV=dev` (`npm run deploy:dev`). CI deploys `dev` → dev site, `main` → live site. **Never deploy by hand.**
-- Features can differ per site with a Worker variable (Smokes: `SMOKES`, see D46). Re-releasing Smokes to live means
-  turning `SMOKES` on for live (and updating `test/domain/siteConfig.test.ts` and D46).
+- The two sites run the same features; only `SITE` (the DEV label) differs. Smokes, the one feature that once differed,
+  was removed in 0.50.0 (D60). A feature that should differ again would get its own Worker variable, guarded in
+  `test/domain/siteConfig.test.ts`.
 - Anton copies his own data into dev himself (Export on live → Restore on dev). Nobody else's data is on dev.
 - The dev site can't be reached from the cloud environment (neither can the live site): check deploys through GitHub
   Actions, and ask Anton for screenshots when you need to see a screen.
@@ -60,7 +60,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D60), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D61), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -80,12 +80,12 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D59.
+- Reopen any decision D1–D60.
 
 ## Testing notes
 
-- The tests run **two servers**: one set up like dev (Smokes on, `SITE` dev) and one like live (Smokes off):
-  `test/api/globalSetup.ts` (`liveApiBase`) and `playwright.config.ts` (`LIVE_PORT` 8789).
+- The tests run **one server** each: the API tests' is set up like dev (`SITE` dev, `test/api/wrangler.test.jsonc`), the
+  browser tests' like live (no `SITE`; `playwright.config.ts`, port 8788).
 - Playwright serves the **built** app: run `npm run build` after changing client code before running Playwright
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
@@ -133,24 +133,27 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.49.0: live plus brands and suppliers
-  (D59) and a notes-only change (0.48.2). Smokes: on for dev, hidden on live (D46).
+- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.50.0: live plus brands and suppliers
+  (D59), Smokes removed (D60) and a notes-only change (0.48.2).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Brands and suppliers** (Anton's idea, 2026-10-19): **on dev** (0.49.0, D59, 2026-10-19). Suggestions under
+1. **Brands and suppliers** (Anton's idea, 2026-10-19): **on dev** (0.49.0, D59, 2026-10-20). Suggestions under
    Source and Supplier as he types, the same name saved in one spelling, a page per brand or supplier (tap it on a
-   product page, or More → Brands & suppliers), and followers can tap his Source. Next: Anton tries it on GT Dev.
-   Renaming or merging names only if he finds he needs it.
-2. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
+   product page, or More → Brands & suppliers), and followers can tap his Source. Checked by Anton on GT Dev: the
+   suggestions sit nicely above the keyboard. Renaming or merging names only if he finds he needs it.
+2. **Remove Smokes** (Anton, 2026-10-20: "no use for it"; everything about it gone, saved smokes deleted for good):
+   **on dev** (0.50.0, D60, 2026-10-20). Going live deletes the smokes on live too: Anton can Export on live first.
+3. **Sources and Settings tabs** (Anton, 2026-10-20), after Smokes is removed: tabs **Leaderboard · Log · Sources ·
+   People · Settings**. Sources = the Brands & suppliers screen; Settings = everything now in More. Also: the keyboard
+   closes after tapping a suggestion. Starts with iPhone mockups.
+4. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
    2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
    banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
    fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
-3. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
+5. **A website for the app** (Anton's idea, 2026-10-19): a page people visit before they get the app, showing what
    Green Tracker is (screenshots, what it does) and linking them to the app, with steps to add it to the iPhone Home
    Screen. At a **separate address** from the app (Anton's choice). Plan first, then iPhone mockups.
-4. **Smokes rework on dev.** On hold until Anton decides what he wants; then re-release it to live (turn `SMOKES` on
-   for live, update `test/domain/siteConfig.test.ts` and D46).
 
 ### Done (newest first)
 

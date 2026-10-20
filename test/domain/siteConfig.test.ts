@@ -1,23 +1,22 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// D46 / D47: the live and dev sites are one Worker config with a "dev" environment. These guard
-// the settings that must never cross over: live has no Smokes, no DEV label and no test-only
-// limits; dev has its own database, photos and address.
+// D47: the live and dev sites are one Worker config with a "dev" environment. These guard the
+// settings that must never cross over: live has no DEV label and no test-only limits; dev has its
+// own database, photos and address. Neither has a Smokes switch any more (D60).
 const jsonc = readFileSync(new URL('../../wrangler.jsonc', import.meta.url), 'utf8');
 const config = JSON.parse(jsonc.replace(/^\s*\/\/.*$/gm, '')) as any;
 const dev = config.env.dev;
 
-describe('site config (D46, D47)', () => {
-  it('live: Smokes off, no DEV label, no test-only settings', () => {
+describe('site config (D47, D60)', () => {
+  it('live: no DEV label, no test-only settings', () => {
     expect(config.vars).toEqual({ RP_ID: 'green-tracker.green-tracker.workers.dev', ORIGIN: 'https://green-tracker.green-tracker.workers.dev' });
   });
 
-  it('dev: Smokes on, the DEV label, its own address', () => {
+  it('dev: the DEV label, its own address', () => {
     expect(dev.vars).toEqual({
       RP_ID: 'green-tracker-dev.green-tracker.workers.dev',
       ORIGIN: 'https://green-tracker-dev.green-tracker.workers.dev',
-      SMOKES: 'on',
       SITE: 'dev',
     });
   });

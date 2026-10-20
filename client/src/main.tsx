@@ -20,7 +20,6 @@ import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
 import { clearEntryCache } from './logEntries';
-import { clearSmokeCache } from './smokes';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
 import { NewPasskey, Recover } from './screens/Recover';
@@ -28,7 +27,6 @@ import { SignIn } from './screens/SignIn';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
 import { SoundsScreen } from './screens/Sounds';
-import { SmokeForm, SmokePicker, Smokes } from './screens/Smokes';
 import { BrandPage, BrandsList } from './screens/Brands';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
@@ -48,7 +46,6 @@ function App() {
         if (prev?.user?.username !== next.user?.username) {
           clearProductCache();
           clearEntryCache();
-          clearSmokeCache();
         }
         return next;
       });
@@ -122,17 +119,11 @@ function App() {
     const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
     const brand = path.match(/^\/brands\/([^/]+)$/); // D59
-    // D46: where Smokes is off, its addresses open the Leaderboard instead.
-    const smokesOn = me.features?.smokes ?? false;
-    const smoke = smokesOn ? path.match(/^\/smokes\/(?:new\/(p|e)\/([^/]+)|([^/]+))$/) : null;
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
     else if (preview?.[1]) screen = <SharedProfile key={path} username={me.user!.username} id={decodeURIComponent(preview[1])} preview />;
     else if (preview?.[2]) screen = <TheirBrandPage key={path} username={me.user!.username} name={decodeURIComponent(preview[2])} preview />;
     else if (brand) screen = <BrandPage key={path} name={decodeURIComponent(brand[1]!)} />;
     else if (preview) screen = <Person key={path} username={me.user!.username} preview />;
-    else if (smokesOn && path === '/smokes/new') screen = <SmokePicker />;
-    else if (smoke?.[1]) screen = <SmokeForm key={path} id={null} target={`${smoke[1]}:${decodeURIComponent(smoke[2]!)}`} />;
-    else if (smoke?.[3]) screen = <SmokeForm key={path} id={decodeURIComponent(smoke[3])} />;
     else if (path === '/log/new') screen = <LogEditor key="new-entry" id={null} />;
     else if (entry?.[2] === '/promote') screen = <Editor key={`promote-${entry[1]}`} id={null} promoteFrom={decodeURIComponent(entry[1]!)} />;
     else if (entry?.[2] === '/edit') screen = <LogEditor key={`edit-${entry[1]}`} id={decodeURIComponent(entry[1]!)} />;
@@ -144,9 +135,6 @@ function App() {
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else
       switch (path) {
-        case '/smokes':
-          screen = smokesOn ? <Smokes /> : <Leaderboard />;
-          break;
         case '/log':
           screen = <Log />;
           break;

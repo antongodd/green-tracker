@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import { siteFeatures, type AppEnv } from '../env';
+import type { AppEnv } from '../env';
 import { effectivePrivacy, validatePrivacy } from '../../shared/domain/privacy';
 import { fail, jsonBody } from '../lib/http';
 import { loadPrivacy, savePrivacyStatement } from '../lib/privacy';
 import { requireUser } from '../lib/session';
-import { sharedSmokes, shareProducts } from '../lib/social';
+import { shareProducts } from '../lib/social';
 import { load } from './products';
 
 // Your privacy settings (D45): yours to read and change, never anyone else's.
@@ -29,7 +29,7 @@ privacy.put('/', async (c) => {
 privacy.get('/preview', async (c) => {
   const userId = c.var.user!.id;
   const db = c.env.DB;
-  const p = effectivePrivacy(await loadPrivacy(db, userId), siteFeatures(c.env));
-  const products = p.shareBoard ? shareProducts(await load(db, userId, { archived: false }), p, await sharedSmokes(db, userId, p)) : [];
-  return c.json({ products, options: { mostUsed: p.shareMostUsed }, shared: p.shareBoard });
+  const p = effectivePrivacy(await loadPrivacy(db, userId));
+  const products = p.shareBoard ? shareProducts(await load(db, userId, { archived: false }), p) : [];
+  return c.json({ products, shared: p.shareBoard });
 });

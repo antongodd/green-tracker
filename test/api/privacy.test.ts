@@ -1,6 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { RestorePayload } from '../../shared/domain/backup';
-import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { photoUrl } from '../../shared/domain/photo';
 import { emptyProductInput, type Product } from '../../shared/domain/product';
 import { DEFAULT_PRIVACY, type Privacy } from '../../shared/domain/privacy';
@@ -17,7 +16,6 @@ const newSet = async (b: Browser, label: string) =>
 let owner: Browser, fan: Browser, stranger: Browser, requester: Browser;
 let ownerName: string, fanName: string;
 let kush: Product;
-const EFFECT = 'SECRET-EFFECT-81a';
 
 const set = async (over: Partial<Privacy>) => {
   const r = await owner.req('PUT', '/api/privacy', { ...DEFAULT_PRIVACY, ...over });
@@ -46,11 +44,6 @@ beforeAll(async () => {
       photos: [{ upload: await newSet(owner, 'kush'), crop: null }],
     })
   ).json.product;
-  for (const [date, time] of [['2026-10-01', '20:00'], ['2026-10-03', '21:30']]) {
-    await owner.post('/api/smokes', { productId: kush.id, logEntryId: null, date, time, amount: 0.4, effect: EFFECT });
-  }
-  const entry = (await owner.post('/api/log', { ...emptyLogEntryInput(), name: 'Log Only' })).json.entry;
-  await owner.post('/api/smokes', { productId: null, logEntryId: entry.id, date: '2026-10-02', time: '09:00', amount: null, effect: EFFECT });
   expect((await owner.req('PUT', '/api/profile/photo', { upload: await newSet(owner, 'me'), crop: { x: 0, y: 0, w: 1, h: 1, square: true } })).status).toBe(200);
   await fan.post(`/api/people/u/${ownerName}/follow`);
   expect((await owner.post(`/api/people/requests/${fanName}/approve`)).status).toBe(200);
@@ -64,14 +57,27 @@ describe('privacy settings (D45)', () => {
     expect((await new Browser().get('/api/privacy')).status).toBe(401);
     expect((await owner.req('PUT', '/api/privacy', { shareBoard: false })).status).toBe(400);
     expect((await owner.req('PUT', '/api/privacy', { ...DEFAULT_PRIVACY, shareBoard: 'no' })).status).toBe(400);
-    // Defaults: exactly the allow-listed fields, Source, country and photos shared; no smokes.
+    // Defaults: exactly the allow-listed fields, Source, country and photos shared.
     const b = await board();
     const p = b.products[0]!;
     expect(Object.keys(p).sort()).toEqual([...SHARED_PRODUCT_KEYS].sort());
     expect(p).toMatchObject({ source: 'Secret Source Co', country: 'MA' });
     expect(p.photos).toHaveLength(1);
-    expect(b.json.options).toEqual({ mostUsed: false });
-    expect(b.raw).not.toMatch(/smoke|21:30|SECRET-EFFECT/i);
+    // Smokes are gone (D60): nothing about them, nor any board options.
+    expect(b.json.options).toBeUndefined();
+    expect(b.raw).not.toMatch(/smoke|mostUsed/i);
+  });
+
+  it('settings sent with the old Smokes switches (an app from before 0.50.0) are taken without them', async () => {
+    const r = await owner.req('PUT', '/api/privacy', { ...DEFAULT_PRIVACY, shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true });
+    expect(r.status).toBe(200);
+    expect(r.json.privacy).toEqual(DEFAULT_PRIVACY);
+    expect((await owner.get('/api/privacy')).json.privacy).toEqual(DEFAULT_PRIVACY);
+  });
+
+  it('there is no Smokes any more: its addresses are gone', async () => {
+    expect((await owner.get('/api/smokes')).status).toBe(404);
+    expect((await owner.post('/api/smokes', { productId: kush.id, logEntryId: null, date: '2026-10-01', time: '20:00', amount: null, effect: null })).status).toBe(404);
   });
 
   it('Source, Country and photos off: gone from the board, the page and the photo files', async () => {
@@ -88,43 +94,12 @@ describe('privacy settings (D45)', () => {
     expect((await fan.raw(photoUrl(kush.photos[0]!, 'thumb'))).status).toBe(200);
   });
 
-  it('smoke counts, then Most used, then smokes: each only when on; never an effect or the Log', async () => {
-    await set({ shareSmokeCounts: true });
-    let b = await board();
-    expect(b.products[0]!.smokeCount).toBe(2);
-    expect(b.products[0]!.smokes).toBeUndefined();
-    expect(b.json.options).toEqual({ mostUsed: false });
-
-    await set({ shareSmokeCounts: true, shareMostUsed: true });
-    expect((await board()).json.options).toEqual({ mostUsed: true });
-    // Most used needs the counts: on its own it does nothing.
-    await set({ shareMostUsed: true });
-    b = await board();
-    expect(b.json.options).toEqual({ mostUsed: false });
-    expect(b.products[0]!.smokeCount).toBeUndefined();
-
-    await set({ shareSmokes: true });
-    b = await board();
-    expect(b.products[0]!.smokes).toEqual([
-      { date: '2026-10-03', time: '21:30', amount: 0.4 },
-      { date: '2026-10-01', time: '20:00', amount: 0.4 },
-    ]);
-    expect((await page()).json.product.smokes).toHaveLength(2);
-    for (const raw of [b.raw, JSON.stringify((await page()).json)]) {
-      expect(raw).not.toContain(EFFECT);
-      expect(raw).not.toContain('09:00'); // the Log entry's smoke
-      expect(raw).not.toContain('Log Only');
-    }
-    await set({});
-  });
-
   it('Share my Leaderboard off: no products, no pages, no photos, whatever the other switches say', async () => {
-    await set({ shareBoard: false, shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true });
+    await set({ shareBoard: false });
     const b = await board();
     expect(b.status).toBe(200);
     expect(b.products).toEqual([]);
-    expect(b.json.options).toEqual({ mostUsed: false });
-    expect(b.raw).not.toMatch(/Shared Kush|Secret Source|SECRET-EFFECT/);
+    expect(b.raw).not.toMatch(/Shared Kush|Secret Source/);
     expect((await page()).status).toBe(404);
     expect((await fan.raw(photoUrl(kush.photos[0]!, 'thumb'))).status).toBe(403);
     await set({});
@@ -153,19 +128,16 @@ describe('privacy settings (D45)', () => {
   });
 
   it('a stranger still gets nothing at all, whatever you share', async () => {
-    await set({ shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true });
     const r = await stranger.get(`/api/people/u/${ownerName}/products`);
     expect(r.status).toBe(403);
-    expect(JSON.stringify(r.json)).not.toMatch(/Shared Kush|smoke/i);
-    await set({});
+    expect(JSON.stringify(r.json)).not.toMatch(/Shared Kush/);
   });
 
   it('the preview is your board exactly as a follower gets it', async () => {
-    await set({ shareSource: false, shareSmokeCounts: true });
+    await set({ shareSource: false });
     const pv = (await owner.get('/api/privacy/preview')).json;
     const b = await board();
     expect(pv.products).toEqual(b.products);
-    expect(pv.options).toEqual(b.json.options);
     expect(pv.shared).toBe(true);
     await set({ shareBoard: false });
     expect((await owner.get('/api/privacy/preview')).json).toMatchObject({ products: [], shared: false });
@@ -177,7 +149,7 @@ describe('export and restore (D45)', () => {
   it('a restore puts the file’s settings back; a file from before 0.38.0 leaves yours alone', async () => {
     const b = new Browser();
     await signUp(b);
-    const theirs: Privacy = { ...DEFAULT_PRIVACY, shareSource: false, shareSmokeCounts: true };
+    const theirs: Privacy = { ...DEFAULT_PRIVACY, shareSource: false };
     const payload: RestorePayload = { products: [{ ...emptyProductInput(), name: 'P', archived: false, createdAt: 1 }], logEntries: [], privacy: theirs };
     expect((await b.post('/api/data/restore', payload)).status).toBe(200);
     expect((await b.get('/api/privacy')).json.privacy).toEqual(theirs);

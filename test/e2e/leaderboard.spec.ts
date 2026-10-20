@@ -136,10 +136,10 @@ test('labels fit at 375px for every filter × Rank by combination; short forms o
       const m = await page.locator('.controls').evaluate((el) => ({ overflow: el.scrollWidth > el.clientWidth + 1, text: el.textContent }));
       expect(m.overflow, `${t} × ${r}`).toBe(false);
       // The Colours key (D48) sits beside Rank by only when ranking by a score.
-      await expect(page.locator('.controls .pill.key'), `${t} × ${r}`).toHaveCount(['price', 'vfm', 'used'].includes(r) ? 0 : 1);
+      await expect(page.locator('.controls .pill.key'), `${t} × ${r}`).toHaveCount(['price', 'vfm'].includes(r) ? 0 : 1);
       // Colours follow the score as shown, only for scores out of 10 (D48); the #1 mark goes on the top row when it has a value.
       const got = await rows().evaluateAll((els) => els.map((e) => ({ band: [...e.classList].find((c) => /^band\d$/.test(c)) ?? null, first: e.classList.contains('first'), score: e.querySelector('.score b')!.textContent!, unrated: !!e.querySelector('.score.unrated') })));
-      const scored = !['price', 'vfm', 'used'].includes(r);
+      const scored = !['price', 'vfm'].includes(r);
       const want = (g: (typeof got)[number]) => {
         const v = Number(g.score);
         if (!scored || g.unrated || v < 8) return null;

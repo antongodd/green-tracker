@@ -23,10 +23,7 @@ import { useOnline } from '../online';
 import { play } from '../sounds';
 import { startPromotion } from '../promotion';
 import { back, linkTo, navigate } from '../router';
-import { formatDate, useSmokesOn } from '../session';
-import { smokesOf } from '../../../shared/domain/smoke';
-import { cachedSmokes } from '../smokes';
-import { SmokesCard } from './Smokes';
+import { formatDate } from '../session';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -47,10 +44,9 @@ function keptRows(kept: Product, entry: Pick<LogEntry, 'productType'>): [string,
   return rows.filter(([, v]) => v);
 }
 
-/** What deleting takes with it: its photo, (D43) its smokes, and (D50) what it keeps from the Leaderboard. */
-function deleteMessage(smokes: number, photo: boolean, kept: Product | null): string {
-  const parts = [photo ? 'its photo' : null, smokes ? (smokes === 1 ? 'its smoke' : `its ${smokes} smokes`) : null].filter(Boolean);
-  const base = `This removes the entry${parts.length ? ` and ${parts.join(' and ')}` : ''} for good.`;
+/** What deleting takes with it: its photo, and (D50) what it keeps from the Leaderboard. */
+function deleteMessage(photo: boolean, kept: Product | null): string {
+  const base = `This removes the entry${photo ? ' and its photo' : ''} for good.`;
   if (!kept) return base;
   const what = [
     Object.keys(kept.ratings).length ? plural(Object.keys(kept.ratings).length, 'rating') : null,
@@ -69,7 +65,6 @@ export function LogEntryPage(p: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [viewing, setViewing] = useState(false);
   const online = useOnline();
-  const smokesOn = useSmokesOn(); // D46
   const path = `/log/${p.id}`;
 
   useEffect(() => {
@@ -164,7 +159,6 @@ export function LogEntryPage(p: { id: string }) {
           </div>
         </div>
 
-        {smokesOn && <SmokesCard target={`e:${entry.id}`} productType={entry.productType} canAdd />}
 
         <section class="sect" aria-label="Details">
           <span class="cap">Details</span>
@@ -217,7 +211,7 @@ export function LogEntryPage(p: { id: string }) {
       {confirmDelete && (
         <Sheet
           title={`Delete “${entry.name}”?`}
-          message={deleteMessage(smokesOf(cachedSmokes() ?? [], `e:${entry.id}`).length, !!entry.photo, entry.kept)}
+          message={deleteMessage(!!entry.photo, entry.kept)}
           options={[{ label: 'Delete entry', danger: true, tick: true, onSelect: remove }]}
           onCancel={() => setConfirmDelete(false)}
         />

@@ -13,7 +13,7 @@ import { linkTo } from '../router';
 import { fetchPrivacy } from '../privacy';
 import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
 import { usedNames } from '../../../shared/domain/names';
-import { formatDate, useSession, useSmokesOn } from '../session';
+import { formatDate, useSession } from '../session';
 import { PRESETS } from '../../../shared/domain/gems';
 import { useAppearance } from '../components/Gems';
 import { sounds } from '../sounds';
@@ -83,7 +83,6 @@ export function More() {
   });
   const [counts, setCounts] = useState<{ followers: number; following: number } | null>(null);
   const [privacy, setPrivacy] = useState<Privacy | null>(null);
-  const smokesOn = useSmokesOn(); // D46
 
   useEffect(() => {
     fetchArchived()
@@ -142,7 +141,7 @@ export function More() {
         <div class="lh cap">Privacy</div>
         <div class="wrap">
           <div class="list">
-            <Row label="What followers see" sub={privacy ? privacySummary(privacy, { smokes: smokesOn }) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
+            <Row label="What followers see" sub={privacy ? privacySummary(privacy) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
           </div>
         </div>
         {/* D48: how the app looks for you; D57: and sounds. */}

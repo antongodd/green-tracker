@@ -3,7 +3,6 @@ import type { RestorePayload } from '../../shared/domain/backup';
 import { keptPromotionInput, logEntryToInput, type LogEntry } from '../../shared/domain/logEntry';
 import { photoUrl } from '../../shared/domain/photo';
 import { emptyProductInput, productToInput, type Product, type ProductInput } from '../../shared/domain/product';
-import type { Smoke } from '../../shared/domain/smoke';
 import type { SharedProduct } from '../../shared/domain/social';
 import { Browser, signUp } from './client';
 import { d1, r2Keys, userId } from './store';
@@ -49,7 +48,6 @@ async function rich(b: Browser, name: string, over: Partial<ProductInput> = {}):
   return r.json.product;
 }
 const returnToLog = (b: Browser, id: string) => b.post(`/api/log/return/${id}`);
-const smokesOf = async (b: Browser) => (await b.get('/api/smokes')).json.smokes as Smoke[];
 
 beforeAll(async () => {
   [me, fan, other] = [new Browser(), new Browser(), new Browser()];
@@ -63,8 +61,6 @@ beforeAll(async () => {
 describe('Return to Log', () => {
   it('turns the product into a Log entry and keeps the rest, hidden', async () => {
     const p = await rich(me, 'Zkittlez');
-    const smoke = (await me.post('/api/smokes', { productId: p.id, logEntryId: null, date: '2026-10-07', time: '21:40', amount: 0.3, effect: null })).json.smoke as Smoke;
-
     const r = await returnToLog(me, p.id);
     expect(r.status, JSON.stringify(r.json)).toBe(201);
     const e = r.json.entry as LogEntry;
@@ -76,8 +72,6 @@ describe('Return to Log', () => {
     expect(e.kept).toMatchObject({ id: p.id, notes: 'Sweet and smooth.', ratings: { look: 9, consistency: 8, smell: 9, taste: 9, burn: 8 } });
     expect(e.kept!.purchases.map((x) => x.id)).toEqual(p.purchases.map((x) => x.id));
     expect(e.kept!.photos.map((x) => x.id)).toEqual(p.photos.slice(1).map((x) => x.id));
-    // Its smokes go with the entry.
-    expect((await smokesOf(me)).find((s) => s.id === smoke.id)).toMatchObject({ productId: null, logEntryId: e.id });
     // In the Log list too.
     expect(((await me.get('/api/log')).json.entries as LogEntry[]).find((x) => x.id === e.id)?.kept?.id).toBe(p.id);
   });
@@ -91,7 +85,6 @@ describe('Return to Log', () => {
     expect((await me.req('PUT', `/api/products/${p.id}`, productToInput(p))).status).toBe(404);
     expect((await me.post(`/api/products/${p.id}/private`, { value: true })).status).toBe(404);
     expect((await me.post(`/api/products/${p.id}/archived`, { value: true })).status).toBe(404);
-    expect((await me.post('/api/smokes', { productId: p.id, logEntryId: null, date: '2026-10-07', time: '21:40', amount: null, effect: null })).status).toBe(404);
     // Twice: it's already in the Log.
     expect((await returnToLog(me, p.id)).status).toBe(404);
     // The owner can still see its photos (they come back with it).
@@ -129,9 +122,8 @@ describe('Return to Log', () => {
 });
 
 describe('Add to leaderboard brings it back', () => {
-  it('as it was: the same product, its place in time, ratings, purchases, photos and smokes', async () => {
+  it('as it was: the same product, its place in time, ratings, purchases and photos', async () => {
     const p = await rich(me, 'Round Trip');
-    await me.post('/api/smokes', { productId: p.id, logEntryId: null, date: '2026-10-07', time: '21:40', amount: 0.3, effect: null });
     const e = (await returnToLog(me, p.id)).json.entry as LogEntry;
     const res = await me.post(`/api/log/${e.id}/promote`, keptPromotionInput(logEntryToInput(e), e.kept!));
     expect(res.status, JSON.stringify(res.json)).toBe(201);
@@ -143,7 +135,6 @@ describe('Add to leaderboard brings it back', () => {
     expect(back.photos.map((x) => x.id)).toEqual(p.photos.map((x) => x.id)); // the first photo first again
     expect((await me.get(`/api/log/${e.id}`)).status).toBe(404);
     expect(((await me.get('/api/products')).json.products as Product[]).map((x) => x.id)).toContain(p.id);
-    expect((await smokesOf(me)).filter((s) => s.productId === p.id)).toHaveLength(1);
     // And it can go back again.
     expect((await returnToLog(me, p.id)).status).toBe(201);
   });

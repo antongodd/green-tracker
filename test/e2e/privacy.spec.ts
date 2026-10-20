@@ -43,9 +43,6 @@ test.beforeAll(async ({ browser }) => {
   fan = f;
   kushId = (await post(owner, '/api/products', { ...emptyProductInput(), name: 'Shared Kush', country: 'MA', source: 'Kind Shop', ratings: { look: 8, smell: 8, taste: 8, burn: 8 } })).product.id;
   await post(owner, '/api/products', { ...emptyProductInput(), name: 'Second Bud', ratings: { look: 6 } });
-  for (const [date, time] of [['2026-10-01', '20:00'], ['2026-10-03', '21:30'], ['2026-10-04', '22:10']]) {
-    await post(owner, '/api/smokes', { productId: kushId, logEntryId: null, date, time, amount: 0.4, effect: 'Secret effect' });
-  }
   await fan.evaluate((u) => fetch(`/api/people/u/${u}/follow`, { method: 'POST' }), ownerName);
   await owner.evaluate((u) => fetch(`/api/people/requests/${u}/approve`, { method: 'POST' }), fanName);
 });
@@ -58,13 +55,12 @@ test('More has a Privacy group; the screen starts as before, with the preview on
   await expect(owner).toHaveURL(/\/more\/privacy$/);
   await expect(preview()).toContainText('Shared Kush');
   await expect(preview()).toContainText('Kind Shop');
-  for (const [name, on] of [['Share my Leaderboard', true], ['Source', true], ['Country', true], ['Product photos', true], ['How many times I’ve had each', false], ['Most used on my Leaderboard', false], ['My Smokes: what and when', false], ['My profile photo', true]] as const) {
+  for (const [name, on] of [['Share my Leaderboard', true], ['Source', true], ['Country', true], ['Product photos', true], ['My profile photo', true]] as const) {
     await expect(toSwitch(name), name).toBeChecked({ checked: on });
   }
-  // Most used needs the counts: greyed out, and it says why in words.
-  await expect(toSwitch('Most used on my Leaderboard')).toBeDisabled();
-  await expect(owner.locator('.priv-row', { hasText: 'Most used on my Leaderboard' })).toContainText('Needs “How many times I’ve had each” on.');
-  await expect(owner.locator('.priv-row', { hasText: 'My Smokes' })).toContainText('Not recommended.');
+  // Smokes are gone (D60): no Smokes switches or group.
+  await expect(owner.locator('.priv-row')).toHaveCount(5);
+  await expect(owner.locator('main')).not.toContainText(/smoke|Most used/i);
   // The preview sits above the switches.
   const [pv, first] = [(await preview().boundingBox())!, (await toSwitch('Share my Leaderboard').boundingBox())!];
   expect(pv.y).toBeLessThan(first.y);
@@ -84,47 +80,10 @@ test('Source off: gone from the preview at once, and from the follower’s board
   await flip('Source', true);
 });
 
-test('counts, Most used and smokes: the follower sees each only once it’s on; never the effect', async () => {
-  await flip('How many times I’ve had each', true);
-  await expect(preview()).toContainText('Smoked 3 times');
-  await expect(toSwitch('Most used on my Leaderboard')).toBeEnabled();
-  await flip('Most used on my Leaderboard', true);
-  await expect(preview()).toContainText('They can rank your board by Most used.');
-
-  await fan.goto(`/u/${ownerName}/p/${kushId}`);
-  const card = fan.getByRole('region', { name: 'Smokes' });
-  await expect(card.locator('.smk-count')).toHaveText(/3\s*times smoked/);
-  await expect(card.locator('.smk-row')).toHaveCount(0);
-  await fan.goto(`/u/${ownerName}`);
-  await expect(fan.locator('.row').first()).toBeVisible();
-  await fan.getByLabel('Rank by', { exact: true }).selectOption('used');
-  await expect(fan.locator('.row')).toHaveCount(1); // Second Bud has never been smoked
-  await expect(fan.locator('.row .score b')).toHaveText('3');
-  await expect(fan.locator('.row .score svg.flame')).toBeVisible();
-
-  await flip('My Smokes: what and when', true);
-  await expect(preview()).toContainText('with each day, time and amount');
-  await fan.goto(`/u/${ownerName}/p/${kushId}`);
-  await expect(card.locator('.smk-row')).toHaveCount(3);
-  await expect(card.locator('.smk-row').first()).toContainText('0.4 g');
-  await expect(card.locator('.smk-row').first()).toContainText('22:10');
-  await expect(fan.locator('main')).not.toContainText('Secret effect');
-  expect(await axe(fan)).toEqual([]);
-  await shot(fan, '151-follower-smokes');
-
-  // Counts off: Most used goes with them, on the board and the switch.
-  await flip('How many times I’ve had each', false);
-  await expect(toSwitch('Most used on my Leaderboard')).toBeDisabled();
-  await fan.goto(`/u/${ownerName}`);
-  await expect(fan.locator('.row').first()).toBeVisible();
-  expect(await fan.getByLabel('Rank by', { exact: true }).locator('option').allTextContents()).not.toContain('Most used');
-  await flip('My Smokes: what and when', false);
-});
-
 test('Share my Leaderboard off: followers see nothing shared; the other switches grey out', async () => {
   await flip('Share my Leaderboard', false);
   await expect(preview()).toContainText('Only your name. No Leaderboard, no products.');
-  for (const name of ['Source', 'Country', 'Product photos', 'How many times I’ve had each', 'My Smokes: what and when']) await expect(toSwitch(name), name).toBeDisabled();
+  for (const name of ['Source', 'Country', 'Product photos']) await expect(toSwitch(name), name).toBeDisabled();
   await expect(toSwitch('My profile photo')).toBeEnabled();
   await owner.goto('/more');
   await expect(owner.getByRole('link', { name: /What followers see/ })).toContainText('Followers see only your name');

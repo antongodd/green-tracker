@@ -18,5 +18,3 @@ export function formatDate(ms: number): string {
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-/** D46: whether this site has Smokes (the dev site does; live doesn't until it's re-released). */
-export const useSmokesOn = (): boolean => useSession().me.features?.smokes ?? false;

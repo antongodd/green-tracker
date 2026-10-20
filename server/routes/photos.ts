@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { siteFeatures, type AppEnv } from '../env';
+import type { AppEnv } from '../env';
 import { MAX_IMAGE_BYTES, MAX_THUMB_BYTES, parseCrop, PHOTO_VARIANTS, type PhotoVariant } from '../../shared/domain/photo';
 import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, isJpeg, isPng, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
@@ -107,7 +107,7 @@ photos.get('/:id/:variant', async (c) => {
     const shareable = variant !== 'original' && row.product_id !== null && row.private === 0 && row.archived === 0 && row.kept === 0; // D50: never a product kept by a Log entry
     if (!shareable || !(await canView(c.env.DB, me, row.user_id))) denied();
     // D45: an owner who doesn't share photos (or their Leaderboard) shares no photo files either.
-    const privacy = await loadEffectivePrivacy(c.env.DB, row.user_id, siteFeatures(c.env));
+    const privacy = await loadEffectivePrivacy(c.env.DB, row.user_id);
     if (!privacy.sharePhotos) denied();
   }
   const set = variant === 'original' ? row.original_set : row.image_set;
