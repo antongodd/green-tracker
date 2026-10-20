@@ -7,6 +7,7 @@
 // `to`. Releasing it drops the margin and scrolls to `to` in one go, which looks the same.
 
 let held: { at: number; to: number } | null = null;
+let afterRelease: (() => void)[] = [];
 
 function apply(): void {
   const root = document.documentElement;
@@ -16,6 +17,12 @@ function apply(): void {
 
 /** Whether a hold is on (a flight is running). */
 export const holding = (): boolean => held !== null;
+
+/** Runs `fn` once the hold ends (at once without one): after the flight, the page has really scrolled. */
+export function whenReleased(fn: () => void): void {
+  if (held) afterRelease.push(fn);
+  else fn();
+}
 
 /** How far the screen is currently drawn down by a hold (0 without one). */
 export const holdOffset = (): number => (held ? held.at - held.to : 0);
@@ -52,4 +59,7 @@ export function releaseScroll(): void {
   root.classList.remove('vt-hold');
   root.style.removeProperty('--vt-hold');
   window.scrollTo(0, to);
+  const waiting = afterRelease;
+  afterRelease = [];
+  waiting.forEach((fn) => fn());
 }

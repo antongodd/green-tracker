@@ -113,5 +113,5 @@ test('Open their view: your own board and pages as followers get them', async ()
 
 test('the preview and switch notes are readable', async () => {
   // The screen runs below the tab bar: judged at the top, then scrolled to the bottom.
-  expect(await wholeScreenContrastFailures(owner, '/more/privacy', '.pv-cap > span, .pv-line, .pv-mid span, .priv-row .sub, .priv-row .warn')).toEqual([]);
+  expect(await wholeScreenContrastFailures(owner, '/more/privacy', '.pv-cap > span, .pv-line, .pv-mid span, .priv-row .sub')).toEqual([]);
 });

@@ -3,7 +3,7 @@
 // offset or index, since the product may have moved rank. Transient: kept in
 // memory only, so tab switches and app launches start at the top.
 
-import { holding, holdOffset, scrollPage } from './scrollHold';
+import { holding, holdOffset, scrollPage, whenReleased } from './scrollHold';
 
 let pending: { list: string; id: string; screenTop: number; scroll: number } | null = null;
 
@@ -63,10 +63,14 @@ function keep(y: number, restored: number): void {
   const undo = () => {
     if (!touched && !holding() && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
   };
-  requestAnimationFrame(() => {
-    undo();
-    requestAnimationFrame(undo);
+  // Counted from the end of the flight, if there is one: on a busy phone a flight can outlast these
+  // (0.50.0), and the browser's restore can land just after it.
+  whenReleased(() => {
+    requestAnimationFrame(() => {
+      undo();
+      requestAnimationFrame(undo);
+    });
+    for (const ms of [150, 400, 800]) setTimeout(undo, ms);
+    setTimeout(() => inputs.forEach((type) => removeEventListener(type, stop, { capture: true })), 900);
   });
-  for (const ms of [150, 400, 800]) setTimeout(undo, ms);
-  setTimeout(() => inputs.forEach((type) => removeEventListener(type, stop, { capture: true })), 900);
 }

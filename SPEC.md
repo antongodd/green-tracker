@@ -698,6 +698,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   are gone), `data.spec.ts` (an export has no smokes; a 0.49.0 file with smokes restores), `tabbar.spec.ts` (four tabs, the
   old addresses open the Leaderboard), `privacy.spec.ts`, `datascreens.spec.ts`, `header.spec.ts`, `leaderboard.spec.ts`.
   The §4 notes on Smokes (D43), Most used (D44) and the Smokes switch (D46) below are history.
+  *Found while testing:* coming back from a re-rated product, `scrollReturn.ts` `keep()` undid the list's own late scroll
+  restore for only 800ms after `restoreRow`; a Back flight slowed by a busy machine outlasted that, and the restore landed
+  after it (the row off screen; once on a 4-worker run). Its checks now start when the flight's hold ends
+  (`whenReleased` in `scrollHold.ts`). `leaderboard.spec.ts` "§17, slowly" replays it with animations at a fifth of their
+  speed (CDP `Animation.setPlaybackRate`): it fails without the fix.
 - **Brands and suppliers (D59, 0.49.0).** `shared/domain/names.ts`: `nameKey` (`normaliseSearch` without spaces),
   `usedNames(products)` (non-archived; per name: the spelling used most, ties to a capitalised one then A–Z; `products`,
   `brand`, `shop` counts, each product once), `suggestNames(used, typed, { first })` (`SUGGESTION_LIMIT` 4; nothing typed
@@ -1195,6 +1200,8 @@ None.
 - Decision D60. Smokes is gone from the app, on dev and live: no Smokes tab (four tabs again), no Smokes cards, no Most
   used in Rank by, no Smokes switches in Privacy, nothing about smokes in Export, Restore or Delete account. Saved smokes
   are deleted for good when this reaches each site. An export made before 0.50.0 still restores; its smokes are skipped.
+- Found while testing: coming back to the Leaderboard from a product you re-rated could, on a slow phone, leave the
+  product off screen; the app now keeps the list in place until the photo has landed.
 - `CLAUDE.md`: Smokes is gone from the two-sites table, the testing notes and the to-do list.
 
 ### 0.49.0 — brands and suppliers (owner request)
