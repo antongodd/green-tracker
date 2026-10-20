@@ -171,7 +171,8 @@ function App() {
         case '/more/sounds':
           screen = <SoundsScreen />;
           break;
-        case '/more/brands':
+        case '/sources': // D61: the Sources tab
+        case '/more/brands': // where it lived before (D59)
           screen = <BrandsList />;
           break;
         case '/more/archive':

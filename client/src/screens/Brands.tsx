@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'preact/hooks';
 import { formatGBP, formatScore } from '../../../shared/domain/format';
 import { leaderboardTiles, rankProducts } from '../../../shared/domain/leaderboard';
-import { matchesName, nameKey, nameRoleText, productsNamed, spentAt, usedNames } from '../../../shared/domain/names';
+import { matchesName, nameKey, productsNamed, spentAt, usedNames } from '../../../shared/domain/names';
+import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
+import { productType } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
 import { BackButton, Header, TabBar, type Tab } from '../components/chrome';
 import { Tiles } from '../components/Controls';
 import { EmptyCard } from '../components/EmptyCard';
+import { MeButton } from '../components/MeButton';
 import { brandPath } from '../components/NameLink';
 import { ProductRow } from '../components/ProductRow';
 import { Skeleton } from '../components/Skeleton';
-import { ChevronRight } from '../icons';
+import { TypeMark } from '../icons';
 import { cachedProducts, fetchProducts } from '../products';
 import { cameFrom, linkTo } from '../router';
 
@@ -24,6 +27,17 @@ function useProducts(): { products: Product[] | null; error: string } {
       .catch((e) => setError(errorText(e)));
   }, []);
   return { products, error };
+}
+
+/** A Sources card's picture: its best product's first photo (a cut-out without its box), else the type's mark. */
+function CardPhoto(p: { product: Product }) {
+  const first = p.product.photos[0];
+  const def = productType(p.product.productType);
+  return (
+    <span class={`scard-ph${first?.cutout ? ' cut' : ''}`}>
+      {first ? <img src={photoUrl(first, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}
+    </span>
+  );
 }
 
 /** Brand and/or Bought here, in place of a row's price · Source line. */
@@ -44,20 +58,26 @@ const SORTS: { key: Sort; label: string }[] = [
 ];
 
 /**
- * More → Brands & suppliers (D59): every name in your products' Source and purchases' Supplier,
- * one list for both, with how many products each has and their average. Archived ones left out.
+ * The Sources tab (D61, option B "Cards"; D59's list before it): every name in your products'
+ * Source and purchases' Supplier, one list for both, two cards a row. Each card: the photo of its
+ * best product (by Overall; the type's mark without one), the name and its average, how many
+ * products and the best one, and Brand / Bought here. Archived ones left out.
  */
 export function BrandsList() {
   const { products, error } = useProducts();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('products');
-  const names = (products ? usedNames(products) : []).map((n) => ({ ...n, average: leaderboardTiles(productsNamed(products!, n.key).map((r) => r.product)).average }));
+  const names = (products ? usedNames(products) : []).map((n) => {
+    const named = productsNamed(products!, n.key).map((r) => r.product);
+    const top = rankProducts(named, { filter: 'all', rankBy: 'overall' })[0]!;
+    return { ...n, average: leaderboardTiles(named).average, best: top.value === null ? null : top.product, cover: top.product };
+  });
   const shown = names.filter((n) => matchesName(n.name, query));
   if (sort === 'az') shown.sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'average') shown.sort((a, b) => (a.average === b.average ? 0 : a.average === null ? 1 : b.average === null ? -1 : b.average - a.average) || a.name.localeCompare(b.name));
   return (
     <>
-      <Header title="Brands & suppliers" left={<BackButton to="/more" />} />
+      <Header title="Brands & suppliers" right={<MeButton />} />
       <main class="screen">
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
@@ -86,30 +106,30 @@ export function BrandsList() {
                 ))}
               </div>
             </div>
-            <div class="wrap">
-              <div class="list brands">
-                {shown.map((n) => (
-                  <a class="li link" key={n.key} href={brandPath(n.name)} onClick={linkTo(brandPath(n.name))}>
-                    <span class="main">
-                      <span class="nm">{n.name}</span>
-                      <span class="sub">
-                        {n.products} {n.products === 1 ? 'product' : 'products'} · {nameRoleText(n)}
-                      </span>
-                    </span>
+            <div class="scards">
+              {shown.map((n) => (
+                <a class="scard" key={n.key} href={brandPath(n.name)} onClick={linkTo(brandPath(n.name))}>
+                  <CardPhoto product={n.cover} />
+                  <span class="scard-top">
+                    <span class="nm">{n.name}</span>
                     <span class="avg">
                       <span class="visually-hidden">Average </span>
                       {n.average === null ? '–' : formatScore(n.average)}
                     </span>
-                    <ChevronRight class="chev" />
-                  </a>
-                ))}
-                {shown.length === 0 && <p class="li none">No matching names</p>}
-              </div>
+                  </span>
+                  <span class="sub">
+                    {n.products} {n.products === 1 ? 'product' : 'products'}
+                    {n.best && ` · best: ${n.best.name}`}
+                  </span>
+                  <RoleTags brand={n.brand > 0} shop={n.shop > 0} />
+                </a>
+              ))}
+              {shown.length === 0 && <p class="scards-none">No matching names</p>}
             </div>
           </>
         )}
       </main>
-      <TabBar active="more" />
+      <TabBar active="sources" />
     </>
   );
 }
@@ -122,8 +142,8 @@ export function BrandsList() {
 export function BrandPage(p: { name: string }) {
   const key = nameKey(p.name);
   const { products, error } = useProducts();
-  // Opened from More's list it belongs to More; from a product page, to the Leaderboard.
-  const [tab] = useState<Tab>(() => (cameFrom()?.startsWith('/more') ? 'more' : 'leaderboard'));
+  // Opened from the Sources tab it belongs to Sources; from a product page, to the Leaderboard.
+  const [tab] = useState<Tab>(() => (cameFrom()?.startsWith('/sources') ? 'sources' : 'leaderboard'));
   const named = products ? productsNamed(products, key) : [];
   const roles = new Map(named.map((r) => [r.product.id, r]));
   const name = (products && usedNames(products).find((n) => n.key === key)?.name) || p.name;
@@ -136,7 +156,7 @@ export function BrandPage(p: { name: string }) {
   const shop = named.some((r) => r.shop);
   return (
     <>
-      <Header title={name} left={<BackButton to={tab === 'more' ? '/more/brands' : '/'} />} />
+      <Header title={name} left={<BackButton to={tab === 'sources' ? '/sources' : '/'} />} />
       <main class="screen">
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (

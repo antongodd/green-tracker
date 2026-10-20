@@ -13,8 +13,8 @@ export const intoSuggestions = (to: EventTarget | null, id: string): boolean => 
 
 /**
  * Brands and suppliers (D59, option A of the mockups): while you type in Source or a purchase's
- * Supplier, the names you've already used show under the box as buttons; one tap fills it and the
- * keyboard stays up (the tap never takes focus from the box). A near miss says "Did you mean";
+ * Supplier, the names you've already used show under the box as buttons; one tap fills it and
+ * closes the keyboard (D61; from the keyboard, Enter returns to the box). A near miss says "Did you mean";
  * a name you use spelt differently says which spelling it will be saved as.
  */
 export function NameSuggestions(p: { for: string; label: string; typed: string; used: readonly UsedName[]; first?: string | null; onPick: (name: string) => void; onLeave: () => void }) {
@@ -48,10 +48,14 @@ export function NameSuggestions(p: { for: string; label: string; typed: string; 
               onPointerUp={released}
               onPointerCancel={released}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
+              onClick={(e) => {
                 pressing = false;
                 p.onPick(n.name);
-                document.getElementById(p.for)?.focus();
+                // A tap is done with the box: the keyboard goes (D61). Enter on a focused suggestion
+                // (detail 0) goes back to the box instead, so keyboard users don't lose their place.
+                const box = document.getElementById(p.for);
+                if (e.detail === 0) box?.focus();
+                else box?.blur();
               }}
             >
               <span class="t">{n.name}</span>

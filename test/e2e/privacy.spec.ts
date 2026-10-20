@@ -105,7 +105,7 @@ test('Open their view: your own board and pages as followers get them', async ()
   await expect(owner).toHaveURL(new RegExp(`/more/privacy/preview/p/${kushId}$`));
   await expect(owner.getByRole('heading', { level: 1, name: 'Shared Kush' })).toBeVisible();
   await expect(owner.locator('main')).not.toContainText('Morocco');
-  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('More');
+  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Settings');
   expect(await axe(owner)).toEqual([]);
   await owner.goto('/more/privacy');
   await flip('Country', true);

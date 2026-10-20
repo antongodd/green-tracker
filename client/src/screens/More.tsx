@@ -5,14 +5,13 @@ import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, TrashIcon, UploadIcon, BoxIcon, StoreIcon } from '../icons';
+import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
 import { linkTo } from '../router';
 import { fetchPrivacy } from '../privacy';
 import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
-import { usedNames } from '../../../shared/domain/names';
 import { formatDate, useSession } from '../session';
 import { PRESETS } from '../../../shared/domain/gems';
 import { useAppearance } from '../components/Gems';
@@ -77,10 +76,6 @@ export function More() {
   const [error, setError] = useState('');
   const [archived, setArchived] = useState<number | null>(null);
   const [products, setProducts] = useState<number | null>(() => cachedProducts()?.length ?? null);
-  const [names, setNames] = useState<number | null>(() => {
-    const list = cachedProducts();
-    return list ? usedNames(list).length : null;
-  });
   const [counts, setCounts] = useState<{ followers: number; following: number } | null>(null);
   const [privacy, setPrivacy] = useState<Privacy | null>(null);
 
@@ -89,10 +84,7 @@ export function More() {
       .then((list) => setArchived(list.length))
       .catch(() => {});
     fetchProducts()
-      .then((list) => {
-        setProducts(list.length);
-        setNames(usedNames(list).length);
-      })
+      .then((list) => setProducts(list.length))
       .catch(() => {});
     fetchPrivacy()
       .then(setPrivacy)
@@ -116,7 +108,8 @@ export function More() {
   const codes = me.recoveryCodesLeft ?? 0;
   return (
     <>
-      <Header right={<MeButton />} />
+      {/* D61: the Settings tab (More before it). */}
+      <Header title="Settings" right={<MeButton />} />
       <main class="screen">
         {/* D38 (0.31.0): you at the top, then the settings with icon tiles, like the iPhone's Settings. */}
         <div class="wrap more-top">
@@ -158,8 +151,6 @@ export function More() {
           <div class="list">
             <Row label="Export" to="/more/export" icon={UploadIcon} tint="teal" />
             <Row label="Restore" to="/more/restore" icon={DownloadIcon} tint="teal" />
-            {/* D59: every brand and supplier in your products. */}
-            <Row label="Brands & suppliers" value={names === null ? undefined : String(names)} to="/more/brands" icon={StoreIcon} />
             <Row label="Archive" value={archived === null ? undefined : String(archived)} to="/more/archive" icon={BoxIcon} />
           </div>
         </div>

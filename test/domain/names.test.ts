@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalName, nameKey, nameRoleText, productsNamed, spentAt, suggestNames, usedNames, type NamedProduct } from '../../shared/domain/names';
+import { canonicalName, nameKey, productsNamed, spentAt, suggestNames, usedNames, type NamedProduct } from '../../shared/domain/names';
 
 const buy = (supplier: string | null, totalPaid = 10) => ({ supplier, totalPaid });
 const p = (source: string | null, suppliers: (string | null)[] = [], archived = false) => ({ source, purchases: suppliers.map((s) => buy(s)), archived });
@@ -95,11 +95,5 @@ describe('brands and suppliers (D59)', () => {
     expect(spentAt(PRODUCTS, key)).toBe(30);
     expect(spentAt(PRODUCTS, nameKey('Archived Shop'))).toBe(0);
     expect(productsNamed(PRODUCTS, nameKey('Archived Brand'))).toEqual([]);
-  });
-
-  it('describes what a name is', () => {
-    expect(nameRoleText({ brand: 2, shop: 1 })).toBe('Brand and shop');
-    expect(nameRoleText({ brand: 1, shop: 0 })).toBe('Brand');
-    expect(nameRoleText({ brand: 0, shop: 3 })).toBe('Shop');
   });
 });

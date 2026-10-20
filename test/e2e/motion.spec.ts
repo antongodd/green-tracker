@@ -385,7 +385,7 @@ test('swiping back (the browser’s Back) shows the list without its entrance fa
   expect(await fades()).toEqual(['/log']);
 
   // The app's own Back (no photo to fly here) keeps its fade too.
-  await page.locator('.nav a', { hasText: 'More' }).click();
+  await page.locator('.nav a', { hasText: 'Settings' }).click();
   await page.getByRole('link', { name: /Passkeys/ }).click();
   await expect(page).toHaveURL(/passkeys/);
   await page.getByRole('link', { name: 'Back' }).click();

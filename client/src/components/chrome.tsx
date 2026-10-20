@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { BackIcon, BoardIcon, BoardLineIcon, LeafGlass, LogIcon, LogLineIcon, MoreIcon, MoreLineIcon, PeopleIcon, PeopleLineIcon } from '../icons';
+import { BackIcon, BoardIcon, BoardLineIcon, LeafGlass, LogIcon, LogLineIcon, PeopleIcon, PeopleLineIcon, SettingsIcon, SettingsLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
 import { back, linkTo } from '../router';
 import { useSession } from '../session';
 import { Tick } from './Tick';
@@ -47,17 +47,19 @@ export function BackButton(p: { to: string; label?: string }) {
   );
 }
 
-export type Tab = 'leaderboard' | 'log' | 'people' | 'more';
+/** `more` is the Settings tab (D61); its screens keep their /more addresses. */
+export type Tab = 'leaderboard' | 'log' | 'sources' | 'people' | 'more';
 
 /** Each tab: its solid icon (the tab you're on) and its outline (the others), D35. */
 const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Line: typeof BoardIcon }[] = [
   { key: 'leaderboard', label: 'Leaderboard', path: '/', Icon: BoardIcon, Line: BoardLineIcon },
   { key: 'log', label: 'Log', path: '/log', Icon: LogIcon, Line: LogLineIcon },
+  { key: 'sources', label: 'Sources', path: '/sources', Icon: SourcesIcon, Line: SourcesLineIcon },
   { key: 'people', label: 'People', path: '/people', Icon: PeopleIcon, Line: PeopleLineIcon },
-  { key: 'more', label: 'More', path: '/more', Icon: MoreIcon, Line: MoreLineIcon },
+  { key: 'more', label: 'Settings', path: '/more', Icon: SettingsIcon, Line: SettingsLineIcon },
 ];
 
-/** Tab bar (D6, P1; four tabs again since Smokes went, D60). The active tab is the only indicator of the main screen. */
+/** Tab bar (D6, P1; Smokes went in D60; Sources and Settings since D61). The active tab is the only indicator of the main screen. */
 export function TabBar(p: { active: Tab | null }) {
   const requests = useSession().me.pendingRequests ?? 0;
   return (

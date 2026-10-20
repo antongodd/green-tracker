@@ -157,6 +157,3 @@ export function spentAt(products: readonly (NamedProduct & { purchases?: readonl
   }
   return Math.round(total * 100) / 100;
 }
-
-/** "Brand", "Shop" or "Brand and shop", for the list of names. */
-export const nameRoleText = (n: Pick<UsedName, 'brand' | 'shop'>): string => (n.brand && n.shop ? 'Brand and shop' : n.brand ? 'Brand' : 'Shop');

@@ -6,7 +6,7 @@ import { settled, shot, signUp, wholeScreenContrastFailures } from './helpers';
 // Brands and suppliers (D59, 0.49.0; option A of the mockups). Names you've used in Source and
 // Supplier are offered under those boxes as you type, and saved in the spelling you already use;
 // tapping one on a product page opens everything with that name (as the brand and/or where it was
-// bought); More → Brands & suppliers lists them all. A follower can tap your Source to see your
+// bought); the Sources tab (D61) shows them all as cards. A follower can tap your Source to see your
 // products from that brand: never where you bought anything.
 test.describe.configure({ mode: 'serial' });
 
@@ -19,7 +19,25 @@ const call = (page: Page, method: string, path: string, body?: unknown): Promise
     async ({ method, path, body }) => (await fetch(path, { method, headers: { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) })).json(),
     { method, path, body },
   );
-const product = async (name: string, over: Partial<ProductInput>) => (ids[name] = (await call(owner, 'POST', '/api/products', { ...emptyProductInput(), name, ...over })).product.id);
+const product = async (name: string, over: Partial<ProductInput>) => {
+  const p = (await call(owner, 'POST', '/api/products', { ...emptyProductInput(), name, ...over })).product;
+  ids[name] = p.id;
+  return p;
+};
+/** A real JPEG set uploaded from inside the page. */
+const upload = (page: Page, colour: string): Promise<string> =>
+  page.evaluate(async (c) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = c;
+    ctx.fillRect(0, 0, 300, 200);
+    const blob = await new Promise<Blob>((r) => canvas.toBlob((b) => r(b!), 'image/jpeg', 0.8));
+    const form = new FormData();
+    for (const part of ['original', 'cropped', 'thumb']) form.append(part, blob, `${part}.jpg`);
+    return ((await (await fetch('/api/uploads', { method: 'POST', body: form })).json()) as { upload: string }).upload;
+  }, colour);
 const rated = (n: number) => ({ look: n, smell: n, taste: n, burn: n });
 const buy = (supplier: string, totalPaid: number) => ({ date: '2026-10-01', amount: 2, totalPaid, supplier });
 const axe = async (page: Page) => {
@@ -46,7 +64,9 @@ test.beforeAll(async ({ browser }) => {
   const f = await person(browser, 'bf');
   fan = f.page;
   // Grasshopper: the brand of three (one private), where two were bought (one typed in small letters).
-  await product('Amnesia Haze', { source: 'Grasshopper', ratings: rated(9), purchases: [buy('Grasshopper', 24)] });
+  // Grasshopper's best product has a photo: its card shows it (D61).
+  const amnesia = await product('Amnesia Haze', { source: 'Grasshopper', ratings: rated(9), purchases: [buy('Grasshopper', 24)], photos: [{ upload: await upload(owner, '#3b8a4a'), crop: null }] });
+  ids.amnesiaPhoto = amnesia.photos[0].id;
   await product('Super Lemon Haze', { ratings: rated(8), purchases: [buy('grasshopper', 30)] });
   await product('Cheese', { source: 'Grasshopper', ratings: rated(7) });
   await product('Secret Bud', { source: 'Grasshopper', ratings: rated(6), private: true });
@@ -62,7 +82,7 @@ test.afterAll(async () => {
   await fan.context().close();
 });
 
-test('Source offers the names you use, most used first, and narrows as you type; a tap fills it and keeps the keyboard', async () => {
+test('Source offers the names you use, most used first, and narrows as you type; a tap fills it and closes the keyboard', async () => {
   await owner.goto('/products/new');
   const source = owner.locator('#source');
   await source.click();
@@ -76,8 +96,8 @@ test('Source offers the names you use, most used first, and narrows as you type;
   await source.fill('gr');
   await suggestions(owner, 'source').getByRole('button', { name: /Grasshopper/ }).click();
   await expect(source).toHaveValue('Grasshopper');
-  await expect(source).toBeFocused(); // the tap never took focus: the keyboard stays up
-  await expect(suggestions(owner, 'source')).toHaveCount(0); // it is a name you use: nothing more to offer
+  await expect(source).not.toBeFocused(); // D61: the box is done, so the keyboard goes
+  await expect(suggestions(owner, 'source')).toHaveCount(0);
   expect(await axe(owner)).toEqual([]);
 });
 
@@ -92,7 +112,7 @@ test('a tap still picks when the phone takes focus from the box as the finger la
   await chip.dispatchEvent('pointerup', { pointerType: 'touch', isPrimary: true });
   await chip.click();
   await expect(source).toHaveValue('Cookies');
-  await expect(source).toBeFocused();
+  await expect(source).not.toBeFocused();
   await source.fill('');
 });
 
@@ -185,17 +205,30 @@ test('a purchase’s Supplier opens what you bought there', async () => {
   await expect(owner.getByRole('heading', { name: 'Nothing from Old Brand' })).toBeVisible();
 });
 
-test('More → Brands & suppliers lists every name, to search and sort', async () => {
-  await owner.goto('/more');
-  const row = owner.getByRole('link', { name: /Brands & suppliers/ });
-  await expect(row).toContainText('3');
-  await row.click();
-  await expect(owner).toHaveURL(/\/more\/brands$/);
-  const names = () => owner.locator('.list.brands .nm');
+test('the Sources tab: every name as a card with its best product’s photo, to search and sort (D61)', async () => {
+  await owner.goto('/');
+  await owner.getByRole('link', { name: 'Sources', exact: true }).click();
+  await expect(owner).toHaveURL(/\/sources$/);
+  await expect(owner.locator('.hdr .title')).toHaveText('Brands & suppliers');
+  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Sources');
+  const names = () => owner.locator('.scard .nm');
+  const card = (name: string) => owner.locator('.scard', { has: owner.locator('.nm', { hasText: name }) });
   // Most products first, then A–Z.
   await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
-  await expect(owner.locator('.list.brands .li', { hasText: 'Grasshopper' })).toContainText('4 products · Brand and shop');
-  await expect(owner.locator('.list.brands .li', { hasText: "Barney's" })).toContainText('2 products · Shop');
+  await expect(card('Grasshopper').locator('.sub')).toHaveText('4 products · best: Amnesia Haze');
+  await expect(card('Grasshopper').locator('.role')).toHaveText(['Brand', 'Bought here']);
+  await expect(card('Grasshopper').locator('.avg')).toHaveText('Average 7.5');
+  await expect(card("Barney's").locator('.sub')).toHaveText('2 products · best: Gelato');
+  await expect(card("Barney's").locator('.role')).toHaveText(['Bought here']);
+  await expect(card('Cookies').locator('.role')).toHaveText(['Brand']);
+  // The best product's photo, or its type's mark without one.
+  await expect(card('Grasshopper').locator('.scard-ph img')).toHaveAttribute('src', new RegExp(ids.amnesiaPhoto!));
+  await expect(card('Grasshopper').locator('.scard-ph img')).toHaveJSProperty('complete', true);
+  await expect(card('Cookies').locator('.scard-ph svg')).toHaveCount(1);
+  // Two a row.
+  const [a, b] = [(await card('Grasshopper').boundingBox())!, (await card("Barney's").boundingBox())!];
+  expect(Math.abs(a.y - b.y)).toBeLessThan(1);
+  expect(b.x).toBeGreaterThan(a.x + a.width);
   await owner.getByRole('button', { name: 'A–Z' }).click();
   await expect(owner.getByRole('button', { name: 'A–Z' })).toHaveAttribute('aria-pressed', 'true');
   await expect(names()).toHaveText(["Barney's", 'Cookies', 'Grasshopper']);
@@ -204,13 +237,24 @@ test('More → Brands & suppliers lists every name, to search and sort', async (
   await owner.getByLabel('Search').fill('coo');
   await expect(names()).toHaveText(['Cookies']);
   await owner.getByLabel('Search').fill('zzz');
-  await expect(owner.locator('.list.brands')).toContainText('No matching names');
+  await expect(owner.locator('.scards')).toContainText('No matching names');
   await owner.getByLabel('Search').fill('');
+  await owner.getByRole('button', { name: 'Most products' }).click();
+  await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
   expect(await axe(owner)).toEqual([]);
-  await shot(owner, '162-brands-list');
-  await owner.locator('.list.brands .li', { hasText: 'Grasshopper' }).click();
+  await shot(owner, '162-sources-tab'); // before the contrast check, which hides the text it measures
+  expect(await wholeScreenContrastFailures(owner, '/sources', '.scard .nm, .scard .sub, .scard .avg, .scard .role')).toEqual([]);
+  // A card opens its page, still under Sources; Back comes home.
+  await card('Grasshopper').click();
   await expect(owner).toHaveURL(/\/brands\/Grasshopper$/);
-  await expect(owner.locator('.nav .tab[aria-current="page"]')).toContainText('More');
+  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Sources');
+  await owner.getByRole('link', { name: 'Back' }).click();
+  await expect(owner).toHaveURL(/\/sources$/);
+  // Settings has no Brands & suppliers row any more; the old address still opens the tab.
+  await owner.goto('/more');
+  await expect(owner.locator('main')).not.toContainText('Brands & suppliers');
+  await owner.goto('/more/brands');
+  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Sources');
 });
 
 test("a follower taps your Source: your products from that brand, never where you bought anything", async () => {
