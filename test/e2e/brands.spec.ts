@@ -227,8 +227,11 @@ test('the Sources tab: every name as a card with its best product’s photo, to 
   await expect(card('Grasshopper').locator('.scard-ph img')).toHaveAttribute('src', new RegExp(ids.amnesiaPhoto!));
   await expect(card('Grasshopper').locator('.scard-ph img')).toHaveJSProperty('complete', true);
   // The whole photo box is filled and nothing spills out of it (0.52.0: a tall photo was cut off).
-  const [ph, img] = [(await card('Grasshopper').locator('.scard-ph').boundingBox())!, (await card('Grasshopper').locator('.scard-ph img').boundingBox())!];
-  expect([img.x, img.y, img.width, img.height].map(Math.round)).toEqual([ph.x, ph.y, ph.width, ph.height].map(Math.round));
+  // Measured together once the screen has slid into place: measured one after the other while it was still
+  // rising (6px), they came out a pixel apart on CI (0.53.1).
+  await settled(owner);
+  const [ph, img] = await card('Grasshopper').locator('.scard-ph').evaluate((p) => [p, p.querySelector('img')!].map((e) => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); }));
+  expect(img).toEqual(ph);
   await expect(card('Cookies').locator('.scard-ph svg')).toHaveCount(1);
   // Two a row.
   const [a, b] = [(await card('Grasshopper').boundingBox())!, (await card("Barney's").boundingBox())!];

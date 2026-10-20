@@ -138,9 +138,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.52.0: live plus brands and suppliers
+- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.53.1: live plus brands and suppliers
   (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62), the website (D63, 0.53.0) and
-  notes-only changes (0.48.2, 0.51.1). Anton will
+  notes- and tests-only changes (0.48.2, 0.51.1, 0.53.1). Anton will
   say when to take it all live together.
 
 ### To-do list (suggested order; Anton decides)

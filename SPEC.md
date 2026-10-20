@@ -1259,6 +1259,13 @@ None.
 
 ## 6. Changelog
 
+### 0.53.1 — a steadier Sources card test (tests only)
+- `brands.spec.ts` measured a card's photo and its box one after the other while the Sources screen was still sliding
+  into place, so on CI they came out a pixel apart and stopped 0.53.0 reaching the dev site. It now waits for the
+  slide (`settled`) and measures both at once. Reproduced by slowing animations tenfold and spacing the two
+  measurements (2px apart); passes with the fix under the same slowdown. The app is unchanged.
+- `CLAUDE.md`: dev is 0.53.1.
+
 ### 0.53.0 — a website for the app (owner request)
 - Decision D63. A one-page website at its own address, look A "Aurora Glass": what Green Tracker is, a rate-it slider,
   how to put it on the iPhone Home Screen, and Sign up free. Made-up products only; nothing loads from anywhere else,
