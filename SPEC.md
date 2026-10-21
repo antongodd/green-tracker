@@ -1337,8 +1337,9 @@ None.
 
 ## 6. Changelog
 
-### 0.55.1 — CLAUDE.md: the new look's stage 2 is on dev
-- The to-do list marks stage 2 of the new look (D65) on dev. Notes only.
+### 0.55.1 — CLAUDE.md: the new look is live
+- The new look (D64, D65) went live on 2026-10-21 and moves from the to-do list to Done; the remaining items are
+  renumbered 1–2. Notes only.
 
 ### 0.55.0 — the new look, stage 2: three more looks (owner request)
 - Decision D65. Neon Night, Holo Pearl and Deep Forest can be chosen in Settings → Appearance. The phone remembers

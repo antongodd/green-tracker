@@ -148,31 +148,22 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.55.1: live plus the new look (Aurora
-  Glass and Appearance, D64, 0.54.0; the other three looks, D65, 0.55.0) and notes-only 0.53.2, 0.54.1 and 0.55.1.
-  Anton will say when to take it live.
+- **Live and dev:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65); dev also has notes-only 0.55.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **The new look** (Leaderboard design rework, with a font and colour rework for the whole app; Anton, 2026-10-18).
-   **Stage 1 on dev** (0.54.0, D64, 2026-10-21): Aurora Glass (the website's look: drifting lights, frosted glass,
-   Unbounded numbers and titles, Manrope words); Settings → Appearance with a preview, the look, the top of the
-   Leaderboard (glass hero, three tiles, slim strip; the Log, friends' boards and brand pages follow it) and two new
-   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Checked by Anton on
-   GT Dev: "looks good and works well". **Stage 2 on dev** (0.55.0, D65, 2026-10-21): Neon Night, Holo Pearl (Sora
-   titles, pearly rims) and Deep Forest can be chosen; the phone remembers the look so the app opens in it; the Home
-   Screen bar takes its colour. Anton checks it on GT Dev.
-2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
+1. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
    can be compared. Plan first.
-3. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
    the details in the working conversation.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |
 | A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
 | Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |
 | Sources and Settings tabs | 0.51.0 | D61 | 2026-10-20 | 2026-10-21 |
