@@ -1315,6 +1315,9 @@ None.
 
 ## 6. Changelog
 
+### 0.54.1 — CLAUDE.md: the new look's stage 1 is on dev
+- The to-do list marks stage 1 of the new look (D64) on dev, with stage 2 (the other three looks) next. Notes only.
+
 ### 0.54.0 — the new look: Aurora Glass (owner request)
 - Decision D64, stage 1. The app takes on the website's look: drifting green, teal and violet lights, frosted-glass
   cards, Unbounded for titles and numbers (the old rounded numbers felt too soft), Manrope for words. Settings →
