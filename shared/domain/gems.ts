@@ -43,11 +43,13 @@ export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].
 /** "8.0 – 8.4" … "9.5 – 10", for the key. */
 export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `${BAND_FLOORS[band - 1]!.toFixed(1)} – ${(BAND_FLOORS[band]! - 0.1).toFixed(1)}`);
 
-/** The whole app's look (D64). Only Aurora Glass is built so far; the others come next. */
+/** The whole app's look (D64; all four built since D65). */
 export type Look = 'aurora' | 'neon' | 'pearl' | 'forest';
 export const LOOK_KEYS = ['aurora', 'neon', 'pearl', 'forest'] as const satisfies readonly Look[];
-/** The looks you can choose today: the rest show as "Coming next". */
-export const READY_LOOKS: readonly Look[] = ['aurora'];
+/** The looks you can choose (a look not listed would show as "Coming next"). All four since D65. */
+export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
+/** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
+export const LOOK_BG: Record<Look, string> = { aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807' };
 export const LOOKS: Record<Look, { label: string; description: string }> = {
   aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
   neon: { label: 'Neon Night', description: 'Deep indigo with violet, pink and cyan lights' },
