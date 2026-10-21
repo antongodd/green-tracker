@@ -2,7 +2,7 @@
 // the Leaderboard (D64, 0.54.0), your Leaderboard colours preset and the #1 mark. Saved to your
 // account at once, so they follow you to a new phone; a friend's board shows in your look and
 // colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
 import { saveAppearance } from '../appearance';
@@ -53,15 +53,23 @@ export function AppearanceScreen() {
   const online = useOnline();
   const a = shown ?? saved;
 
+  // Quick taps (0.55.0): saves go one at a time, in order, and only the latest choice decides what's
+  // shown, so an earlier save finishing can't flip a newer choice back.
+  const latest = useRef(0);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
   async function change(next: Appearance) {
+    const id = ++latest.current;
     const before = a;
     setShown(next);
     setError('');
+    const saving = queue.current.then(() => saveAppearance(next));
+    queue.current = saving.catch(() => {});
     try {
-      await saveAppearance(next);
+      await saving;
       await refresh();
-      setShown(null);
+      if (latest.current === id) setShown(null);
     } catch (e) {
+      if (latest.current !== id) return;
       setShown(before);
       setError(errorText(e));
     }

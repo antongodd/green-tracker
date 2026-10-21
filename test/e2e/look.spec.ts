@@ -131,6 +131,31 @@ test('a look that doesn’t exist is refused', async () => {
   expect(await saved()).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
 });
 
+test('quick taps in Appearance: each choice stays chosen, and the last one is what’s saved (0.55.0)', async () => {
+  await page.goto('/more/appearance');
+  await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
+  // The first save is slow to come back; the second tap lands while it's on its way.
+  let first = true;
+  await page.route('**/api/appearance', async (route) => {
+    if (route.request().method() === 'PUT' && first) {
+      first = false;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    await route.fallback();
+  });
+  await page.getByRole('radio', { name: /Three tiles/ }).check();
+  await page.locator('input[name="preset"][value="neon"]').check();
+  // Through the first save's answer and after: the newest choices stay shown.
+  for (let i = 0; i < 12; i++) {
+    expect(await page.locator('input[name="preset"][value="neon"]').isChecked(), `still Neon after ${i * 250}ms`).toBe(true);
+    expect(await page.getByRole('radio', { name: /Three tiles/ }).isChecked(), `still Three tiles after ${i * 250}ms`).toBe(true);
+    await page.waitForTimeout(250);
+  }
+  await expect.poll(saved).toEqual({ look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true });
+  await page.unroute('**/api/appearance');
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+});
+
 // D65 (0.55.0): the other three looks.
 const LOOKS = [
   { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a', display: /^Unbounded/ },
@@ -184,9 +209,9 @@ test('the phone remembers your look, so the app opens in it before your account 
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
-test('every look is readable and accessible: the Leaderboard, the Log, Settings and Appearance', async () => {
-  test.slow(); // 3 looks × several screens, the Leaderboard throughout the lights' and colours' motion
-  for (const l of LOOKS) {
+for (const l of LOOKS) {
+  test(`${l.name} is readable and accessible: the Leaderboard, the Log, Settings and Appearance`, async () => {
+    test.slow(); // several screens, the Leaderboard throughout the lights' and colours' motion
     for (const top of ['hero', 'strip'] as const) {
       expect(await put({ look: l.look, top, preset: 'aurora', markFirst: true })).toBe(200);
       await page.goto('/');
@@ -211,6 +236,6 @@ test('every look is readable and accessible: the Leaderboard, the Log, Settings 
       expect(worst, `${l.look} ${path}:\n${worst.join('\n')}`).toEqual([]);
       expect(await axe(), `${l.look} ${path}`).toEqual([]);
     }
-  }
-  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
-});
+    expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+  });
+}

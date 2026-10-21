@@ -1325,6 +1325,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
       moving lights and colours on the Leaderboard (the glass hero and the strip; only text you can see: below the
       header, above the tab bar, clear of the add button) and top to bottom on the Log, Settings and Appearance, with
       axe on each. The domain and API tests accept all four looks and refuse an unknown one.
+    - *Found while testing:* tapping two Appearance choices quickly, the first save's answer put the screen back on
+      the old choice for a moment (and two saves could cross). Saves now go one at a time, in order, and only the latest
+      choice clears what's shown (`Appearance.tsx`); `look.spec.ts` holds the first save back and checks both choices
+      stay shown and the last is saved (fails on the old code).
     - *Couldn't check here*: the three looks on a real iPhone, and Sora in iOS Safari.
 
 ## 5. Open questions for the owner
@@ -1336,6 +1340,7 @@ None.
 ### 0.55.0 — the new look, stage 2: three more looks (owner request)
 - Decision D65. Neon Night, Holo Pearl and Deep Forest can be chosen in Settings → Appearance. The phone remembers
   your look, so the app opens in it straight away; the Home Screen app's top bar takes its colour.
+- Quick taps in Appearance no longer flip a choice back for a moment.
 - `CLAUDE.md`: next decision D66; testing notes for the looks.
 
 ### 0.54.1 — CLAUDE.md: the new look's stage 1 is on dev
