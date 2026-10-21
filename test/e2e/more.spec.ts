@@ -83,3 +83,21 @@ test('readable: the card, rows, values, headings and footer', async () => {
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   expect(await contrastFailures(page, await textBoxes(page, '.more-foot span'), 1)).toEqual([]);
 });
+
+test('back on Settings, the What followers see line is there at once, so the screen doesn’t jump (0.54.0)', async () => {
+  // Loaded late, the two-line summary pushed Settings down after it had landed where you were
+  // (the swipe-back test caught it on a busy machine). Hold its answer back to see.
+  await page.goto('/more');
+  const line = page.locator('.li', { hasText: 'What followers see' });
+  await expect(line).toContainText('Followers see:');
+  await page.getByRole('link', { name: 'Export' }).click();
+  await expect(page).toHaveURL(/\/more\/export$/);
+  await page.route('**/api/privacy', async (route) => {
+    await new Promise((r) => setTimeout(r, 3000));
+    await route.fallback();
+  });
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/more$/);
+  await expect(line).toContainText('Followers see:', { timeout: 1000 });
+  await page.unroute('**/api/privacy');
+});

@@ -10,7 +10,7 @@ import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
 import { linkTo } from '../router';
-import { fetchPrivacy } from '../privacy';
+import { cachedPrivacy, fetchPrivacy } from '../privacy';
 import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
 import { formatDate, useSession } from '../session';
 import { BOARD_TOPS, LOOKS, PRESETS } from '../../../shared/domain/gems';
@@ -77,7 +77,7 @@ export function More() {
   const [archived, setArchived] = useState<number | null>(null);
   const [products, setProducts] = useState<number | null>(() => cachedProducts()?.length ?? null);
   const [counts, setCounts] = useState<{ followers: number; following: number } | null>(null);
-  const [privacy, setPrivacy] = useState<Privacy | null>(null);
+  const [privacy, setPrivacy] = useState<Privacy | null>(cachedPrivacy);
 
   useEffect(() => {
     fetchArchived()

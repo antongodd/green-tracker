@@ -1288,6 +1288,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   every frame while anything else moved), so the lights are painted on the background, which was its own layer
   already, and moved in steps about twice a second: now about the same as before. The glass hero has no blur (the
   lights behind it are soft already). The "Latest" tag sits on a darker pane (it measured 4.50 : 1 over the lights).
+  Back on Settings, its two-line "What followers see" summary was fetched again and could arrive after the screen
+  had landed where you were, pushing it 33px off (the swipe-back test caught it on a busy machine; Settings is two
+  rows longer now): the last privacy settings are kept (`cachedPrivacy` in `client/src/privacy.ts`, cleared with the
+  other caches when the account changes), so the line is there at once (`more.spec.ts`, proved on the old code).
   - *Tests:* `look.spec.ts` (new: the defaults, Settings' three rows, Appearance's looks with the three coming next,
     choosing a top and a colour set saves at once and the Leaderboard follows, the Log's and a name's page's hero lines,
     every top fits at 375 and 390 wide on the Leaderboard, the Log and a name's page with the widest numbers, the stats
@@ -1317,6 +1321,7 @@ None.
   Appearance gains a preview, the look (Aurora Glass; three more coming next) and the top of the Leaderboard (glass
   hero, three tiles or slim strip; the Log, friends' boards and brand pages follow it), and two new colour sets,
   Aurora and Neon. Everyone moves once to Aurora Glass, the glass hero and Aurora colours. A new migration.
+- Coming back to Settings no longer lands a little off when its "What followers see" line loads late.
 - `CLAUDE.md`: next decision D65; testing notes for the new look.
 
 ### 0.53.2 — CLAUDE.md: 0.53.1 is live

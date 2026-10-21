@@ -19,6 +19,7 @@ import { Archive, Leaderboard } from './screens/Leaderboard';
 import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
+import { clearPrivacyCache } from './privacy';
 import { clearEntryCache } from './logEntries';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
@@ -45,6 +46,7 @@ function App() {
       setMe((prev) => {
         if (prev?.user?.username !== next.user?.username) {
           clearProductCache();
+          clearPrivacyCache();
           clearEntryCache();
         }
         return next;
