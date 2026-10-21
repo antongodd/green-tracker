@@ -62,15 +62,16 @@ test('the lights are behind every screen, drifting, and stay put as you scroll',
   // …teal on the right…
   const right = await colour(382, 200);
   expect(right[2]! - BG[2]!, `right ${right}`).toBeGreaterThan(5);
-  // They move: half way through their loop, the top left has changed.
+  // They move: half way through their loop, the edge of the green light has moved.
+  const edge = await colour(2, 230);
   await holdLights(11000);
-  const later = await colour(2, 130);
-  expect(Math.max(...later.map((v, i) => Math.abs(v - top[i]!))), `drift ${top} → ${later}`).toBeGreaterThan(1);
+  const later = await colour(2, 230);
+  expect(Math.max(...later.map((v, i) => Math.abs(v - edge[i]!))), `drift ${edge} → ${later}`).toBeGreaterThan(1);
   // Scrolled down, the lights haven't gone anywhere: the same colour at the same moment.
   await page.mouse.wheel(0, 700);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(400);
   await holdLights(11000);
-  const after = await colour(2, 130);
+  const after = await colour(2, 230);
   expect(Math.max(...after.map((v, i) => Math.abs(v - later[i]!))), `after scrolling ${after}`).toBeLessThan(1.5);
   // Violet low down: seen on a screen with room to spare (the archive, empty).
   await page.goto('/more/archive');

@@ -1280,7 +1280,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   `data-len` and a smaller size in tiles and the strip; the grey and red buttons sit on `--btn-bg` (glass over a darker
   pane), as the red Archive measured 4.38 : 1 where the lights are brightest; the lights are hidden and paused under
   anything covering the whole screen (`html:has(.viewer, .cropper, .cpicker)`), as nobody sees them there and the
-  background remover's work had less room on a busy test machine.
+  background remover's work had less room on a busy test machine. Timing tests also froze a little longer with four
+  test browsers at once: measured, the drifting lights and the frosted blurs (redone each frame as the lights move
+  behind them) were the cost, so each light layer is only as big as its lights and the glass hero has no blur (the
+  lights behind it are soft already).
   - *Tests:* `look.spec.ts` (new: the defaults, Settings' three rows, Appearance's looks with the three coming next,
     choosing a top and a colour set saves at once and the Leaderboard follows, the Log's and a name's page's hero lines,
     every top fits at 375 and 390 wide on the Leaderboard, the Log and a name's page with the widest numbers, the stats

@@ -95,9 +95,10 @@ body {
 /* The lights (D64): green top left, teal top right, violet low down, drifting slowly behind every
    screen (one still frame with Reduce Motion). Plain gradients, no blur filter: cheap to move. */
 .bg-layer { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: var(--bg); }
-.bg-layer::before, .bg-layer::after { content: ""; position: absolute; inset: -25%; pointer-events: none; }
-.bg-layer::before { background: radial-gradient(34% 26% at 22% 20%, var(--light-1), transparent 70%), radial-gradient(30% 24% at 82% 30%, var(--light-2), transparent 70%); }
-.bg-layer::after { background: radial-gradient(34% 24% at 46% 74%, var(--light-3), transparent 70%); }
+.bg-layer::before, .bg-layer::after { content: ""; position: absolute; pointer-events: none; }
+/* Each layer only as big as its lights need (less for the phone to move every frame). */
+.bg-layer::before { inset: -12% -12% 30% -12%; background: radial-gradient(45% 42% at 22% 22%, var(--light-1), transparent 70%), radial-gradient(40% 40% at 82% 40%, var(--light-2), transparent 70%); }
+.bg-layer::after { inset: 45% -12% -12% -12%; background: radial-gradient(45% 60% at 46% 50%, var(--light-3), transparent 70%); }
 @media (prefers-reduced-motion: no-preference) {
   .bg-layer::before { animation: lights-a 22s ease-in-out infinite alternate; }
   .bg-layer::after { animation: lights-b 27s ease-in-out infinite alternate; }
@@ -1222,7 +1223,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .banner .tile { background: none; border: 0; padding: 0; }
 /* The glass hero: the lead number big on the left, the others stacked on the right, a line under. */
 .banner.hero { position: relative; isolation: isolate; overflow: hidden; display: grid; padding: 14px 16px; border-radius: 22px;
-  background: var(--hero-wash), var(--glass); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); }
+  background: var(--hero-wash), var(--glass); border: 1px solid var(--glass-edge); } /* no blur: the lights behind are soft already, and it would redo every frame as they drift */
 .banner.hero .stats { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px 12px; }
 .banner.hero .tile.lead { grid-column: 1; grid-row: 1 / span var(--side-rows, 2); align-self: end; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; text-align: left; }
 .banner.hero .tile.lead b { font-size: 44px; line-height: 1; letter-spacing: -0.04em; }
