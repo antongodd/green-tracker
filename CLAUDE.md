@@ -148,8 +148,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.54.1: live plus the new look, stage 1
-  (Aurora Glass, D64, 0.54.0) and notes-only 0.53.2 and 0.54.1.
+- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.55.1: live plus the new look (Aurora
+  Glass and Appearance, D64, 0.54.0; the other three looks, D65, 0.55.0) and notes-only 0.53.2, 0.54.1 and 0.55.1.
+  Anton will say when to take it live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -157,8 +158,10 @@ section, so it must always be current.
    **Stage 1 on dev** (0.54.0, D64, 2026-10-21): Aurora Glass (the website's look: drifting lights, frosted glass,
    Unbounded numbers and titles, Manrope words); Settings → Appearance with a preview, the look, the top of the
    Leaderboard (glass hero, three tiles, slim strip; the Log, friends' boards and brand pages follow it) and two new
-   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Anton checks it on
-   GT Dev. **Stage 2 next:** the other three looks (Neon Night, Holo Pearl, Deep Forest), shown as "Coming next".
+   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Checked by Anton on
+   GT Dev: "looks good and works well". **Stage 2 on dev** (0.55.0, D65, 2026-10-21): Neon Night, Holo Pearl (Sora
+   titles, pearly rims) and Deep Forest can be chosen; the phone remembers the look so the app opens in it; the Home
+   Screen bar takes its colour. Anton checks it on GT Dev.
 2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
