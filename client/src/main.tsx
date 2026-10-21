@@ -59,6 +59,12 @@ function App() {
     refresh();
   }, [refresh]);
 
+  // The whole app's look (D64): html[data-look] picks its colours (only Aurora Glass so far).
+  const look = me?.appearance?.look ?? 'aurora';
+  useEffect(() => {
+    document.documentElement.dataset.look = look;
+  }, [look]);
+
   // Keep the address bar honest: signed-out people live on the sign-in paths, everyone else never sees them.
   const signedIn = !!me?.user;
   useEffect(() => {

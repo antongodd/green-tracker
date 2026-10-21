@@ -26,38 +26,41 @@ export async function signUp(page: Page, username = `u${Date.now().toString(36)}
 
 export const shot = (page: Page, name: string) => page.screenshot({ path: `.playwright/screens/${name}.png`, animations: 'disabled' });
 
-/** Stats tiles (0.11.0, D17): number and label centred in the tile, inside its
- *  edges (nothing cut off), and the green diagonal wash applied. */
-export async function expectTilesCentredAndWashed(page: Page) {
+/** The stats at the top (D17; laid out as you chose since D64: the glass hero, three tiles or a
+ *  slim strip): every number and label inside its box and the screen (nothing cut off or
+ *  overlapping), on glass; in three tiles, centred in each tile. Returns the layout found. */
+export async function expectStatsFit(page: Page): Promise<'hero' | 'tiles' | 'strip'> {
   const tiles = page.locator('.tile');
   await expect(tiles.first()).toBeVisible();
-  const report = await tiles.evaluateAll((els) =>
-    els.map((el) => {
-      const t = el.getBoundingClientRect();
-      const mid = t.left + t.width / 2;
-      const parts = [el.querySelector('b')!, el.querySelector('.cap')!].map((c) => {
-        const r = (c as HTMLElement).getBoundingClientRect();
-        // Measure the text itself, not its box (a grid item can stretch).
-        const range = document.createRange();
-        range.selectNodeContents(c);
-        const tr = range.getBoundingClientRect();
-        return {
-          off: Math.abs(tr.left + tr.width / 2 - mid),
-          inside: tr.left >= t.left && tr.right <= t.right && r.right <= t.right,
-          clipped: (c as HTMLElement).scrollWidth > Math.ceil(r.width),
-        };
-      });
-      const bg = getComputedStyle(el).backgroundImage;
-      return { label: el.textContent, parts, wash: bg.includes('linear-gradient') && bg.includes('88, 224, 140') };
-    }),
-  );
-  for (const t of report) {
-    expect(t.wash, `${t.label}: green wash`).toBe(true);
-    for (const p of t.parts) {
-      expect(p.off, `${t.label}: centred`).toBeLessThanOrEqual(1);
-      expect(p.inside && !p.clipped, `${t.label}: fits`).toBe(true);
-    }
+  const report = await tiles.first().evaluate((first) => {
+    const box = first.closest('.banner, .tiles') as HTMLElement;
+    const layout = box.classList.contains('hero') ? 'hero' : box.classList.contains('strip') ? 'strip' : 'tiles';
+    const b = box.getBoundingClientRect();
+    const glass = (el: Element) => /rgba\(255, 255, 255, 0\.0[5-9]\)/.test(getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
+    const texts = [...box.querySelectorAll<HTMLElement>('.tile b, .tile .cap')].map((c) => {
+      const tile = c.closest('.tile')!.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(c);
+      const tr = range.getBoundingClientRect();
+      return {
+        label: c.textContent,
+        rect: tr.toJSON() as DOMRect,
+        inside: tr.left >= b.left && tr.right <= b.right && tr.top >= b.top && tr.bottom <= b.bottom && tr.right <= innerWidth,
+        clipped: c.scrollWidth > Math.ceil(c.getBoundingClientRect().width),
+        off: Math.abs(tr.left + tr.width / 2 - (tile.left + tile.width / 2)),
+      };
+    });
+    const overlap = texts.some((x, i) => texts.some((y, j) => i < j && x.rect.left < y.rect.right - 1 && y.rect.left < x.rect.right - 1 && x.rect.top < y.rect.bottom - 1 && y.rect.top < x.rect.bottom - 1));
+    const onGlass = layout === 'tiles' ? [...box.querySelectorAll('.tile')].every(glass) : glass(box);
+    return { layout, texts, overlap, onGlass };
+  });
+  expect(report.onGlass, `${report.layout}: on glass`).toBe(true);
+  expect(report.overlap, `${report.layout}: nothing overlaps`).toBe(false);
+  for (const t of report.texts) {
+    expect(t.inside && !t.clipped, `${t.label}: fits`).toBe(true);
+    if (report.layout === 'tiles') expect(t.off, `${t.label}: centred`).toBeLessThanOrEqual(1);
   }
+  return report.layout as 'hero' | 'tiles' | 'strip';
 }
 
 export interface TextBox { label: string; x: number; y: number; w: number; h: number; color: string; large: boolean }
@@ -140,29 +143,49 @@ export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
   }, selector);
 
 /**
- * contrastFailures for a screen taller than the phone: photographed at the top, then scrolled
- * to the bottom (from a fresh load, as textBoxes hides what it measures). Each pass judges only
- * the text fully between the header and the tab bar (what's behind those can't be read, and the
- * photo shows the bar, not the lights); every match must be judged in at least one pass.
+ * contrastFailures for a screen taller than the phone: photographed at the top, then a screen
+ * further down at a time until the bottom (from a fresh load each time, as textBoxes hides what it
+ * measures; D64's longer Appearance needed more than top and bottom). Each pass judges only the text
+ * fully between the header and the tab bar and clear of the add button (what's behind those can't
+ * be read, and the photo shows them, not the lights); every match must be judged in at least one pass.
  */
 export async function wholeScreenContrastFailures(page: Page, path: string, selector: string): Promise<string[]> {
   const worst: string[] = [];
   const judged = new Set<string>();
   let total = 0;
-  for (const end of ['top', 'bottom'] as const) {
+  const load = async () => {
     await page.goto(path);
     for (const part of selector.split(',')) await page.locator(part).first().waitFor(); // each kind of text is on screen
     // Everything the screen loads has arrived: Settings' privacy summary landing between measuring the
     // text and photographing it moved the headings, so the photo caught the space beside them (0.52.0).
     await page.waitForLoadState('networkidle');
     await settled(page);
-    if (end === 'bottom') await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const area = await page.evaluate(() => ({ top: Math.max(0, document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0), bottom: document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight }));
+  };
+  await load();
+  // Where each pass scrolls to: a screen (less a little overlap) at a time, ending at the bottom.
+  const { max, step } = await page.evaluate(() => {
+    const top = document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0;
+    const bottom = Math.min(document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight, 844);
+    return { max: document.documentElement.scrollHeight - innerHeight, step: Math.max(100, bottom - top - 120) };
+  });
+  const stops: number[] = [];
+  for (let y = 0; y < max; y += step) stops.push(y);
+  stops.push(Math.max(0, max));
+  for (const [n, y] of stops.entries()) {
+    if (n > 0) await load();
+    await page.evaluate((y) => window.scrollTo(0, y), y);
+    const area = await page.evaluate(() => ({
+      top: Math.max(0, document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0),
+      bottom: document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight,
+      fab: document.querySelector('.fab')?.getBoundingClientRect().toJSON() as DOMRect | undefined,
+    }));
+    const underFab = (b: TextBox) => !!area.fab && b.x < area.fab.right && b.x + b.w > area.fab.left && b.y < area.fab.bottom && b.y + b.h > area.fab.top;
     const boxes = (await textBoxes(page, selector)).map((b, i) => ({ ...b, i }));
     total = boxes.length;
-    const seen = boxes.filter((b) => b.y >= area.top && b.y + b.h <= Math.min(area.bottom, 844));
+    const seen = boxes.filter((b) => b.y >= area.top && b.y + b.h <= Math.min(area.bottom, 844) && !underFab(b));
     for (const b of seen) judged.add(`${b.i}`);
-    worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${end} ${w}`));
+    const where = n === 0 ? 'top' : n === stops.length - 1 ? 'bottom' : `at ${Math.round(y)}px`;
+    worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${where} ${w}`));
   }
   if (judged.size !== total) worst.push(`only ${judged.size} of ${total} judged`);
   return worst;

@@ -58,6 +58,8 @@ test.beforeAll(async ({ browser }) => {
   ];
   for (const [name, over] of seed) ids[name] = (await post(owner, '/api/products', P({ name, ...over }))).product.id;
   await post(owner, `/api/products/${ids.Gone}/archived`, { value: true });
+  // These tests name Gems' colours (D48); everyone starts on Aurora since D64.
+  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'gems', markFirst: true })).toBe(200);
   await post(fan, `/api/people/u/${ownerName}/follow`, {});
   await post(owner, `/api/people/requests/${fanName}/approve`, {});
 });

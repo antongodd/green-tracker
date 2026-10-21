@@ -116,6 +116,8 @@ export function Leaderboard() {
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
                 { value: formatWeightTotal(tiles.totalGrams ?? 0), label: 'Total' },
               ]}
+              lead={1}
+              foot={rows[0] && <span class="who">Your #1 · <b>{rows[0].product.name}</b></span>}
             />
           </>
         )}

@@ -26,7 +26,7 @@ const tabs = () =>
         icon: svg.classList.contains('tab-on') ? 'solid' : svg.classList.contains('tab-off') ? 'outline' : '?',
         outlined: [...svg.querySelectorAll('path')].some((d) => d.getAttribute('stroke') === 'currentColor'),
         glow: getComputedStyle(svg).filter.includes('drop-shadow'),
-        line: after.content !== 'none' && after.backgroundColor === 'rgb(88, 224, 140)' ? after.width : null,
+        line: after.content !== 'none' && after.backgroundImage.startsWith('linear-gradient(90deg, rgb(111, 233, 164)') ? after.width : null,
         bubble: getComputedStyle(t, '::before').content !== 'none',
         color: getComputedStyle(t).color,
       };
@@ -64,9 +64,9 @@ for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/sources',
     for (const t of await tabs()) {
       expect(t.bubble, t.label).toBe(false);
       if (t.label === label) {
-        expect(t, t.label).toMatchObject({ current: true, icon: 'solid', outlined: false, glow: true, line: '18px', color: 'rgb(88, 224, 140)' });
+        expect(t, t.label).toMatchObject({ current: true, icon: 'solid', outlined: false, glow: true, line: '18px', color: 'rgb(111, 233, 164)' });
       } else {
-        expect(t, t.label).toMatchObject({ current: false, icon: 'outline', outlined: true, glow: false, line: null, color: 'rgba(238, 244, 240, 0.64)' });
+        expect(t, t.label).toMatchObject({ current: false, icon: 'outline', outlined: true, glow: false, line: null, color: 'rgba(241, 246, 243, 0.7)' });
       }
     }
     if (label === 'Leaderboard') await shot(page, '95-tabbar');
@@ -78,7 +78,7 @@ test('the People badge still shows follow requests', async () => {
   await page.goto('/');
   const badge = page.locator('.nav .tab', { hasText: 'People' }).locator('.badge');
   await expect(badge).toHaveText('1');
-  expect(await badge.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(47, 184, 106)');
+  expect(await badge.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(69, 212, 131)');
   await page.goto('/people');
   await expect(badge).toHaveText('1');
 });

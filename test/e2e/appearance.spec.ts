@@ -32,6 +32,8 @@ test.beforeAll(async ({ browser }) => {
 test.afterAll(() => page.context().close());
 
 const PRESETS = [
+  ['aurora', ['Aurora', 'Violet', 'Lagoon', 'Jade'], ['rgb(111, 232, 232)', 'rgb(139, 123, 255)', 'rgb(64, 196, 196)', 'rgb(63, 220, 142)']], // D64: made for the new look
+  ['neon', ['Neon', 'Hot pink', 'Electric', 'Lime'], ['rgb(255, 211, 107)', 'rgb(255, 92, 200)', 'rgb(61, 168, 255)', 'rgb(184, 245, 60)']],
   ['gems', ['Rainbow', 'Amethyst', 'Sapphire', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(181, 152, 240)', 'rgb(127, 176, 255)', 'rgb(47, 216, 147)']], // D49: softer lilac, brighter blue
   ['prism', ['Prism', 'Prism', 'Prism', 'Prism'], ['rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)']],
   ['metals', ['Rainbow', 'Diamond', 'Rose gold', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(169, 220, 255)', 'rgb(242, 169, 150)', 'rgb(47, 216, 147)']],
@@ -110,7 +112,7 @@ test('#1 wears the crown above its number and a halo in its colour, gently breat
 });
 
 test('the text on every band stays readable throughout the motion, in every preset', async () => {
-  test.slow(); // 3 presets × 12 photographed moments
+  test.slow(); // 5 presets × 12 photographed moments
   for (const [preset] of PRESETS) {
     expect(await appearance({ preset, markFirst: true })).toBe(200);
     await page.goto('/');
@@ -154,19 +156,20 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
   await expect(page).toHaveURL(/\/more\/appearance$/);
   await expect(page.getByRole('radio', { name: /Gems/ })).toBeChecked();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeChecked();
-  // Each preset shows its four colours.
-  await expect(page.locator('.preset')).toHaveCount(3);
+  // Each preset shows its four colours; the two made for the new look first, marked New (D64).
+  await expect(page.locator('.preset')).toHaveCount(5);
+  await expect(page.locator('.preset .main > span:first-child')).toHaveText(['AuroraNew', 'NeonNew', 'Gems', 'Prism', 'Metals']);
   await expect(page.locator('.preset').first().locator('.swatch')).toHaveCount(4);
   await expect(page.locator('.preset').first().locator('.strip-l')).toHaveText(['8.0+', '8.5+', '9.0+', '9.5+']);
   await shot(page, '152-appearance');
   expect(await axe()).toEqual([]);
 
   await page.getByRole('radio', { name: /Metals/ }).check();
-  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ preset: 'metals', markFirst: true });
-  await expect(page.locator('.sample-li .row')).toHaveClass(/\bpal-metals\b/);
+  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: true });
+  await expect(page.locator('.ap-rows .row').first()).toHaveClass(/\bpal-metals\b/);
   await page.getByRole('switch', { name: 'Mark my #1' }).uncheck();
-  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ preset: 'metals', markFirst: false });
-  await expect(page.locator('.sample-li .rank-crown')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: false });
+  await expect(page.locator('.ap-rows .rank-crown')).toHaveCount(0);
 
   // The Leaderboard follows straight away, and after a reload (it's your account's, not this phone's).
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
@@ -187,7 +190,11 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
 });
 
 test('Appearance is readable from top to bottom', async () => {
-  const worst = await wholeScreenContrastFailures(page, '/more/appearance', '.lh, .preset .main > span:first-child, .preset .sub, .preset .strip-l, .priv-row .main > span, .priv-foot');
+  const worst = await wholeScreenContrastFailures(
+    page,
+    '/more/appearance',
+    '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .ap-preview .foot .who, .ap-name, .ap-sub, .preset .pl, .preset .sub, .preset .strip-l, .new-tag, .priv-row .main > span, .priv-foot',
+  );
   expect(worst, worst.join('\n')).toEqual([]);
 });
 
