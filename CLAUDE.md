@@ -22,7 +22,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 **The website (D63)** is separate from the app: plain files in `site/`, its own Worker. Public at
 https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
-https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site). It loads nothing from
+https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site: on the Worker's **Access**
+tab the lock must cover **Production**, not "Previews only", which leaves the address open). It loads nothing from
 anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses.
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
@@ -138,46 +139,30 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.53.1: live plus brands and suppliers
-  (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62), the website (D63, 0.53.0) and
-  notes- and tests-only changes (0.48.2, 0.51.1, 0.53.1). Anton will
-  say when to take it all live together.
+- **Live and dev:** 0.53.1 (live 2026-10-21): everything up to the website (D63); dev also has notes-only 0.53.2.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Brands and suppliers** (Anton's idea, 2026-10-19): **on dev** (0.49.0, D59, 2026-10-20). Suggestions under
-   Source and Supplier as he types, the same name saved in one spelling, a page per brand or supplier (tap it on a
-   product page, or the Sources tab), and followers can tap his Source. Checked by Anton on GT Dev: the
-   suggestions sit nicely above the keyboard. Renaming or merging names only if he finds he needs it.
-2. **Remove Smokes** (Anton, 2026-10-20: "no use for it"; everything about it gone, saved smokes deleted for good):
-   **on dev** (0.50.0, D60, 2026-10-20). Going live deletes the smokes on live too: Anton can Export on live first.
-3. **Sources and Settings tabs** (Anton, 2026-10-20): **on dev** (0.51.0, D61, 2026-10-20). Tabs **Leaderboard ·
-   Log · Sources · People · Settings**; Sources shows each brand and supplier as a card (option B) with its best
-   product's photo; Settings is More renamed. The keyboard closes after tapping a suggestion.
-   **Then** (Anton, 2026-10-20, from his screenshot and recording): **on dev** (0.52.0, D62, 2026-10-20). Cards and
-   name pages show what he spent ("N products · £X spent", a Spent tile, a **Most spent** sort); card photos no longer
-   cut off; swiping back from any scrolled screen shows the screen underneath (not black) and lands where he was.
-   Checked by Anton on GT Dev (0.52.0): "it all works".
-4. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
+1. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
    2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
    banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
    fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
-5. **A website for the app** (Anton's idea, 2026-10-19): **on dev** (0.53.0, D63, 2026-10-20), as a preview at
-   https://green-tracker-site-dev.green-tracker.workers.dev; public at https://green-tracker-site.green-tracker.workers.dev
-   with the next "go live". Look A "Aurora Glass" (glass, drifting lights, a floating iPhone), punchy stoner-friendly
-   words, a rate-it slider, Home Screen steps, Sign up free; for friends and anyone with the link; made-up products only;
-   no tracking. Anton locks the preview once in Cloudflare (steps given), then checks it on his iPhone.
-6. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
+2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
    can be compared. Plan first.
-7. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+3. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
    the details in the working conversation.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
+| Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |
+| Sources and Settings tabs | 0.51.0 | D61 | 2026-10-20 | 2026-10-21 |
+| Remove Smokes | 0.50.0 | D60 | 2026-10-20 | 2026-10-21 |
+| Brands and suppliers | 0.49.0 | D59 | 2026-10-20 | 2026-10-21 |
 | Sounds and ticks (own screen, quiet on silent) | 0.48.1 | D56–D58 | 2026-10-18 | 2026-10-19 |
 | A slow page load can't undo your change | 0.46.1 | D55 | 2026-10-18 | 2026-10-18 |
 | Photo rework 3: draw round a nug | 0.46.0 | D54 | 2026-10-16 | 2026-10-18 |

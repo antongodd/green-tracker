@@ -48,7 +48,7 @@ this document records how they were implemented and every decision made on top.
 | D1 (dev site, WEUR) | `green-tracker-dev` | `d4126bea-f68d-4c76-a44e-d5f802f4be3a` |
 | R2 (dev site) | `green-tracker-dev-photos` | |
 | Worker (website, D63) | `green-tracker-site` | https://green-tracker-site.green-tracker.workers.dev (files only) |
-| Worker (website preview, D63) | `green-tracker-site-dev` | https://green-tracker-site-dev.green-tracker.workers.dev (Cloudflare Access, like the dev site) |
+| Worker (website preview, D63) | `green-tracker-site-dev` | https://green-tracker-site-dev.green-tracker.workers.dev (Cloudflare Access, like the dev site; the lock covers Production, not "Previews only") |
 
 ## 2. Build phases
 
@@ -1258,6 +1258,12 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.53.2 — CLAUDE.md: 0.53.1 is live
+- Brands and suppliers (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending (D62) and the
+  website (D63) went live on 2026-10-21 and move to Done; the website is public at
+  https://green-tracker-site.green-tracker.workers.dev. The website preview's Cloudflare Access lock must cover
+  Production ("Previews only" left it open; found with the owner). Notes only.
 
 ### 0.53.1 — a steadier Sources card test (tests only)
 - `brands.spec.ts` measured a card's photo and its box one after the other while the Sources screen was still sliding
