@@ -3,7 +3,7 @@ import { contrastFailures, settled, shot, textBoxes } from './helpers';
 
 // D36 (0.29.0): the welcome (sign-in) screen shows the name small at the top, the headline
 // "Your stash, ranked.", and an example Leaderboard drawn with the real row styles (since D48 the
-// colours by score in Gems: Rainbow with the crown and halo, Amethyst, Sapphire), labelled as an
+// colours by score in Aurora since D64: the aurora with the crown and halo, Violet, Lagoon), labelled as an
 // example, decorative and not tappable.
 // The buttons are unchanged and always fit without scrolling. Sign-up and recovery screens get a
 // glowing leaf tile, a glowing current step and the username in a green card.
@@ -24,10 +24,10 @@ test('the headline and the example Leaderboard, in its colours', async ({ page }
   await expect(rows).toHaveCount(3);
   expect(await rows.locator('.name').allTextContents()).toEqual(['Wedding Cake', 'Gelato 41', 'Zkittlez']);
   expect(await rows.locator('.score b').allTextContents()).toEqual(['9.7', '9.2', '8.7']);
-  await expect(rows.nth(0)).toHaveClass(/\btier band4 pal-gems first\b/);
+  await expect(rows.nth(0)).toHaveClass(/\btier band4 pal-aurora first\b/);
   await expect(rows.nth(0).locator('.rank-crown')).toHaveCount(1);
-  await expect(rows.nth(1)).toHaveClass(/\btier band3 pal-gems\b/);
-  await expect(rows.nth(2)).toHaveClass(/\btier band2 pal-gems\b/);
+  await expect(rows.nth(1)).toHaveClass(/\btier band3 pal-aurora\b/);
+  await expect(rows.nth(2)).toHaveClass(/\btier band2 pal-aurora\b/);
   await expect(rows.nth(2)).not.toHaveAttribute('data-heat');
   await expect(page.locator('.showcase .glint')).toHaveCount(0);
   await expect(page.locator('.showcase figcaption')).toHaveText('Example Leaderboard');
@@ -77,7 +77,8 @@ test('sign-up and recovery: the glowing leaf tile, a glowing step and the green 
   await expect(page.locator('.auth-mark svg')).toBeVisible();
   expect(await page.locator('.steps i.on').evaluate((e) => getComputedStyle(e).boxShadow)).toContain('rgba(88, 224, 140');
   await expect(page.locator('.fgroup').getByLabel('Username')).toBeVisible();
-  expect(await page.locator('.fgroup').evaluate((e) => getComputedStyle(e).backgroundImage)).toContain('linear-gradient');
+  // A glass card since D64 (was D18's green wash).
+  expect(await page.locator('.fgroup').evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgba(255, 255, 255, 0.05)');
   await page.goto('/recover');
   await expect(page.getByRole('heading', { name: 'Use a recovery code' })).toBeVisible();
   await expect(page.locator('.auth-mark svg')).toBeVisible();

@@ -231,6 +231,8 @@ export function Person(p: { username: string; preview?: boolean }) {
                 { value: String(tiles.products), label: 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
               ]}
+              lead={1}
+              foot={rows[0] && <span class="who">Their #1 · <b>{rows[0].product.name}</b></span>}
             />
           </>
         )}

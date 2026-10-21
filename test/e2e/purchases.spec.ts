@@ -55,7 +55,7 @@ test('saved purchases fold into rows: date, Latest on the newest, amount · tota
   await expect(page.locator('.pbody')).toHaveCount(0);
   for (const n of [1, 2, 3]) await expect(row(n)).toHaveAttribute('aria-expanded', 'false');
   // The price uses the rounded numbers (D28); a long supplier is cut short, never wrapping the row.
-  expect(await row(1).locator('.r').evaluate((e) => getComputedStyle(e).fontFamily)).toContain('ui-rounded');
+  expect(await row(1).locator('.r').evaluate((e) => getComputedStyle(e).fontFamily)).toContain('Unbounded');
   expect(await row(1).locator('.l > span').evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
   await page.locator('.pcard').first().scrollIntoViewIfNeeded();
   await shot(page, '93-purchases-rows');

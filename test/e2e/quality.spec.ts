@@ -101,10 +101,10 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
   expect(found, found.join('\n')).toEqual([]);
 });
 
-// The green look (D18, 0.12.0): every card on every main screen carries the green
-// edge and wash, section titles are green, the bars have green lines, and the
-// active tab glows (D35; was its bubble). Tiles and podium rows keep their own styles.
-test('every main screen has the green look', async () => {
+// The glass look (D64, 0.54.0; D18's green wash before): every card on every main screen is a
+// pane of glass with a light edge, section titles are green, the bars have light lines, and the
+// active tab glows with a green-to-teal line (D35; was its bubble). Coloured rows keep their own.
+test('every main screen has the glass look', async () => {
   // Rows that glow by score (D30) have their own colour and edge, checked in heat.spec.ts.
   const cards = '.row:not(.tier):not([data-heat]), .lrows, .sect, .fgroup, .list, .empty, .seg';
   // Enough rated products that the Leaderboard has rows below the podium.
@@ -117,23 +117,23 @@ test('every main screen has the green look', async () => {
     await expect(page.locator(cards).first()).toBeVisible();
     const bad = await page.evaluate((sel) => {
       const out: string[] = [];
-      const green = (c: string) => c.replace(/\s/g, '').startsWith('rgba(88,224,140');
+      const light = (c: string) => c.replace(/\s/g, '').startsWith('rgba(255,255,255,0.');
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         const cs = getComputedStyle(el);
-        if (!green(cs.borderTopColor) || !cs.backgroundImage.includes('linear-gradient')) out.push(`card .${el.className}: ${cs.borderTopColor} ${cs.backgroundImage.slice(0, 40)}`);
+        if (!light(cs.borderTopColor) || cs.backgroundColor.replace(/\s/g, '') !== 'rgba(255,255,255,0.05)') out.push(`card .${el.className}: ${cs.borderTopColor} ${cs.backgroundColor}`);
       });
       document.querySelectorAll<HTMLElement>('.lh.cap:not(.dng), .fgroup > .cap, .gh > .cap, .sect > .cap, .group-h').forEach((el) => {
-        if (getComputedStyle(el).color !== 'rgb(88, 224, 140)') out.push(`title "${el.textContent}": ${getComputedStyle(el).color}`);
+        if (getComputedStyle(el).color !== 'rgb(111, 233, 164)') out.push(`title "${el.textContent}": ${getComputedStyle(el).color}`);
       });
       const dng = document.querySelector('.lh.cap.dng');
       if (dng && getComputedStyle(dng).color !== 'rgb(255, 107, 107)') out.push('Danger zone title should stay red');
       const hdr = document.querySelector('.hdr');
-      if (hdr && !green(getComputedStyle(hdr).borderBottomColor)) out.push('header line');
+      if (hdr && !light(getComputedStyle(hdr).borderBottomColor)) out.push('header line');
       const bar = document.querySelector('.nav, .savebar');
-      if (bar && !green(getComputedStyle(bar).borderTopColor)) out.push('bottom bar line');
+      if (bar && !light(getComputedStyle(bar).borderTopColor)) out.push('bottom bar line');
       const tab = document.querySelector('.tab[aria-current="page"]');
-      // D35 (0.28.0): the active tab glows, with a green line under its name (was D18's bubble).
-      if (tab && getComputedStyle(tab, '::after').backgroundColor !== 'rgb(88, 224, 140)') out.push('active tab line');
+      // D35 (0.28.0): the active tab glows, with a line under its name (was D18's bubble); green to teal since D64.
+      if (tab && !getComputedStyle(tab, '::after').backgroundImage.startsWith('linear-gradient(90deg, rgb(111, 233, 164), rgb(127, 227, 227))')) out.push('active tab line');
       if (tab && !getComputedStyle(tab.querySelector('svg')!).filter.includes('drop-shadow')) out.push('active tab glow');
       return out;
     }, cards);
@@ -173,7 +173,7 @@ test('security headers are sent with pages and the API', async () => {
 
 test('the app can be installed: manifest and icons', async () => {
   const manifest = (await (await page.request.get('/manifest.webmanifest')).json()) as { icons: { src: string }[] };
-  expect(manifest).toMatchObject({ name: 'Green Tracker', display: 'standalone', start_url: '/', theme_color: '#050807', background_color: '#050807' });
+  expect(manifest).toMatchObject({ name: 'Green Tracker', display: 'standalone', start_url: '/', theme_color: '#03070a', background_color: '#03070a' });
   for (const icon of [...manifest.icons.map((i: { src: string }) => i.src), '/icons/apple-touch-icon.png', '/icons/favicon.svg']) {
     const res = await page.request.get(icon);
     expect(res.status(), icon).toBe(200);

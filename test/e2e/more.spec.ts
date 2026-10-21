@@ -37,7 +37,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(12);
+  await expect(page.locator('main .list .li')).toHaveCount(14);
   // D61: the Settings tab, titled so; Brands & suppliers moved to its own tab.
   await expect(page.locator('.hdr .title')).toHaveText('Settings');
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
@@ -49,6 +49,8 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Recovery codes', icon: true, tint: 'amber', href: '/more/recovery-codes' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
     { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
+    { label: 'Look', icon: true, tint: 'violet', href: '/more/appearance' }, // D64
+    { label: 'Leaderboard top', icon: true, tint: 'violet', href: '/more/appearance' }, // D64
     { label: 'Leaderboard colours', icon: true, tint: 'gem', href: '/more/appearance' }, // D48
     { label: 'Sounds and ticks', icon: true, tint: 'green', href: '/more/sounds' }, // D57
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },
@@ -80,4 +82,22 @@ test('readable: the card, rows, values, headings and footer', async () => {
   expect(await wholeScreenContrastFailures(page, '/more', '.more-me b, .more-me .who span, .li .main, .li .main .sub, .li .v, .lh.cap')).toEqual([]);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   expect(await contrastFailures(page, await textBoxes(page, '.more-foot span'), 1)).toEqual([]);
+});
+
+test('back on Settings, the What followers see line is there at once, so the screen doesn’t jump (0.54.0)', async () => {
+  // Loaded late, the two-line summary pushed Settings down after it had landed where you were
+  // (the swipe-back test caught it on a busy machine). Hold its answer back to see.
+  await page.goto('/more');
+  const line = page.locator('.li', { hasText: 'What followers see' });
+  await expect(line).toContainText('Followers see:');
+  await page.getByRole('link', { name: 'Export' }).click();
+  await expect(page).toHaveURL(/\/more\/export$/);
+  await page.route('**/api/privacy', async (route) => {
+    await new Promise((r) => setTimeout(r, 3000));
+    await route.fallback();
+  });
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/more$/);
+  await expect(line).toContainText('Followers see:', { timeout: 1000 });
+  await page.unroute('**/api/privacy');
 });

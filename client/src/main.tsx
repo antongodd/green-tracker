@@ -19,6 +19,7 @@ import { Archive, Leaderboard } from './screens/Leaderboard';
 import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
+import { clearPrivacyCache } from './privacy';
 import { clearEntryCache } from './logEntries';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
@@ -45,6 +46,7 @@ function App() {
       setMe((prev) => {
         if (prev?.user?.username !== next.user?.username) {
           clearProductCache();
+          clearPrivacyCache();
           clearEntryCache();
         }
         return next;
@@ -58,6 +60,12 @@ function App() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // The whole app's look (D64): html[data-look] picks its colours (only Aurora Glass so far).
+  const look = me?.appearance?.look ?? 'aurora';
+  useEffect(() => {
+    document.documentElement.dataset.look = look;
+  }, [look]);
 
   // Keep the address bar honest: signed-out people live on the sign-in paths, everyone else never sees them.
   const signedIn = !!me?.user;

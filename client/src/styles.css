@@ -1,51 +1,73 @@
 /* Green Tracker — tokens and components from the design brief (§3–§6) and the
    approved Phase-1 mockups. Use only these tokens; no one-off colours. */
 
+/* The new look's fonts (D64), stored with the app (font-src 'self'; kept offline by sw.js). */
+@font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Manrope"; src: url("/fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+
 :root {
   color-scheme: dark;
-  --bg: #050807;
-  --surface-1: #0c1410;
-  --surface-2: #111c16;
-  --surface-3: #17251d;
+  /* The new look (D64, 0.54.0): Aurora Glass, the website's look (D63) in the app. A blue-black
+     background with drifting green, teal and violet lights (.bg-layer), frosted-glass cards,
+     Unbounded for titles and numbers, Manrope for words. Each look (html[data-look]) is a set
+     of these tokens; Aurora Glass is the only one so far, so it lives here on :root. */
+  --bg: #03070a;
+  --surface-1: #0a1114; /* solid, where something must hide what's behind it */
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: #18222a;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-strong: rgba(255, 255, 255, 0.075);
+  --glass-edge: rgba(255, 255, 255, 0.13);
+  /* Grey and red buttons: glass over a darker pane, so their words stay readable where the lights are brightest (D64). */
+  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)), rgba(3, 7, 10, 0.5);
   --hairline: rgba(255, 255, 255, 0.08);
-  --hairline-strong: rgba(255, 255, 255, 0.14);
-  --bar: rgba(5, 8, 7, 0.78);
-  --bar-solid: #060f0a;
-  --text: #eef4f0;
-  --text-2: rgba(238, 244, 240, 0.64);
-  --text-3: rgba(238, 244, 240, 0.38);
-  --accent: #2fb86a;
-  --accent-bright: #58e08c;
-  --accent-soft: rgba(47, 184, 106, 0.14);
-  --on-accent: #04140b;
-  /* The green look (D18, 0.12.0): every card shares a quieter version of the
-     stats tiles' wash; bars, lines and titles pick up the same green. */
-  --card-edge: rgba(88, 224, 140, 0.16);
-  --card-bg: linear-gradient(115deg, rgba(88, 224, 140, 0.07), rgba(88, 224, 140, 0) 55%), var(--surface-1);
-  --divider: rgba(88, 224, 140, 0.10);
-  --bar-line: rgba(88, 224, 140, 0.22);
-  --photo-edge: 0 0 0 1px rgba(88, 224, 140, 0.14);
-  --bar-fill: linear-gradient(90deg, var(--accent), var(--accent-bright));
-  /* The Aurora (D29, 0.22.0): two still lights at the top of every screen, green from the
-     top-left and teal from the top-right, drawn on the screen itself so they scroll away with
-     it; and a faint green haze at the bottom, on the fixed background, behind the tab bar. */
-  --aurora-top:
-    radial-gradient(70% 40% at 8% -4%, rgba(88, 224, 140, 0.2), transparent 70%),
-    radial-gradient(60% 38% at 100% 6%, rgba(64, 196, 196, 0.15), transparent 70%);
+  --hairline-strong: rgba(255, 255, 255, 0.15);
+  --bar: rgba(3, 7, 10, 0.55);
+  --bar-solid: #04090c;
+  --text: #f1f6f3;
+  --text-2: rgba(241, 246, 243, 0.7);
+  --text-3: rgba(241, 246, 243, 0.45);
+  --accent: #45d483;
+  --accent-bright: #6fe9a4;
+  --accent-soft: rgba(88, 224, 140, 0.14);
+  --on-accent: #03140a;
+  --teal: #40c4c4;
+  --teal-bright: #7fe3e3;
+  --violet: #8b7bff;
+  --violet-bright: #c7bcff;
+  /* Glass cards (D64; the green wash of D18 before): a faint white pane with a light edge. */
+  --card-edge: rgba(255, 255, 255, 0.1);
+  --card-bg: var(--glass);
+  --divider: rgba(255, 255, 255, 0.07);
+  --bar-line: rgba(255, 255, 255, 0.08);
+  --photo-edge: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --bar-fill: linear-gradient(90deg, var(--accent), var(--teal));
+  /* Big numbers and headline words flow through lighter tints (the website's headline). */
+  --grad: linear-gradient(100deg, #a6f0c1, #9fdcff 55%, #cdbdff);
+  --primary: linear-gradient(135deg, #58e08c, #40c4c4);
+  /* The glass hero's wash: green from the top left, violet from the bottom right. */
+  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(88, 224, 140, 0.2), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(139, 123, 255, 0.2), transparent 60%);
+  /* The lights (D64) are on the fixed background now, drifting behind every screen; the
+     screens no longer carry D29's own. */
+  --aurora-top: none;
+  --light-1: rgba(47, 216, 138, 0.26);
+  --light-2: rgba(43, 184, 196, 0.22);
+  --light-3: rgba(123, 107, 255, 0.2);
   /* Rows that stick under the header (the Rank/Type row, the Log's country headers) are frosted
-     like it, so the Aurora shows through at the top instead of a black band (D29). */
-  --sticky-bg: rgba(5, 8, 7, 0.6);
+     like it, so the lights show through instead of a black band (D29). */
+  --sticky-bg: rgba(3, 7, 10, 0.6);
   --sticky-blur: blur(20px) saturate(140%);
-  --controls-bg: rgba(5, 8, 7, 0.3); /* the pills carry their own background; the blur hides what passes under */
-  --aurora-bottom: radial-gradient(90% 30% at 50% 100%, rgba(47, 184, 106, 0.06), transparent 70%);
+  --controls-bg: rgba(3, 7, 10, 0.3); /* the pills carry their own background; the blur hides what passes under */
   --danger: #ff6b6b;
   --star: #ffd36b; /* the cover's ring and star (D52), the crown's gold */
   --warning: #f0a93b;
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  /* Scores, ranks, tiles and badges (D28, 0.21.0): the iPhone's own SF Pro Rounded, built in, nothing
-     downloaded. Other devices don't know ui-rounded and use the usual font, as before. */
-  --num-font: ui-rounded, "SF Pro Rounded", var(--font);
+  /* Titles (D64): Unbounded, wide and bold, as on the website. */
+  --display: "Unbounded", "Arial Black", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Scores, ranks, tiles and badges: Unbounded since D64 (the owner found D28's rounded numbers
+     too soft). Prices, amounts, dates and words keep the text font. */
+  --num-font: "Unbounded", -apple-system, BlinkMacSystemFont, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: calc(44px + var(--safe-top));
@@ -70,7 +92,25 @@ body {
   font-size: 16px;
   line-height: 1.45;
 }
-.bg-layer { position: fixed; inset: 0; z-index: -1; background: var(--aurora-bottom), var(--bg); }
+/* The lights (D64): green top left, teal top right, violet low down, drifting slowly behind every
+   screen (one still frame with Reduce Motion). Painted on the fixed background itself, which is a
+   layer of its own anyway (as before D64): two extra full-screen layers measured about a fifth more
+   work for the phone, laid over everything on every frame while anything else on screen moved.
+   They move in small steps, about two a second, a pixel or so each over a very soft glow: a slow
+   drift to the eye, but the background is repainted twice a second, not sixty (measured: about the
+   same work as the app before D64). */
+.bg-layer { position: fixed; inset: 0; z-index: -1; background-color: var(--bg);
+  background-image: radial-gradient(closest-side, var(--light-1), transparent), radial-gradient(closest-side, var(--light-2), transparent), radial-gradient(closest-side, var(--light-3), transparent);
+  background-repeat: no-repeat; background-size: 115vw 62vh, 100vw 58vh, 115vw 56vh;
+  background-position: -32vw -22vh, 56vw 2vh, -4vw 58vh; }
+@media (prefers-reduced-motion: no-preference) {
+  .bg-layer { animation: lights 24s steps(48) infinite alternate; }
+}
+/* Hidden and still under anything that covers the whole screen (the viewer, the cropper, Move and
+   zoom, the cut-out flow, the country picker): nobody sees them there, and the phone (and its battery)
+   can give everything to what's on top, like the background remover's work. */
+html:has(.viewer, .cropper, .cpicker) .bg-layer { background-image: none; animation-play-state: paused; }
+@keyframes lights { to { background-position: -20vw -14vh, 44vw 10vh, 10vw 48vh; } }
 #app { min-height: 100dvh; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -112,7 +152,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .hdr .slot { display: flex; align-items: center; min-height: 44px; min-width: 0; }
 .hdr .slot.r { justify-content: flex-end; }
 .hdr .slot.hidden { visibility: hidden; }
-.hdr .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-size: 17px; font-weight: 600; }
+.hdr .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-family: var(--display); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
 .hdr .title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hdr .title svg { width: 26px; height: 26px; flex: none; }
 /* D47: the dev site's label, so it's never mistaken for the live one. Dark on amber: 9:1. */
@@ -140,7 +180,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .tab { gap: 1px; padding-bottom: 4px; }
 .tab svg { width: 25px; height: 25px; }
 .tab[aria-current="page"] svg { filter: drop-shadow(0 0 8px rgba(88, 224, 140, 0.65)); }
-.tab[aria-current="page"]::after { content: ""; position: absolute; bottom: 1px; left: 50%; width: 18px; height: 3px; margin-left: -9px; border-radius: 3px; background: var(--accent-bright); box-shadow: 0 0 8px rgba(88, 224, 140, 0.8); }
+.tab[aria-current="page"]::after { content: ""; position: absolute; bottom: 1px; left: 50%; width: 18px; height: 3px; margin-left: -9px; border-radius: 3px; background: linear-gradient(90deg, var(--accent-bright), var(--teal-bright)); box-shadow: 0 0 8px rgba(88, 224, 140, 0.8); }
 .badge { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bar-solid); }
 
 /* ---------- layout ---------- */
@@ -168,10 +208,10 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 /* ---------- buttons (brief §6.5) ---------- */
 .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; padding: 0 16px; border-radius: 12px; font-size: 16px; font-weight: 600; border: 1px solid transparent; text-decoration: none; }
 .btn svg { width: 16px; height: 16px; }
-.btn.primary { background: var(--accent); color: var(--on-accent); }
-.btn.secondary { background: var(--surface-2); border-color: var(--hairline); color: var(--text); }
+.btn.primary { background: var(--primary); color: var(--on-accent); }
+.btn.secondary { background: var(--btn-bg); border-color: var(--hairline); color: var(--text); }
 .btn.text { background: none; color: var(--accent-bright); height: 44px; font-weight: 500; }
-.btn.danger { background: var(--surface-2); border-color: var(--hairline); color: var(--danger); }
+.btn.danger { background: var(--btn-bg); border-color: var(--hairline); color: var(--danger); }
 .btn.danger-solid { background: var(--danger); color: var(--on-accent); }
 .btn:disabled { opacity: 0.4; cursor: default; }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -304,7 +344,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
    (amber at 4 and below → yellow-green → mint at 9 and above), with a matching edge, and the
    score takes the colour. Set per row as --heat (client/src/heat.ts); never on price or value
    for money rankings or unrated rows. */
-.row[data-heat] { background: linear-gradient(270deg, color-mix(in srgb, var(--heat) 22%, transparent), transparent 60%), var(--surface-1); border-color: color-mix(in srgb, var(--heat) 32%, transparent); }
+.row[data-heat] { background: linear-gradient(270deg, color-mix(in srgb, var(--heat) 22%, transparent), transparent 60%), var(--glass); border-color: color-mix(in srgb, var(--heat) 32%, transparent); }
 .row[data-heat] .score b { color: var(--heat); }
 
 /* ---------- Leaderboard colours (D48, 0.41.0; replaces the podium by place of D19, D21, D39) ----------
@@ -411,7 +451,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .tag.hybrid { color: #58e08c; border-color: rgba(88, 224, 140, 0.32); background: rgba(88, 224, 140, 0.08); }
 
 /* Floating add button (P3). */
-.fab { position: fixed; right: max(16px, calc(50vw - 344px)); bottom: calc(var(--nav-h) + 16px); z-index: 15; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45); }
+.fab { position: fixed; right: max(16px, calc(50vw - 344px)); bottom: calc(var(--nav-h) + 16px); z-index: 15; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--primary); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px -6px rgba(69, 212, 131, 0.55), 0 6px 20px rgba(0, 0, 0, 0.45); }
 .fab svg { width: 26px; height: 26px; }
 
 .archived-row { display: grid; gap: 6px; }
@@ -444,7 +484,7 @@ div.hero-photo { cursor: default; }
 /* The dark fade belongs to the text block, so it always sits behind the words, however
    long the name or bright the photo (measured by the readability tests). */
 .hero::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(5, 8, 7, 0) 0, rgba(5, 8, 7, 0.55) 60px, rgba(5, 8, 7, 0.86) 130px, rgba(5, 8, 7, 0.94) 75%, var(--bg) 100%); }
+  background: linear-gradient(180deg, rgba(3, 7, 10, 0) 0, rgba(3, 7, 10, 0.55) 60px, rgba(3, 7, 10, 0.86) 130px, rgba(3, 7, 10, 0.94) 75%, var(--bg) 100%); }
 .hero-head { display: flex; align-items: flex-end; gap: 12px; }
 .hero h1 { margin: 0; flex: 1; min-width: 0; font-size: 28px; line-height: 1.12; letter-spacing: -0.01em; overflow-wrap: anywhere; text-wrap: balance; }
 .hero-score { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
@@ -494,7 +534,7 @@ div.hero-photo { cursor: default; }
 .switch-row .small { display: block; }
 .switch { position: relative; width: 51px; height: 31px; flex: none; margin: 0; appearance: none; -webkit-appearance: none; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--hairline-strong); cursor: pointer; }
 .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 25px; height: 25px; border-radius: 50%; background: var(--text); transition: left 0.15s ease-out; }
-.switch:checked { background: var(--accent); border-color: var(--accent); }
+.switch:checked { background: var(--primary); border-color: transparent; }
 .switch:checked::after { left: 22px; }
 
 /* ---------- product pages in colour (D22, 0.16.0; the Poster, D27, 0.20.0; by score, D48, 0.41.0) ----------
@@ -614,7 +654,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .psum .r { font-family: var(--num-font); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .psum .chev { width: 13px; height: 13px; color: var(--text-3); }
 .pcard.open .psum .chev { transform: rotate(90deg); }
-.tag-latest { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(88, 224, 140, 0.14); border: 1px solid rgba(88, 224, 140, 0.35); border-radius: 999px; padding: 0 7px; line-height: 18px; }
+.tag-latest { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: linear-gradient(rgba(88, 224, 140, 0.14), rgba(88, 224, 140, 0.14)), rgba(3, 7, 10, 0.5); border: 1px solid rgba(88, 224, 140, 0.35); border-radius: 999px; padding: 0 7px; line-height: 18px; }
 .psum .l > span.warn, .pcard-foot .warn { color: var(--warning); }
 .pbody { padding: 12px; display: grid; gap: 10px; border-top: 1px solid var(--hairline); }
 .pcard .input, .pcard .select select { background: var(--surface-1); }
@@ -632,7 +672,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 /* ---------- control row (brief §6.4, P4: sticky under the header) ---------- */
 .controls { position: sticky; top: var(--header-h); z-index: 10; display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--controls-bg); -webkit-backdrop-filter: var(--sticky-blur); backdrop-filter: var(--sticky-blur); max-width: 720px; margin: 0 auto; }
 .controls-right { margin-left: auto; min-width: 0; }
-.pill { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; background: linear-gradient(135deg, rgba(88, 224, 140, 0.10), rgba(88, 224, 140, 0) 70%), var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.26); color: var(--text); font-size: 15px; white-space: nowrap; flex: none; }
+.pill { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-edge); color: var(--text); font-size: 15px; white-space: nowrap; flex: none; }
 .pill .k { color: var(--text-2); }
 .pill svg { width: 12px; height: 12px; color: var(--text-2); flex: none; }
 .pill.active { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
@@ -655,7 +695,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 2px 16px 12px; max-width: 720px; margin: 0 auto; }
 .tiles.two { grid-template-columns: repeat(2, 1fr); }
 /* Centred, with a faint green diagonal wash like the podium rows (D17, 0.11.0). */
-.tile { display: grid; gap: 2px; justify-items: center; text-align: center; padding: 10px 12px; border-radius: 12px; background: linear-gradient(135deg, rgba(88, 224, 140, 0.16), rgba(88, 224, 140, 0) 70%), var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.28); min-width: 0; }
+.tile { display: grid; gap: 2px; justify-items: center; text-align: center; padding: 10px 12px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-edge); min-width: 0; }
 .tile b { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ---------- photos (brief §6.9) ---------- */
@@ -747,7 +787,7 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
 .viewer-top { top: 0; display: flex; align-items: center; justify-content: space-between; height: calc(var(--safe-top) + 48px); padding: var(--safe-top) 4px 0; background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)); }
 .viewer.clear .viewer-top { opacity: 0; transform: translateY(-12px); pointer-events: none; }
 .viewer.clear .viewer-bar { opacity: 0; transform: translateY(12px); pointer-events: none; }
-.viewer-scale { position: absolute; z-index: 3; left: 50%; top: calc(var(--safe-top) + 58px); transform: translateX(-50%); padding: 5px 12px; border-radius: 999px; background: rgba(5, 8, 7, 0.78); border: 1px solid rgba(255, 255, 255, 0.12); font-size: 14px; font-weight: 600; pointer-events: none; }
+.viewer-scale { position: absolute; z-index: 3; left: 50%; top: calc(var(--safe-top) + 58px); transform: translateX(-50%); padding: 5px 12px; border-radius: 999px; background: rgba(3, 7, 10, 0.78); border: 1px solid rgba(255, 255, 255, 0.12); font-size: 14px; font-weight: 600; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
   .viewer-strip.glide, .viewer-slide img.glide, .viewer-top, .viewer-bar { transition: none; }
 }
@@ -830,7 +870,7 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
 .me-btn .av.hd { width: 30px; height: 30px; font-size: 14px; color: var(--text); box-shadow: 0 0 0 1px rgba(88, 224, 140, 0.3); }
 .me-card { display: flex; align-items: center; gap: 14px; padding: 14px; }
 .me-photo { position: relative; flex: none; padding: 0; border: 0; background: none; border-radius: 50%; }
-.me-photo .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); border: 2px solid var(--surface-1); display: flex; align-items: center; justify-content: center; }
+.me-photo .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; }
 .me-photo .cam svg { width: 15px; height: 15px; }
 .me-text { min-width: 0; display: grid; justify-items: start; }
 .me-name { max-width: 100%; font-size: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -933,7 +973,7 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .sk-pill { width: 120px; height: 34px; border-radius: 999px; }
 .sk-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .sk-tile { height: 64px; border-radius: 12px; }
-.sk-row { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 10px 12px; border-radius: 12px; background: var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.08); }
+.sk-row { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 10px 12px; border-radius: 12px; background: var(--glass); border: 1px solid var(--hairline); }
 .sk-th { width: 54px; height: 54px; border-radius: 10px; flex: none; }
 .sk-th.round { width: 44px; height: 44px; border-radius: 50%; }
 .skel-people .sk-row { min-height: 64px; }
@@ -946,7 +986,7 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .skel-product .skel-shapes { gap: 16px; }
 .sk-hero { height: calc(var(--header-h) + 300px); border-radius: 0; }
 .skel-product .sk-card { margin: 0 16px; }
-.sk-card { border-radius: 12px; background: var(--surface-1); border: 1px solid rgba(88, 224, 140, 0.08); padding: 14px 16px; display: grid; gap: 14px; }
+.sk-card { border-radius: 12px; background: var(--glass); border: 1px solid var(--hairline); padding: 14px 16px; display: grid; gap: 14px; }
 .sk-bar { display: grid; grid-template-columns: 70px 1fr 30px; gap: 10px; align-items: center; }
 .sk-bar .sk { height: 8px; }
 
@@ -954,7 +994,7 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
    You at the top (photo, @username, counts; opens People), then settings rows with small tinted
    icon tiles like the iPhone's Settings, Sign out on its own, and the version in a footer. */
 .more-top { padding-top: 16px; }
-.more-me { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px; color: var(--text); text-decoration: none; background: linear-gradient(115deg, rgba(88, 224, 140, 0.14), rgba(64, 196, 196, 0.06) 60%, transparent), var(--surface-1); border: 1px solid var(--card-edge); }
+.more-me { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px; color: var(--text); text-decoration: none; background: var(--hero-wash), var(--glass); border: 1px solid var(--glass-edge); }
 .more-me .av { width: 60px; height: 60px; font-size: 26px; box-shadow: 0 0 0 2px rgba(88, 224, 140, 0.4), 0 0 20px rgba(88, 224, 140, 0.25); }
 .more-me .who { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .more-me .who b { font-size: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -989,8 +1029,8 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .data-mark.red svg { filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5)); }
 .data-card { padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 12px; display: grid; gap: 12px; }
 .data-card > .cap { color: var(--accent-bright); }
-.data-card.teal { background: linear-gradient(115deg, rgba(64, 196, 196, 0.1), rgba(64, 196, 196, 0) 55%), var(--surface-1); border-color: rgba(64, 196, 196, 0.22); }
-.data-card.red { background: linear-gradient(115deg, rgba(255, 107, 107, 0.09), rgba(255, 107, 107, 0) 55%), var(--surface-1); border-color: rgba(255, 107, 107, 0.26); }
+.data-card.teal { background: linear-gradient(115deg, rgba(64, 196, 196, 0.1), rgba(64, 196, 196, 0) 55%), var(--glass); border-color: rgba(64, 196, 196, 0.22); }
+.data-card.red { background: linear-gradient(115deg, rgba(255, 107, 107, 0.09), rgba(255, 107, 107, 0) 55%), var(--glass); border-color: rgba(255, 107, 107, 0.26); }
 .data-card.red > .cap { color: var(--danger); }
 .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .checks li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 15px; }
@@ -1013,13 +1053,13 @@ html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out bot
 .file-head .who b { font-size: 15px; overflow-wrap: anywhere; } /* the whole name: it matters which file you chose */
 .file-head .who span { font-size: 13px; color: var(--text-2); }
 .data-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.data-tile { padding: 10px 6px; border-radius: 12px; text-align: center; background: linear-gradient(115deg, rgba(64, 196, 196, 0.16), rgba(64, 196, 196, 0) 70%), var(--surface-1); border: 1px solid rgba(64, 196, 196, 0.28); }
+.data-tile { padding: 10px 6px; border-radius: 12px; text-align: center; background: linear-gradient(115deg, rgba(64, 196, 196, 0.16), rgba(64, 196, 196, 0) 70%), var(--glass); border: 1px solid rgba(64, 196, 196, 0.28); }
 .data-tile b { display: block; font-family: var(--num-font); font-size: 22px; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .data-tile span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
 /* The file picker is a label around the input, so it can't be :disabled itself: dimmed while Restore runs. */
 label.btn:has(input:disabled) { opacity: 0.4; }
 .btn.danger-out { background: rgba(255, 107, 107, 0.08); border-color: rgba(255, 107, 107, 0.4); color: var(--danger); }
-.data-link { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline); color: var(--text-2); font-size: 14px; text-decoration: none; }
+.data-link { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px; border-radius: 12px; background: var(--glass); border: 1px solid var(--hairline); color: var(--text-2); font-size: 14px; text-decoration: none; }
 .data-link .main { flex: 1; min-width: 0; }
 .data-link b { color: var(--text); font-weight: 600; }
 .data-link .go { display: flex; align-items: center; gap: 4px; color: var(--accent-bright); font-weight: 600; white-space: nowrap; }
@@ -1035,7 +1075,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 /* ---------- a Log entry's page (D41, 0.34.0) ----------
    The Poster's top (D27) with an "In your Log" tag over the name, then Details and Actions
    cards like a product page. */
-.log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(5, 8, 7, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
+.log-tag { justify-self: start; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(3, 7, 10, 0.55); border: 1px solid rgba(88, 224, 140, 0.4); }
 .entry-page .sect .btn svg { width: 18px; height: 18px; }
 /* Kept from your Leaderboard (D50): on an entry returned from the Leaderboard. */
 .kept-head { display: flex; gap: 12px; align-items: center; }
@@ -1050,7 +1090,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
    switches in groups. A switch whose prerequisite is off is dimmed and can't be used. */
 .privacy { padding-top: calc(var(--header-h) + 12px); }
 .pv { max-width: 688px; margin: 0 16px; padding: 12px; border-radius: 14px; display: grid; gap: 10px;
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--glass); border: 1px solid rgba(167, 139, 250, 0.3); }
 @media (min-width: 720px) { .pv { margin: 0 auto; } }
 .pv-cap { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #c4b5fd; }
 .pv-cap a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; color: #c4b5fd; text-decoration: none; }
@@ -1095,14 +1135,14 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .keysheet .key-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 15px; }
 .keysheet .key-list b { font-weight: 600; }
 .keysheet .range { font-family: var(--num-font); color: var(--text-2); font-size: 14px; font-variant-numeric: tabular-nums; }
-.swatch.heat { background: linear-gradient(270deg, rgba(111, 227, 154, 0.22), transparent 60%), var(--surface-1); border: 1px solid rgba(111, 227, 154, 0.32); }
+.swatch.heat { background: linear-gradient(270deg, rgba(111, 227, 154, 0.22), transparent 60%), var(--glass); border: 1px solid rgba(111, 227, 154, 0.32); }
 .swatch.crowned { display: grid; place-items: center; background: var(--surface-1); border: 1px solid rgba(255, 211, 107, 0.45); box-shadow: 0 0 10px rgba(255, 211, 107, 0.3); }
 .swatch.crowned svg { width: 16px; height: 16px; color: #ffd36b; }
 .keysheet .key-note { margin: 6px 16px 12px; font-size: 13px; color: var(--text-2); text-align: center; }
 .keysheet .grp a.opt { text-decoration: none; border-top: 1px solid var(--hairline); }
 /* On your own board as followers see it: a line saying so, linking back to Privacy. */
 .pv-note { max-width: 688px; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; color: var(--text-2);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--glass); border: 1px solid rgba(167, 139, 250, 0.3); }
 .pv-note a { color: #c4b5fd; }
 @media (min-width: 720px) { .pv-note { margin-left: auto; margin-right: auto; } }
 
@@ -1121,7 +1161,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .brand-sort { display: flex; flex-wrap: wrap; gap: 8px; }
 /* The Sources tab (D61, option B "Cards"): two a row, each with its best product's photo. */
 .scards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px; max-width: 720px; margin: 0 auto; }
-.scard { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 10px; border-radius: 14px; border: 1px solid var(--card-edge); background: linear-gradient(135deg, rgba(88, 224, 140, 0.12), rgba(88, 224, 140, 0) 70%), var(--surface-1); color: var(--text); text-decoration: none; }
+.scard { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 10px; border-radius: 14px; border: 1px solid var(--card-edge); background: var(--glass); color: var(--text); text-decoration: none; }
 .scard-ph { position: relative; display: grid; place-items: center; height: 92px; border-radius: 10px; overflow: hidden; background: radial-gradient(50% 60% at 50% 45%, rgba(88, 224, 140, 0.22), transparent 70%), var(--surface-2); box-shadow: var(--photo-edge); color: var(--accent-bright); }
 /* Laid over the box, not in the grid: a grid row has no height of its own, so a 100% height didn't hold and tall photos spilled out, cut off (0.52.0). */
 .scard-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1139,3 +1179,117 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .role { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; }
 .role.brand { background: var(--accent-soft); color: var(--accent-bright); }
 .role.shop { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }
+
+/* ---------- the new look: Aurora Glass (D64, 0.54.0) ----------
+   The website's look (D63) in the app: the tokens and lights at the top of this file, then here
+   Unbounded for titles and numbers (wider than the old rounded numbers, so a little smaller),
+   numbers in the stats flowing through lighter tints, the three tops of the Leaderboard, the
+   Appearance cards, and the two colour presets made for the look (Aurora, Neon). */
+.hero h1, .fullscreen h1, .welcome .headline, .data-hero h1, .empty h2, .stranger h1, .h2, .form-page h1, .more-me .who b, .me-name, .scard .nm { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; }
+.hero h1 { font-size: 25px; line-height: 1.15; }
+.fullscreen h1 { font-size: 26px; }
+.welcome .brand h1 { font-size: 19px; }
+.welcome .headline { font-size: 28px; line-height: 1.12; font-weight: 800; letter-spacing: -0.03em; }
+.welcome .headline em { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.form-page h1, .data-hero h1, .stranger h1 { font-size: 21px; }
+.empty h2 { font-size: 16px; }
+.more-me .who b { font-size: 17px; }
+.me-name { font-size: 16px; }
+.scard .nm { font-size: 14px; line-height: 1.2; }
+@media (max-height: 760px) { .welcome .headline { font-size: 25px; } }
+
+.row .rk { font-size: 12.5px; letter-spacing: -0.03em; }
+.row.tier .rk { font-size: 13.5px; }
+.score b { font-size: 20px; letter-spacing: -0.02em; }
+.hero-score b { font-size: 52px; letter-spacing: -0.04em; }
+.tile b { font-size: 19px; letter-spacing: -0.02em; }
+.rate-top .val { font-size: 17px; }
+.gh-ov b { font-size: 20px; }
+.data-tile b { font-size: 20px; }
+.psum .r { font-size: 15px; }
+.scard .avg { font-size: 17px; }
+.pv-score b { font-size: 18px; }
+.vfm b { font-size: 18px; }
+/* Numbers in the stats flow through the lighter tints, like the website's headline. */
+.tile b, .data-tile b { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* The three tops (D64). Every stat is a .tile, in every layout. A long value (data-len 7–9) is smaller. */
+.tiles .tile[data-len="7"] b { font-size: 17px; }
+.tiles .tile[data-len="8"] b { font-size: 15px; }
+.tiles .tile[data-len="9"] b { font-size: 13px; }
+.tiles .tile[data-len] { padding-left: 6px; padding-right: 6px; }
+.banner.strip .tile[data-len="8"] b { font-size: 13.5px; }
+.banner.strip .tile[data-len="9"] b { font-size: 12.5px; }
+.banner { margin: 2px 16px 12px; max-width: 688px; }
+@media (min-width: 720px) { .banner { margin-left: auto; margin-right: auto; } }
+.banner .tile { background: none; border: 0; padding: 0; }
+/* The glass hero: the lead number big on the left, the others stacked on the right, a line under. */
+.banner.hero { position: relative; isolation: isolate; overflow: hidden; display: grid; padding: 14px 16px; border-radius: 22px;
+  background: var(--hero-wash), var(--glass); border: 1px solid var(--glass-edge); } /* no blur: the lights behind are soft already, and it would redo every frame as they drift */
+.banner.hero .stats { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px 12px; }
+.banner.hero .tile.lead { grid-column: 1; grid-row: 1 / span var(--side-rows, 2); align-self: end; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; text-align: left; }
+.banner.hero .tile.lead b { font-size: 44px; line-height: 1; letter-spacing: -0.04em; }
+.banner.hero .tile:not(.lead) { grid-column: 2; justify-self: end; display: flex; align-items: baseline; gap: 6px; }
+.banner.hero .tile:not(.lead) b { font-size: 19px; line-height: 1; }
+.banner.hero .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--hairline); font-size: 13px; color: var(--text-2); min-width: 0; }
+.banner.hero .foot .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner.hero .foot b { color: var(--text); font-weight: 700; }
+.banner.hero .foot .flag { font-size: 14px; }
+.banner.hero .foot .n { flex: none; font-family: var(--num-font); font-size: 13px; }
+/* The slim strip: one glass line, the stats spread out with a thin rule between. */
+.banner.strip { display: flex; align-items: center; justify-content: space-around; gap: 8px; min-height: 42px; padding: 6px 14px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-edge); }
+.banner.strip .tile { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.banner.strip .tile + .tile { padding-left: 10px; border-left: 1px solid var(--hairline-strong); }
+.banner.strip .tile b { font-size: 15px; }
+.banner.strip .tile .cap { text-transform: lowercase; letter-spacing: 0; font-size: 12px; font-weight: 500; }
+
+/* Appearance (D64): a preview, then the looks and tops as cards with a radio. */
+.ap-preview { display: grid; gap: 0; padding: 12px; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-edge); pointer-events: none; }
+.ap-preview .banner, .ap-preview .tiles { margin: 0 0 10px; padding-left: 0; padding-right: 0; }
+.ap-preview .banner.hero { padding: 12px 14px; }
+.ap-preview .banner.hero .tile.lead b { font-size: 36px; }
+.ap-rows { display: grid; gap: 8px; padding-top: 16px; }
+.ap-cards { display: grid; gap: 10px; }
+.ap-cards.looks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ap-cards.tops { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ap-card { position: relative; display: grid; gap: 2px; align-content: start; padding: 8px 8px 10px; border-radius: 16px; background: var(--glass); border: 1px solid var(--glass-edge); cursor: pointer; min-width: 0; }
+.ap-card:has(.radio:checked) { border-color: var(--accent-bright); box-shadow: 0 0 0 1px var(--accent-bright), 0 0 18px -4px var(--accent); }
+.ap-card:has(.radio:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ap-card.soon { cursor: default; }
+.ap-card .radio { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; background: rgba(3, 7, 10, 0.6); }
+.ap-name { margin-top: 8px; padding: 0 2px; font-size: 14px; font-weight: 700; }
+.ap-sub { padding: 0 2px; font-size: 12px; color: var(--text-2); line-height: 1.35; }
+.tops .ap-card .radio { top: 10px; right: 10px; width: 20px; height: 20px; }
+.tops .ap-name { font-size: 13px; }
+/* Each look's little picture: its background, lights, a glass pane and a number in its tints. */
+.look-sw { position: relative; display: block; height: 72px; border-radius: 11px; overflow: hidden; background: var(--sw-lights), var(--sw-bg); }
+.look-sw b { position: absolute; left: 10px; top: 8px; font-family: var(--num-font); font-size: 18px; font-weight: 700; background: var(--sw-grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.look-sw i { position: absolute; left: 9px; right: 9px; bottom: 9px; height: 22px; border-radius: 7px; background: var(--sw-card); border: 1px solid rgba(255, 255, 255, 0.2); }
+.ap-card.soon .look-sw { opacity: 0.55; }
+.look-aurora { --sw-bg: #03070a; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(47, 216, 138, 0.6), transparent 70%), radial-gradient(60% 70% at 100% 20%, rgba(43, 184, 196, 0.5), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(123, 107, 255, 0.5), transparent 70%); --sw-card: rgba(255, 255, 255, 0.08); --sw-grad: linear-gradient(100deg, #a6f0c1, #9fdcff, #cdbdff); }
+.look-neon { --sw-bg: #06041a; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(122, 60, 255, 0.7), transparent 70%), radial-gradient(60% 70% at 100% 20%, rgba(255, 63, 184, 0.55), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(39, 216, 255, 0.5), transparent 70%); --sw-card: rgba(170, 140, 255, 0.1); --sw-grad: linear-gradient(100deg, #6dffa8, #6bc8ff, #ff8fe0); }
+.look-pearl { --sw-bg: #08080c; --sw-lights: linear-gradient(120deg, rgba(255, 154, 168, 0.28), rgba(255, 242, 168, 0.16) 35%, rgba(159, 220, 255, 0.24) 70%, rgba(205, 189, 255, 0.3)); --sw-card: rgba(255, 255, 255, 0.08); --sw-grad: linear-gradient(100deg, #ffc9d2, #fff2a8, #a6f0c1, #9fdcff); }
+.look-forest { --sw-bg: #050807; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(47, 184, 106, 0.45), transparent 70%); --sw-card: #0c1410; --sw-grad: linear-gradient(100deg, #b6ffd4, #58e08c); }
+/* Each top's little diagram. */
+.top-dia { display: grid; gap: 4px; align-content: start; height: 54px; padding: 7px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+.top-dia i { display: block; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); }
+.top-dia i:first-child { background: linear-gradient(100deg, rgba(166, 240, 193, 0.6), rgba(205, 189, 255, 0.55)); }
+.top-hero .top-dia i:first-child { height: 22px; border-radius: 6px; }
+.top-hero .top-dia i:nth-child(4) { display: none; }
+.top-tiles .top-dia { grid-template-columns: repeat(3, 1fr); }
+.top-tiles .top-dia i:nth-child(-n + 3) { height: 20px; border-radius: 5px; background: linear-gradient(100deg, rgba(166, 240, 193, 0.6), rgba(205, 189, 255, 0.55)); }
+.top-tiles .top-dia i:nth-child(4) { grid-column: 1 / -1; }
+.top-strip .top-dia i:first-child { height: 9px; border-radius: 9px; }
+.new-tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 6px; vertical-align: 2px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--on-accent); background: var(--primary); }
+
+/* The two presets made for the new look (D64). Aurora: Jade, Lagoon, Violet, then the full aurora;
+   Neon: Lime, Electric, Hot pink, then a neon rainbow. Dark layers tinted to match, kept near-neutral
+   so the text stays readable (measured in every preset). */
+.pal-aurora.band1 { --t1: #6ff0a8; --t2: #3fdc8e; --t3: #b6ffd4; --t4: #2cc47c; --t5: #8affc0; --t6: #4fe39c; --dark: 6, 16, 14; }
+.pal-aurora.band2 { --t1: #6fe8e8; --t2: #40c4c4; --t3: #c2fbfb; --t4: #2fb0c8; --t5: #8ef0ff; --t6: #58d6dc; --dark: 4, 14, 20; }
+.pal-aurora.band3 { --t1: #b3a8ff; --t2: #8b7bff; --t3: #ddd6ff; --t4: #9d8cff; --t5: #c7bcff; --t6: #a493ff; --dark: 10, 10, 24; }
+.pal-aurora.band4 { --t1: #7dffb4; --t2: #6fe8e8; --t3: #c7bcff; --t4: #ff9ad8; --t5: #fff2a8; --t6: #9fdcff; --dark: 8, 12, 20; }
+.pal-neon.band1 { --t1: #d4ff6b; --t2: #b8f53c; --t3: #efffbf; --t4: #a5e830; --t5: #e2ff8f; --t6: #c4ff4f; --dark: 12, 16, 6; }
+.pal-neon.band2 { --t1: #6bc8ff; --t2: #3da8ff; --t3: #c8ecff; --t4: #4b8dff; --t5: #8fdcff; --t6: #5ab6ff; --dark: 4, 10, 24; }
+.pal-neon.band3 { --t1: #ff8fe0; --t2: #ff5cc8; --t3: #ffd0f2; --t4: #f04fb8; --t5: #ffb0ea; --t6: #ff74d4; --dark: 22, 6, 18; }
+.pal-neon.band4 { --t1: #ff6bd5; --t2: #ffd36b; --t3: #d4ff6b; --t4: #6bffe0; --t5: #6bc8ff; --t6: #b98cff; --dark: 10, 6, 20; }

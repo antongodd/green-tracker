@@ -39,7 +39,7 @@ test('every section heading has its icon, in the product and Log editors', async
   await openEditor();
   expect(await heads()).toEqual(['Basics', 'Classification', 'Origin', 'Ratings', 'Purchases', 'Photos', 'Notes', 'Leafly'].map((label) => ({ label, icon: true })));
   await expect(page.locator('.switch-row .gh-ic svg')).toHaveCount(1);
-  expect(await color('.gh > .cap')).toBe('rgb(88, 224, 140)');
+  expect(await color('.gh > .cap')).toBe('rgb(111, 233, 164)');
   await shot(page, '90-editor-top');
   await page.goto(`/log/${entryId}/edit`);
   await expect(page.getByLabel('Name')).toBeVisible();

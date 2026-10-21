@@ -195,6 +195,8 @@ export function BrandPage(p: { name: string }) {
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
                 { value: formatGBP(spentOn(products!, key)), label: 'Spent' },
               ]}
+              lead={1}
+              foot={rows[0] && <span class="who">Best · <b>{rows[0].product.name}</b></span>}
             />
             <div class="rows">
               {rows.map((r) => (

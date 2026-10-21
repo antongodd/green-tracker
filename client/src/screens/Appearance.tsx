@@ -1,11 +1,13 @@
-// Appearance (D48, 0.41.0; More → Appearance): your Leaderboard colours preset and the
-// #1 mark. Saved to your account at once, so they follow you to a new phone; a friend's
-// board shows in your colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
+// Appearance (D48, 0.41.0; Settings → Appearance): a preview, the whole app's look and the top of
+// the Leaderboard (D64, 0.54.0), your Leaderboard colours preset and the #1 mark. Saved to your
+// account at once, so they follow you to a new phone; a friend's board shows in your look and
+// colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
 import { useState } from 'preact/hooks';
-import { BAND_FLOORS, PRESET_KEYS, PRESETS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
+import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
 import { saveAppearance } from '../appearance';
 import { BackButton, Header, TabBar } from '../components/chrome';
+import { Tiles } from '../components/Controls';
 import { Glints, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { useOnline } from '../online';
@@ -14,24 +16,30 @@ import { switchAttr } from '../sounds';
 
 const BANDS: Band[] = [1, 2, 3, 4];
 
-/** A made-up top row, to show the #1 mark in your colours: never anyone's data. */
-const SAMPLE: RowProduct = { id: 'sample', name: 'Wedding Cake', productType: 'flower', strainType: 'hybrid', country: 'US', countryOther: null, photos: [] };
-const SAMPLE_SCORE = 9.7;
+/** Made-up rows, to show your look, colours and #1 mark: never anyone's data. */
+const sample = (id: string, name: string, strainType: 'hybrid' | 'sativa' | 'indica'): RowProduct => ({ id, name, productType: 'flower', strainType, country: 'US', countryOther: null, photos: [] });
+const SAMPLES = [
+  { product: sample('s1', 'Wedding Cake', 'hybrid'), score: 9.7 },
+  { product: sample('s2', 'Lemon Haze', 'sativa'), score: 9.2 },
+  { product: sample('s3', 'Blue Dream', 'hybrid'), score: 8.6 },
+];
 
-function SampleRow(p: { appearance: Appearance }) {
-  const look = { band: scoreBand('overall', SAMPLE_SCORE), first: true };
+function SampleRow(p: { appearance: Appearance; rank: number }) {
+  const { product, score } = SAMPLES[p.rank - 1]!;
+  const look = { band: scoreBand('overall', score), first: p.rank === 1 };
   return (
-    <div class={`row${rowClass(look, p.appearance)} sample`} aria-hidden="true">
+    <div class={`row${rowClass(look, p.appearance)} sample`}>
       <Glints band={look.band} appearance={p.appearance} />
       <span class="rk">
-        <RankCrown look={look} appearance={p.appearance} />1
+        <RankCrown look={look} appearance={p.appearance} />
+        {p.rank}
       </span>
-      <Thumb product={SAMPLE} />
+      <Thumb product={product} />
       <div class="mid">
-        <div class="name">{SAMPLE.name}</div>
-        <Cluster product={SAMPLE} />
+        <div class="name">{product.name}</div>
+        <Cluster product={product} />
       </div>
-      <Score value={SAMPLE_SCORE} />
+      <Score value={score} />
     </div>
   );
 }
@@ -68,6 +76,76 @@ export function AppearanceScreen() {
             {error}
           </p>
         )}
+        <section aria-labelledby="ap-preview">
+          <h2 class="lh cap" id="ap-preview">
+            Preview
+          </h2>
+          <div class="wrap">
+            <div class="ap-preview" aria-hidden="true">
+              <Tiles
+                top={a.top}
+                lead={1}
+                tiles={[
+                  { value: '28', label: 'Products' },
+                  { value: '7.7', label: 'Average' },
+                  { value: '95.2g', label: 'Total' },
+                ]}
+                foot={<span class="who">Your #1 · <b>{SAMPLES[0]!.product.name}</b></span>}
+              />
+              <div class="ap-rows">
+                {SAMPLES.map((_, i) => (
+                  <SampleRow key={i} rank={i + 1} appearance={a} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+        <section aria-labelledby="ap-look">
+          <h2 class="lh cap" id="ap-look">
+            Look
+          </h2>
+          <div class="wrap">
+            <div class="ap-cards looks" role="radiogroup" aria-labelledby="ap-look">
+              {LOOK_KEYS.map((k) => {
+                const ready = READY_LOOKS.includes(k);
+                return (
+                  <label key={k} class={`ap-card look-${k}${ready ? '' : ' soon'}`}>
+                    <span class="look-sw" aria-hidden="true">
+                      <b>9.3</b>
+                      <i />
+                    </span>
+                    <span class="ap-name">{LOOKS[k].label}</span>
+                    <span class="ap-sub">{ready ? LOOKS[k].description : 'Coming next'}</span>
+                    <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} />
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+        <section aria-labelledby="ap-top">
+          <h2 class="lh cap" id="ap-top">
+            Top of the Leaderboard
+          </h2>
+          <div class="wrap">
+            <div class="ap-cards tops" role="radiogroup" aria-labelledby="ap-top">
+              {BOARD_TOP_KEYS.map((k) => (
+                <label key={k} class={`ap-card top-${k}`}>
+                  <span class="top-dia" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span class="ap-name">{BOARD_TOPS[k].label}</span>
+                  <span class="ap-sub">{BOARD_TOPS[k].description}</span>
+                  <input type="radio" class="radio" name="top" value={k} checked={a.top === k} disabled={!online} onChange={() => change({ ...a, top: k })} />
+                </label>
+              ))}
+            </div>
+            <p class="footnote priv-foot">The Log, friends’ boards and brand pages use it too.</p>
+          </div>
+        </section>
         <section aria-labelledby="ap-colours">
           <h2 class="lh cap" id="ap-colours">
             Leaderboard colours
@@ -77,7 +155,10 @@ export function AppearanceScreen() {
               {PRESET_KEYS.map((k) => (
                 <label key={k} class="li preset">
                   <span class="main">
-                    <span>{PRESETS[k].label}</span>
+                    <span>
+                      <span class="pl">{PRESETS[k].label}</span>
+                      {(k === 'aurora' || k === 'neon') && <span class="new-tag">New</span>}
+                    </span>
                     <span class="sub">{PRESETS[k].description}</span>
                     <span class="strip" aria-hidden="true">
                       {BANDS.map((b) => (
@@ -107,16 +188,13 @@ export function AppearanceScreen() {
                 </span>
                 <input type="checkbox" role="switch" class="switch" {...switchAttr()} aria-label="Mark my #1" checked={a.markFirst} disabled={!online} onChange={(e) => change({ ...a, markFirst: e.currentTarget.checked })} />
               </label>
-              <div class="li sample-li">
-                <SampleRow appearance={a} />
-              </div>
             </div>
           </div>
         </section>
         <div class="wrap">
           <p class="footnote priv-foot">
-            Saved to your account, so it follows you to a new phone. Friends’ boards show in your colours too. The colours come from scores, so a 9.5 is
-            always the top colour, wherever it is.
+            Saved to your account, so it follows you to a new phone. Friends’ boards show in your look and colours too. The colours come from scores, so a
+            9.5 is always the top colour, wherever it is.
           </p>
         </div>
       </main>

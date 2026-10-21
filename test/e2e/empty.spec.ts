@@ -30,21 +30,21 @@ async function card(page: Page, art: string, title: string): Promise<Locator> {
   await expect(c).toHaveCount(1);
   await expect(c.getByRole('heading', { name: title })).toBeVisible();
   // Titles in full white; the text under them in the usual grey.
-  expect(await c.locator('h2').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(238, 244, 240)');
+  expect(await c.locator('h2').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(241, 246, 243)');
   const svg = c.locator('svg.empty-art');
   await expect(svg).toBeVisible();
   expect(await svg.evaluate((s) => s.childElementCount)).toBeGreaterThan(1);
-  expect(await svg.evaluate((s) => getComputedStyle(s).color)).toBe('rgb(88, 224, 140)');
+  expect(await svg.evaluate((s) => getComputedStyle(s).color)).toBe('rgb(111, 233, 164)');
   const box = (await svg.boundingBox())!;
   expect(box.width).toBeGreaterThanOrEqual(120);
   return c;
 }
 
-/** "Add" buttons are the green primary button with a +; everything else stays grey. */
+/** "Add" buttons are the green primary button (green to teal since D64) with a +; everything else stays grey. */
 async function greenAdd(c: Locator, name: string) {
   const b = c.getByRole('link', { name });
   await expect(b).toHaveClass(/\bprimary\b/);
-  expect(await b.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(47, 184, 106)');
+  expect(await b.evaluate((e) => getComputedStyle(e).backgroundImage)).toBe('linear-gradient(135deg, rgb(88, 224, 140), rgb(64, 196, 196))');
   await expect(b.locator('svg')).toHaveCount(1);
 }
 
