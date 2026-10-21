@@ -145,14 +145,17 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live and dev:** 0.53.1 (live 2026-10-21): everything up to the website (D63); dev also has notes-only 0.53.2.
+- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.54.1: live plus the new look, stage 1
+  (Aurora Glass, D64, 0.54.0) and notes-only 0.53.2 and 0.54.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
-   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
-   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
-   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
+1. **The new look** (Leaderboard design rework, with a font and colour rework for the whole app; Anton, 2026-10-18).
+   **Stage 1 on dev** (0.54.0, D64, 2026-10-21): Aurora Glass (the website's look: drifting lights, frosted glass,
+   Unbounded numbers and titles, Manrope words); Settings → Appearance with a preview, the look, the top of the
+   Leaderboard (glass hero, three tiles, slim strip; the Log, friends' boards and brand pages follow it) and two new
+   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Anton checks it on
+   GT Dev. **Stage 2 next:** the other three looks (Neon Night, Holo Pearl, Deep Forest), shown as "Coming next".
 2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
