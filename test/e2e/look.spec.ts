@@ -1,10 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, expectStatsFit, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, expectStatsFit, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // D64 (0.54.0): the new look. Everyone starts on Aurora Glass, the glass hero and Aurora colours;
-// Settings → Appearance chooses the look (only Aurora Glass so far: the others say "Coming next"),
+// Settings → Appearance chooses the look (all four since D65: Aurora Glass, Neon Night, Holo Pearl, Deep Forest),
 // the top of the Leaderboard (glass hero, three tiles, slim strip; the Log, a friend's board and a
 // name's page follow it) and the colours, each saved to your account at once. One account, with
 // big numbers so the stats are as wide as they get: 12 products, 999.5g (the widest weight before it shows kg), a 9.5 average.
@@ -50,13 +50,10 @@ test('Settings shows the look, the top and the colours; Appearance chooses them,
   await expect(page.getByRole('link', { name: /Leaderboard colours/ })).toContainText('Aurora');
   await page.getByRole('link', { name: /^Look/ }).click();
   await expect(page).toHaveURL(/\/more\/appearance$/);
-  // The looks: Aurora Glass chosen; the other three are coming next and can't be chosen yet.
+  // The looks: Aurora Glass chosen; all four can be chosen since D65, none "Coming next".
   await expect(page.getByRole('radio', { name: /Aurora Glass/ })).toBeChecked();
-  for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) {
-    const r = page.getByRole('radio', { name: new RegExp(name) });
-    await expect(r).toBeDisabled();
-    await expect(page.locator('.ap-card', { has: r })).toContainText('Coming next');
-  }
+  for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
+  await expect(page.getByText('Coming next')).toHaveCount(0);
   await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
   await shot(page, '641-appearance');
   expect(await axe()).toEqual([]);
@@ -129,7 +126,116 @@ test('the stats stay readable over the drifting lights, in every top', async () 
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
-test('a look that isn’t built yet is refused', async () => {
-  expect(await put({ look: 'neon', top: 'hero', preset: 'aurora', markFirst: true })).toBe(400);
+test('a look that doesn’t exist is refused', async () => {
+  expect(await put({ look: 'sepia', top: 'hero', preset: 'aurora', markFirst: true })).toBe(400);
   expect(await saved()).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
 });
+
+test('quick taps in Appearance: each choice stays chosen, and the last one is what’s saved (0.55.0)', async () => {
+  await page.goto('/more/appearance');
+  await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
+  // The first save is slow to come back; the second tap lands while it's on its way.
+  let first = true;
+  await page.route('**/api/appearance', async (route) => {
+    if (route.request().method() === 'PUT' && first) {
+      first = false;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    await route.fallback();
+  });
+  await page.getByRole('radio', { name: /Three tiles/ }).check();
+  await page.locator('input[name="preset"][value="neon"]').check();
+  // Through the first save's answer and after: the newest choices stay shown.
+  for (let i = 0; i < 12; i++) {
+    expect(await page.locator('input[name="preset"][value="neon"]').isChecked(), `still Neon after ${i * 250}ms`).toBe(true);
+    expect(await page.getByRole('radio', { name: /Three tiles/ }).isChecked(), `still Three tiles after ${i * 250}ms`).toBe(true);
+    await page.waitForTimeout(250);
+  }
+  await expect.poll(saved).toEqual({ look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true });
+  await page.unroute('**/api/appearance');
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+});
+
+// D65 (0.55.0): the other three looks.
+const LOOKS = [
+  { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a', display: /^Unbounded/ },
+  { look: 'pearl', name: 'Holo Pearl', bg: 'rgb(8, 8, 12)', hex: '#08080c', display: /^Sora/ },
+  { look: 'forest', name: 'Deep Forest', bg: 'rgb(5, 8, 7)', hex: '#050807', display: /^Manrope/ },
+] as const;
+
+test('choosing a look in Appearance changes the whole app at once, its title font and the Home Screen bar, and saves it', async () => {
+  for (const l of LOOKS) {
+    await page.goto('/more/appearance');
+    await page.getByRole('radio', { name: new RegExp(l.name) }).check();
+    await expect.poll(saved).toEqual({ look: l.look, top: 'hero', preset: 'aurora', markFirst: true });
+    await expect(page.locator('html')).toHaveAttribute('data-look', l.look);
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), l.look).toBe(l.bg);
+    expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe(l.hex);
+    expect(await page.locator('.hdr .title').evaluate((e) => getComputedStyle(e).fontFamily), l.look).toMatch(l.display);
+    // Numbers stay Unbounded in every look.
+    await page.goto('/');
+    await expect(page.locator('.banner.hero .tile.lead b')).toHaveText('9.5');
+    expect(await page.locator('.banner.hero .tile.lead b').evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/^Unbounded/);
+    await page.goto('/more');
+    await expect(page.getByRole('link', { name: /^Look/ })).toContainText(l.name);
+    await shot(page, `642-look-${l.look}`);
+  }
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+});
+
+test('the phone remembers your look, so the app opens in it before your account has loaded (no flash of Aurora Glass)', async () => {
+  expect(await put({ look: 'neon', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-look', 'neon');
+  // Next launch: hold your account back; the page is already in Neon Night.
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route('**/api/auth/me', async (route) => {
+    await held;
+    await route.fallback();
+  });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  expect(await page.evaluate(() => [document.documentElement.dataset.look, getComputedStyle(document.body).backgroundColor, document.querySelector('meta[name="theme-color"]')!.getAttribute('content')])).toEqual(['neon', 'rgb(6, 4, 26)', '#06041a']);
+  release();
+  await expect(page.locator('.rows .row').first()).toBeVisible();
+  await page.unroute('**/api/auth/me');
+  // Another phone (nothing remembered) opens in Aurora Glass until it knows.
+  const fresh = await (await page.context().browser()!.newContext()).newPage();
+  await fresh.goto('/');
+  await expect(fresh.locator('main.fullscreen')).toBeVisible();
+  expect(await fresh.evaluate(() => document.documentElement.dataset.look ?? 'none')).toBe('none');
+  expect(await fresh.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(3, 7, 10)');
+  await fresh.context().close();
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+});
+
+for (const l of LOOKS) {
+  test(`${l.name} is readable and accessible: the Leaderboard, the Log, Settings and Appearance`, async () => {
+    test.slow(); // several screens, the Leaderboard throughout the lights' and colours' motion
+    for (const top of ['hero', 'strip'] as const) {
+      expect(await put({ look: l.look, top, preset: 'aurora', markFirst: true })).toBe(200);
+      await page.goto('/');
+      await expect(page.locator('.rows .row')).toHaveCount(12);
+      await settled(page);
+      if (top === 'hero') expect(await axe(), `${l.look} board`).toEqual([]);
+      // What's on screen and readable: below the header, above the tab bar, clear of the add button.
+      const area = await page.evaluate(() => ({ top: document.querySelector('.hdr')!.getBoundingClientRect().bottom, bottom: document.querySelector('.nav')!.getBoundingClientRect().top, fab: document.querySelector('.fab')!.getBoundingClientRect().toJSON() as DOMRect }));
+      const boxes = (await textBoxes(page, '.tile b, .tile .cap, .banner .foot .who, .controls .pill-text, .row .name, .row .meta, .row .score b, .row .score .cap')).filter(
+        (b) => b.y >= area.top && b.y + b.h <= area.bottom && !(b.x < area.fab.right && b.x + b.w > area.fab.left && b.y < area.fab.bottom && b.y + b.h > area.fab.top),
+      );
+      expect(boxes.length, `${l.look} ${top}: rows on screen`).toBeGreaterThan(12);
+      const worst = await contrastFailures(page, boxes);
+      expect(worst, `${l.look} ${top}:\n${worst.join('\n')}`).toEqual([]);
+    }
+    for (const [path, sel] of [
+      ['/log', '.group-h, .lrow .name, .tile b, .tile .cap'],
+      ['/more', '.lh.cap, .li .main, .li .v, .more-me .who b'],
+      ['/more/appearance', '.lh, .ap-name, .ap-sub, .preset .pl, .preset .sub, .new-tag, .priv-row .main > span'],
+    ] as const) {
+      const worst = await wholeScreenContrastFailures(page, path, sel);
+      expect(worst, `${l.look} ${path}:\n${worst.join('\n')}`).toEqual([]);
+      expect(await axe(), `${l.look} ${path}`).toEqual([]);
+    }
+    expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+  });
+}

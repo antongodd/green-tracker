@@ -22,8 +22,8 @@ self.addEventListener('install', (event) => {
       const html = await page.clone().text();
       const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);
       await cache.put('/', page);
-      // The fonts (D64) are in /fonts/, not /assets/: listed here so they're there offline too.
-      await cache.addAll([...new Set(assets), '/manifest.webmanifest', '/icons/icon-192.png', '/fonts/unbounded.woff2', '/fonts/manrope.woff2']);
+      // The fonts (D64, D65) are in /fonts/, not /assets/, and look.js (D65) is at the top: listed here so they're there offline too.
+      await cache.addAll([...new Set(assets), '/manifest.webmanifest', '/icons/icon-192.png', '/fonts/unbounded.woff2', '/fonts/manrope.woff2', '/fonts/sora.woff2', '/look.js']);
       await self.skipWaiting();
     })(),
   );

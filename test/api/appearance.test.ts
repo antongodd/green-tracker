@@ -35,8 +35,10 @@ describe('appearance settings (D48)', () => {
     // An app still open from before 0.54.0 sends no look or top: they take the defaults.
     expect((await b.req('PUT', '/api/appearance', { preset: 'prism', markFirst: true })).status).toBe(200);
     expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'prism', markFirst: true });
-    // A look that isn't built yet is refused (D64).
-    expect((await b.req('PUT', '/api/appearance', { look: 'neon', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(400);
+    // Every look can be saved since D65; one that doesn't exist is refused.
+    expect((await b.req('PUT', '/api/appearance', { look: 'pearl', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'pearl', top: 'hero', preset: 'prism', markFirst: true });
+    expect((await b.req('PUT', '/api/appearance', { look: 'sepia', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(400);
   });
 
   it('never reaches anyone else: a friend’s board carries no appearance', async () => {

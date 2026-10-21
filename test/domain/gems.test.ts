@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -51,9 +51,10 @@ describe('Leaderboard colours by score (D48)', () => {
     }
   });
 
-  it('only the looks that are built can be chosen; the others are refused until they are (D64)', () => {
-    expect(READY_LOOKS).toEqual(['aurora']);
-    for (const look of LOOK_KEYS.filter((l) => !READY_LOOKS.includes(l))) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look }).ok, look).toBe(false);
+  it('all four looks can be chosen since D65; anything else is refused', () => {
+    expect(READY_LOOKS).toEqual(['aurora', 'neon', 'pearl', 'forest']);
+    for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
+    expect(LOOK_KEYS.map((l) => LOOK_BG[l])).toEqual(['#03070a', '#06041a', '#08080c', '#050807']);
   });
 
   it('a backup or an open app from before 0.54.0 has no look or top: they take the defaults', () => {

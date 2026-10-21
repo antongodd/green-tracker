@@ -136,6 +136,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 
 | D63 | **A website for the app** (2026-10-20; to-do item 5; look A "Aurora Glass" of https://claude.ai/artifact/AkwHtCE8iVw8d9yyqEK2qR; the owner's answers: for friends and anyone who finds the link, sign-up open ("Sign up free"), the free `workers.dev` address, punchy and friendly ("like a stoner wrote it"), no age or legal note, no link to it from the app; he asked for it to look really good: the app's style but glassy, futuristic, with cool animations and dark colours not only green). | **A one-page site at its own address**, https://green-tracker-site.green-tracker.workers.dev, for people who haven't got the app: the headline "Rate your stash. Remember the fire.", a floating glass iPhone with a made-up Leaderboard, four things it does (ranked top shelf, Log, Sources, mates' picks), a **Go on, rate it** slider that gives a made-up product the colours its score earns in the app (D48, D30), three steps to add it to the iPhone Home Screen in Safari, a note that Android and computers work in the browser, and **Sign up free** (the live app's sign-up). **Products shown are all made up**; nobody's data is used. **Nothing from anywhere else:** fonts (Unbounded, Manrope; SIL OFL) are stored with the site; no tracking, analytics or cookies; strict security headers. Reduce Motion: still. A link-preview picture for WhatsApp and iMessage. **Separate from the app:** its own folder (`site/`), its own Worker of files only (no code, data or accounts); the app is unchanged. **Preview:** `green-tracker-site-dev`, deployed from `dev` and locked with Cloudflare Access like the dev site; the public site is deployed from `main`, so it goes public with the next "go live". See §4 *Website*. |
 | D64 | **The new look: Aurora Glass, a choice of looks and tops, two new colour sets** (2026-10-21; to-do item 4 "Leaderboard design rework, with a font and colour rework for the whole app"; mockups https://claude.ai/artifact/LJah55esqr7qtmDBxP3uzG (look A "Aurora Glass", top "Glass hero", numbers "Unbounded", colours "Aurora", all marked as the pick) and https://claude.ai/artifact/3w4fuY9qMDoCSgnc62pcvr (the rest of the app and the Appearance screen). The owner's answers: the numbers felt "too round and soft, almost like kiddy numbers"; the dark green above the Leaderboard looked out of place; rework "sort of everything"; the website's look should lead ("I want them to feel like one linking product"); every look, top and colour set as a choice in Appearance, defaulting to Aurora Glass, the glass hero and the new Aurora colours; Unbounded for the numbers; everyone switches to the defaults once; the Log's banner follows the top; built in two stages, Aurora Glass first). Amends D18, D28 and D29. | **Stage 1 (0.54.0).** **Aurora Glass** across the whole app: the website's blue-black background with **drifting green, teal and violet lights** behind every screen (still with Reduce Motion), **frosted-glass cards** with a light edge, a green-to-teal primary button, add button and switch, **Unbounded** for titles, product names and every number (scores, ranks, stats, badges, rating values, value for money), **Manrope** for words; both fonts stored with the app (no outside requests; offline too). The stats' numbers flow through lighter tints. **Settings → Appearance** gains a live **preview**, the **Look** (Aurora Glass; Neon Night, Holo Pearl and Deep Forest shown as "Coming next") and the **Top of the Leaderboard**: the **glass hero** (the average big, products and total beside it, "Your #1 · name" underneath), **three tiles**, or a **slim strip**; the Log (its hero line "Most from · country"), a friend's board ("Their #1") and a brand or supplier's page ("Best") follow it. Two new colour sets made for the look, **Aurora** (Jade, Lagoon, Violet, Aurora) and **Neon** (Lime, Electric, Hot pink, Neon), listed first and marked New; Gems, Prism and Metals stay. Settings shows Look, Leaderboard top and Leaderboard colours. **Data:** the look and top are saved to your account with the colours (a new migration rebuilds `appearance_settings`); **everyone moves once** to Aurora Glass, the glass hero and Aurora colours (Mark my #1 kept); Export and Restore carry them, and a file from before keeps working (the look and top take the defaults). A follower's board shows in the viewer's own look, top and colours, as before. **Stage 2 (to come):** Neon Night, Holo Pearl and Deep Forest. The website needs no change (it is Aurora Glass). See §4 *The new look*. |
+| D65 | **The new look, stage 2: Neon Night, Holo Pearl and Deep Forest** (2026-10-21; looks B, C and D of https://claude.ai/artifact/LJah55esqr7qtmDBxP3uzG, chosen in D64 as choices in Appearance; the owner checked stage 1 on his iPhone ("looks good and works well") and said go ahead, with both extras: the phone remembers the look so the app never opens in the wrong one, and the look and the colour set stay separate). Completes D64. | The three other looks can be chosen in **Settings → Appearance** (no more "Coming next"): **Neon Night** (deep indigo, violet, pink and cyan lights, violet-tinted glass, extra-bold titles), **Holo Pearl** (near-black, calmer pastel lights, a pearly rainbow rim on the stand-out cards (the glass hero, tiles, the strip, pills, Sources cards, you in Settings, Appearance's cards), titles in **Sora**, stored with the app), **Deep Forest** (the green look from before D64, tidied, Manrope titles). Numbers stay Unbounded in every look; the colour set is chosen separately. The Home Screen app's top bar takes the look's background. **This phone remembers your look** and puts it on before anything is drawn, so a Neon Night app never shows Aurora Glass for a moment; a phone that has never signed in opens in Aurora Glass. No data change (D64's migration already allowed the looks); Export and Restore carry the look; followers see everything in their own look. The website stays Aurora Glass. See §4 *The new look*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1308,12 +1309,39 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     separately. `expectStatsFit` replaces `expectTilesCentredAndWashed`.
   - *Couldn't check here*: how the glass and the drifting lights feel on a real iPhone (smoothness, battery), how the
     glass looks over real photos, and the fonts on iOS Safari.
+  - **Stage 2 (D65, 0.55.0).** `html[data-look="neon" | "pearl" | "forest"]` blocks just under `:root` override the
+    tokens (background, surfaces, glass, edges, text greys, accent, `--primary`, `--grad`, `--hero-wash`, the three
+    lights, the bars, `--display` and `--display-w`, the titles' weight). Holo Pearl's rim: the stand-out cards draw
+    `--pearl-edge` under the whole card with a solid pane (`--bg`) and the glass over it on the padding box; without the
+    solid pane the rainbow tinted the words' background (the readability test measured "Rank: Overall" at 4.2 : 1).
+    Sora (`client/public/fonts/sora.woff2`, latin, SIL OFL, added to `OFL.txt`) is loaded only when used, and precached
+    by `sw.js`. `READY_LOOKS` is all four; `LOOK_BG` gives each look's background. *No flash:* `client/public/look.js`, a
+    plain script in `<head>` (the CSP allows no inline script; precached too), reads `localStorage['gt.look']` and sets
+    `html[data-look]` and the theme-color before the first paint; `main.tsx` keeps both and the stored look current once
+    you're signed in (signed out, the last look stays).
+    - *Tests* (`look.spec.ts`): choosing each look in Appearance changes the page, its title font (Unbounded, Sora,
+      Manrope) and the Home Screen bar at once and saves it, numbers staying Unbounded; the remembered look is on the
+      page before the account has loaded (held back), a fresh phone opens in Aurora Glass; every look readable over the
+      moving lights and colours on the Leaderboard (the glass hero and the strip; only text you can see: below the
+      header, above the tab bar, clear of the add button) and top to bottom on the Log, Settings and Appearance, with
+      axe on each. The domain and API tests accept all four looks and refuse an unknown one.
+    - *Found while testing:* tapping two Appearance choices quickly, the first save's answer put the screen back on
+      the old choice for a moment (and two saves could cross). Saves now go one at a time, in order, and only the latest
+      choice clears what's shown (`Appearance.tsx`); `look.spec.ts` holds the first save back and checks both choices
+      stay shown and the last is saved (fails on the old code).
+    - *Couldn't check here*: the three looks on a real iPhone, and Sora in iOS Safari.
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.55.0 — the new look, stage 2: three more looks (owner request)
+- Decision D65. Neon Night, Holo Pearl and Deep Forest can be chosen in Settings → Appearance. The phone remembers
+  your look, so the app opens in it straight away; the Home Screen app's top bar takes its colour.
+- Quick taps in Appearance no longer flip a choice back for a moment.
+- `CLAUDE.md`: next decision D66; testing notes for the looks.
 
 ### 0.54.1 — CLAUDE.md: the new look's stage 1 is on dev
 - The to-do list marks stage 1 of the new look (D64) on dev, with stage 2 (the other three looks) next. Notes only.

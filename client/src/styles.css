@@ -4,13 +4,16 @@
 /* The new look's fonts (D64), stored with the app (font-src 'self'; kept offline by sw.js). */
 @font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
 @font-face { font-family: "Manrope"; src: url("/fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+/* Holo Pearl's titles (D65): only downloaded when that look is on. */
+@font-face { font-family: "Sora"; src: url("/fonts/sora.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
 
 :root {
   color-scheme: dark;
   /* The new look (D64, 0.54.0): Aurora Glass, the website's look (D63) in the app. A blue-black
      background with drifting green, teal and violet lights (.bg-layer), frosted-glass cards,
      Unbounded for titles and numbers, Manrope for words. Each look (html[data-look]) is a set
-     of these tokens; Aurora Glass is the only one so far, so it lives here on :root. */
+     of these tokens: Aurora Glass, where everyone starts, lives here on :root; the other three
+     (D65) override them just below. */
   --bg: #03070a;
   --surface-1: #0a1114; /* solid, where something must hide what's behind it */
   --surface-2: rgba(255, 255, 255, 0.06);
@@ -65,6 +68,7 @@
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   /* Titles (D64): Unbounded, wide and bold, as on the website. */
   --display: "Unbounded", "Arial Black", -apple-system, BlinkMacSystemFont, sans-serif;
+  --display-w: 700;
   /* Scores, ranks, tiles and badges: Unbounded since D64 (the owner found D28's rounded numbers
      too soft). Prices, amounts, dates and words keep the text font. */
   --num-font: "Unbounded", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -72,6 +76,65 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: calc(44px + var(--safe-top));
   --nav-h: calc(49px + var(--safe-bottom));
+}
+
+/* The other three looks (D65, 0.55.0), chosen in Settings → Appearance; numbers stay Unbounded in all. */
+/* Neon Night: deep indigo with violet, pink and cyan lights, violet-tinted glass, extra-bold titles. */
+html[data-look="neon"] {
+  --bg: #06041a; --surface-1: #0d0a24; --surface-2: rgba(170, 140, 255, 0.08); --surface-3: #1d1838;
+  --glass: rgba(170, 140, 255, 0.07); --glass-strong: rgba(170, 140, 255, 0.1); --glass-edge: rgba(200, 180, 255, 0.18);
+  --btn-bg: linear-gradient(rgba(170, 140, 255, 0.08), rgba(170, 140, 255, 0.08)), rgba(6, 4, 26, 0.55);
+  --hairline: rgba(200, 180, 255, 0.1); --hairline-strong: rgba(200, 180, 255, 0.18);
+  --bar: rgba(6, 4, 26, 0.6); --bar-solid: #07051c;
+  --text: #f5f1ff; --text-2: rgba(245, 241, 255, 0.72); --text-3: rgba(245, 241, 255, 0.47);
+  --accent: #52e898; --accent-bright: #7dffb4; --accent-soft: rgba(109, 255, 168, 0.14); --on-accent: #06140c;
+  --teal: #3da8ff; --teal-bright: #8fdcff; --violet: #a77bff; --violet-bright: #d3bcff;
+  --card-edge: rgba(200, 180, 255, 0.14); --divider: rgba(200, 180, 255, 0.09); --bar-line: rgba(200, 180, 255, 0.1);
+  --photo-edge: 0 0 0 1px rgba(200, 180, 255, 0.14);
+  --grad: linear-gradient(100deg, #7dffb4, #8fdcff 50%, #ffa8e8);
+  --primary: linear-gradient(135deg, #6dffa8, #6bc8ff);
+  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(122, 60, 255, 0.32), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(255, 63, 184, 0.24), transparent 60%);
+  --light-1: rgba(122, 60, 255, 0.34); --light-2: rgba(255, 63, 184, 0.24); --light-3: rgba(39, 216, 255, 0.2);
+  --sticky-bg: rgba(6, 4, 26, 0.6); --controls-bg: rgba(6, 4, 26, 0.3);
+  --display-w: 800;
+}
+/* Holo Pearl: near-black, calmer pastel lights, pearly rainbow edges on the stand-out cards, Sora titles. */
+html[data-look="pearl"] {
+  --bg: #08080c; --surface-1: #101015; --surface-2: rgba(255, 255, 255, 0.07); --surface-3: #1d1d25;
+  --glass: rgba(255, 255, 255, 0.06); --glass-strong: rgba(255, 255, 255, 0.085); --glass-edge: rgba(255, 255, 255, 0.16);
+  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), rgba(8, 8, 12, 0.5);
+  --bar: rgba(8, 8, 12, 0.6); --bar-solid: #09090d;
+  --text: #f6f5f8; --text-2: rgba(246, 245, 248, 0.72); --text-3: rgba(246, 245, 248, 0.47);
+  --accent: #8fe6b4; --accent-bright: #b4f5cf; --accent-soft: rgba(166, 240, 193, 0.14); --on-accent: #0b0b12;
+  --teal: #9fdcff; --teal-bright: #c4ebff; --violet: #cdbdff; --violet-bright: #e7dcff;
+  --card-edge: rgba(230, 220, 255, 0.13); --divider: rgba(255, 255, 255, 0.08); --bar-line: rgba(230, 220, 255, 0.1);
+  --photo-edge: 0 0 0 1px rgba(230, 220, 255, 0.14);
+  --grad: linear-gradient(100deg, #ffc9d2, #fff2a8 30%, #a6f0c1 55%, #9fdcff 78%, #cdbdff);
+  --primary: linear-gradient(135deg, #ffc9d2, #fff2a8, #a6f0c1, #9fdcff);
+  --pearl-edge: linear-gradient(120deg, rgba(255, 154, 168, 0.45), rgba(255, 242, 168, 0.35), rgba(166, 240, 193, 0.4), rgba(159, 220, 255, 0.45), rgba(205, 189, 255, 0.5));
+  --hero-wash: linear-gradient(120deg, rgba(255, 154, 168, 0.12), rgba(255, 242, 168, 0.07) 30%, rgba(166, 240, 193, 0.09) 55%, rgba(159, 220, 255, 0.11) 78%, rgba(205, 189, 255, 0.14));
+  --light-1: rgba(255, 154, 168, 0.16); --light-2: rgba(159, 220, 255, 0.16); --light-3: rgba(205, 189, 255, 0.18);
+  --sticky-bg: rgba(8, 8, 12, 0.6); --controls-bg: rgba(8, 8, 12, 0.3);
+  --display: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+/* Deep Forest: the green look before D64, tidied, with the new numbers; Manrope titles. */
+html[data-look="forest"] {
+  --bg: #050807; --surface-1: #0c1410; --surface-2: rgba(88, 224, 140, 0.06); --surface-3: #17251d;
+  --glass: rgba(12, 20, 16, 0.55); --glass-strong: rgba(17, 28, 22, 0.7); --glass-edge: rgba(88, 224, 140, 0.18);
+  --btn-bg: linear-gradient(rgba(88, 224, 140, 0.06), rgba(88, 224, 140, 0.06)), rgba(5, 8, 7, 0.6);
+  --hairline: rgba(255, 255, 255, 0.08); --hairline-strong: rgba(255, 255, 255, 0.14);
+  --bar: rgba(5, 8, 7, 0.78); --bar-solid: #060f0a;
+  --text: #eef4f0; --text-2: rgba(238, 244, 240, 0.68); --text-3: rgba(238, 244, 240, 0.45);
+  --accent: #2fb86a; --accent-bright: #58e08c; --accent-soft: rgba(47, 184, 106, 0.14); --on-accent: #04140b;
+  --teal: #40c4c4; --teal-bright: #7fe3e3;
+  --card-edge: rgba(88, 224, 140, 0.16); --card-bg: linear-gradient(115deg, rgba(88, 224, 140, 0.07), rgba(88, 224, 140, 0) 55%), var(--glass);
+  --divider: rgba(88, 224, 140, 0.1); --bar-line: rgba(88, 224, 140, 0.22); --photo-edge: 0 0 0 1px rgba(88, 224, 140, 0.14);
+  --grad: linear-gradient(100deg, #b6ffd4, #58e08c);
+  --primary: linear-gradient(135deg, #2fb86a, #2fb86a);
+  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(88, 224, 140, 0.16), transparent 60%);
+  --light-1: rgba(47, 184, 106, 0.2); --light-2: rgba(64, 196, 196, 0.13); --light-3: rgba(47, 184, 106, 0.08);
+  --sticky-bg: rgba(5, 8, 7, 0.6); --controls-bg: rgba(5, 8, 7, 0.3);
+  --display: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif; --display-w: 800;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -152,7 +215,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .hdr .slot { display: flex; align-items: center; min-height: 44px; min-width: 0; }
 .hdr .slot.r { justify-content: flex-end; }
 .hdr .slot.hidden { visibility: hidden; }
-.hdr .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-family: var(--display); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.hdr .title { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; font-family: var(--display); font-size: 15px; font-weight: var(--display-w); letter-spacing: -0.01em; }
 .hdr .title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hdr .title svg { width: 26px; height: 26px; flex: none; }
 /* D47: the dev site's label, so it's never mistaken for the live one. Dark on amber: 9:1. */
@@ -1185,7 +1248,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
    Unbounded for titles and numbers (wider than the old rounded numbers, so a little smaller),
    numbers in the stats flowing through lighter tints, the three tops of the Leaderboard, the
    Appearance cards, and the two colour presets made for the look (Aurora, Neon). */
-.hero h1, .fullscreen h1, .welcome .headline, .data-hero h1, .empty h2, .stranger h1, .h2, .form-page h1, .more-me .who b, .me-name, .scard .nm { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; }
+.hero h1, .fullscreen h1, .welcome .headline, .data-hero h1, .empty h2, .stranger h1, .h2, .form-page h1, .more-me .who b, .me-name, .scard .nm { font-family: var(--display); font-weight: var(--display-w); letter-spacing: -0.02em; }
 .hero h1 { font-size: 25px; line-height: 1.15; }
 .fullscreen h1 { font-size: 26px; }
 .welcome .brand h1 { font-size: 19px; }
@@ -1293,3 +1356,13 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-neon.band2 { --t1: #6bc8ff; --t2: #3da8ff; --t3: #c8ecff; --t4: #4b8dff; --t5: #8fdcff; --t6: #5ab6ff; --dark: 4, 10, 24; }
 .pal-neon.band3 { --t1: #ff8fe0; --t2: #ff5cc8; --t3: #ffd0f2; --t4: #f04fb8; --t5: #ffb0ea; --t6: #ff74d4; --dark: 22, 6, 18; }
 .pal-neon.band4 { --t1: #ff6bd5; --t2: #ffd36b; --t3: #d4ff6b; --t4: #6bffe0; --t5: #6bc8ff; --t6: #b98cff; --dark: 10, 6, 20; }
+
+/* Holo Pearl's pearly edges (D65): the stand-out cards get a rainbow rim instead of a plain one. The
+   rim is the rainbow drawn under the whole card, so the inside needs a solid pane over it (the
+   background colour) or the rainbow tints the words' background too (measured: 4.2 : 1). */
+html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile, .scard, .more-me, .ap-card, .pill) {
+  border-color: transparent;
+  background: linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box;
+}
+html[data-look="pearl"] .banner.hero { background: var(--hero-wash) padding-box, linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
+html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-soft), var(--accent-soft)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
