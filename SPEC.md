@@ -1263,7 +1263,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   `OFL.txt`; copies of the website's), `@font-face` at the top of the styles, preloaded in `index.html`, precached by
   `sw.js` and served from its cache first (`/fonts/`). CSP unchanged (`font-src 'self'`). *Lights:* `.bg-layer::before`
   (green, teal) and `::after` (violet) on the fixed background, plain radial gradients moved by `transform`
-  (`lights-a` 22s, `lights-b` 27s, alternate; none with Reduce Motion); the screens' own D29 lights are gone
+  (`lights-a` 22s, `lights-b` 27s, alternate, in small steps; none with Reduce Motion); the screens' own D29 lights are gone
   (`--aurora-top: none`). *Looks:* `html[data-look]` is set from your appearance (`main.tsx`); Aurora Glass lives on
   `:root`, so Stage 2 adds each look as `[data-look=…]` token overrides. *Tops:* `Tiles` (`components/Controls.tsx`)
   reads your `top` (or a `top` prop: Appearance's preview) and draws `.banner.hero` (a `.stats` grid: the `lead` tile
@@ -1282,8 +1282,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   anything covering the whole screen (`html:has(.viewer, .cropper, .cpicker)`), as nobody sees them there and the
   background remover's work had less room on a busy test machine. Timing tests also froze a little longer with four
   test browsers at once: measured, the drifting lights and the frosted blurs (redone each frame as the lights move
-  behind them) were the cost, so each light layer is only as big as its lights and the glass hero has no blur (the
-  lights behind it are soft already).
+  behind them) were the cost, so each light layer is only as big as its lights, the glass hero has no blur (the
+  lights behind it are soft already), and the lights move in tiny steps (`steps(132)` / `steps(162)`, about six a
+  second, each a fraction of a pixel), so the screen is redrawn for them a few times a second instead of sixty.
+  Measured alone, a colour page's readability test took 34.2s, now 31.1s (26.7s before the new look). The "Latest"
+  tag sits on a darker pane (it measured 4.50 : 1 over the lights).
   - *Tests:* `look.spec.ts` (new: the defaults, Settings' three rows, Appearance's looks with the three coming next,
     choosing a top and a colour set saves at once and the Leaderboard follows, the Log's and a name's page's hero lines,
     every top fits at 375 and 390 wide on the Leaderboard, the Log and a name's page with the widest numbers, the stats

@@ -99,9 +99,12 @@ body {
 /* Each layer only as big as its lights need (less for the phone to move every frame). */
 .bg-layer::before { inset: -12% -12% 30% -12%; background: radial-gradient(45% 42% at 22% 22%, var(--light-1), transparent 70%), radial-gradient(40% 40% at 82% 40%, var(--light-2), transparent 70%); }
 .bg-layer::after { inset: 45% -12% -12% -12%; background: radial-gradient(45% 60% at 46% 50%, var(--light-3), transparent 70%); }
+/* They move in tiny steps, about six a second, each a fraction of a pixel: it still looks like a
+   smooth drift, but the phone redraws the screen (and its frosted bars) a few times a second for
+   them instead of sixty. */
 @media (prefers-reduced-motion: no-preference) {
-  .bg-layer::before { animation: lights-a 22s ease-in-out infinite alternate; }
-  .bg-layer::after { animation: lights-b 27s ease-in-out infinite alternate; }
+  .bg-layer::before { animation: lights-a 22s steps(132) infinite alternate; }
+  .bg-layer::after { animation: lights-b 27s steps(162) infinite alternate; }
 }
 /* Hidden and still under anything that covers the whole screen (the viewer, the cropper, Move and
    zoom, the cut-out flow, the country picker): nobody sees them there, and the phone (and its battery)
@@ -652,7 +655,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .psum .r { font-family: var(--num-font); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .psum .chev { width: 13px; height: 13px; color: var(--text-3); }
 .pcard.open .psum .chev { transform: rotate(90deg); }
-.tag-latest { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: rgba(88, 224, 140, 0.14); border: 1px solid rgba(88, 224, 140, 0.35); border-radius: 999px; padding: 0 7px; line-height: 18px; }
+.tag-latest { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: linear-gradient(rgba(88, 224, 140, 0.14), rgba(88, 224, 140, 0.14)), rgba(3, 7, 10, 0.5); border: 1px solid rgba(88, 224, 140, 0.35); border-radius: 999px; padding: 0 7px; line-height: 18px; }
 .psum .l > span.warn, .pcard-foot .warn { color: var(--warning); }
 .pbody { padding: 12px; display: grid; gap: 10px; border-top: 1px solid var(--hairline); }
 .pcard .input, .pcard .select select { background: var(--surface-1); }

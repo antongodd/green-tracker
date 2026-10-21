@@ -98,6 +98,7 @@ test('the Log, a name’s page and the Leaderboard follow your top; the Log’s 
 });
 
 test('every top fits, numbers and words inside their boxes, at 375 and 390 wide', async () => {
+  test.slow(); // 3 tops × 2 widths × 3 screens
   for (const top of ['hero', 'tiles', 'strip'] as const) {
     expect(await put({ look: 'aurora', top, preset: 'aurora', markFirst: true })).toBe(200);
     for (const width of [375, 390]) {
