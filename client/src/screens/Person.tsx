@@ -17,9 +17,7 @@ import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
 import { Cluster, formatRankValue, Score, Thumb } from '../components/ProductRow';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
-import { FlameIcon, MoreIcon } from '../icons';
-import { dayLabel, smokeAmountText, timesCaption } from '../../../shared/domain/smoke';
-import { todayIso } from '../components/ProductRow';
+import { MoreIcon } from '../icons';
 import { fetchPreview } from '../privacy';
 import { EmptyCard } from '../components/EmptyCard';
 import * as api from '../people';
@@ -30,6 +28,8 @@ import { Avatar } from '../components/Avatar';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
 import { Skeleton } from '../components/Skeleton';
+import { brandPath, NameLink } from '../components/NameLink';
+import { nameKey, productsNamed } from '../../../shared/domain/names';
 
 const enc = encodeURIComponent;
 const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto => ({ key: ph.id, thumb: photoUrl(ph, 'thumb'), image: photoUrl(ph, 'cropped'), original: '', crop: null, cutout: ph.cutout });
@@ -63,7 +63,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
           </div>
         )}
       </div>
-      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value)} flame={p.rankBy === 'used'} />
+      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value)} />
     </a>
   );
 }
@@ -152,8 +152,6 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
 export function Person(p: { username: string; preview?: boolean }) {
   const [person, setPerson] = useState<PersonCard | null>(null);
   const [products, setProducts] = useState<SharedProduct[] | null>(null);
-  // Most used is offered only when they share it (D45).
-  const [mostUsed, setMostUsed] = useState(false);
   const [view, setView] = useState<ViewState>(() => loadOthersView());
   const [error, setError] = useState<{ missing: boolean; text: string } | null>(null);
   const arrived = useRef(/^\/u\/[^/]+\/p\/|^\/more\/privacy\/preview\/p\//.test(cameFrom() ?? ''));
@@ -162,9 +160,8 @@ export function Person(p: { username: string; preview?: boolean }) {
   const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
-    const show = (board: { products: SharedProduct[]; options: { mostUsed: boolean } }) => {
-      setMostUsed(board.options.mostUsed);
-      setView(loadOthersView(board.options.mostUsed));
+    const show = (board: { products: SharedProduct[] }) => {
+      setView(loadOthersView());
       setProducts(board.products);
     };
     if (p.preview) {
@@ -211,7 +208,7 @@ export function Person(p: { username: string; preview?: boolean }) {
   const empty = products ? leaderboardEmptyState(products.length, rows.length, view) : null;
   const tiles = leaderboardTiles(rows.map((r) => r.product));
   const change = (next: ViewState) => {
-    setView(saveOthersView(next, mostUsed));
+    setView(saveOthersView(next));
     window.scrollTo(0, 0);
   };
   const back = p.preview ? '/more/privacy' : '/people';
@@ -227,7 +224,7 @@ export function Person(p: { username: string; preview?: boolean }) {
         {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} used={mostUsed} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             {/* PRODUCTS and AVERAGE only — never TOTAL. */}
             <Tiles
               tiles={[
@@ -251,8 +248,8 @@ export function Person(p: { username: string; preview?: boolean }) {
           </EmptyCard>
         )}
         {empty === 'rank-empty' && (
-          <EmptyCard art="unrated" title={view.rankBy === 'used' ? 'Nothing smoked yet' : 'Nothing rated on that'}>
-            <p>{view.rankBy === 'used' ? `None of these products has been smoked yet.` : 'None of these products has that rating yet.'}</p>
+          <EmptyCard art="unrated" title="Nothing rated on that">
+            <p>None of these products has that rating yet.</p>
             <button class="btn secondary" style={{ width: 'auto' }} onClick={() => change({ ...view, rankBy: 'overall' })}>
               Rank by Overall
             </button>
@@ -273,43 +270,6 @@ export function Person(p: { username: string; preview?: boolean }) {
 }
 
 /**
- * What a follower sees of the owner's smokes on a product (D45), only what they share:
- * the count with the flame, and (if shared) each smoke's day, time and amount. Never an effect.
- */
-function SharedSmokes(p: { product: SharedProduct }) {
-  const { smokeCount, smokes } = p.product;
-  if (smokeCount === undefined && smokes === undefined) return null;
-  const n = smokeCount ?? smokes!.length;
-  const today = todayIso();
-  return (
-    <section class="sect smokes-card" aria-labelledby="their-smokes-h">
-      <span class="cap" id="their-smokes-h">
-        Smokes
-      </span>
-      <div class="smk">
-        <div class="tile smk-count">
-          <b>
-            <FlameIcon class="flame" />
-            {n}
-          </b>
-          <span class="cap">{timesCaption(p.product.productType, n)}</span>
-        </div>
-      </div>
-      {smokes && smokes.length > 0 && (
-        <div class="smk-recent">
-          {smokes.slice(0, 10).map((s, i) => (
-            <div class="smk-row" key={i}>
-              <span class="w">{[dayLabel(s.date, today), s.amount !== null ? smokeAmountText(p.product.productType, s.amount) : null].filter(Boolean).join(' · ')}</span>
-              <span class="num">{s.time}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-/**
  * Their product profile, read-only: hero (no price), ratings, hit time, photos,
  * and details limited to strain type, product type, concentrate type, country and
  * Source (D1). No price history, VFM, notes, Leafly, crop or any action.
@@ -319,7 +279,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<number | null>(null);
   // Its row on their board (D22, D48), worked out only from what you can see, under the
-  // same Rank by as their board (Most used only when they share it, D45).
+  // same Rank by as their board.
   const [list, setList] = useState<SharedProduct[] | null>(null);
   const [view, setView] = useState(() => loadOthersView());
   const appearance = useAppearance();
@@ -328,7 +288,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
     const board = p.preview ? fetchPreview() : api.theirBoard(p.username);
     board
       .then((b) => {
-        setView(loadOthersView(b.options.mostUsed));
+        setView(loadOthersView());
         setList(b.products);
         if (p.preview) {
           const mine = b.products.find((x) => x.id === p.id);
@@ -369,6 +329,8 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
       ['Source', product.source ?? ''],
     ] as [string, string][]
   ).filter(([, v]) => v);
+  // D59: their Source opens their products from that brand (only ever Source, never where they bought it).
+  const value = (k: string, v: string) => (k === 'Source' ? <NameLink name={v} to={brandPath(v, backTo)} /> : v);
 
   return (
     <>
@@ -390,7 +352,6 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
           whose="their"
         />
         <Ratings product={product} />
-        <SharedSmokes product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
@@ -400,13 +361,75 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
         {details.length > 0 && (
           <section class="sect" aria-label="Details">
             <span class="cap">Details</span>
-            <dl class="kv">{details.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}</dl>
+            <dl class="kv">{details.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{value(k, v)}</dd>])}</dl>
           </section>
         )}
         {p.preview && <PreviewNote />}
       </main>
       <TabBar active={tab} />
       {viewing !== null && <PhotoViewer photos={photos} start={viewing} onClose={() => setViewing(null)} />}
+    </>
+  );
+}
+
+/**
+ * Their products from one brand (D59), from their board as you see it: only products whose
+ * Source is that brand, so nothing about where they bought anything. With Source not shared
+ * (D45) nothing matches.
+ */
+export function TheirBrandPage(p: { username: string; name: string; preview?: boolean }) {
+  const [products, setProducts] = useState<SharedProduct[] | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    (p.preview ? fetchPreview() : api.theirBoard(p.username))
+      .then((b) => setProducts(b.products))
+      .catch((e) => setError(errorText(e)));
+  }, [p.username, p.preview]);
+  const key = nameKey(p.name);
+  const named = products ? productsNamed(products, key).map((r) => r.product) : [];
+  const name = named.find((x) => x.source)?.source ?? p.name;
+  const rows = rankProducts(named, { filter: 'all', rankBy: 'overall' });
+  const tiles = leaderboardTiles(named);
+  const backTo = boardPath(p.username, p.preview);
+  const tab = p.preview ? 'more' : 'people';
+  return (
+    <>
+      <Header title={name} leaf={false} left={<BackButton to={backTo} />} />
+      <main class="screen">
+        {p.preview && <PreviewNote />}
+        {!products && !error && <Skeleton kind="board" />}
+        {error && (
+          <div class="empty">
+            <h2>Not available</h2>
+            <p>{error}</p>
+          </div>
+        )}
+        {products && named.length === 0 && (
+          <EmptyCard art="filter" title={`Nothing from ${name}`}>
+            <p>@{p.username} hasn’t shared any products from {name}.</p>
+          </EmptyCard>
+        )}
+        {named.length > 0 && (
+          <>
+            <p class="lead brand-lead">
+              <strong>@{p.username}</strong>’s products from {name}.
+            </p>
+            {/* PRODUCTS and AVERAGE only, as on their board: never prices or where they bought it. */}
+            <Tiles
+              tiles={[
+                { value: String(tiles.products), label: 'Products' },
+                { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
+              ]}
+            />
+            <div class="rows">
+              {rows.map((r) => (
+                <SharedRow key={r.product.id} username={p.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy="overall" preview={p.preview} />
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+      <TabBar active={tab} />
     </>
   );
 }

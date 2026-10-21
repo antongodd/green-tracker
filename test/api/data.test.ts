@@ -62,7 +62,7 @@ describe('restore (brief §13)', () => {
     };
     const res = await b.post('/api/data/restore', payload);
     expect(res.status, JSON.stringify(res.json)).toBe(200);
-    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, smokes: 0, profilePhoto: 'kept' });
+    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, profilePhoto: 'kept' });
 
     const products = [...(await b.get('/api/products')).json.products, ...(await b.get('/api/products?archived=1')).json.products] as Product[];
     expect(products.map((p) => p.name).sort()).toEqual(['Restored Archived', 'Restored Flower']);
@@ -80,6 +80,26 @@ describe('restore (brief §13)', () => {
     expect((await b.get(`/api/log/${entry.id}`)).status).toBe(404);
     expect(await eventually(() => oldKeys.every((k) => !r2Keys(k).length))).toBe(true);
     expect(d1('SELECT COUNT(*) AS n FROM uploads WHERE user_id = ?', id)).toEqual([{ n: 0 }]);
+  });
+
+  it('a file from before Smokes went (D60) restores; its smokes are skipped', async () => {
+    const b = new Browser();
+    await signUp(b);
+    const smoke = { date: '2026-10-01', time: '20:00', amount: 0.4, effect: 'Sleepy', createdAt: 1 };
+    const res = await b.post('/api/data/restore', {
+      products: [{ ...restoreProduct({ name: 'With Smokes' }), smokes: [smoke] }],
+      logEntries: [{ ...emptyLogEntryInput(), name: 'Entry With Smokes', createdAt: 2, smokes: [smoke, { bad: true }] }],
+      privacy: { shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true, shareProfilePhoto: true },
+    });
+    expect(res.status, JSON.stringify(res.json)).toBe(200);
+    expect(res.json).toEqual({ products: 1, logEntries: 1, photos: 0, profilePhoto: 'kept' });
+    expect((await b.get('/api/privacy')).json.privacy).toEqual({ shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true });
+  });
+
+  it('the database has no smokes left (D60): the table and the three Smokes privacy switches are gone', () => {
+    expect(d1("SELECT name FROM sqlite_master WHERE name = 'smokes'")).toEqual([]);
+    const columns = (d1('PRAGMA table_info(privacy_settings)') as { name: string }[]).map((c) => c.name);
+    expect(columns).toEqual(['user_id', 'share_board', 'share_source', 'share_country', 'share_photos', 'share_profile_photo', 'updated_at']);
   });
 
   it('a bad record rejects the whole restore and changes nothing', async () => {
@@ -155,9 +175,6 @@ describe('delete account (brief §4, §17)', () => {
       })
     ).json.product as Product;
     const doomedEntry = (await b.post('/api/log', { ...emptyLogEntryInput(), name: 'Doomed Entry', photos: [{ upload: await newSet(b, 'doomedlog'), crop: null }] })).json.entry as LogEntry;
-    for (const target of [{ productId: product.id, logEntryId: null }, { productId: null, logEntryId: doomedEntry.id }]) {
-      expect((await b.post('/api/smokes', { ...target, date: '2026-10-01', time: '20:00', amount: null, effect: 'Gone' })).status).toBe(201);
-    }
     await newSet(b, 'pending-upload'); // never saved
     const profile = await newSet(b, 'profile');
     expect((await b.req('PUT', '/api/profile/photo', { upload: profile, crop: { x: 0, y: 0, w: 1, h: 1, square: true } })).status).toBe(200);
@@ -172,7 +189,7 @@ describe('delete account (brief §4, §17)', () => {
 
     // Signed out, and the passkey leads nowhere.
     expect((await b.get('/api/auth/me')).json.user).toBeNull();
-    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'smokes WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
+    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
       expect(d1(`SELECT COUNT(*) AS n FROM ${table} = ?`, id), table).toEqual([{ n: 0 }]);
     }
     expect(d1('SELECT COUNT(*) AS n FROM follows WHERE follower_id = ? OR followed_id = ?', id, id)).toEqual([{ n: 0 }]);

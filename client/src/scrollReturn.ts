@@ -3,7 +3,7 @@
 // offset or index, since the product may have moved rank. Transient: kept in
 // memory only, so tab switches and app launches start at the top.
 
-import { holding, holdOffset, scrollPage } from './scrollHold';
+import { holding, holdOffset, scrollPage, whenReleased } from './scrollHold';
 
 let pending: { list: string; id: string; screenTop: number; scroll: number } | null = null;
 
@@ -37,6 +37,7 @@ export function restoreRow(list: string, cameFromProduct: boolean): void {
   const p = pending;
   pending = null;
   if (!p || p.list !== list || !cameFromProduct) return;
+  landing++; // the row decides, not the pixel offset (land)
   const el = document.querySelector<HTMLElement>(`[data-return="${CSS.escape(`${list}:${p.id}`)}"]`);
   if (!el) {
     keep(0, p.scroll);
@@ -63,10 +64,43 @@ function keep(y: number, restored: number): void {
   const undo = () => {
     if (!touched && !holding() && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
   };
-  requestAnimationFrame(() => {
-    undo();
-    requestAnimationFrame(undo);
+  // Counted from the end of the flight, if there is one: on a busy phone a flight can outlast these
+  // (0.50.0), and the browser's restore can land just after it.
+  whenReleased(() => {
+    requestAnimationFrame(() => {
+      undo();
+      requestAnimationFrame(undo);
+    });
+    for (const ms of [150, 400, 800]) setTimeout(undo, ms);
+    setTimeout(() => inputs.forEach((type) => removeEventListener(type, stop, { capture: true })), 900);
   });
-  for (const ms of [150, 400, 800]) setTimeout(undo, ms);
-  setTimeout(() => inputs.forEach((type) => removeEventListener(type, stop, { capture: true })), 900);
+}
+
+let landing = 0;
+
+/**
+ * Back to any screen (router.ts, popstate): lands where you were on it (0.52.0). The screen
+ * may still be drawing its content (a list from the network, Settings' numbers), so for a
+ * moment it keeps putting the page there: as far as it can go until it's tall enough, and
+ * back again if something moves it (Chromium's scroll anchoring follows content loading in
+ * above). A finger (or wheel, or key) taking over stops it, and so does a list returning to
+ * its row (restoreRow), which knows better.
+ */
+export function land(y: number): void {
+  const id = ++landing;
+  if (y <= 0) return;
+  let touched = false;
+  const stop = () => (touched = true);
+  const inputs = ['touchstart', 'wheel', 'keydown', 'pointerdown'] as const;
+  inputs.forEach((type) => addEventListener(type, stop, { once: true, passive: true, capture: true }));
+  const until = performance.now() + 1000;
+  const step = () => {
+    if (touched || id !== landing || performance.now() > until) {
+      inputs.forEach((type) => removeEventListener(type, stop, { capture: true }));
+      return;
+    }
+    if (!holding() && Math.abs(window.scrollY - y) > 1) scrollPage(y);
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }

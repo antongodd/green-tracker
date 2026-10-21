@@ -1,5 +1,4 @@
-// Starts the Worker in workerd (wrangler dev) with a fresh local D1, for the API tests:
-// one with Smokes on (as on the dev site) and one with it off (as on live), D46.
+// Starts the Worker in workerd (wrangler dev) with a fresh local D1, for the API tests.
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,7 +12,7 @@ const env = { ...process.env, WRANGLER_SEND_METRICS: 'false', NO_COLOR: '1' };
 let children: ChildProcess[] = [];
 let dirs: string[] = [];
 
-/** One Worker on a fresh local D1/R2; `vars` override the config's (e.g. SMOKES off, as on the live site). */
+/** One Worker on a fresh local D1/R2; `vars` override the config's. */
 async function start(vars: Record<string, string> = {}): Promise<{ base: string; persist: string }> {
   const persist = mkdtempSync(join(tmpdir(), 'gt-api-'));
   dirs.push(persist);
@@ -49,12 +48,9 @@ async function start(vars: Record<string, string> = {}): Promise<{ base: string;
 }
 
 export async function setup(project: TestProject) {
-  // The two can't share a port pick: start one after the other.
   const main = await start();
-  const live = await start({ SMOKES: 'off', SITE: 'live' });
   project.provide('apiBase', main.base);
   project.provide('persistDir', main.persist);
-  project.provide('liveApiBase', live.base);
 }
 
 export async function teardown() {
@@ -73,7 +69,5 @@ declare module 'vitest' {
     apiBase: string;
     /** Local D1 / R2 storage, for tests that check what's really stored. */
     persistDir: string;
-    /** A second Worker with Smokes off, as on the live site (D46). */
-    liveApiBase: string;
   }
 }

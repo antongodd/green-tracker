@@ -18,14 +18,13 @@
   ],
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "green-tracker-photos" }],
   // Passkeys are bound to this address (D11). Local dev overrides these in .dev.vars.
-  // No SMOKES here: Smokes is off on the live site until it's re-released (D46).
   "vars": {
     "RP_ID": "green-tracker.green-tracker.workers.dev",
     "ORIGIN": "https://green-tracker.green-tracker.workers.dev"
   },
   "observability": { "enabled": true },
   // The dev site (D47): only the owner can open it (a Cloudflare Access email lock), with its
-  // own database and photos, and Smokes on. Built with CLOUDFLARE_ENV=dev; deployed from the
+  // own database and photos. Built with CLOUDFLARE_ENV=dev; deployed from the
   // dev branch. Bindings and vars aren't inherited, so each is listed again.
   "env": {
     "dev": {
@@ -41,7 +40,6 @@
       "vars": {
         "RP_ID": "green-tracker-dev.green-tracker.workers.dev",
         "ORIGIN": "https://green-tracker-dev.green-tracker.workers.dev",
-        "SMOKES": "on",
         "SITE": "dev"
       }
     }

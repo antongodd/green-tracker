@@ -26,9 +26,7 @@ import { cameFrom, linkTo, navigate, replaceHistory, savedScroll } from '../rout
 import { returnToLog } from '../logEntries';
 import { useOnline } from '../online';
 import { Skeleton } from '../components/Skeleton';
-import { SmokesCard } from './Smokes';
-import { useSmokes, withSmokeCounts } from '../smokes';
-import { useSmokesOn } from '../session';
+import { brandPath, NameLink } from '../components/NameLink';
 import { play, switchAttr } from '../sounds';
 
 /** Rating bars, Rated N of N and hit time — shared with the follower's read-only profile. */
@@ -88,7 +86,8 @@ function PriceHistory(p: { product: Product }) {
             </span>
             <span class="u">{up === null ? '' : formatUnitPrice(type, up)}</span>
             <span class="s">{[pu.amount !== null ? formatAmount(type, pu.amount) : null, formatGBP(pu.totalPaid)].filter(Boolean).join(' · ')}</span>
-            <span class="s r">{pu.supplier ?? ''}</span>
+            {/* D59: where you bought it opens everything from there. */}
+            <span class="s r">{pu.supplier ? <NameLink name={pu.supplier} to={brandPath(pu.supplier)} /> : ''}</span>
           </div>
         );
       })}
@@ -134,11 +133,7 @@ export function Profile(p: { id: string }) {
   // Its row (D22, D48) comes from the same list and view as the Leaderboard.
   const appearance = useAppearance();
   const [list, setList] = useState(cachedProducts);
-  // D46: where Smokes is off there's no Most used and no Smokes card.
-  const smokesOn = useSmokesOn();
-  const [view] = useState(() => loadView(smokesOn));
-  // Under Most used (D44) its place comes from your smoke counts, like the Leaderboard's.
-  const { smokes } = useSmokes(smokesOn);
+  const [view] = useState(() => loadView());
   useEffect(() => {
     if (!list) fetchProducts().then(setList).catch(() => {});
   }, []);
@@ -294,7 +289,7 @@ export function Profile(p: { id: string }) {
     ['Date tried', product.dateTried ? formatIsoDate(product.dateTried) : ''],
   ];
   const shown = details.filter(([, v]) => v);
-  const ranked = list && (view.rankBy !== 'used' || smokes) ? withSmokeCounts([...list.filter((x) => x.id !== product.id), product], smokes ?? []) : null;
+  const ranked = list ? [...list.filter((x) => x.id !== product.id), product] : null;
   const place = ranked && !product.archived ? boardPlace(ranked, product.id, view) : null;
   const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
 
@@ -334,8 +329,6 @@ export function Profile(p: { id: string }) {
         />
 
         <Ratings product={product} />
-        {/* D43: yours only; an archived product keeps its count but takes no new smokes. */}
-        {smokesOn && <SmokesCard target={`p:${product.id}`} productType={product.productType} canAdd={!product.archived} />}
         {product.photos.length > 0 && (
           <section class="sect" aria-label="Photos">
             <span class="cap">Photos</span>
@@ -360,7 +353,7 @@ export function Profile(p: { id: string }) {
           <section class="sect" aria-label="Details">
             <span class="cap">Details</span>
             <dl class="kv">
-              {shown.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}
+              {shown.map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{k === 'Source' ? <NameLink name={v} to={brandPath(v)} /> : v}</dd>])}
             </dl>
           </section>
         )}

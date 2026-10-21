@@ -7,23 +7,20 @@ import { formatScore } from '../../../shared/domain/format';
 import { rankProducts } from '../../../shared/domain/leaderboard';
 import { DEFAULT_PRIVACY, PRIVACY_NEEDS, privacyEnabled, type Privacy as Settings, type PrivacyKey } from '../../../shared/domain/privacy';
 import { productType } from '../../../shared/domain/productTypes';
-import type { SharedBoardOptions, SharedProduct } from '../../../shared/domain/social';
-import { timesText } from '../../../shared/domain/smoke';
+import type { SharedProduct } from '../../../shared/domain/social';
 import { errorText } from '../api';
 import { BackButton, Header, TabBar } from '../components/chrome';
 import { Thumb } from '../components/ProductRow';
-import { ChevronRight, FlameIcon } from '../icons';
+import { ChevronRight } from '../icons';
 import { useOnline } from '../online';
 import { fetchPreview, fetchPrivacy, savePrivacy } from '../privacy';
 import { linkTo } from '../router';
-import { useSmokesOn } from '../session';
 import { switchAttr } from '../sounds';
 
 interface Switch {
   key: PrivacyKey;
   label: string;
   note: string;
-  warn?: boolean;
 }
 
 const GROUPS: { title: string; switches: Switch[] }[] = [
@@ -36,20 +33,12 @@ const GROUPS: { title: string; switches: Switch[] }[] = [
       { key: 'sharePhotos', label: 'Product photos', note: 'Without them, followers see the type’s mark.' },
     ],
   },
-  {
-    title: 'Smokes',
-    switches: [
-      { key: 'shareSmokeCounts', label: 'How many times I’ve had each', note: '“Smoked 14 times” on your products.' },
-      { key: 'shareMostUsed', label: 'Most used on my Leaderboard', note: 'Followers can rank your board by it.' },
-      { key: 'shareSmokes', label: 'My Smokes: what and when', note: 'Shows followers each smoke’s day, time and amount (never the effect).', warn: true },
-    ],
-  },
   { title: 'You', switches: [{ key: 'shareProfilePhoto', label: 'My profile photo', note: 'Off: everyone else sees your letter instead.' }] },
 ];
 
 const LABEL = Object.fromEntries(GROUPS.flatMap((g) => g.switches.map((sw) => [sw.key, sw.label]))) as Record<PrivacyKey, string>;
 
-type Preview = { products: SharedProduct[]; options: SharedBoardOptions; shared: boolean };
+type Preview = { products: SharedProduct[]; shared: boolean };
 
 /** The top of your board as a follower gets it, and what else they see. */
 function PreviewCard(p: { settings: Settings; preview: Preview | null }) {
@@ -76,14 +65,6 @@ function PreviewCard(p: { settings: Settings; preview: Preview | null }) {
             <span>{top.value === null ? 'Unrated' : 'Overall'}</span>
           </span>
         </div>
-        {(t.smokeCount !== undefined || t.smokes) && (
-          <p class="pv-line">
-            <FlameIcon class="flame" />
-            {timesText(t.productType, t.smokeCount ?? t.smokes!.length)}
-            {t.smokes ? ', with each day, time and amount' : ''}
-          </p>
-        )}
-        {pv.options.mostUsed && <p class="pv-line">They can rank your board by Most used.</p>}
       </>
     );
   }
@@ -107,7 +88,6 @@ export function PrivacyScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const online = useOnline();
-  const smokesOn = useSmokesOn();
 
   const reloadPreview = () =>
     fetchPreview()
@@ -139,8 +119,6 @@ export function PrivacyScreen() {
   }
 
   const s = settings ?? DEFAULT_PRIVACY;
-  // D46: where Smokes is off its switches aren't offered (your settings for them are kept).
-  const groups = smokesOn ? GROUPS : GROUPS.filter((g) => g.title !== 'Smokes');
   return (
     <>
       <Header title="Privacy" left={<BackButton to="/more" />} />
@@ -152,7 +130,7 @@ export function PrivacyScreen() {
           </p>
         )}
         {settings &&
-          groups.map((g) => (
+          GROUPS.map((g) => (
             <section key={g.title} aria-label={g.title}>
               <h2 class="lh cap">{g.title}</h2>
               <div class="wrap">
@@ -164,7 +142,6 @@ export function PrivacyScreen() {
                         <span class="main">
                           <span>{sw.label}</span>
                           <span class="sub">
-                            {sw.warn && <strong class="warn">Not recommended. </strong>}
                             {/* Dimmed rows say why, in words (the text itself stays full strength). */}
                             {enabled ? sw.note : `Needs “${LABEL[PRIVACY_NEEDS[sw.key]!]}” on.`}
                           </span>

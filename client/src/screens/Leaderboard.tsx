@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { formatScore, formatWeightTotal } from '../../../shared/domain/format';
-import { leaderboardEmptyState, leaderboardTiles, matchesFilter, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
+import { leaderboardEmptyState, leaderboardTiles, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
 import type { Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, type RatingKey } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
@@ -16,8 +16,6 @@ import { cameFrom, linkTo, navigate } from '../router';
 import { restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
-import { useSmokes, withSmokeCounts } from '../smokes';
-import { useSmokesOn } from '../session';
 
 const DEFAULT_VIEW: ViewState = { filter: 'all', rankBy: 'overall' };
 
@@ -48,20 +46,6 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
     );
   }
   const scope = typeLabel ? `${typeLabel} products` : 'products';
-  if (p.view.rankBy === 'used') {
-    return (
-      <EmptyCard art="smokes" title="Nothing smoked yet">
-        <p>None of your {scope} has a smoke yet. Add one and it’ll rank here.</p>
-        <a class="btn primary" style={{ width: 'auto' }} href="/smokes/new" onClick={linkTo('/smokes/new')}>
-          <PlusIcon />
-          Add a smoke
-        </a>
-        <button class="btn secondary" style={{ width: 'auto' }} onClick={p.onOverall}>
-          Rank by Overall
-        </button>
-      </EmptyCard>
-    );
-  }
   const { title, body } =
     p.view.rankBy === 'price'
       ? { title: 'Nothing priced yet', body: `None of your ${scope} has a purchase with an amount, so there’s no price to rank.` }
@@ -82,13 +66,8 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
 }
 
 export function Leaderboard() {
-  const [loaded, setProducts] = useState<Product[] | null>(cachedProducts());
-  // D46: where Smokes is off there's no Most used, and no smokes to fetch.
-  const smokesOn = useSmokesOn();
-  const [view, setView] = useState<ViewState>(() => loadView(smokesOn));
-  // Most used (D44) needs your smoke counts; every other Rank by draws without waiting for them.
-  const { smokes } = useSmokes(smokesOn);
-  const products = loaded && (view.rankBy !== 'used' || smokes) ? withSmokeCounts(loaded, smokes ?? []) : null;
+  const [products, setProducts] = useState<Product[] | null>(cachedProducts());
+  const [view, setView] = useState<ViewState>(() => loadView());
   const [error, setError] = useState('');
   // D48: the Colours key.
   const [showKey, setShowKey] = useState(false);
@@ -109,13 +88,11 @@ export function Leaderboard() {
   }, [products]);
 
   const change = (next: ViewState) => {
-    setView(saveView(next, smokesOn));
+    setView(saveView(next));
     window.scrollTo(0, 0);
   };
 
   const rows = products ? rankProducts(products, view) : [];
-  // Most used leaves out what you've never had; a line under the rows says how many.
-  const neverSmoked = products && view.rankBy === 'used' ? products.filter((p) => matchesFilter(p.productType, view.filter) && !p.smokeCount).length : 0;
   const empty = products ? leaderboardEmptyState(products.length, rows.length, view) : null;
   const tiles = leaderboardTiles(rows.map((r) => r.product));
 
@@ -124,7 +101,7 @@ export function Leaderboard() {
       <Header right={<MeButton />} />
       <main class="screen">
         {!products && !error && <Skeleton kind="board" />}
-        {error && !loaded && (
+        {error && !products && (
           <div class="empty">
             <h2>Couldn’t load your products</h2>
             <p>{error}</p>
@@ -132,7 +109,7 @@ export function Leaderboard() {
         )}
         {products && products.length > 0 && (
           <>
-            <ControlRow filter={view.filter} rankBy={view.rankBy} used={smokesOn} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
+            <ControlRow filter={view.filter} rankBy={view.rankBy} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             <Tiles
               tiles={[
                 { value: String(tiles.products), label: 'Products' },
@@ -151,11 +128,6 @@ export function Leaderboard() {
               <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} value={r.value} />
             ))}
           </div>
-        )}
-        {rows.length > 0 && neverSmoked > 0 && (
-          <p class="footnote">
-            {neverSmoked} never smoked, not shown. Ties go to the higher Overall.
-          </p>
         )}
       </main>
       <button class="fab" aria-label="Add a product" onClick={() => navigate('/products/new')}>

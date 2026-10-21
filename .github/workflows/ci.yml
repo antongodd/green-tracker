@@ -1,6 +1,6 @@
-# Tests every pull request. On dev, tests then deploys the dev site (D47); on main,
-# tests then deploys the live site. Each deploy checks its site is serving the new
-# build. Needs one repository secret, CLOUDFLARE_API_TOKEN (the account ID is in
+# Tests every pull request. On dev, tests then deploys the dev site (D47) and the website's
+# preview (D63); on main, tests then deploys the live site and the website (D63). Each deploy
+# checks its site is serving the new build. Needs one repository secret, CLOUDFLARE_API_TOKEN (the account ID is in
 # wrangler.jsonc).
 name: CI
 
@@ -81,6 +81,25 @@ jobs:
           done
           echo "::error::The live site isn't serving $want"
           exit 1
+      # The website (D63): files only. version.txt is written here, so the check below can tell
+      # this build from the last one.
+      - name: Deploy the website
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "$(node -p 'require("./package.json").version')+$(git rev-parse --short HEAD)" > site/public/version.txt
+          npm run deploy:site
+      - name: Website serves this build
+        run: |
+          want="$(cat site/public/version.txt)"
+          for i in $(seq 1 12); do
+            got=$(curl -fsS https://green-tracker-site.green-tracker.workers.dev/version.txt || true)
+            echo "$got"
+            [ "$got" = "$want" ] && exit 0
+            sleep 5
+          done
+          echo "::error::The website isn't serving $want"
+          exit 1
 
   # The dev site (D47). Only the owner can open it (a Cloudflare Access email lock), so there's
   # no check from outside here: the deploy step itself fails if the new build doesn't go out.
@@ -114,3 +133,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run deploy:dev
+      # The website's preview (D63), locked like the dev site.
+      - name: Deploy the website preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "$(node -p 'require("./package.json").version')+$(git rev-parse --short HEAD)" > site/public/version.txt
+          npm run deploy:site:dev

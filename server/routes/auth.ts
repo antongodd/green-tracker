@@ -7,7 +7,7 @@ import {
   type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
-import { siteFeatures, type AppEnv } from '../env';
+import type { AppEnv } from '../env';
 import { USERNAME_PROBLEM_TEXT, normaliseRecoveryCode, usernameKey, usernameProblem } from '../../shared/domain/account';
 import { randomId, utf8 } from '../lib/crypto';
 import { fail, jsonBody, str } from '../lib/http';
@@ -33,10 +33,8 @@ const TAKEN = 'That username is taken.';
 /** Who is signed in. Always 200 so the client can branch on `user`. */
 auth.get('/me', async (c) => {
   const user = c.var.user;
-  // D46: which features this site has (the dev site has Smokes; live doesn't yet).
-  const features = siteFeatures(c.env);
   const site = c.env.SITE === 'dev' ? 'dev' : 'live'; // D47
-  if (!user) return c.json({ user: null, features, site });
+  if (!user) return c.json({ user: null, site });
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes,
@@ -59,7 +57,6 @@ auth.get('/me', async (c) => {
     pendingRequests: counts?.requests ?? 0,
     // D48: how the app looks for you, there from the first screen.
     appearance: await loadAppearance(c.env.DB, user.id),
-    features,
     site,
   });
 });

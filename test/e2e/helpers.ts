@@ -152,6 +152,9 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
   for (const end of ['top', 'bottom'] as const) {
     await page.goto(path);
     for (const part of selector.split(',')) await page.locator(part).first().waitFor(); // each kind of text is on screen
+    // Everything the screen loads has arrived: Settings' privacy summary landing between measuring the
+    // text and photographing it moved the headings, so the photo caught the space beside them (0.52.0).
+    await page.waitForLoadState('networkidle');
     await settled(page);
     if (end === 'bottom') await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const area = await page.evaluate(() => ({ top: Math.max(0, document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0), bottom: document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight }));

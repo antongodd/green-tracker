@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- The link-preview picture (public/og.png, 1200 × 630), drawn with the site's own styles.
+     To redraw it, open this page beside public/ at 1200 × 630 and photograph it (SPEC.md §4, Website). -->
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="/site.css" />
+  <style>
+    body { width: 1200px; height: 630px; overflow: hidden; }
+    .og { display: grid; grid-template-columns: 1fr 440px; align-items: center; height: 630px; padding: 0 60px 0 80px; }
+    .og .words { display: grid; gap: 26px; }
+    .og h1 { font-size: 68px; }
+    .og .lede { font-size: 26px; max-width: 26ch; }
+    .og .brand { font-size: 26px; gap: 14px; }
+    .og .brand img { width: 52px; height: 52px; border-radius: 13px; }
+    .og .stage { margin: 0; height: 560px; }
+    .lights .b3 { top: 380px; left: 520px; }
+  </style>
+</head>
+<body>
+  <div class="lights"><span class="blob l1"></span><span class="blob l2"></span><span class="blob l3"></span></div>
+  <div class="og">
+    <div class="words">
+      <span class="brand"><img src="/favicon.svg" alt="" />Green Tracker</span>
+      <h1>Rate your stash. <em>Remember the fire.</em></h1>
+      <p class="lede">Free · made for iPhone · no ads</p>
+    </div>
+    <div class="stage">
+      <div class="chip c1"><span class="nug"></span><span><b class="big">9.6</b><small>Lemon Cherry Gelato</small></span></div>
+      <div class="mini"><div class="mini-in">
+        <div class="mini-h"><b>Leaderboard</b><span>All · Score</span></div>
+        <div class="tiles"><div><small>Products</small><b>42</b></div><div><small>Average</small><b>8.1</b></div><div><small>Spent</small><b>£612</b></div></div>
+        <div class="lb">
+          <div class="lr holo b4"><span class="rk">1</span><span class="nug"></span><span class="nm"><b>Lemon Cherry Gelato</b><small>Flower · Highland Greens</small></span><span class="sc">9.6</span></div>
+          <div class="lr holo b3"><span class="rk">2</span><span class="nug n2"></span><span class="nm"><b>Blue Zushi</b><small>Flower · The Green Room</small></span><span class="sc">9.2</span></div>
+          <div class="lr holo b2"><span class="rk">3</span><span class="nug n3"></span><span class="nm"><b>Gushers Rosin</b><small>Concentrate · Frosty Co.</small></span><span class="sc">8.8</span></div>
+          <div class="lr holo b1"><span class="rk">4</span><span class="nug n4"></span><span class="nm"><b>Watermelon Gummies</b><small>Edible · Sweet Leaf</small></span><span class="sc">8.3</span></div>
+          <div class="lr heat"><span class="rk">5</span><span class="nug n5"></span><span class="nm"><b>Purple Punch</b><small>Flower · Highland Greens</small></span><span class="sc">7.4</span></div>
+        </div>
+      </div></div>
+      <div class="chip c2"><span class="nug n3"></span><span>£9.50/g<small>value for money</small></span></div>
+      <div class="chip c3"><span class="nug n2"></span><span>Logged<small>Blue Zushi · 3.5g</small></span></div>
+    </div>
+  </div>
+</body>
+</html>

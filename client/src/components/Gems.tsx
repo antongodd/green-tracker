@@ -124,7 +124,7 @@ export function ColoursSheet(p: { onClose: () => void }) {
               </li>
             )}
           </ul>
-          <p class="key-note">Price, value for money and Most used aren’t scores, so they have no colours.</p>
+          <p class="key-note">Price and value for money aren’t scores, so they have no colours.</p>
           <a class="opt" href="/more/appearance" onClick={linkTo('/more/appearance')}>
             Change in Appearance
           </a>

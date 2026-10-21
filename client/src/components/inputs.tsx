@@ -4,7 +4,7 @@ import { formatScore } from '../../../shared/domain/format';
 import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
 import { scoreHeat } from '../../../shared/domain/heat';
 import type { RatingKey } from '../../../shared/domain/productTypes';
-import { CalendarIcon, ChevronDown, ClockIcon, CrossIcon } from '../icons';
+import { CalendarIcon, ChevronDown, CrossIcon } from '../icons';
 import { Slider } from './Slider';
 
 /** Native select (iOS shows its own picker), styled as an input. */
@@ -60,6 +60,7 @@ const input = (p: Parameters<typeof TextField>[0]) => (
     autoCapitalize={p.autoCapitalize}
     autoComplete="off"
     onInput={(e) => p.onInput(e.currentTarget.value)}
+    onFocus={p.onFocus}
     onBlur={p.onBlur}
   />
 );
@@ -69,7 +70,8 @@ export function TextField(p: {
   label: string;
   value: string;
   onInput: (v: string) => void;
-  onBlur?: () => void;
+  onBlur?: (e: FocusEvent) => void;
+  onFocus?: () => void;
   placeholder?: string;
   type?: string;
   inputMode?: 'decimal' | 'text' | 'url';
@@ -79,12 +81,11 @@ export function TextField(p: {
   return (
     <div class="field">
       <label for={p.id}>{p.label}</label>
-      {p.type === 'date' || p.type === 'time' ? (
+      {p.type === 'date' ? (
         // D34: our own calendar icon on the left, inside the box, so it can never be cut off;
         // the browser's own picker button is stretched invisibly over the whole box instead.
-        // A time box (a smoke's When, D43) is the same with a clock.
         <div class="datebox">
-          {p.type === 'time' ? <ClockIcon /> : <CalendarIcon />}
+          <CalendarIcon />
           {input(p)}
         </div>
       ) : (

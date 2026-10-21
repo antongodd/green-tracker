@@ -90,31 +90,32 @@ describe('Rank by (§10.1)', () => {
 
   it('options under All: Overall then the category union in canonical order; no price, VFM or hit time', () => {
     expect(rankByOptions('all', { money: true }).map((o) => o.key)).toEqual([
-      'overall', 'used', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
+      'overall', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
     ]);
   });
 
   it('options under a type include price by unit and VFM, then its categories', () => {
     expect(rankByOptions('edibles', { money: true })).toEqual([
       { key: 'overall', label: 'Overall' },
-      { key: 'used', label: 'Most used' },
       { key: 'price', label: 'Price per mg' },
       { key: 'vfm', label: 'Value for money' },
       { key: 'taste', label: 'Taste' },
       { key: 'high', label: 'High' },
     ]);
-    expect(rankByOptions('flower', { money: true })[2]!.label).toBe('Price per gram');
+    expect(rankByOptions('flower', { money: true })[1]!.label).toBe('Price per gram');
     expect(rankByOptions('pre_roll', { money: true }).map((o) => o.key)).not.toContain('look');
   });
 
-  it('a followed person’s view never offers price, VFM or Most used (D44)', () => {
+  it('a followed person’s view never offers price or VFM; nobody gets Most used any more (D60)', () => {
     for (const filter of ['all', 'flower'] as const) {
       const keys = rankByOptions(filter, { money: false }).map((o) => o.key);
       expect(keys).not.toContain('price');
       expect(keys).not.toContain('vfm');
-      expect(keys).not.toContain('used');
+      expect(rankByOptions(filter, { money: true }).map((o) => o.key)).not.toContain('used');
     }
+    // A Most used stored before Smokes went shows Overall, and is overwritten.
     expect(resolveViewState({ filter: 'all', rankBy: 'used' }, { money: false })).toMatchObject({ rankBy: 'overall', changed: true });
+    expect(resolveViewState({ filter: 'flower', rankBy: 'used' }, { money: true })).toMatchObject({ filter: 'flower', rankBy: 'overall', changed: true });
   });
 
   it('Rank by Look, then filter to Edibles → falls back to Overall and the stored setting is overwritten', () => {
@@ -195,40 +196,5 @@ describe('Product pages: place and badge (D22, D48)', () => {
     expect(placeBadge({ rank: 5, band: null, first: false }, all, 'your', gems)).toBeNull();
     expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price per gram');
     expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { preset: 'gems', markFirst: false })).toBeNull();
-  });
-});
-
-describe('Most used (D44)', () => {
-  const view = { filter: 'all', rankBy: 'used' } as const;
-  it('most first; never smoked is left out; no colours (a count isn’t a score), #1 marked', () => {
-    const rows = rankProducts(
-      [p('a', 'flower', { look: 7 }, { smokeCount: 3 }), p('never', 'flower', { look: 9 }, { smokeCount: 0 }), p('b', 'edibles', {}, { smokeCount: 12 }), p('c', 'flower', { look: 8 }, { smokeCount: 5 }), p('d', 'flower', { look: 6 }, { smokeCount: 1 }), p('nocount', 'flower', { look: 9 })],
-      view,
-    );
-    expect(rows.map((r) => [r.product.id, r.value, r.band, r.first])).toEqual([
-      ['b', 12, null, true],
-      ['c', 5, null, false],
-      ['a', 3, null, false],
-      ['d', 1, null, false],
-    ]);
-  });
-
-  it('a tie goes to the higher Overall, unrated after rated, then the usual order', () => {
-    const rows = rankProducts(
-      [p('rated6', 'flower', { look: 6 }, { smokeCount: 4 }), p('unrated', 'flower', {}, { smokeCount: 4 }), p('rated9', 'flower', { look: 9 }, { smokeCount: 4 }), p('also9', 'flower', { look: 9 }, { smokeCount: 4, dateTried: '2026-09-01' })],
-      view,
-    );
-    expect(rows.map((r) => r.product.id)).toEqual(['also9', 'rated9', 'rated6', 'unrated']);
-  });
-
-  it('follows the Type filter; nothing smoked → rank-empty; a page’s place and badge', () => {
-    const list = [p('f1', 'flower', { look: 5 }, { smokeCount: 2 }), p('e1', 'edibles', { taste: 5 }, { smokeCount: 9 }), p('f2', 'flower', { look: 5 }, { smokeCount: 0 })];
-    expect(rankProducts(list, { filter: 'flower', rankBy: 'used' }).map((r) => r.product.id)).toEqual(['f1']);
-    expect(boardPlace(list, 'e1', view)).toMatchObject({ rank: 1, band: null, first: true });
-    expect(boardPlace(list, 'f2', view)).toBeNull();
-    expect(placeBadge({ rank: 1, band: null, first: true }, view, 'your', { preset: 'gems', markFirst: true })).toBe('#1 by Most used');
-    expect(placeText(2, { filter: 'flower', rankBy: 'used' }, 'your')).toBe('#2 in Flower by Most used');
-    const none = [p('x', 'flower', { look: 5 }, { smokeCount: 0 })];
-    expect(leaderboardEmptyState(1, rankProducts(none, view).length, view)).toBe('rank-empty');
   });
 });

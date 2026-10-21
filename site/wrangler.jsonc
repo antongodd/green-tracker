@@ -1,0 +1,17 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Green Tracker's website (D63): a page for people who haven't got the app yet. Files only,
+  // no code, no database. Deployed by CI: from main to the public address, from dev to the
+  // preview (locked with Cloudflare Access, like the dev site).
+  "name": "green-tracker-site",
+  "account_id": "f8e8108b7cd94335e992d9569d41b48a",
+  "compatibility_date": "2026-09-01",
+  "assets": { "directory": "./public", "not_found_handling": "404-page" },
+  "workers_dev": true,
+  "preview_urls": false,
+  "env": {
+    "dev": {
+      "name": "green-tracker-site-dev"
+    }
+  }
+}

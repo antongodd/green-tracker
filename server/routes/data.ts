@@ -73,9 +73,6 @@ data.post('/restore', async (c) => {
   const purchaseRows: object[] = [];
   const photoRows: object[] = [];
   const entryRows: object[] = [];
-  const smokeRows: object[] = [];
-  const smoke = (p: string | null, e: string | null) => (x: { date: string; time: string; amount: number | null; effect: string | null; createdAt: number }) =>
-    smokeRows.push({ id: randomId(), p, e, date: x.date, time: x.time, amount: x.amount, effect: x.effect, created: x.createdAt });
   const crop = (c: { crop: { x: number; y: number; w: number; h: number; square: boolean } | null }) =>
     c.crop ? { cx: c.crop.x, cy: c.crop.y, cw: c.crop.w, ch: c.crop.h, cs: c.crop.square ? 1 : 0 } : { cx: null, cy: null, cw: null, ch: null, cs: 0 };
 
@@ -106,10 +103,7 @@ data.post('/restore', async (c) => {
     return id;
   };
 
-  for (const p of products) {
-    const id = addProduct(p, p.archived, 0);
-    p.smokes?.forEach(smoke(id, null));
-  }
+  for (const p of products) addProduct(p, p.archived, 0);
   for (const e of logEntries) {
     const id = randomId();
     entryRows.push({
@@ -126,7 +120,6 @@ data.post('/restore', async (c) => {
       // D50: the product a returned entry keeps; its photos come after the entry's.
       kept: e.kept ? addProduct(e.kept, false, 1) : null,
     });
-    e.smokes?.forEach(smoke(null, id));
     for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 });
   }
 
@@ -141,7 +134,6 @@ data.post('/restore', async (c) => {
 
   const statements: D1PreparedStatement[] = [
     db.prepare('DELETE FROM photos WHERE user_id = ?1').bind(userId),
-    db.prepare('DELETE FROM smokes WHERE user_id = ?1').bind(userId),
     db.prepare('DELETE FROM products WHERE user_id = ?1').bind(userId), // ratings and purchases cascade
     db.prepare('DELETE FROM log_entries WHERE user_id = ?1').bind(userId),
   ];
@@ -178,16 +170,6 @@ data.post('/restore', async (c) => {
         .bind(userId, chunk, now),
     );
   }
-  for (const chunk of chunks(smokeRows)) {
-    statements.push(
-      db
-        .prepare(
-          `INSERT INTO smokes (id, user_id, product_id, log_entry_id, date, time, amount, effect, created_at, updated_at)
-           SELECT ${j('id')}, ?1, ${j('p')}, ${j('e')}, ${j('date')}, ${j('time')}, ${j('amount')}, ${j('effect')}, ${j('created')}, ?3 FROM json_each(?2)`,
-        )
-        .bind(userId, chunk, now),
-    );
-  }
   for (const chunk of chunks(photoRows)) {
     statements.push(
       db
@@ -215,7 +197,7 @@ data.post('/restore', async (c) => {
 
   await db.batch(statements);
   deleteLater(c.executionCtx, c.env.PHOTOS, old.flatMap((o) => [...setKeys(userId, o.original_set), ...(o.image_set !== o.original_set ? imageKeys(userId, o.image_set) : [])]));
-  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, smokes: smokeRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
+  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
 });
 
 // Delete account --------------------------------------------------------------
@@ -235,7 +217,7 @@ data.post('/delete/options', async (c) => {
 
 /**
  * Step 2: with the passkey check and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, smokes, privacy and appearance settings, photos, the profile photo,
+ * the user row cascades to products, ratings, purchases, log entries, privacy and appearance settings, photos, the profile photo,
  * uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */

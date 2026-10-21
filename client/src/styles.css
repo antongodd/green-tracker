@@ -403,10 +403,6 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .score b { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .score .cap { font-size: 10px; }
 .score.unrated b { color: var(--text-3); font-weight: 600; }
-/* Most used (D44, option C): the Smokes flame in amber before the count, the caption under both. */
-.score.used { grid-template-columns: auto auto; column-gap: 4px; align-items: center; }
-.score.used .flame { width: 15px; height: 15px; color: var(--warning); }
-.score.used .cap { grid-column: 1 / -1; }
 
 /* Strain tags: uppercase (P2). */
 .tag { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; flex: none; }
@@ -554,14 +550,14 @@ div.hero-photo { cursor: default; }
 .select select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .select svg { position: absolute; right: 14px; top: 50%; width: 12px; height: 12px; margin-top: -6px; color: var(--text-2); pointer-events: none; }
 textarea.input { height: auto; min-height: 120px; padding: 12px 14px; resize: vertical; line-height: 1.45; }
-input[type="date"].input, input[type="time"].input { appearance: none; -webkit-appearance: none; display: flex; align-items: center; min-width: 0; max-width: 100%; }
-input[type="date"].input::-webkit-date-and-time-value, input[type="time"].input::-webkit-date-and-time-value { text-align: left; }
+input[type="date"].input { appearance: none; -webkit-appearance: none; display: flex; align-items: center; min-width: 0; max-width: 100%; }
+input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 /* The date box (D34): our calendar icon on the left, inside the box; the browser's picker button
    is stretched invisibly over the whole box, so a tap anywhere still opens the picker. */
 .datebox { position: relative; min-width: 0; }
 .datebox > svg { position: absolute; z-index: 1; left: 11px; top: 50%; width: 17px; height: 17px; margin-top: -8.5px; color: var(--accent-bright); pointer-events: none; }
-.datebox input[type="date"].input, .datebox input[type="time"].input { position: relative; padding-left: 36px; padding-right: 8px; }
-.datebox input[type="date"].input::-webkit-calendar-picker-indicator, .datebox input[type="time"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.datebox input[type="date"].input { position: relative; padding-left: 36px; padding-right: 8px; }
+.datebox input[type="date"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .two-col > * { min-width: 0; }
 /* Slim ratings (D34, 0.27.0): name and number on one line, a thinner slider right under it;
@@ -641,6 +637,16 @@ input[type="date"].input::-webkit-date-and-time-value, input[type="time"].input:
 .pill svg { width: 12px; height: 12px; color: var(--text-2); flex: none; }
 .pill.active { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
 .pill.active .k, .pill.active svg { color: var(--accent-bright); }
+/* Brands and suppliers (D59): the names you've used, under Source or Supplier while you type; pills
+   that wrap and never run past the box. */
+.suggest { display: grid; gap: 6px; margin-top: -4px; }
+/* In a two-column row it spans both, on its own line below them. */
+.two-col > .suggest { grid-column: 1 / -1; order: 1; }
+.suggest .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.suggest .chip { max-width: 100%; min-width: 0; }
+.suggest .chip .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.suggest .chip .n { color: var(--text-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.suggest-cap { font-size: 12px; font-weight: 600; color: var(--warning); }
 /* The real select covers the pill, transparent; 16px so iOS never zooms. */
 .pill select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; border: 0; cursor: pointer; appearance: none; -webkit-appearance: none; }
 .pill:has(select:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -875,15 +881,15 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
    growing would be cut off by the card's edge. Colour changes stay with Reduce
    Motion; the growing and the spring back don't. */
 .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .sheet .opt.is-pressed, .prow .who.is-pressed, .psum.is-pressed { background-color: rgba(88, 224, 140, 0.12); }
-.row:not(.tier).is-pressed { border-color: rgba(88, 224, 140, 0.5); }
+.row:not(.tier).is-pressed, .scard.is-pressed { border-color: rgba(88, 224, 140, 0.5); }
 .pill.is-pressed, .country-btn.is-pressed { border-color: var(--accent-bright); }
 .btn.secondary.is-pressed, .seg button.is-pressed { background-color: var(--surface-3); }
 .btn.primary.is-pressed, .fab.is-pressed { filter: brightness(1.08); }
 @media (prefers-reduced-motion: no-preference) {
-  .row, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .tab svg, .hbtn, .hero-photo, .pcell, .add-cell, .seg button, .more-btn, .clr, .country-btn, .addrow {
+  .row, .scard, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .tab svg, .hbtn, .hero-photo, .pcell, .add-cell, .seg button, .more-btn, .clr, .country-btn, .addrow {
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease-out, background-color 0.18s ease-out, border-color 0.18s ease-out, filter 0.18s ease-out;
   }
-  .row.is-pressed { position: relative; z-index: 1; transform: scale(1.03); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(88, 224, 140, 0.25); }
+  .row.is-pressed, .scard.is-pressed { position: relative; z-index: 1; transform: scale(1.03); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(88, 224, 140, 0.25); }
   .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .prow .who.is-pressed { transform: scale(1.02); }
   .btn.is-pressed, .country-btn.is-pressed { transform: scale(1.03); }
   .pill.is-pressed, .seg button.is-pressed, .pcell.is-pressed, .add-cell.is-pressed, .addrow.is-pressed { transform: scale(1.05); }
@@ -1039,76 +1045,6 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .kept-ic svg { width: 18px; height: 18px; }
 .sect .btn svg, .sect .btn.secondary svg { width: 18px; height: 18px; }
 
-/* ---------- Smokes (D43, 0.36.0) ----------
-   The tab: a strip of the last 7 days (a bar per smoke, up to five), then every smoke under a
-   frosted heading per day, newest first. The picker, the form and the Smokes card on product
-   and Log entry pages share the row pieces (.sbody, .nm, .sub, .log-chip). */
-.sk-week { height: 128px; border-radius: 14px; }
-.week { max-width: 688px; margin: 14px 16px 4px; padding: 12px 10px 10px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-edge); }
-@media (min-width: 720px) { .week { margin-left: auto; margin-right: auto; } }
-.week-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 0 4px 10px; font-size: 13px; color: var(--text-2); }
-.week-top b { font-family: var(--num-font); font-size: 22px; font-weight: 700; color: var(--text); margin-right: 2px; }
-.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.day { display: grid; justify-items: center; gap: 4px; min-height: 44px; padding: 6px 0 7px; border-radius: 10px; background: none; border: 1px solid transparent; color: var(--text-2); }
-.day:disabled { cursor: default; }
-.day .dl { font-size: 11px; font-weight: 600; }
-.day .bars { height: 34px; width: 14px; display: flex; flex-direction: column-reverse; gap: 2px; }
-.day .bars i { display: block; height: 5px; border-radius: 3px; background: var(--bar-fill); }
-.day .bars i.none { height: 4px; background: rgba(238, 244, 240, 0.08); }
-.day .dn { font-family: var(--num-font); font-size: 13px; font-weight: 700; }
-.day.today { color: var(--accent-bright); background: var(--accent-soft); border-color: rgba(88, 224, 140, 0.35); }
-.sday { max-width: 720px; margin: 0 auto; }
-/* The tab has no control row, so its day headings stick right under the header. */
-.sday-h { top: var(--header-h); }
-.srows { display: grid; gap: 8px; padding: 0 16px; }
-.srow { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 68px; padding: 10px 12px 10px 10px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
-.srow .thumb, .chosen .thumb { width: 48px; height: 48px; border-radius: 9px; }
-.srow .tm { font-size: 14px; color: var(--text-2); }
-.sbody { display: grid; min-width: 0; gap: 1px; }
-.nm { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 16px; font-weight: 600; }
-.nm-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sbody .sub { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.log-chip { flex: none; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-bright); background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; }
-@media (prefers-reduced-motion: no-preference) {
-  .srow.fresh { animation: smoke-fresh 1.6s ease-out; }
-  @keyframes smoke-fresh { from { box-shadow: 0 0 0 2px var(--accent-bright), 0 0 24px rgba(88, 224, 140, 0.5); } }
-}
-
-/* The picker: search, then Recent, Leaderboard and Log, then New Log entry. */
-.picker { padding-top: calc(var(--header-h) + 12px); }
-.pick-search { max-width: 720px; margin: 0 auto; padding: 0 16px; }
-.pick-group { max-width: 720px; margin: 0 auto; }
-.pick-group h2.lh { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.pick-group > .lrows, .pick-group > .fgroup { margin-top: 0; }
-.pick-group:last-of-type { margin-top: 20px; }
-.lrow.pick { width: 100%; grid-template-columns: 40px minmax(0, 1fr) auto; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; }
-.lrow.pick:first-child { border-top: 0; }
-.lrow.pick .nm { font-weight: 500; }
-.lrow.pick .cnt { font-size: 13px; font-weight: 700; color: var(--text-2); }
-.lrow.newlog { grid-template-columns: 40px minmax(0, 1fr); }
-.lrow.newlog .nm { color: var(--accent-bright); font-weight: 600; }
-.thumb.plus { background: none; box-shadow: none; border: 1.5px dashed rgba(88, 224, 140, 0.5); color: var(--accent-bright); }
-.thumb.plus svg { width: 18px; height: 18px; }
-.newlog-form { margin: 0 16px; }
-.pick-error { max-width: 688px; margin: 12px auto 0; padding: 0 16px; }
-
-/* The form: what you had, then When, How much (with quick amounts) and Effect. */
-.chosen { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(88, 224, 140, 0.26); background: var(--surface-1); color: var(--text); font-family: var(--num-font); font-size: 15px; font-weight: 600; }
-.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-bright); color: var(--accent-bright); }
-.smoke-form textarea.input { min-height: 96px; }
-
-/* The Smokes card (option 1): the count in a big tile, when you last had it, the last three. */
-.smk { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; }
-.smk-count { min-width: 104px; padding: 8px 14px; }
-.smk-count b { font-size: 32px; line-height: 1.1; }
-.smk-last { display: grid; gap: 2px; min-width: 0; }
-.smk-last strong { font-weight: 600; }
-.smk-recent { display: grid; }
-.smk-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 44px; border-top: 1px solid var(--divider); color: var(--text); text-decoration: none; font-size: 14px; }
-.smk-row .w { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 /* ---------- Privacy (D45, 0.38.0) ----------
    The "What followers see" card on top (violet: it's a follower's eye view), then the
    switches in groups. A switch whose prerequisite is off is dimmed and can't be used. */
@@ -1128,13 +1064,11 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pv-score b { font-family: var(--num-font); font-size: 20px; line-height: 1.1; }
 .pv-score span { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
 .pv-line { margin: 0; font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
-.pv-line .flame { width: 13px; height: 13px; color: var(--warning); flex: none; }
 .pv-nothing { margin: 0; padding: 16px; text-align: center; font-size: 14px; color: var(--text-2); border-radius: 12px; background: var(--surface-2); border: 1px dashed rgba(255, 255, 255, 0.12); }
 .pv-error { max-width: 688px; margin: 10px 16px 0; }
 .privacy section > h2.lh { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 .priv-row { cursor: pointer; }
 .priv-row .main > span:first-child { font-size: 16px; }
-.priv-row .warn { color: var(--warning); font-weight: 600; }
 .priv-row.off { cursor: default; }
 .priv-row.off .switch { opacity: 0.5; }
 .priv-foot { text-align: left; padding: 16px 4px 0; }
@@ -1171,10 +1105,37 @@ label.btn:has(input:disabled) { opacity: 0.4; }
   background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--surface-1); border: 1px solid rgba(167, 139, 250, 0.3); }
 .pv-note a { color: #c4b5fd; }
 @media (min-width: 720px) { .pv-note { margin-left: auto; margin-right: auto; } }
-/* A follower's Smokes card (D45): the flame beside the count. */
-.smk-count b .flame { width: 20px; height: 20px; color: var(--warning); margin-right: 4px; vertical-align: -2px; }
 
 /* Ticks (D56): a label filling a button, so your finger lands on the hidden switch's label. */
 .has-tick { position: relative; }
 .tick { position: absolute; inset: 0; border-radius: inherit; cursor: inherit; }
 .tick-switch { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+
+/* ---------- brands and suppliers (D59) ---------- */
+/* A Source or Supplier on a product page: green, with an arrow, opening that name's page. The
+   padding gives a taller tap area without moving the line. */
+.namelink { display: inline-flex; align-items: center; gap: 2px; padding: 8px 0; margin: -8px 0; color: var(--accent-bright); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.namelink .chev { width: 12px; height: 12px; flex: none; }
+.brand-lead { padding: 14px 16px 10px; max-width: 720px; margin: 0 auto; }
+.brands-top { display: grid; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
+.brand-sort { display: flex; flex-wrap: wrap; gap: 8px; }
+/* The Sources tab (D61, option B "Cards"): two a row, each with its best product's photo. */
+.scards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px; max-width: 720px; margin: 0 auto; }
+.scard { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 10px; border-radius: 14px; border: 1px solid var(--card-edge); background: linear-gradient(135deg, rgba(88, 224, 140, 0.12), rgba(88, 224, 140, 0) 70%), var(--surface-1); color: var(--text); text-decoration: none; }
+.scard-ph { position: relative; display: grid; place-items: center; height: 92px; border-radius: 10px; overflow: hidden; background: radial-gradient(50% 60% at 50% 45%, rgba(88, 224, 140, 0.22), transparent 70%), var(--surface-2); box-shadow: var(--photo-edge); color: var(--accent-bright); }
+/* Laid over the box, not in the grid: a grid row has no height of its own, so a 100% height didn't hold and tall photos spilled out, cut off (0.52.0). */
+.scard-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.scard-ph.cut img { object-fit: contain; }
+.scard-ph svg { width: 36px; height: 36px; }
+.scard-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; min-width: 0; }
+.scard .nm { min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.scard .avg { flex: none; font-family: var(--num-font); font-size: 20px; font-weight: 700; color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+.scard .sub { font-size: 12px; color: var(--text-2); overflow-wrap: anywhere; }
+.scard .sub.best { margin-top: -4px; }
+.scard .meta.roles { flex-wrap: wrap; white-space: normal; }
+.scards-none { grid-column: 1 / -1; margin: 0; padding: 16px; color: var(--text-2); }
+/* Brand / Bought here, in place of a row's price · Source line. */
+.meta.roles { gap: 6px; }
+.role { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; }
+.role.brand { background: var(--accent-soft); color: var(--accent-bright); }
+.role.shop { background: rgba(64, 196, 196, 0.16); color: #7fe3e3; }

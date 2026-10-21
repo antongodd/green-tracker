@@ -17,7 +17,6 @@ export class Browser {
   lastSetCookie: string[] = [];
   constructor(
     public ip = `10.${blockA}.${blockB + Math.floor(++ipCounter / 250)}.${ipCounter % 250}`,
-    /** Which server: the main one (Smokes on), or `inject('liveApiBase')` for one with Smokes off (D46). */
     public base = inject('apiBase'),
   ) {}
 

@@ -55,7 +55,7 @@ test('create an account, sign out and in, recover a lost device, manage passkeys
   await expect(page.getByRole('link', { name: 'Leaderboard', exact: true })).toHaveAttribute('aria-current', 'page');
   await shot(page, '04-home');
 
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await expect(page.getByText(`@${username}`)).toBeVisible();
   await expect(page.getByRole('link', { name: /Recovery codes\s*10 left/ })).toBeVisible();
   await shot(page, '05-more');
@@ -67,7 +67,7 @@ test('create an account, sign out and in, recover a lost device, manage passkeys
   await expect(page.getByRole('link', { name: 'Leaderboard', exact: true })).toHaveAttribute('aria-current', 'page');
 
   // Lose the device: sign out and wipe the authenticator, then use a recovery code.
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await cdp.send('WebAuthn.clearCredentials', { authenticatorId });
   await page.getByRole('link', { name: 'Use a recovery code' }).click();
@@ -102,7 +102,7 @@ test('create an account, sign out and in, recover a lost device, manage passkeys
   await shot(page, '08-passkeys');
 
   // Sign out everywhere, confirmed.
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Sign out everywhere' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Sign out everywhere' }).click();
   await expect(page).toHaveURL(/\/signin$/);
@@ -119,7 +119,7 @@ test('a used recovery code is refused', async ({ page }) => {
   const code = (await page.getByRole('list', { name: 'Recovery codes' }).locator('li').first().innerText()).trim();
   await page.getByLabel('I’ve saved these codes somewhere safe').check();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
 
   for (const expectOk of [true, false]) {

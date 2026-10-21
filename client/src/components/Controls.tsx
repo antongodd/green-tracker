@@ -4,7 +4,7 @@ import { productType } from '../../../shared/domain/productTypes';
 import { ChevronDown } from '../icons';
 import { ColoursButton } from './Gems';
 
-const SCORED = (r: RankBy) => r !== 'price' && r !== 'vfm' && r !== 'used';
+const SCORED = (r: RankBy) => r !== 'price' && r !== 'vfm';
 
 // Short forms, used only when the measured row doesn't fit (brief §6.4:
 // full labels by default; abbreviate only what is measured not to fit).
@@ -35,7 +35,7 @@ function Pill(p: { id: string; name: string; label: string; active: boolean; val
  * The control row under the header (P4: sticky). Rank by on the left (Leaderboard
  * only), then the Colours key (D48), Type on the right in the same place on every screen.
  */
-export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boolean; used?: boolean; onFilter: (f: TypeFilter) => void; onRankBy?: (r: RankBy) => void; onKey?: () => void }) {
+export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boolean; onFilter: (f: TypeFilter) => void; onRankBy?: (r: RankBy) => void; onKey?: () => void }) {
   const row = useRef<HTMLDivElement>(null);
   // 0 = full labels, 1 = short Rank label, 2 = short Rank and Type labels.
   const [compact, setCompact] = useState(0);
@@ -65,7 +65,7 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
   const typeLabel = filterOptions().find((o) => o.key === p.filter)!.label;
   let rank: { options: { key: string; label: string }[]; label: string } | null = null;
   if (p.rankBy && p.onRankBy) {
-    const options = rankByOptions(p.filter, { money: p.money ?? true, used: p.used ?? p.money ?? true });
+    const options = rankByOptions(p.filter, { money: p.money ?? true });
     const full = options.find((o) => o.key === p.rankBy)?.label ?? 'Overall';
     const short = p.rankBy === 'price' && p.filter !== 'all' ? SHORT_PRICE[productType(p.filter).unit.amount] : SHORT_RANK[p.rankBy];
     rank = { options, label: compact >= 1 && short ? short : full };
@@ -76,7 +76,7 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
       {rank && p.rankBy && (
         <Pill id="rank-by" name="Rank" label={rank.label} active={p.rankBy !== 'overall'} value={p.rankBy} options={rank.options} onChange={(v) => p.onRankBy!(v as RankBy)} />
       )}
-      {/* D48: the Colours key, beside Rank by, only when ranking by a score (price, value for money and Most used have no colours). */}
+      {/* D48: the Colours key, beside Rank by, only when ranking by a score (price and value for money have no colours). */}
       {p.onKey && p.rankBy && SCORED(p.rankBy) && <ColoursButton onClick={p.onKey} />}
       <span class="controls-right">
         <Pill

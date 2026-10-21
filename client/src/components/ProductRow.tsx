@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { heatStyle } from '../heat';
@@ -8,7 +9,7 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { overall } from '../../../shared/domain/ratings';
-import { FlameIcon, LockIcon, TypeMark } from '../icons';
+import { LockIcon, TypeMark } from '../icons';
 import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
 import { Glints, RankCrown, rowClass, useAppearance } from './Gems';
@@ -85,15 +86,14 @@ export function MetaLine(p: { product: Product }) {
   );
 }
 
-/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp, Most used a whole count. */
+/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp. */
 export function formatRankValue(rankBy: RankBy, value: number): string {
-  if (rankBy === 'used') return String(Math.round(value));
   if (rankBy === 'price') return formatGBP(value);
   if (rankBy === 'vfm') return formatVFM(value);
   return formatScore(value);
 }
 
-export function Score(p: { value: number | null; label?: string; text?: string; flame?: boolean }) {
+export function Score(p: { value: number | null; label?: string; text?: string }) {
   if (p.value === null) {
     return (
       <div class="score unrated">
@@ -103,9 +103,7 @@ export function Score(p: { value: number | null; label?: string; text?: string; 
     );
   }
   return (
-    <div class={`score${p.flame ? ' used' : ''}`}>
-      {/* Most used (D44, option C): the Smokes flame in amber before the count. */}
-      {p.flame && <FlameIcon class="flame" />}
+    <div class="score">
       <b>{p.text ?? formatScore(p.value)}</b>
       <span class="cap">{p.label ?? 'Overall'}</span>
     </div>
@@ -114,9 +112,10 @@ export function Score(p: { value: number | null; label?: string; text?: string; 
 
 /**
  * The Leaderboard / Archive row (brief §6.1). The score shows the ranked value,
- * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default.
+ * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default. `meta` replaces the
+ * metadata line (a brand's page shows Brand / Bought here there, D59).
  */
-export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string }) {
+export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string; meta?: ComponentChildren }) {
   const appearance = useAppearance();
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
@@ -136,9 +135,9 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
       <div class="mid">
         <div class="name">{p.product.name}</div>
         <Cluster product={p.product} showLock />
-        <MetaLine product={p.product} />
+        {p.meta ?? <MetaLine product={p.product} />}
       </div>
-      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} flame={rankBy === 'used'} />
+      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} />
     </a>
   );
 }

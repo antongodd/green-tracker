@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { autoCapitalise } from '../../../shared/domain/capitalise';
+import { canonicalName, usedNames, type UsedName } from '../../../shared/domain/names';
 import { OTHER_COUNTRY } from '../../../shared/domain/countries';
 import { formatAmount, formatGBP, formatScore, formatUnitPrice } from '../../../shared/domain/format';
 import { latestPurchase, unitPrice } from '../../../shared/domain/money';
@@ -15,7 +16,8 @@ import { GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../comp
 import { formatIsoDate, todayIso } from '../components/ProductRow';
 import { ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
 import { scoreHeat } from '../../../shared/domain/heat';
-import { cachedProduct, cachedProducts, fetchProduct, saveProduct } from '../products';
+import { cachedProduct, cachedProducts, fetchProduct, fetchProducts, saveProduct } from '../products';
+import { intoSuggestions, NameSuggestions } from '../components/NameSuggestions';
 import { rankProducts } from '../../../shared/domain/leaderboard';
 import { play, switchAttr } from '../sounds';
 import { Tick } from '../components/Tick';
@@ -122,6 +124,15 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
   const [confirmLeave, setConfirmLeave] = useState(false);
   const online = useOnline();
+  // D59: the names already used in Source and Supplier, offered under those boxes while you type.
+  const [used, setUsed] = useState<UsedName[]>(() => usedNames(cachedProducts() ?? []));
+  const [suggesting, setSuggesting] = useState<string | null>(null);
+  useEffect(() => {
+    if (!cachedProducts())
+      fetchProducts()
+        .then((list) => setUsed(usedNames(list)))
+        .catch(() => {});
+  }, []);
   const saved = useRef(false);
   const loaded = useRef(!!form);
 
@@ -175,6 +186,18 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     set('purchases', [...form.purchases, { key, date: todayIso(), amount: '', totalPaid: '', supplier: '' }]);
     setOpenPurchase(key);
     focusAmount.current = key;
+  };
+  // Leaving Source or Supplier (not for its suggestions) saves the spelling you already use (D59).
+  // Read from the latest form: a picked suggestion and the blur that follows it land together (D61).
+  const leaveSource = (e?: FocusEvent) => {
+    if (e && intoSuggestions(e.relatedTarget, 'source')) return;
+    setSuggesting(null);
+    setForm((f) => (f ? { ...f, source: canonicalName(f.source ?? '', used) } : f));
+  };
+  const leaveSupplier = (d: PurchaseDraft, e?: FocusEvent) => {
+    if (e && intoSuggestions(e.relatedTarget, `${d.key}-supplier`)) return;
+    setSuggesting(null);
+    setForm((f) => (f ? { ...f, purchases: f.purchases.map((x) => (x.key === d.key ? { ...x, supplier: canonicalName(x.supplier, used) } : x)) } : f));
   };
   const o = overall(form.productType, form.ratings);
   const count = ratedCount(form.productType, form.ratings);
@@ -248,7 +271,9 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
             <div class="two-col">
-              <TextField id="source" label="Source" placeholder="Source/Brand" value={form.source ?? ''} onInput={(v) => set('source', v)} onBlur={() => set('source', autoCapitalise(form.source ?? ''))} autoCapitalize="words" />
+              <TextField id="source" label="Source" placeholder="Source/Brand" value={form.source ?? ''} onInput={(v) => set('source', v)} onFocus={() => setSuggesting('source')} onBlur={leaveSource} autoCapitalize="words" />
+              {/* Next after Source for Tab, drawn across the card under both boxes (.suggest in a .two-col). */}
+              {suggesting === 'source' && <NameSuggestions for="source" label="Source" typed={form.source ?? ''} used={used} onPick={(name) => set('source', name)} onLeave={leaveSource} />}
               <TextField id="date-tried" label="Date tried" type="date" value={form.dateTried ?? ''} onInput={(v) => set('dateTried', v || null)} />
             </div>
           </section>
@@ -313,7 +338,11 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                       </div>
                       <div class="two-col">
                         <TextField id={`${d.key}-paid`} label="Total paid (£)" inputMode="decimal" value={d.totalPaid} onInput={(v) => setPurchase(d.key, { totalPaid: v })} />
-                        <TextField id={`${d.key}-supplier`} label="Supplier" value={d.supplier} onInput={(v) => setPurchase(d.key, { supplier: v })} onBlur={() => setPurchase(d.key, { supplier: autoCapitalise(d.supplier) })} autoCapitalize="words" />
+                        <TextField id={`${d.key}-supplier`} label="Supplier" value={d.supplier} onInput={(v) => setPurchase(d.key, { supplier: v })} onFocus={() => setSuggesting(`${d.key}-supplier`)} onBlur={(e) => leaveSupplier(d, e)} autoCapitalize="words" />
+                        {suggesting === `${d.key}-supplier` && (
+                          // The product's Source comes first: with no brand, it's often where it was bought.
+                          <NameSuggestions for={`${d.key}-supplier`} label="Supplier" typed={d.supplier} used={used} first={form.source} onPick={(name) => setForm((f) => (f ? { ...f, purchases: f.purchases.map((x) => (x.key === d.key ? { ...x, supplier: name } : x)) } : f))} onLeave={() => leaveSupplier(d)} />
+                        )}
                       </div>
                       <div class="pcard-foot">
                         <span class={total === null ? 'warn' : ''}>{total === null ? 'Needs a total paid to be kept' : up !== null ? formatUnitPrice(form.productType, up) : ''}</span>
