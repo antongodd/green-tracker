@@ -25,10 +25,13 @@ export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
   return null;
 }
 
-export type Preset = 'gems' | 'prism' | 'metals';
-export const PRESET_KEYS = ['gems', 'prism', 'metals'] as const satisfies readonly Preset[];
+export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals';
+/** In the order Appearance lists them: the two made for the new look (D64) first. */
+export const PRESET_KEYS = ['aurora', 'neon', 'gems', 'prism', 'metals'] as const satisfies readonly Preset[];
 
 export const PRESETS: Record<Preset, { label: string; description: string; bands: readonly [string, string, string, string] }> = {
+  aurora: { label: 'Aurora', description: 'Jade, Lagoon, Violet, Aurora', bands: ['Jade', 'Lagoon', 'Violet', 'Aurora'] },
+  neon: { label: 'Neon', description: 'Lime, Electric, Hot pink, Neon', bands: ['Lime', 'Electric', 'Hot pink', 'Neon'] },
   gems: { label: 'Gems', description: 'Emerald, Sapphire, Amethyst, Rainbow', bands: ['Emerald', 'Sapphire', 'Amethyst', 'Rainbow'] },
   prism: { label: 'Prism', description: 'One rainbow that grows stronger', bands: ['Prism', 'Prism', 'Prism', 'Prism'] },
   metals: { label: 'Metals', description: 'Emerald, Rose gold, Diamond, Rainbow', bands: ['Emerald', 'Rose gold', 'Diamond', 'Rainbow'] },
@@ -40,23 +43,54 @@ export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].
 /** "8.0 – 8.4" … "9.5 – 10", for the key. */
 export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `${BAND_FLOORS[band - 1]!.toFixed(1)} – ${(BAND_FLOORS[band]! - 0.1).toFixed(1)}`);
 
+/** The whole app's look (D64; all four built since D65). */
+export type Look = 'aurora' | 'neon' | 'pearl' | 'forest';
+export const LOOK_KEYS = ['aurora', 'neon', 'pearl', 'forest'] as const satisfies readonly Look[];
+/** The looks you can choose (a look not listed would show as "Coming next"). All four since D65. */
+export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
+/** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
+export const LOOK_BG: Record<Look, string> = { aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807' };
+export const LOOKS: Record<Look, { label: string; description: string }> = {
+  aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
+  neon: { label: 'Neon Night', description: 'Deep indigo with violet, pink and cyan lights' },
+  pearl: { label: 'Holo Pearl', description: 'Near-black with pearly rainbow edges' },
+  forest: { label: 'Deep Forest', description: 'The green look, tidied' },
+};
+
+/** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. */
+export type BoardTop = 'hero' | 'tiles' | 'strip';
+export const BOARD_TOP_KEYS = ['hero', 'tiles', 'strip'] as const satisfies readonly BoardTop[];
+export const BOARD_TOPS: Record<BoardTop, { label: string; description: string }> = {
+  hero: { label: 'Glass hero', description: 'One big card' },
+  tiles: { label: 'Three tiles', description: 'Side by side' },
+  strip: { label: 'Slim strip', description: 'One line, more rows' },
+};
+
 export interface Appearance {
+  /** The whole app's look (D64). */
+  look: Look;
+  /** The top of the Leaderboard and the Log (D64). */
+  top: BoardTop;
   preset: Preset;
   /** The crown and halo on your #1 (D48). */
   markFirst: boolean;
 }
 
-/** Where everyone starts (the owner's choice): Gems, with #1 marked. */
-export const DEFAULT_APPEARANCE: Appearance = { preset: 'gems', markFirst: true };
+/** Where everyone starts (the owner's choice, D64): Aurora Glass, the glass hero, Aurora colours, #1 marked. */
+export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true };
 
-/** A whole Appearance object, checked: a known preset and a boolean. Anything else is refused. */
+/**
+ * A whole Appearance object, checked: a look you can choose, a known top and preset, and a boolean.
+ * A look or top that's missing (a backup from before 0.54.0, or an app still open from before)
+ * takes the default; anything else wrong is refused.
+ */
 export function validateAppearance(raw: unknown): { ok: true; value: Appearance } | { ok: false; message: string } {
   const bad = { ok: false, message: 'The appearance settings could not be read.' } as const;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return bad;
   const r = raw as Record<string, unknown>;
+  const look = r.look === undefined ? DEFAULT_APPEARANCE.look : r.look;
+  const top = r.top === undefined ? DEFAULT_APPEARANCE.top : r.top;
+  if (!READY_LOOKS.includes(look as Look) || !BOARD_TOP_KEYS.includes(top as BoardTop)) return bad;
   if (!PRESET_KEYS.includes(r.preset as Preset) || typeof r.markFirst !== 'boolean') return bad;
-  return { ok: true, value: { preset: r.preset as Preset, markFirst: r.markFirst } };
+  return { ok: true, value: { look: look as Look, top: top as BoardTop, preset: r.preset as Preset, markFirst: r.markFirst } };
 }
-
-/** The line under More → Appearance: "Leaderboard colours: Gems". */
-export const appearanceSummary = (a: Appearance): string => `Leaderboard colours: ${PRESETS[a.preset].label}`;

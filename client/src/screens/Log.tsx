@@ -86,6 +86,8 @@ export function Log() {
   const { rows, sources } = ready ? toRows(products!, entries!) : { rows: [], sources: new Map<string, Source>() };
   const groups = groupLog(rows, view.filter);
   const tiles = logTiles(groups);
+  // The glass hero's line (D64): the country you've tried most from.
+  const mostFrom = groups.filter((g) => g.country).reduce<(typeof groups)[number] | null>((m, g) => (!m || g.rows.length > m.rows.length ? g : m), null);
   const setFilter = (filter: ViewState['filter']) => {
     // One Type setting shared with the Leaderboard (its Rank by falls back if needed).
     setView(saveView({ ...loadView(), filter }));
@@ -114,6 +116,14 @@ export function Log() {
                 { value: String(tiles.countries), label: 'Countries' },
                 { value: formatWeightTotal(tiles.totalGrams), label: 'Total' },
               ]}
+              foot={mostFrom && (
+                <>
+                  <span class="who">
+                    Most from · <b>{mostFrom.country!.flag && <span class="flag">{mostFrom.country!.flag} </span>}{mostFrom.country!.name}</b>
+                  </span>
+                  <b class="n">{mostFrom.rows.length}</b>
+                </>
+              )}
             />
             {rows.length === 0 ? (
               <EmptyCard art="log" title="Your Log is empty">

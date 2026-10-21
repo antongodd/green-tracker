@@ -5,15 +5,15 @@ import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LayoutIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
 import { linkTo } from '../router';
-import { fetchPrivacy } from '../privacy';
+import { cachedPrivacy, fetchPrivacy } from '../privacy';
 import { privacySummary, type Privacy } from '../../../shared/domain/privacy';
 import { formatDate, useSession } from '../session';
-import { PRESETS } from '../../../shared/domain/gems';
+import { BOARD_TOPS, LOOKS, PRESETS } from '../../../shared/domain/gems';
 import { useAppearance } from '../components/Gems';
 import { sounds } from '../sounds';
 
@@ -77,7 +77,7 @@ export function More() {
   const [archived, setArchived] = useState<number | null>(null);
   const [products, setProducts] = useState<number | null>(() => cachedProducts()?.length ?? null);
   const [counts, setCounts] = useState<{ followers: number; following: number } | null>(null);
-  const [privacy, setPrivacy] = useState<Privacy | null>(null);
+  const [privacy, setPrivacy] = useState<Privacy | null>(cachedPrivacy);
 
   useEffect(() => {
     fetchArchived()
@@ -137,10 +137,12 @@ export function More() {
             <Row label="What followers see" sub={privacy ? privacySummary(privacy) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
           </div>
         </div>
-        {/* D48: how the app looks for you; D57: and sounds. */}
+        {/* D48: how the app looks for you (D64: the look and the Leaderboard's top too, all on one screen); D57: and sounds. */}
         <div class="lh cap">Appearance</div>
         <div class="wrap">
           <div class="list">
+            <Row label="Look" value={LOOKS[appearance.look].label} to="/more/appearance" icon={SparkleIcon} tint="violet" />
+            <Row label="Leaderboard top" value={BOARD_TOPS[appearance.top].label} to="/more/appearance" icon={LayoutIcon} tint="violet" />
             <Row label="Leaderboard colours" value={PRESETS[appearance.preset].label} to="/more/appearance" icon={GemIcon} tint="gem" />
             {/* D57: sounds and ticks have their own screen; saved on this phone. */}
             <Row label="Sounds and ticks" value={sounds().on ? 'On' : 'Off'} to="/more/sounds" icon={SoundIcon} />

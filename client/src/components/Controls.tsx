@@ -2,7 +2,9 @@ import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { filterOptions, rankByOptions, type RankBy, type TypeFilter } from '../../../shared/domain/leaderboard';
 import { productType } from '../../../shared/domain/productTypes';
 import { ChevronDown } from '../icons';
-import { ColoursButton } from './Gems';
+import type { ComponentChildren } from 'preact';
+import type { BoardTop } from '../../../shared/domain/gems';
+import { ColoursButton, useAppearance } from './Gems';
 
 const SCORED = (r: RankBy) => r !== 'price' && r !== 'vfm';
 
@@ -94,15 +96,33 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
 }
 
 /** Stats tiles (brief §6.3): three equal tiles, value over caption. */
-export function Tiles(p: { tiles: { value: string; label: string }[] }) {
-  return (
-    <div class={`tiles${p.tiles.length === 2 ? ' two' : ''}`}>
-      {p.tiles.map((t) => (
-        <div class="tile" key={t.label}>
-          <b>{t.value}</b>
-          <span class="cap">{t.label}</span>
-        </div>
-      ))}
+/**
+ * The stats at the top of the Leaderboard, the Log, a friend's board and a name's page, laid out
+ * as you chose in Appearance (D64): the glass hero (`lead` big, the others beside it, `foot`
+ * underneath), three tiles side by side, or one slim strip. Each stat is a `.tile` in every layout.
+ */
+export function Tiles(p: { tiles: { value: string; label: string }[]; lead?: number; foot?: ComponentChildren; top?: BoardTop }) {
+  const saved = useAppearance();
+  const top = p.top ?? saved.top; // Appearance's preview shows the choice before it's saved
+  // Unbounded is wide: a long value (£10800.00) gets a smaller size so it fits a tile on the narrowest iPhone.
+  const tile = (t: { value: string; label: string }, cls = '') => (
+    <div class={`tile${cls}`} key={t.label} data-len={t.value.length >= 7 ? Math.min(t.value.length, 9) : undefined}>
+      <b>{t.value}</b>
+      <span class="cap">{t.label}</span>
     </div>
   );
+  if (top === 'hero') {
+    // The tiles keep their order (it's the reading order); the grid puts the lead on the left.
+    const lead = p.lead ?? 0;
+    return (
+      <div class="banner hero">
+        <div class="stats" style={{ '--side-rows': p.tiles.length - 1 }}>
+          {p.tiles.map((t, i) => tile(t, i === lead ? ' lead' : ''))}
+        </div>
+        {p.foot && <div class="foot">{p.foot}</div>}
+      </div>
+    );
+  }
+  if (top === 'strip') return <div class="banner strip">{p.tiles.map((t) => tile(t))}</div>;
+  return <div class={`tiles${p.tiles.length === 2 ? ' two' : ''}`}>{p.tiles.map((t) => tile(t))}</div>;
 }

@@ -25,13 +25,20 @@ describe('appearance settings (D48)', () => {
   it('a change is saved to the account: another phone signed in sees it', async () => {
     const b = new Browser();
     await signUp(b);
-    const mine: Appearance = { preset: 'metals', markFirst: false };
+    const mine: Appearance = { look: 'aurora', top: 'strip', preset: 'metals', markFirst: false };
     const r = await b.req('PUT', '/api/appearance', mine);
     expect(r.status).toBe(200);
     expect(r.json.appearance).toEqual(mine);
     expect((await b.get('/api/auth/me')).json.appearance).toEqual(mine);
+    expect((await b.req('PUT', '/api/appearance', { look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true });
+    // An app still open from before 0.54.0 sends no look or top: they take the defaults.
     expect((await b.req('PUT', '/api/appearance', { preset: 'prism', markFirst: true })).status).toBe(200);
-    expect((await b.get('/api/appearance')).json.appearance).toEqual({ preset: 'prism', markFirst: true });
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'prism', markFirst: true });
+    // Every look can be saved since D65; one that doesn't exist is refused.
+    expect((await b.req('PUT', '/api/appearance', { look: 'pearl', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'pearl', top: 'hero', preset: 'prism', markFirst: true });
+    expect((await b.req('PUT', '/api/appearance', { look: 'sepia', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(400);
   });
 
   it('never reaches anyone else: a friend’s board carries no appearance', async () => {
@@ -55,7 +62,7 @@ describe('export and restore (D48)', () => {
   it('a restore puts the file’s settings back; a file from before 0.41.0 leaves yours alone; a bad one is refused', async () => {
     const b = new Browser();
     await signUp(b);
-    const theirs: Appearance = { preset: 'prism', markFirst: false };
+    const theirs: Appearance = { look: 'aurora', top: 'tiles', preset: 'prism', markFirst: false };
     const payload: RestorePayload = { products: [{ ...emptyProductInput(), name: 'P', archived: false, createdAt: 1 }], logEntries: [], appearance: theirs };
     expect((await b.post('/api/data/restore', payload)).status).toBe(200);
     expect((await b.get('/api/appearance')).json.appearance).toEqual(theirs);
@@ -64,5 +71,8 @@ describe('export and restore (D48)', () => {
     const bad = await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'gold', markFirst: true } });
     expect(bad.status).toBe(400);
     expect((await b.get('/api/appearance')).json.appearance).toEqual(theirs);
+    // A file from before 0.54.0 has a preset but no look or top: those take the defaults (D64).
+    expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'metals', markFirst: true } })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: true });
   });
 });

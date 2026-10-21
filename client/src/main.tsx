@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import './styles.css';
 import { api, type Me } from './api';
+import { DEFAULT_APPEARANCE, LOOK_BG } from '../../shared/domain/gems';
 import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
@@ -19,6 +20,7 @@ import { Archive, Leaderboard } from './screens/Leaderboard';
 import { More, Passkeys, RecoveryCodes } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
+import { clearPrivacyCache } from './privacy';
 import { clearEntryCache } from './logEntries';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
@@ -45,6 +47,7 @@ function App() {
       setMe((prev) => {
         if (prev?.user?.username !== next.user?.username) {
           clearProductCache();
+          clearPrivacyCache();
           clearEntryCache();
         }
         return next;
@@ -58,6 +61,19 @@ function App() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // The whole app's look (D64, D65): html[data-look] picks its colours, the Home Screen app's top bar
+  // follows, and this phone remembers it so the next launch opens in it (look.js). Signed out, the
+  // last look stays until someone signs in.
+  const look = me?.user ? (me.appearance?.look ?? DEFAULT_APPEARANCE.look) : null;
+  useEffect(() => {
+    if (!look) return;
+    document.documentElement.dataset.look = look;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', LOOK_BG[look]);
+    try {
+      localStorage.setItem('gt.look', look);
+    } catch {}
+  }, [look]);
 
   // Keep the address bar honest: signed-out people live on the sign-in paths, everyone else never sees them.
   const signedIn = !!me?.user;

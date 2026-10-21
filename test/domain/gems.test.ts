@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appearanceSummary, bandName, bandRange, DEFAULT_APPEARANCE, PRESET_KEYS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -28,21 +28,36 @@ describe('Leaderboard colours by score (D48)', () => {
     expect([1, 2, 3, 4].map((b) => bandName('gems', b as 1))).toEqual(['Emerald', 'Sapphire', 'Amethyst', 'Rainbow']);
     expect([1, 2, 3, 4].map((b) => bandName('metals', b as 1))).toEqual(['Emerald', 'Rose gold', 'Diamond', 'Rainbow']);
     expect([1, 2, 3, 4].map((b) => bandName('prism', b as 1))).toEqual(['Prism', 'Prism', 'Prism', 'Prism']);
+    expect([1, 2, 3, 4].map((b) => bandName('aurora', b as 1))).toEqual(['Jade', 'Lagoon', 'Violet', 'Aurora']);
+    expect([1, 2, 3, 4].map((b) => bandName('neon', b as 1))).toEqual(['Lime', 'Electric', 'Hot pink', 'Neon']);
     expect([1, 2, 3, 4].map((b) => bandRange(b as 1))).toEqual(['8.0 – 8.4', '8.5 – 8.9', '9.0 – 9.4', '9.5 – 10']);
   });
 
-  it('everyone starts on Gems with #1 marked', () => {
-    expect(DEFAULT_APPEARANCE).toEqual({ preset: 'gems', markFirst: true });
-    expect(appearanceSummary(DEFAULT_APPEARANCE)).toBe('Leaderboard colours: Gems');
-    expect(appearanceSummary({ preset: 'metals', markFirst: false })).toBe('Leaderboard colours: Metals');
+  it('everyone starts on Aurora Glass, the glass hero and Aurora colours, with #1 marked (D64)', () => {
+    expect(DEFAULT_APPEARANCE).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
+    expect(PRESET_KEYS).toEqual(['aurora', 'neon', 'gems', 'prism', 'metals']);
   });
 
-  it('a settings object must have a known preset and a true/false #1 mark; anything else is refused', () => {
-    for (const preset of PRESET_KEYS) expect(validateAppearance({ preset, markFirst: false })).toEqual({ ok: true, value: { preset, markFirst: false } });
+  it('a settings object must have a ready look, a known top and preset and a true/false #1 mark; anything else is refused', () => {
+    for (const preset of PRESET_KEYS) for (const top of BOARD_TOP_KEYS) {
+      const a = { look: 'aurora', top, preset, markFirst: false };
+      expect(validateAppearance(a)).toEqual({ ok: true, value: a });
+    }
     // Unknown keys are dropped.
-    expect(validateAppearance({ preset: 'gems', markFirst: true, extra: 1 })).toEqual({ ok: true, value: { preset: 'gems', markFirst: true } });
-    for (const bad of [null, [], 'gems', {}, { preset: 'gold', markFirst: true }, { preset: 'gems' }, { preset: 'gems', markFirst: 1 }, { preset: 'GEMS', markFirst: true }]) {
+    expect(validateAppearance({ ...DEFAULT_APPEARANCE, extra: 1 })).toEqual({ ok: true, value: DEFAULT_APPEARANCE });
+    for (const bad of [null, [], 'gems', {}, { preset: 'gold', markFirst: true }, { preset: 'gems' }, { preset: 'gems', markFirst: 1 }, { preset: 'GEMS', markFirst: true },
+      { ...DEFAULT_APPEARANCE, look: 'sepia' }, { ...DEFAULT_APPEARANCE, top: 'side' }, { ...DEFAULT_APPEARANCE, look: null }]) {
       expect(validateAppearance(bad).ok, JSON.stringify(bad)).toBe(false);
     }
+  });
+
+  it('all four looks can be chosen since D65; anything else is refused', () => {
+    expect(READY_LOOKS).toEqual(['aurora', 'neon', 'pearl', 'forest']);
+    for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
+    expect(LOOK_KEYS.map((l) => LOOK_BG[l])).toEqual(['#03070a', '#06041a', '#08080c', '#050807']);
+  });
+
+  it('a backup or an open app from before 0.54.0 has no look or top: they take the defaults', () => {
+    expect(validateAppearance({ preset: 'gems', markFirst: false })).toEqual({ ok: true, value: { look: 'aurora', top: 'hero', preset: 'gems', markFirst: false } });
   });
 });

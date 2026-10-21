@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D63 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D65 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -22,7 +22,8 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 **The website (D63)** is separate from the app: plain files in `site/`, its own Worker. Public at
 https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
-https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site). It loads nothing from
+https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site: on the Worker's **Access**
+tab the lock must cover **Production**, not "Previews only", which leaves the address open). It loads nothing from
 anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses.
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
@@ -65,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D64), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D66), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -85,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D63.
+- Reopen any decision D1–D65.
 
 ## Testing notes
 
@@ -107,7 +108,16 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
-  `none`). Set an account's preset in a test with `PUT /api/appearance`.
+  `none`). Set an account's preset in a test with `PUT /api/appearance`. Everyone starts on **Aurora** since D64: a
+  test that names Gems' colours sets Gems first (`gems.spec.ts`).
+- The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
+  `html[data-look=…]`). The stats at the top follow the account's `top` (glass hero, tiles, strip): every stat is a
+  `.tile` with `b` and `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with
+  `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
+  `holdLights` (`aurora.spec.ts`) before comparing two photos. All four looks (D65) can be saved; choose one in a test
+  with `PUT /api/appearance`. The phone remembers the look in `localStorage['gt.look']` (`client/public/look.js`), so a
+  test that changes it should put Aurora back at the end. Readability over a busy screen: measure only text below the
+  header, above the tab bar and clear of the add button (`look.spec.ts`).
 - Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out' | 'Draw')` in
   `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page; 'Cut out' then picks Find the bud
   for me, 'Draw' picks Draw round it, D54). The cover is `.pslot.cover`.
@@ -138,46 +148,33 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.48.1 (2026-10-19): everything up to sounds and ticks (D58). **Dev:** 0.53.1: live plus brands and suppliers
-  (D59), Smokes removed (D60), the Sources and Settings tabs (D61), spending, whole card photos and swipe-back (D62), the website (D63, 0.53.0) and
-  notes- and tests-only changes (0.48.2, 0.51.1, 0.53.1). Anton will
-  say when to take it all live together.
+- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.54.1: live plus the new look, stage 1
+  (Aurora Glass, D64, 0.54.0) and notes-only 0.53.2 and 0.54.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Brands and suppliers** (Anton's idea, 2026-10-19): **on dev** (0.49.0, D59, 2026-10-20). Suggestions under
-   Source and Supplier as he types, the same name saved in one spelling, a page per brand or supplier (tap it on a
-   product page, or the Sources tab), and followers can tap his Source. Checked by Anton on GT Dev: the
-   suggestions sit nicely above the keyboard. Renaming or merging names only if he finds he needs it.
-2. **Remove Smokes** (Anton, 2026-10-20: "no use for it"; everything about it gone, saved smokes deleted for good):
-   **on dev** (0.50.0, D60, 2026-10-20). Going live deletes the smokes on live too: Anton can Export on live first.
-3. **Sources and Settings tabs** (Anton, 2026-10-20): **on dev** (0.51.0, D61, 2026-10-20). Tabs **Leaderboard ·
-   Log · Sources · People · Settings**; Sources shows each brand and supplier as a card (option B) with its best
-   product's photo; Settings is More renamed. The keyboard closes after tapping a suggestion.
-   **Then** (Anton, 2026-10-20, from his screenshot and recording): **on dev** (0.52.0, D62, 2026-10-20). Cards and
-   name pages show what he spent ("N products · £X spent", a Spent tile, a **Most spent** sort); card photos no longer
-   cut off; swiping back from any scrolled screen shows the screen underneath (not black) and lands where he was.
-   Checked by Anton on GT Dev (0.52.0): "it all works".
-4. **Leaderboard design rework, with a font and colour rework for the whole app** (fonts and colours added
-   2026-10-18): continue when Anton brings it up. Anton doesn't like the font of the numbers in the Leaderboard's top
-   banners (Products, Average, Total), and the colours now feel a bit mismatched with the rainbow and the rest; tidy
-   fonts and colours across the whole app. Starts with iPhone mockups for him to pick from.
-5. **A website for the app** (Anton's idea, 2026-10-19): **on dev** (0.53.0, D63, 2026-10-20), as a preview at
-   https://green-tracker-site-dev.green-tracker.workers.dev; public at https://green-tracker-site.green-tracker.workers.dev
-   with the next "go live". Look A "Aurora Glass" (glass, drifting lights, a floating iPhone), punchy stoner-friendly
-   words, a rate-it slider, Home Screen steps, Sign up free; for friends and anyone with the link; made-up products only;
-   no tracking. Anton locks the preview once in Cloudflare (steps given), then checks it on his iPhone.
-6. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
+1. **The new look** (Leaderboard design rework, with a font and colour rework for the whole app; Anton, 2026-10-18).
+   **Stage 1 on dev** (0.54.0, D64, 2026-10-21): Aurora Glass (the website's look: drifting lights, frosted glass,
+   Unbounded numbers and titles, Manrope words); Settings → Appearance with a preview, the look, the top of the
+   Leaderboard (glass hero, three tiles, slim strip; the Log, friends' boards and brand pages follow it) and two new
+   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Anton checks it on
+   GT Dev. **Stage 2 next:** the other three looks (Neon Night, Holo Pearl, Deep Forest), shown as "Coming next".
+2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
    (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
    converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
    can be compared. Plan first.
-7. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+3. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
    the details in the working conversation.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
+| Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |
+| Sources and Settings tabs | 0.51.0 | D61 | 2026-10-20 | 2026-10-21 |
+| Remove Smokes | 0.50.0 | D60 | 2026-10-20 | 2026-10-21 |
+| Brands and suppliers | 0.49.0 | D59 | 2026-10-20 | 2026-10-21 |
 | Sounds and ticks (own screen, quiet on silent) | 0.48.1 | D56–D58 | 2026-10-18 | 2026-10-19 |
 | A slow page load can't undo your change | 0.46.1 | D55 | 2026-10-18 | 2026-10-18 |
 | Photo rework 3: draw round a nug | 0.46.0 | D54 | 2026-10-16 | 2026-10-18 |
