@@ -113,7 +113,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
   `html[data-look=…]`). The stats at the top follow the account's `top` (glass hero, tiles, strip): every stat is a
   `.tile` with `b` and `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with
-  `expectStatsFit`. The lights are animations `lights-a`/`lights-b` on `.bg-layer`; hold them still with
+  `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
   `holdLights` (`aurora.spec.ts`) before comparing two photos. Only looks in `READY_LOOKS` can be saved.
 - Photo actions (D52): grid photos have no buttons of their own. Use `photoAction(page, n, 'Crop' | 'Cut out' | 'Draw')` in
   `test/e2e/helpers.ts` (⋯ menu in an editor, the viewer's bar on a product page; 'Cut out' then picks Find the bud

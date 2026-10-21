@@ -93,25 +93,24 @@ body {
   line-height: 1.45;
 }
 /* The lights (D64): green top left, teal top right, violet low down, drifting slowly behind every
-   screen (one still frame with Reduce Motion). Plain gradients, no blur filter: cheap to move. */
-.bg-layer { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: var(--bg); }
-.bg-layer::before, .bg-layer::after { content: ""; position: absolute; pointer-events: none; }
-/* Each layer only as big as its lights need (less for the phone to move every frame). */
-.bg-layer::before { inset: -12% -12% 30% -12%; background: radial-gradient(45% 42% at 22% 22%, var(--light-1), transparent 70%), radial-gradient(40% 40% at 82% 40%, var(--light-2), transparent 70%); }
-.bg-layer::after { inset: 45% -12% -12% -12%; background: radial-gradient(45% 60% at 46% 50%, var(--light-3), transparent 70%); }
-/* They move in tiny steps, about six a second, each a fraction of a pixel: it still looks like a
-   smooth drift, but the phone redraws the screen (and its frosted bars) a few times a second for
-   them instead of sixty. */
+   screen (one still frame with Reduce Motion). Painted on the fixed background itself, which is a
+   layer of its own anyway (as before D64): two extra full-screen layers measured about a fifth more
+   work for the phone, laid over everything on every frame while anything else on screen moved.
+   They move in small steps, about two a second, a pixel or so each over a very soft glow: a slow
+   drift to the eye, but the background is repainted twice a second, not sixty (measured: about the
+   same work as the app before D64). */
+.bg-layer { position: fixed; inset: 0; z-index: -1; background-color: var(--bg);
+  background-image: radial-gradient(closest-side, var(--light-1), transparent), radial-gradient(closest-side, var(--light-2), transparent), radial-gradient(closest-side, var(--light-3), transparent);
+  background-repeat: no-repeat; background-size: 115vw 62vh, 100vw 58vh, 115vw 56vh;
+  background-position: -32vw -22vh, 56vw 2vh, -4vw 58vh; }
 @media (prefers-reduced-motion: no-preference) {
-  .bg-layer::before { animation: lights-a 22s steps(132) infinite alternate; }
-  .bg-layer::after { animation: lights-b 27s steps(162) infinite alternate; }
+  .bg-layer { animation: lights 24s steps(48) infinite alternate; }
 }
 /* Hidden and still under anything that covers the whole screen (the viewer, the cropper, Move and
    zoom, the cut-out flow, the country picker): nobody sees them there, and the phone (and its battery)
    can give everything to what's on top, like the background remover's work. */
-html:has(.viewer, .cropper, .cpicker) .bg-layer::before, html:has(.viewer, .cropper, .cpicker) .bg-layer::after { visibility: hidden; animation-play-state: paused; }
-@keyframes lights-a { to { transform: translate(6%, 5%) scale(1.08); } }
-@keyframes lights-b { to { transform: translate(-7%, -6%) scale(1.12); } }
+html:has(.viewer, .cropper, .cpicker) .bg-layer { background-image: none; animation-play-state: paused; }
+@keyframes lights { to { background-position: -20vw -14vh, 44vw 10vh, 10vw 48vh; } }
 #app { min-height: 100dvh; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
