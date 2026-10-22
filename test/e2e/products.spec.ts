@@ -59,7 +59,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('button', { name: 'Save' }).click();
 
   // Profile: Overall is the hero, price, VFM on the unrounded price (8.9 ÷ 2.714… = 3.28).
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   await expect(hero(page).getByText('8.9')).toBeVisible();
   await expect(hero(page).getByText('£2.71/g')).toBeVisible();
   await expect(page.getByText('Rated 5 of 5 categories')).toBeVisible();

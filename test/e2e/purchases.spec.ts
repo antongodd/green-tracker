@@ -106,7 +106,7 @@ test('Add purchase opens a new one at the bottom, dated today, with the cursor i
   await expect(card(2).locator('.tag-latest')).toHaveCount(0);
   await shot(page, '94-purchases-new');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   await expect(page.getByRole('region', { name: 'Price history' }).locator('.purchase')).toHaveCount(4);
 });
 

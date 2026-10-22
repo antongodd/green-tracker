@@ -1380,6 +1380,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - *Found while testing:* a rate typed into the open box (before Done) was thrown away by a new date; typing now
     counts as typed. A main-currency change that failed showed its reason at the top of a long, scrolled list; it now
     scrolls up to it.
+    A browser test failed once in a full run (`brands.spec.ts`: the new product not found): after Save it waited for an
+    address like `/products/…`, which `/products/new` already is, so it read the list before the save finished (a save
+    now also reads your main currency, a little longer). Five specs now wait for `/products/(?!new$)…`, as
+    `country.spec.ts` already did; proved by holding the save back 1.5s (fails with the old pattern, passes with the new).
   - *Couldn't check here:* the real rate service (it can't be reached from the build environment; built to its
     published format and tested against the stand-in), and the currency picker under a thumb on a real iPhone.
 
