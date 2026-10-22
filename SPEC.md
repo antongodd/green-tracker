@@ -1337,6 +1337,10 @@ None.
 
 ## 6. Changelog
 
+### 0.55.1 — CLAUDE.md: the new look is live
+- The new look (D64, D65) went live on 2026-10-21 and moves from the to-do list to Done; the remaining items are
+  renumbered 1–2. Notes only.
+
 ### 0.55.0 — the new look, stage 2: three more looks (owner request)
 - Decision D65. Neon Night, Holo Pearl and Deep Forest can be chosen in Settings → Appearance. The phone remembers
   your look, so the app opens in it straight away; the Home Screen app's top bar takes its colour.
