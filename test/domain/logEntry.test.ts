@@ -56,7 +56,7 @@ describe('Return to Log (D50)', () => {
       notes: 'Kept notes',
       source: 'Club',
       ratings: { look: 8, consistency: 7 },
-      purchases: [{ id: 'pu1', seq: 1, date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A' }],
+      purchases: [{ id: 'pu1', seq: 1, date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A', currency: 'GBP', rate: 1 }],
       photos: [{ id: 'ph2', version: 'v', crop: null, cutout: false }],
       private: true,
       archived: false,
@@ -74,7 +74,7 @@ describe('Return to Log (D50)', () => {
       source: 'Club',
       private: true,
       ratings: { look: 8, consistency: 7 },
-      purchases: [{ id: 'pu1', date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A' }],
+      purchases: [{ id: 'pu1', date: '2026-09-03', amount: 3.5, totalPaid: 30, supplier: 'A', currency: 'GBP', rate: 1 }],
       photos: [{ id: 'ph1', crop: null }, { id: 'ph2', crop: null }],
     });
   });

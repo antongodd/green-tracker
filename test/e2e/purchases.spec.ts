@@ -76,7 +76,7 @@ test('tapping a row opens its fields, one at a time; its summary follows what yo
   await expect(row(2)).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('.pbody')).toHaveCount(1);
   // Edits show on the row straight away, and folding keeps them.
-  await card(1).getByLabel('Total paid (£)').fill('14');
+  await card(1).getByLabel('Total paid').fill('14');
   await expect(row(1).locator('.r')).toHaveText('£2.00/g');
   await row(1).click();
   await expect(page.locator('.pbody')).toHaveCount(0);
@@ -99,7 +99,7 @@ test('Add purchase opens a new one at the bottom, dated today, with the cursor i
   expect(await row(4).locator('.warn').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(240, 169, 59)');
   await expect(row(4).locator('.r')).toHaveText('—');
   await card(4).getByLabel('Amount (g)').fill('1');
-  await card(4).getByLabel('Total paid (£)').fill('3');
+  await card(4).getByLabel('Total paid').fill('3');
   await expect(row(4).locator('.r')).toHaveText('£3.00/g');
   // Dated today, it's now the latest.
   await expect(card(4).locator('.tag-latest')).toBeVisible();
@@ -127,13 +127,13 @@ test('a purchase that stops the save opens by itself, with the message', async (
   await row(1).click();
   await row(1).click(); // all folded
   await row(2).click();
-  await card(2).getByLabel('Total paid (£)').fill('nine');
+  await card(2).getByLabel('Total paid').fill('nine');
   await row(2).click(); // folded again
   await row(1).click(); // another one open instead
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('alert')).toHaveText('Amounts and prices must be numbers.');
   await expect(row(2)).toHaveAttribute('aria-expanded', 'true');
-  await expect(card(2).getByLabel('Total paid (£)')).toHaveValue('nine');
+  await expect(card(2).getByLabel('Total paid')).toHaveValue('nine');
   await expect(page).toHaveURL(/\/edit$/);
 });
 

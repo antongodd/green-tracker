@@ -50,6 +50,8 @@ export interface Me {
   pendingRequests?: number;
   /** D48: your Leaderboard colours and #1 mark (signed in only). */
   appearance?: Appearance;
+  /** D66: your main currency, which every price shown together is in (signed in only). */
+  currency?: string;
   /** D47: which site this is. The dev site shows an orange DEV label. */
   site?: 'dev' | 'live';
 }

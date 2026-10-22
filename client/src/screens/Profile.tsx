@@ -1,8 +1,10 @@
 import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
-import { formatAmount, formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
+import { formatAmount, formatMoney, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
+import { currencySign } from '../../../shared/domain/currency';
+import { useCurrency } from '../money';
 import { leaflyTarget } from '../../../shared/domain/leafly';
-import { headlinePrice, purchasesNewestFirst, unitPrice, valueForMoney } from '../../../shared/domain/money';
+import { headlinePrice, paidInMain, purchasesNewestFirst, unitPrice, valueForMoney } from '../../../shared/domain/money';
 import { productTypeLabel, type Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, STRAIN_TYPES } from '../../../shared/domain/productTypes';
 import { formatHitTime, overall, overallExplanation, ratedCount } from '../../../shared/domain/ratings';
@@ -67,6 +69,7 @@ export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 
 }
 
 function PriceHistory(p: { product: Product }) {
+  const main = useCurrency();
   const type = p.product.productType;
   const history = purchasesNewestFirst(p.product.purchases);
   const vfm = valueForMoney(type, p.product.ratings, asPurchases(p.product));
@@ -78,14 +81,22 @@ function PriceHistory(p: { product: Product }) {
       </span>
       {history.map((pu, i) => {
         const up = unitPrice(pu);
+        // D66: as you paid it, and in another currency what it came to in your main one.
+        const foreign = pu.currency !== main;
+        const paid = `${formatMoney(pu.totalPaid, pu.currency)}${foreign ? ` (≈ ${formatMoney(paidInMain(pu), main)})` : ''}`;
         return (
           <div class="purchase" key={pu.id}>
             <span class="d">
               {pu.date ? formatIsoDate(pu.date) : 'No date'}
               {i === 0 && <span class="latest">Latest</span>}
+              {foreign && (
+                <span class="fx" title={`Paid in ${currencySign(pu.currency)}`}>
+                  {currencySign(pu.currency)}
+                </span>
+              )}
             </span>
-            <span class="u">{up === null ? '' : formatUnitPrice(type, up)}</span>
-            <span class="s">{[pu.amount !== null ? formatAmount(type, pu.amount) : null, formatGBP(pu.totalPaid)].filter(Boolean).join(' · ')}</span>
+            <span class="u">{up === null ? '' : formatUnitPrice(type, up, main)}</span>
+            <span class="s">{[pu.amount !== null ? formatAmount(type, pu.amount) : null, paid].filter(Boolean).join(' · ')}</span>
             {/* D59: where you bought it opens everything from there. */}
             <span class="s r">{pu.supplier ? <NameLink name={pu.supplier} to={brandPath(pu.supplier)} /> : ''}</span>
           </div>
@@ -96,7 +107,7 @@ function PriceHistory(p: { product: Product }) {
           <span>
             <span class="cap">Value for money</span>
             <span class="small" style={{ display: 'block' }}>
-              Overall ÷ latest {type === 'edibles' ? '£ per 100mg' : '£/g'} · higher is better
+              Overall ÷ latest {type === 'edibles' ? `${currencySign(main)} per 100mg` : `${currencySign(main)}/g`} · higher is better
             </span>
           </span>
           <b>{formatVFM(vfm)}</b>
@@ -132,6 +143,7 @@ export function Profile(p: { id: string }) {
   const path = `/products/${p.id}`;
   // Its row (D22, D48) comes from the same list and view as the Leaderboard.
   const appearance = useAppearance();
+  const main = useCurrency();
   const [list, setList] = useState(cachedProducts);
   const [view] = useState(() => loadView());
   useEffect(() => {
@@ -313,7 +325,7 @@ export function Profile(p: { id: string }) {
           appearance={appearance}
           view={view}
           whose="your"
-          price={price !== null ? formatUnitPrice(product.productType, price) : null}
+          price={price !== null ? formatUnitPrice(product.productType, price, main) : null}
           notes={
             (product.private || product.archived) && (
               <div class="badge-line">

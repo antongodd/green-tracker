@@ -8,6 +8,9 @@ import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, setKeys } from '../lib/photos';
 import { savePrivacyStatement } from '../lib/privacy';
 import { saveAppearanceStatement } from '../lib/appearance';
+import { loadMainCurrency, saveMainCurrencyStatement } from '../lib/money';
+import { FxUnavailable, ratesFor } from '../lib/fx';
+import { DEFAULT_CURRENCY } from '../../shared/domain/currency';
 import { clearSessionCookie, requireUser } from '../lib/session';
 import { parseTransports, saveChallenge, takeChallenge } from '../lib/webauthn';
 
@@ -51,7 +54,7 @@ data.post('/restore', async (c) => {
   const db = c.env.DB;
   const v = validateRestore(await jsonBody(c));
   if (!v.ok) fail(400, 'invalid_restore', v.message);
-  const { products, logEntries, profilePhoto, privacy, appearance } = v.value;
+  const { products, logEntries, profilePhoto, privacy, appearance, money } = v.value;
 
   // Every photo must be a fresh upload of yours that includes its original. Which are
   // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
@@ -98,7 +101,10 @@ data.post('/restore', async (c) => {
       created: p.createdAt,
     });
     for (const [category, value] of Object.entries(p.ratings)) ratingRows.push({ p: id, c: category, v: value });
-    p.purchases.forEach((pu, i) => purchaseRows.push({ id: randomId(), p: id, seq: i + 1, date: pu.date, amount: pu.amount, paid: pu.totalPaid, supplier: pu.supplier }));
+    // D66: a purchase from a file made before 0.56.0 has no currency: it was £. Its rate is settled below.
+    p.purchases.forEach((pu, i) =>
+      purchaseRows.push({ id: randomId(), p: id, seq: i + 1, date: pu.date, amount: pu.amount, paid: pu.totalPaid, supplier: pu.supplier, cur: pu.currency ?? DEFAULT_CURRENCY, rate: pu.rate ?? null }),
+    );
     p.photos.forEach((ph, i) => photoRows.push({ id: randomId(), p: id, e: null, pos: firstPosition + i, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 }));
     return id;
   };
@@ -121,6 +127,22 @@ data.post('/restore', async (c) => {
       kept: e.kept ? addProduct(e.kept, false, 1) : null,
     });
     for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 });
+  }
+
+  // D66: rates into the main currency (the file's, else yours): 1 for the main one; the file's own
+  // otherwise, and the day's rate where it has none (a file from before 0.56.0, or another main currency).
+  const main = money?.currency ?? (await loadMainCurrency(db, userId));
+  const rows = purchaseRows as { cur: string; rate: number | null; date: string | null }[];
+  for (const r of rows) if (r.cur === main) r.rate = 1;
+  const unrated = rows.filter((r) => r.rate === null);
+  if (unrated.length) {
+    try {
+      const rates = await ratesFor(c.env, unrated.map((r) => ({ from: r.cur, to: main, day: r.date })));
+      unrated.forEach((r, i) => (r.rate = rates[i]!));
+    } catch (e) {
+      if (e instanceof FxUnavailable) fail(503, 'rate_unavailable', 'Couldn’t get the exchange rates for the purchases in this file just now, so nothing has changed. Please try again later.');
+      throw e;
+    }
   }
 
   // Files of the photos being replaced, deleted once the batch has committed.
@@ -156,7 +178,10 @@ data.post('/restore', async (c) => {
   for (const chunk of chunks(purchaseRows)) {
     statements.push(
       db
-        .prepare(`INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier) SELECT ${j('id')}, ${j('p')}, ?1, ${j('seq')}, ${j('date')}, ${j('amount')}, ${j('paid')}, ${j('supplier')} FROM json_each(?2)`)
+        .prepare(
+          `INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier, currency, rate)
+           SELECT ${j('id')}, ${j('p')}, ?1, ${j('seq')}, ${j('date')}, ${j('amount')}, ${j('paid')}, ${j('supplier')}, ${j('cur')}, ${j('rate')} FROM json_each(?2)`,
+        )
         .bind(userId, chunk),
     );
   }
@@ -193,6 +218,8 @@ data.post('/restore', async (c) => {
   if (privacy) statements.push(savePrivacyStatement(db, userId, privacy));
   // D48: the same for your appearance settings (a file from before 0.41.0 has none).
   if (appearance) statements.push(saveAppearanceStatement(db, userId, appearance));
+  // D66: and your main currency (a file from before 0.56.0 has none).
+  if (money) statements.push(saveMainCurrencyStatement(db, userId, money.currency));
   if (uploadIds.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(uploadIds)));
 
   await db.batch(statements);
@@ -217,7 +244,7 @@ data.post('/delete/options', async (c) => {
 
 /**
  * Step 2: with the passkey check and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, privacy and appearance settings, photos, the profile photo,
+ * the user row cascades to products, ratings, purchases, log entries, privacy, appearance and money settings, photos, the profile photo,
  * uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */

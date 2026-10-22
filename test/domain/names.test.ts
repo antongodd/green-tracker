@@ -105,4 +105,9 @@ describe('brands and suppliers (D59)', () => {
     expect(spentOn(PRODUCTS, nameKey('Archived Shop'))).toBe(0);
     expect(spentOn([{ source: 'A', purchases: [buy('B', 12.345), buy(null, 0.1), buy('a', 0.2)] }], nameKey('a'))).toBe(12.65);
   });
+
+  it('adds up in your main currency: each purchase at its saved rate (D66)', () => {
+    const euros = { supplier: 'Boerejongens', totalPaid: 40, currency: 'EUR', rate: 0.86 };
+    expect(spentOn([{ source: null, purchases: [euros, buy('Boerejongens', 10)] }], nameKey('Boerejongens'))).toBe(44.4);
+  });
 });

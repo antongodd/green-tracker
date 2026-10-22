@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import type { AppEnv } from '../env';
-import { validateProductInput, type Product, type ProductInput, type PurchaseRecord } from '../../shared/domain/product';
+import { settleCurrencies, validateProductInput, type Product, type ProductInput, type PurchaseRecord } from '../../shared/domain/product';
 import type { ProductTypeKey, RatingKey, StrainTypeKey } from '../../shared/domain/productTypes';
 import type { Ratings } from '../../shared/domain/ratings';
 import { randomId } from '../lib/crypto';
 import { deleteLater, PHOTO_COLUMNS, planPhotoWrites, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { fail, jsonBody } from '../lib/http';
+import { loadMainCurrency } from '../lib/money';
 import { requireUser } from '../lib/session';
 
 // Your own products. Every query is scoped by user_id, so another user's ID
@@ -50,6 +51,8 @@ interface PurchaseRow {
   amount: number | null;
   total_paid: number;
   supplier: string | null;
+  currency: string;
+  rate: number;
 }
 
 function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow[], photos: PhotoRow[]): Product {
@@ -72,7 +75,7 @@ function toProduct(row: ProductRow, ratings: RatingRow[], purchases: PurchaseRow
     hitTimeMinutes: row.hit_time_minutes,
     ratings: r,
     purchases: purchases.map(
-      (p): PurchaseRecord => ({ id: p.id, seq: p.seq, date: p.date, amount: p.amount, totalPaid: p.total_paid, supplier: p.supplier }),
+      (p): PurchaseRecord => ({ id: p.id, seq: p.seq, date: p.date, amount: p.amount, totalPaid: p.total_paid, supplier: p.supplier, currency: p.currency, rate: p.rate }),
     ),
     photos: photos.map(toPhotoRecord),
     archived: row.archived === 1,
@@ -103,7 +106,7 @@ export async function load(db: D1Database, userId: string, where: { id?: string;
   const [rows, ratings, purchases, photoRows] = await db.batch<unknown>([
     bind(`SELECT ${PRODUCT_COLUMNS.split(',').map((c) => `p.${c.trim()}`).join(', ')} FROM products p WHERE p.user_id = ?1 ${productCond} ORDER BY p.created_at`),
     bind(`SELECT r.product_id, r.category, r.value FROM ratings r JOIN products p ON p.id = r.product_id WHERE r.user_id = ?1 ${productCond}`),
-    bind(`SELECT pu.id, pu.product_id, pu.seq, pu.date, pu.amount, pu.total_paid, pu.supplier FROM purchases pu JOIN products p ON p.id = pu.product_id
+    bind(`SELECT pu.id, pu.product_id, pu.seq, pu.date, pu.amount, pu.total_paid, pu.supplier, pu.currency, pu.rate FROM purchases pu JOIN products p ON p.id = pu.product_id
           WHERE pu.user_id = ?1 ${productCond} ORDER BY pu.seq`),
     bind(`SELECT ${PHOTO_COLUMNS.split(', ').map((c) => `ph.${c}`).join(', ')} FROM photos ph JOIN products p ON p.id = ph.product_id
           WHERE ph.user_id = ?1 ${productCond} ORDER BY ph.position`),
@@ -155,21 +158,24 @@ async function childWrites(db: D1Database, userId: string, productId: string, in
     );
   }
   // Purchases: the list is replaced. Existing ones keep their entry order (seq); new ones go after.
+  // D66: each in its currency, with its rate into your main currency (1 for the main one).
+  const settled = settleCurrencies(input.purchases, await loadMainCurrency(db, userId));
+  if (!settled.ok) fail(400, 'invalid_product', settled.message);
   const { results: existing } = await db.prepare('SELECT id, seq FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId).all<{ id: string; seq: number }>();
   const seqById = new Map(existing.map((e) => [e.id, e.seq]));
   let next = existing.reduce((n, e) => Math.max(n, e.seq), 0);
-  const rows = input.purchases.map((p) => {
+  const rows = settled.value.map((p) => {
     const known = p.id !== undefined && seqById.has(p.id);
-    return { id: known ? p.id! : randomId(), seq: known ? seqById.get(p.id!)! : ++next, date: p.date, amount: p.amount, paid: p.totalPaid, supplier: p.supplier };
+    return { id: known ? p.id! : randomId(), seq: known ? seqById.get(p.id!)! : ++next, date: p.date, amount: p.amount, paid: p.totalPaid, supplier: p.supplier, cur: p.currency, rate: p.rate };
   });
   out.push(db.prepare('DELETE FROM purchases WHERE product_id = ?1 AND user_id = ?2').bind(productId, userId));
   if (rows.length) {
     out.push(
       db
         .prepare(
-          `INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier)
+          `INSERT INTO purchases (id, product_id, user_id, seq, date, amount, total_paid, supplier, currency, rate)
            SELECT json_extract(value, '$.id'), ?1, ?2, json_extract(value, '$.seq'), json_extract(value, '$.date'), json_extract(value, '$.amount'),
-                  json_extract(value, '$.paid'), json_extract(value, '$.supplier') FROM json_each(?3)`,
+                  json_extract(value, '$.paid'), json_extract(value, '$.supplier'), json_extract(value, '$.cur'), json_extract(value, '$.rate') FROM json_each(?3)`,
         )
         .bind(productId, userId, JSON.stringify(rows)),
     );

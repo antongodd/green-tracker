@@ -20,6 +20,8 @@ export const LIMITS = {
   recoverIp: { name: 'recover-ip', max: 10, windowMs: HOUR },
   recoverUser: { name: 'recover-user', max: 5, windowMs: HOUR },
   usernameCheck: { name: 'username', max: 120, windowMs: 10 * MIN },
+  /** D66: rate look-ups from the purchase form, per account. */
+  fx: { name: 'fx', max: 300, windowMs: 10 * MIN },
 } satisfies Record<string, Limit>;
 
 export async function clientKey(c: Context<AppEnv>): Promise<string> {

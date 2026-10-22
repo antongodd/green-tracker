@@ -4,6 +4,9 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { TestProject } from 'vitest/node';
+import type { Server } from 'node:http';
+// @ts-expect-error a plain JavaScript module shared with the browser tests' server
+import { startFxStub } from '../fxStub.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
 const config = join(root, 'test/api/wrangler.test.jsonc');
@@ -47,10 +50,16 @@ async function start(vars: Record<string, string> = {}): Promise<{ base: string;
   return { base, persist };
 }
 
+let fxServer: Server | undefined;
+
 export async function setup(project: TestProject) {
-  const main = await start();
+  // D66: exchange rates come from a stand-in (the real service is never asked by the tests).
+  const fx = (await startFxStub()) as { server: Server; url: string };
+  fxServer = fx.server;
+  const main = await start({ FX_URL: fx.url });
   project.provide('apiBase', main.base);
   project.provide('persistDir', main.persist);
+  project.provide('fxBase', fx.url);
 }
 
 export async function teardown() {
@@ -62,6 +71,7 @@ export async function teardown() {
     }
   }
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
+  fxServer?.close();
 }
 
 declare module 'vitest' {
@@ -69,5 +79,7 @@ declare module 'vitest' {
     apiBase: string;
     /** Local D1 / R2 storage, for tests that check what's really stored. */
     persistDir: string;
+    /** D66: the stand-in rate service (GET /calls counts its rate requests). */
+    fxBase: string;
   }
 }

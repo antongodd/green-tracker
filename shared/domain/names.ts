@@ -3,6 +3,7 @@
 // One list for both fields, since a coffeeshop with no brand is often both.
 import { autoCapitalise } from './capitalise';
 import { normaliseSearch } from './countries';
+import { paidInMain } from './money';
 
 /**
  * Two names are the same name when this matches: capitals, accents, spaces and punctuation
@@ -148,19 +149,19 @@ export function productsNamed<P extends NamedProduct>(products: readonly P[], ke
   return products.filter((p) => !p.archived).map((product) => ({ product, ...nameRoles(product, key) })).filter((r) => r.brand || r.shop);
 }
 
-type Spending = NamedProduct & { purchases?: readonly { supplier: string | null; totalPaid: number }[] };
+type Spending = NamedProduct & { purchases?: readonly { supplier: string | null; totalPaid: number; rate?: number }[] };
 
 /**
  * What you spent on this name, as a brand and/or where you bought (D62): every purchase of a
  * product with it as its Source, and every purchase bought there, each counted once
- * (archived products left out).
+ * (archived products left out). In the main currency: each purchase at its saved rate (D66).
  */
 export function spentOn(products: readonly Spending[], key: string): number {
   let total = 0;
   for (const p of products) {
     if (p.archived) continue;
     const brand = !!p.source && nameKey(p.source) === key;
-    for (const x of p.purchases ?? []) if (brand || (x.supplier && nameKey(x.supplier) === key)) total += x.totalPaid;
+    for (const x of p.purchases ?? []) if (brand || (x.supplier && nameKey(x.supplier) === key)) total += paidInMain(x);
   }
   return Math.round(total * 100) / 100;
 }

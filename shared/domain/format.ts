@@ -1,3 +1,4 @@
+import { currency } from './currency';
 import { unitFor } from './productTypes';
 
 /** Round half away from zero to `dp` places, tolerant of binary floating-point error (1.005 → 1.01). */
@@ -11,14 +12,20 @@ export function formatScore(value: number): string {
   return round(value, 1).toFixed(1);
 }
 
-/** £ amounts to two decimal places. */
-export function formatGBP(value: number): string {
-  return `£${round(value, 2).toFixed(2)}`;
+/** Money in a currency (D66): its sign, then the amount to its decimals (`£34.40`, `€40.00`, `¥5000`). */
+export function formatMoney(value: number, code: string): string {
+  const c = currency(code);
+  return `${c.symbol}${round(value, c.decimals).toFixed(c.decimals)}`;
 }
 
-/** Per-unit price, labelled by the type's unit: `£2.86/g`, `£0.05/mg`. */
-export function formatUnitPrice(typeKey: string, price: number): string {
-  return `${formatGBP(price)}/${unitFor(typeKey).amount}`;
+/** A price per unit without the unit (a ranked Price): always 2 decimals, whatever the currency (D13). */
+export function formatPerUnit(price: number, code: string): string {
+  return `${currency(code).symbol}${round(price, 2).toFixed(2)}`;
+}
+
+/** Per-unit price, labelled by the type's unit: `£2.86/g`, `£0.05/mg`, `€11.43/g`. */
+export function formatUnitPrice(typeKey: string, price: number, code: string): string {
+  return `${formatPerUnit(price, code)}/${unitFor(typeKey).amount}`;
 }
 
 /** An amount, labelled by the type's unit — an edible never shows g, anything else never mg. */

@@ -22,12 +22,12 @@ const buy = (totalPaid: number, amount: number | null, date: string | null = '20
 
 describe('Derived price (§17 Money)', () => {
   it('£10 for 3.5g → £2.86/g', () => {
-    expect(formatUnitPrice('flower', unitPrice(buy(10, 3.5))!)).toBe('£2.86/g');
+    expect(formatUnitPrice('flower', unitPrice(buy(10, 3.5))!, 'GBP')).toBe('£2.86/g');
   });
 
   it('£10 for 7g, Overall 10 → £1.43/g shown, VFM exactly 7.00 (full precision)', () => {
     const purchases = [buy(10, 7)];
-    expect(formatUnitPrice('flower', headlinePrice(purchases)!)).toBe('£1.43/g');
+    expect(formatUnitPrice('flower', headlinePrice(purchases)!, 'GBP')).toBe('£1.43/g');
     const vfm = valueForMoney('flower', { look: 10, smell: 10, taste: 10, burn: 10 }, purchases)!;
     expect(vfm).toBeCloseTo(7, 12);
     expect(formatVFM(vfm)).toBe('7.00');
@@ -64,9 +64,9 @@ describe('Derived price (§17 Money)', () => {
 describe('Units follow the type (§9)', () => {
   it('an edible never shows g; a flower never shows mg', () => {
     expect(formatAmount('edibles', 100)).toBe('100mg');
-    expect(formatUnitPrice('edibles', 0.05)).toBe('£0.05/mg');
+    expect(formatUnitPrice('edibles', 0.05, 'GBP')).toBe('£0.05/mg');
     expect(formatAmount('flower', 3.5)).toBe('3.5g');
-    expect(formatUnitPrice('flower', 2)).toBe('£2.00/g');
+    expect(formatUnitPrice('flower', 2, 'GBP')).toBe('£2.00/g');
   });
 
   it('a type switch relabels but does not convert (100 stays 100)', () => {
