@@ -15,6 +15,7 @@ import { LIMITS, clientKey, hit } from '../lib/rateLimit';
 import { hashRecoveryCode, newRecoveryCodes } from '../lib/recovery';
 import { clearSessionCookie, startSession } from '../lib/session';
 import { loadAppearance } from '../lib/appearance';
+import { loadMainCurrency } from '../lib/money';
 import { RP_NAME, parseTransports, passkeyName, saveChallenge, takeChallenge } from '../lib/webauthn';
 
 export const auth = new Hono<AppEnv>();
@@ -57,6 +58,8 @@ auth.get('/me', async (c) => {
     pendingRequests: counts?.requests ?? 0,
     // D48: how the app looks for you, there from the first screen.
     appearance: await loadAppearance(c.env.DB, user.id),
+    // D66: your main currency, which every price shown together is in.
+    currency: await loadMainCurrency(c.env.DB, user.id),
     site,
   });
 });

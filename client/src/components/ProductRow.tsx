@@ -1,10 +1,11 @@
 import type { ComponentChildren } from 'preact';
 import { countryDisplay } from '../../../shared/domain/countries';
-import { formatGBP, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
+import { formatPerUnit, formatScore, formatUnitPrice, formatVFM } from '../../../shared/domain/format';
 import { heatStyle } from '../heat';
 import type { Band } from '../../../shared/domain/gems';
 import { rankByCaption, type RankBy } from '../../../shared/domain/leaderboard';
-import { headlinePrice, type Purchase } from '../../../shared/domain/money';
+import { headlinePrice, latestPurchase, unitPricePaid, type Purchase } from '../../../shared/domain/money';
+import { useCurrency } from '../money';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType, STRAIN_TYPES } from '../../../shared/domain/productTypes';
@@ -26,7 +27,8 @@ export const todayIso = (): string => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export const asPurchases = (p: Product): Purchase[] => p.purchases.map((x) => ({ date: x.date, amount: x.amount, totalPaid: x.totalPaid, supplier: x.supplier, seq: x.seq }));
+export const asPurchases = (p: Product): Purchase[] =>
+  p.purchases.map((x) => ({ date: x.date, amount: x.amount, totalPaid: x.totalPaid, supplier: x.supplier, seq: x.seq, currency: x.currency, rate: x.rate }));
 
 export function StrainTag(p: { strain: string | null }) {
   const s = STRAIN_TYPES.find((x) => x.key === p.strain);
@@ -70,25 +72,31 @@ export function Cluster(p: { product: RowProduct; showLock?: boolean }) {
 
 /**
  * Metadata line (brief §10.1): price · Source; price or Source alone; else date
- * tried; else nothing. The price never truncates — only the Source does.
+ * tried; else nothing. The price never truncates — only the Source does. D66: the price is in
+ * your main currency; bought in another, what you paid follows it, smaller.
  */
 export function MetaLine(p: { product: Product }) {
-  const price = headlinePrice(asPurchases(p.product));
-  const priceText = price === null ? null : formatUnitPrice(p.product.productType, price);
+  const main = useCurrency();
+  const purchases = asPurchases(p.product);
+  const price = headlinePrice(purchases);
+  const latest = latestPurchase(purchases);
+  const paid = price !== null && latest?.currency && latest.currency !== main ? unitPricePaid(latest) : null;
+  const priceText = price === null ? null : formatUnitPrice(p.product.productType, price, main);
   const source = p.product.source;
   if (!priceText && !source) return p.product.dateTried ? <div class="meta">{formatIsoDate(p.product.dateTried)}</div> : null;
   return (
     <div class="meta">
       {priceText && <span class="price">{priceText}</span>}
+      {paid !== null && <span class="paid">{formatUnitPrice(p.product.productType, paid, latest!.currency!)}</span>}
       {priceText && source && <span class="sep">·</span>}
       {source && <span class="src">{source}</span>}
     </div>
   );
 }
 
-/** A ranked value as shown in the score block: scores 1dp, price £ 2dp, VFM 2dp. */
-export function formatRankValue(rankBy: RankBy, value: number): string {
-  if (rankBy === 'price') return formatGBP(value);
+/** A ranked value as shown in the score block: scores 1dp, price 2dp in your main currency, VFM 2dp. */
+export function formatRankValue(rankBy: RankBy, value: number, currency: string): string {
+  if (rankBy === 'price') return formatPerUnit(value, currency);
   if (rankBy === 'vfm') return formatVFM(value);
   return formatScore(value);
 }
@@ -117,6 +125,7 @@ export function Score(p: { value: number | null; label?: string; text?: string }
  */
 export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; value?: number | null; list?: string; meta?: ComponentChildren }) {
   const appearance = useAppearance();
+  const currency = useCurrency();
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
   const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
@@ -137,7 +146,7 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
         <Cluster product={p.product} showLock />
         {p.meta ?? <MetaLine product={p.product} />}
       </div>
-      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value)} />
+      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value, currency)} />
     </a>
   );
 }

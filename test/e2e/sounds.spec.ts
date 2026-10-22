@@ -85,7 +85,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   // Saving the #1 again: it was already #1.
   await page.getByRole('region', { name: 'Actions' }).getByRole('link', { name: 'Edit' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   await expectHeard(page, ['save:soft']);
 
   // Flicking a switch.

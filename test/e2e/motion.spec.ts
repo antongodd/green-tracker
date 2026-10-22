@@ -151,7 +151,7 @@ test('opening a product flies the row’s photo into the big photo, and Back fli
   await expect(row('Photo Kush')).toBeVisible();
   await recordTransitions();
   await row('Photo Kush').click();
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   await expect(page.locator('.hero-photo img')).toBeVisible();
   await expect.poll(transitions).toEqual([expect.arrayContaining(['::view-transition-group(gt-photo)', '::view-transition-new(root)'])]);
   await expect(page.locator('html')).not.toHaveClass(/vt-photo/); // cleaned up afterwards

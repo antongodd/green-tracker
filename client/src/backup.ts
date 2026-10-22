@@ -70,7 +70,8 @@ export async function buildExport(username: string, progress: Progress): Promise
       hitTimeMinutes: p.hitTimeMinutes,
       private: p.private,
       ratings: p.ratings as Record<string, number>,
-      purchases: [...p.purchases].sort((a, b) => a.seq - b.seq).map(({ date, amount, totalPaid, supplier }) => ({ date, amount, totalPaid, supplier })),
+      // D66: each with its currency and its rate into your main currency (the file's `money`).
+      purchases: [...p.purchases].sort((a, b) => a.seq - b.seq).map(({ date, amount, totalPaid, supplier, currency, rate }) => ({ date, amount, totalPaid, supplier, currency, rate })),
       photos: embedded,
       createdAt: p.createdAt,
     };
@@ -107,6 +108,8 @@ export async function buildExport(username: string, progress: Progress): Promise
     // D45: your privacy settings travel with your data; D48: so do your Leaderboard colours.
     privacy,
     ...(me.appearance && { appearance: me.appearance }),
+    // D66: your main currency, which the purchases' rates are into.
+    ...(me.currency && { money: { currency: me.currency } }),
     profilePhoto: profile ? await embed({ id: 'profile', ...profile, cutout: false }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
@@ -207,6 +210,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     if (pp !== undefined) payload.profilePhoto = pp ? { upload: (await upload(pp)).upload, crop: pp.crop! } : null;
     if (summary.file.privacy) payload.privacy = summary.file.privacy;
     if (summary.file.appearance) payload.appearance = summary.file.appearance;
+    if (summary.file.money) payload.money = summary.file.money;
     await api('POST', '/data/restore', payload);
   } catch (e) {
     uploads.forEach(discardUpload);

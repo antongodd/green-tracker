@@ -16,3 +16,4 @@ export * from './backup';
 export * from './privacy';
 export * from './gems';
 export * from './names';
+export * from './currency';

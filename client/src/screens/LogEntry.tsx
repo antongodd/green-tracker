@@ -6,7 +6,9 @@
 // so an entry with a photo flies it in from its Log row and home again, as products do.
 import { useEffect, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
-import { formatAmount, formatGBP, formatScore } from '../../../shared/domain/format';
+import { formatAmount, formatMoney, formatScore } from '../../../shared/domain/format';
+import { paidInMain } from '../../../shared/domain/money';
+import { useCurrency } from '../money';
 import { keptPromotionInput, logEntryToInput, promotionInput, type LogEntry } from '../../../shared/domain/logEntry';
 import { overall, ratedCount } from '../../../shared/domain/ratings';
 import { productTypeLabel, type Product } from '../../../shared/domain/product';
@@ -31,13 +33,13 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
  * D50: what a returned entry keeps from the Leaderboard, as the Kept card lists it (ratings
  * under the entry's current type, as they'd count when added back), each with its label.
  */
-function keptRows(kept: Product, entry: Pick<LogEntry, 'productType'>): [string, string][] {
+function keptRows(kept: Product, entry: Pick<LogEntry, 'productType'>, main: string): [string, string][] {
   const rated = ratedCount(entry.productType, kept.ratings).rated;
   const o = overall(entry.productType, kept.ratings);
-  const paid = kept.purchases.reduce((n, p) => n + p.totalPaid, 0);
+  const paid = kept.purchases.reduce((n, p) => n + paidInMain(p), 0); // D66: in your main currency
   const rows: [string, string][] = [
     ['Ratings', rated ? `${rated}${o !== null ? ` · Overall ${formatScore(o)}` : ''}` : ''],
-    ['Purchases', kept.purchases.length ? `${kept.purchases.length} · ${formatGBP(paid)}` : ''],
+    ['Purchases', kept.purchases.length ? `${kept.purchases.length} · ${formatMoney(paid, main)}` : ''],
     ['Notes', kept.notes ? 'Yes' : ''],
     ['Other photos', kept.photos.length ? String(kept.photos.length) : ''],
   ];
@@ -65,6 +67,7 @@ export function LogEntryPage(p: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [viewing, setViewing] = useState(false);
   const online = useOnline();
+  const main = useCurrency();
   const path = `/log/${p.id}`;
 
   useEffect(() => {
@@ -178,9 +181,9 @@ export function LogEntryPage(p: { id: string }) {
                 <span class="small">Hidden for now. Add to leaderboard brings it all back.</span>
               </span>
             </div>
-            {keptRows(entry.kept, entry).length > 0 && (
+            {keptRows(entry.kept, entry, main).length > 0 && (
               <dl class="kv">
-                {keptRows(entry.kept, entry).map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}
+                {keptRows(entry.kept, entry, main).map(([k, v]) => [<dt key={`${k}-t`}>{k}</dt>, <dd key={`${k}-d`}>{v}</dd>])}
               </dl>
             )}
           </section>

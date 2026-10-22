@@ -1366,3 +1366,31 @@ html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile, .scard, .
 }
 html[data-look="pearl"] .banner.hero { background: var(--hero-wash) padding-box, linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
 html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-soft), var(--accent-soft)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
+
+/* ---------- currencies (D66) ---------- */
+/* A purchase in another currency: a small tag with its sign, by the date. */
+.fx { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; color: var(--violet-bright); background: linear-gradient(rgba(139, 123, 255, 0.18), rgba(139, 123, 255, 0.18)), rgba(3, 7, 10, 0.5); border: 1px solid rgba(139, 123, 255, 0.4); border-radius: 999px; padding: 0 7px; line-height: 18px; white-space: nowrap; }
+/* The Leaderboard's price line: what you paid follows the converted price, smaller. */
+.meta .paid { flex: none; font-size: 11.5px; padding-left: 0.4em; font-variant-numeric: tabular-nums; }
+.psum .r small { display: block; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--text-2); }
+/* Total paid: the currency's sign (a native picker laid over it) and the amount. */
+.money-in { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 6px; }
+.cur { position: relative; display: block; }
+.cur-face { display: flex; align-items: center; justify-content: center; gap: 4px; height: 48px; border-radius: 12px; background: var(--surface-1); border: 1px solid var(--hairline-strong); font-size: 15px; font-weight: 700; color: var(--accent-bright); white-space: nowrap; overflow: hidden; }
+.cur-face svg { width: 10px; height: 10px; flex: none; color: var(--text-2); }
+.cur select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; }
+.cur select:focus-visible + .cur-face, .cur:focus-within .cur-face { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* Under it: what it comes to in your main currency, the rate, and Change (Anton: slim, no extra words). */
+.fxline { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 2px 4px 2px 12px; border-radius: 10px; background: linear-gradient(rgba(139, 123, 255, 0.1), rgba(139, 123, 255, 0.1)), rgba(3, 7, 10, 0.5); border: 1px solid rgba(139, 123, 255, 0.3); font-size: 14px; }
+.fxline.open { display: grid; gap: 6px; padding: 10px 12px; }
+.fx-sum { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; min-width: 0; font-variant-numeric: tabular-nums; }
+.fx-sum b { font-weight: 700; }
+.fx-rate { font-size: 13px; color: var(--text-2); }
+.fx-btn { flex: none; min-height: 40px; padding: 0 8px; border: 0; background: none; color: var(--violet-bright); font-size: 14px; font-weight: 700; }
+.fx-btn:disabled { color: var(--text-3); }
+.fx-edit { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 8px; }
+.fx-edit .fx-sum { padding-bottom: 14px; }
+.fx-edit .fx-btn { min-height: 48px; }
+.fxline .warn { color: var(--warning); font-size: 13px; }
+/* Settings → Money → Main currency: each currency's sign in its own tile. */
+.cur-row .cur-sign { flex: none; display: grid; place-items: center; width: 44px; height: 30px; border-radius: 8px; background: rgba(240, 196, 106, 0.14); color: #f0c46a; font-size: 12px; font-weight: 800; white-space: nowrap; }

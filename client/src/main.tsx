@@ -28,6 +28,7 @@ import { NewPasskey, Recover } from './screens/Recover';
 import { SignIn } from './screens/SignIn';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
+import { CurrencyScreen } from './screens/Currency';
 import { SoundsScreen } from './screens/Sounds';
 import { BrandPage, BrandsList } from './screens/Brands';
 
@@ -186,6 +187,9 @@ function App() {
           break;
         case '/more/sounds':
           screen = <SoundsScreen />;
+          break;
+        case '/more/currency':
+          screen = <CurrencyScreen />;
           break;
         case '/sources': // D61: the Sources tab
         case '/more/brands': // where it lived before (D59)

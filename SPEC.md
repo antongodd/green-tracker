@@ -137,6 +137,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D63 | **A website for the app** (2026-10-20; to-do item 5; look A "Aurora Glass" of https://claude.ai/artifact/AkwHtCE8iVw8d9yyqEK2qR; the owner's answers: for friends and anyone who finds the link, sign-up open ("Sign up free"), the free `workers.dev` address, punchy and friendly ("like a stoner wrote it"), no age or legal note, no link to it from the app; he asked for it to look really good: the app's style but glassy, futuristic, with cool animations and dark colours not only green). | **A one-page site at its own address**, https://green-tracker-site.green-tracker.workers.dev, for people who haven't got the app: the headline "Rate your stash. Remember the fire.", a floating glass iPhone with a made-up Leaderboard, four things it does (ranked top shelf, Log, Sources, mates' picks), a **Go on, rate it** slider that gives a made-up product the colours its score earns in the app (D48, D30), three steps to add it to the iPhone Home Screen in Safari, a note that Android and computers work in the browser, and **Sign up free** (the live app's sign-up). **Products shown are all made up**; nobody's data is used. **Nothing from anywhere else:** fonts (Unbounded, Manrope; SIL OFL) are stored with the site; no tracking, analytics or cookies; strict security headers. Reduce Motion: still. A link-preview picture for WhatsApp and iMessage. **Separate from the app:** its own folder (`site/`), its own Worker of files only (no code, data or accounts); the app is unchanged. **Preview:** `green-tracker-site-dev`, deployed from `dev` and locked with Cloudflare Access like the dev site; the public site is deployed from `main`, so it goes public with the next "go live". See §4 *Website*. |
 | D64 | **The new look: Aurora Glass, a choice of looks and tops, two new colour sets** (2026-10-21; to-do item 4 "Leaderboard design rework, with a font and colour rework for the whole app"; mockups https://claude.ai/artifact/LJah55esqr7qtmDBxP3uzG (look A "Aurora Glass", top "Glass hero", numbers "Unbounded", colours "Aurora", all marked as the pick) and https://claude.ai/artifact/3w4fuY9qMDoCSgnc62pcvr (the rest of the app and the Appearance screen). The owner's answers: the numbers felt "too round and soft, almost like kiddy numbers"; the dark green above the Leaderboard looked out of place; rework "sort of everything"; the website's look should lead ("I want them to feel like one linking product"); every look, top and colour set as a choice in Appearance, defaulting to Aurora Glass, the glass hero and the new Aurora colours; Unbounded for the numbers; everyone switches to the defaults once; the Log's banner follows the top; built in two stages, Aurora Glass first). Amends D18, D28 and D29. | **Stage 1 (0.54.0).** **Aurora Glass** across the whole app: the website's blue-black background with **drifting green, teal and violet lights** behind every screen (still with Reduce Motion), **frosted-glass cards** with a light edge, a green-to-teal primary button, add button and switch, **Unbounded** for titles, product names and every number (scores, ranks, stats, badges, rating values, value for money), **Manrope** for words; both fonts stored with the app (no outside requests; offline too). The stats' numbers flow through lighter tints. **Settings → Appearance** gains a live **preview**, the **Look** (Aurora Glass; Neon Night, Holo Pearl and Deep Forest shown as "Coming next") and the **Top of the Leaderboard**: the **glass hero** (the average big, products and total beside it, "Your #1 · name" underneath), **three tiles**, or a **slim strip**; the Log (its hero line "Most from · country"), a friend's board ("Their #1") and a brand or supplier's page ("Best") follow it. Two new colour sets made for the look, **Aurora** (Jade, Lagoon, Violet, Aurora) and **Neon** (Lime, Electric, Hot pink, Neon), listed first and marked New; Gems, Prism and Metals stay. Settings shows Look, Leaderboard top and Leaderboard colours. **Data:** the look and top are saved to your account with the colours (a new migration rebuilds `appearance_settings`); **everyone moves once** to Aurora Glass, the glass hero and Aurora colours (Mark my #1 kept); Export and Restore carry them, and a file from before keeps working (the look and top take the defaults). A follower's board shows in the viewer's own look, top and colours, as before. **Stage 2 (to come):** Neon Night, Holo Pearl and Deep Forest. The website needs no change (it is Aurora Glass). See §4 *The new look*. |
 | D65 | **The new look, stage 2: Neon Night, Holo Pearl and Deep Forest** (2026-10-21; looks B, C and D of https://claude.ai/artifact/LJah55esqr7qtmDBxP3uzG, chosen in D64 as choices in Appearance; the owner checked stage 1 on his iPhone ("looks good and works well") and said go ahead, with both extras: the phone remembers the look so the app never opens in the wrong one, and the look and the colour set stay separate). Completes D64. | The three other looks can be chosen in **Settings → Appearance** (no more "Coming next"): **Neon Night** (deep indigo, violet, pink and cyan lights, violet-tinted glass, extra-bold titles), **Holo Pearl** (near-black, calmer pastel lights, a pearly rainbow rim on the stand-out cards (the glass hero, tiles, the strip, pills, Sources cards, you in Settings, Appearance's cards), titles in **Sora**, stored with the app), **Deep Forest** (the green look from before D64, tidied, Manrope titles). Numbers stay Unbounded in every look; the colour set is chosen separately. The Home Screen app's top bar takes the look's background. **This phone remembers your look** and puts it on before anything is drawn, so a Neon Night app never shows Aurora Glass for a moment; a phone that has never signed in opens in Aurora Glass. No data change (D64's migration already allowed the looks); Export and Restore carry the look; followers see everything in their own look. The website stays Aurora Glass. See §4 *The new look*. |
+| D66 | **Currencies: each purchase in the currency you paid in, compared in your main currency** (2026-10-22; to-do item 1, the owner's idea of 2026-10-20; mockups https://claude.ai/artifact/WvAYgXrygrFnMSXg6n6fPC; the owner's answers: rates **looked up for you, on the day you bought it** (option A), the Leaderboard shows the converted price with what you paid, smaller; no "type the £ from your bank statement" choice (one card payment often covers several products); the conversion line slim, without the explaining words). | **A purchase** has a currency (a picker in front of Total paid; a new purchase starts in the currency of the last one you added on this phone) and a **rate** into your main currency: the European Central Bank's rate for the purchase's day (the working day before for a weekend or holiday; today when undated), filled in and **saved with the purchase**, so it never changes by itself. Under a purchase in another currency, one slim line: **≈ £34.80 · €1 = £0.87 · Change**; Change (or a rate that couldn't be had) opens a box to type the rate; a typed rate stays when the date changes. **Your main currency** (Settings → **Money** → **Main currency**, 30 currencies, the usual five first) starts as **£**: every price shown together or compared is in it, converted with each purchase's saved rate: the Leaderboard's price (with what you paid, smaller, after it) and Price and Value for money ranking, a product page's price and value for money, Sources' and a name's page's Spent, a returned Log entry's purchases total. Where one purchase is shown on its own (Price history, the editor's rows) it shows as paid (€40.00), with what it came to and a small **€** tag. Changing the main currency works every purchase out again at its day's rate (typed rates are replaced), all at once or not at all. **Shown as:** the sign first, the currency's decimals (`£34.40`, `€40.00`, `US$12.00`, `¥5000`; per unit always 2, D13). **Rates** come from Frankfurter (free, open source, no key): the app's **first outside connection**, made by the **server only**, never your phone, sending only currencies and days; each past day's rates are kept, so a day is asked for once; if it can't answer, the app asks you to type the rate (a main-currency change or a restore that needs one changes nothing). **Data:** every existing purchase becomes £ at rate 1 (nothing on screen changes); a new migration (columns on `purchases`, `money_settings`, `fx_rates`). **Export and Restore** carry each purchase's currency and rate and your main currency; a file from before is all £ (into another main currency, its purchases get their day's rate). **Followers** never see prices, so nothing changes for them. Both sites alike. See §4 *Currencies*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -172,6 +173,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   date → the later-entered one (`seq`).
 - **Headline price** comes from the latest purchase only. If that purchase has no
   amount there is no headline price (and no VFM) — no fallback to an older one.
+  *(Since 0.56.0 in your main currency: the purchase's total at its saved rate, D66.)*
 - **VFM display:** 2 decimal places (`7.00`, `1.60`).
 - **Amounts** display up to 2dp with trailing zeros dropped (`3.5g`, `100mg`).
 - **Auto-capitalisation:** a first character whose uppercase isn't a single
@@ -1331,11 +1333,77 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
       stay shown and the last is saved (fails on the old code).
     - *Couldn't check here*: the three looks on a real iPhone, and Sora in iOS Safari.
 
+- **Currencies (D66, 0.56.0).** `shared/domain/currency.ts`: `CURRENCIES` (the ECB's 30 reference currencies, the
+  usual five first; code, name, sign, decimals: 0 for HUF, ISK, IDR, JPY, KRW), `DEFAULT_CURRENCY` £, `isValidRate`
+  (1e-7…1e7), `formatRate` (4 figures, at least 2 decimals). `format.ts`: `formatMoney(value, code)` replaces
+  `formatGBP`; `formatUnitPrice(type, price, code)` and `formatPerUnit` keep 2 decimals per unit (D13).
+  `money.ts`: a `Purchase` may carry `currency` and `rate` (absent: the main currency, 1); `paidInMain` is the total at
+  its rate, and `unitPrice` (so the headline price, VFM and ranking) uses it; `unitPricePaid` is the price as paid.
+  `names.ts` `spentOn` adds `paidInMain`. `product.ts`: `PurchaseRecord` always has `currency` and `rate`;
+  `PurchaseInput`'s are optional and checked (a known code, a valid rate); `settleCurrencies(purchases, main)`: none
+  given → the main currency; the main currency's rate is always 1; another needs a rate ("A purchase in € needs an
+  exchange rate.").
+  - *Server:* migration `0012_currency.sql` (`purchases.currency` default 'GBP', `purchases.rate` default 1,
+    `money_settings`, `fx_rates`). `server/lib/fx.ts` `ratesFor(env, needs)`: one rate per need (from, to, day; `fxDay`
+    makes an undated or future day today and nothing before 1999-01-04); past days' per-euro rates from `fx_rates`,
+    the rest in **one** request to `${FX_URL || https://api.frankfurter.dev}/v2/rates?base=EUR&quotes=…&from=…&to=…&providers=ecb`
+    (ten days before the first day asked, for weekends and holidays; 8s timeout; refused with a 4xx, asked once more without `providers=ecb`), the latest rate on or before each
+    day (`parseRates` reads v2's rows and v1's table); today's isn't kept (the ECB publishes in the afternoon);
+    `FxUnavailable` when it can't. `GET /api/money/rate?from&to&date` → `{ rate, day }` (503 "Couldn't get the
+    exchange rate just now. Type it in instead."; 300 per 10 minutes per account). `PUT /api/money { currency }`
+    re-rates every purchase of yours at its day's rate and saves the setting in one batch (503 and nothing changed when
+    a rate can't be had). `/api/auth/me` sends `currency`. `childWrites` settles purchases against your main currency.
+    Restore: a purchase without a currency is £; the file's `money` sets your main currency (else yours stays); the
+    main currency's rate is 1, the file's rate is kept, a missing one is looked up (503 and nothing replaced if it
+    can't be). Followers' routes never send purchases (D2), so nothing new crosses accounts.
+  - *Client:* `client/src/money.ts` (`useCurrency`, `saveCurrency`, `fetchRate`, the last currency used in
+    `localStorage['gt.currency.last']`). Editor (`PurchaseDraft` gains `currency`, `rate`, `rateText`, `typed`, `look`):
+    the currency is a native `<select>` (names in the list) laid invisibly over its sign (`.cur`, `.cur-face`);
+    picking another currency or a new date (unless you typed the rate) looks the rate up; `RateLine` draws the slim
+    `.fxline` (≈ total, the rate, Change) or the rate box (`£ for €1`, Done; "Couldn't get the rate. Type it in." when
+    the look-up failed); a kept purchase without a readable rate stops the save, opens, and says what to do. Row:
+    price per unit in the main currency with the paid one in `small`; `.fx` tag with the sign. `MetaLine` adds `.paid`;
+    `formatRankValue` takes the currency (a friend's board never ranks by price). `PriceHistory`: as paid, "(≈ £34.80)",
+    the `.fx` tag; the VFM caption names the main currency's sign. `Brands`, `LogEntry` (a returned entry's total) and
+    the hero use the main currency. `Currency.tsx` (`/more/currency`): Usual and More lists of radios, a sheet to
+    confirm, then the product and Log caches are dropped and `/auth/me` read again. Settings: a **Money** group with
+    Main currency (`CoinsIcon`, amber). Export: purchases carry `currency` and `rate`, the file `money`.
+  - *Tests:* `test/fxStub.mjs`, a stand-in for the rate service started by both test servers (`FX_URL`; never in
+    `wrangler.jsonc`, `config.test.ts`): made-up per-euro rates by day of the month, working days only, any day in 2001
+    fails, the ECB choice is refused for rand (ZAR), `/calls` counts requests. `test/domain/currency.test.ts` (codes, formats, rates, conversion, settling, backup
+    money, `parseRates`, `fxDay`), `names.test.ts` (Spent at rates); `test/api/currency.test.ts` (storing, refusing, the
+    rate route with weekends and crossing currencies and kept rates, the service down, changing the main currency
+    both ways and refusing when a rate can't be had, restores old and new, followers); `test/e2e/currency.spec.ts`
+    (adding a € purchase, Change and a typed rate kept over a date change, the last currency remembered, the look-up
+    failing and the save explaining, the Leaderboard's two prices, Settings → Main currency both ways, readability and
+    axe). `more.spec.ts` gains the Money row; purchases tests use the "Total paid" label.
+  - *Found while testing:* a rate typed into the open box (before Done) was thrown away by a new date; typing now
+    counts as typed. A main-currency change that failed showed its reason at the top of a long, scrolled list; it now
+    scrolls up to it.
+    A browser test failed once in a full run (`brands.spec.ts`: the new product not found): after Save it waited for an
+    address like `/products/…`, which `/products/new` already is, so it read the list before the save finished (a save
+    now also reads your main currency, a little longer). Five specs now wait for `/products/(?!new$)…`, as
+    `country.spec.ts` already did; proved by holding the save back 1.5s (fails with the old pattern, passes with the new).
+    CI then failed `gems.spec.ts`'s readability test on the Sapphire page (the badge at 1.1 : 1 at steps 10 and 11).
+    The text was measured while the page-load fade (`enter`) was still running, and that fade also slides the screen
+    up 6px; `contrastFailures` winds it to each step, so by the last steps the badge sat a few pixels off its measured
+    boxes. `textBoxes` (so every readability check) now waits for `settled` first. Proved with the animations slowed
+    to 5% (CDP `Animation.setPlaybackRate`): the same failure at steps 10 and 11 before, passing after.
+  - *Couldn't check here:* the real rate service (it can't be reached from the build environment; built to its
+    published format and tested against the stand-in), and the currency picker under a thumb on a real iPhone.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.56.0 — currencies (owner request)
+- Decision D66. Each purchase can be in any of 30 currencies, with the rate for its day looked up and saved with it
+  (or typed). Settings → Money → Main currency (£ to start): every price shown together or compared is converted into
+  it. Existing purchases are £. The server asks a free rate service (Frankfurter, the European Central Bank's rates):
+  the app's first outside connection, sending only currencies and days. A new migration.
+- `CLAUDE.md`: next decision D67; testing notes for currencies.
 
 ### 0.55.1 — CLAUDE.md: the new look is live
 - The new look (D64, D65) went live on 2026-10-21 and moves from the to-do list to Done; the remaining items are

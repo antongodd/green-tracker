@@ -155,7 +155,7 @@ test("Supplier offers the product's Source first, and saves the spelling you use
   await owner.locator('[id$="-paid"]').fill('20');
   await expect(supplier).toHaveValue("Barney's");
   await owner.locator('.savebar .btn.primary').click();
-  await expect(owner).toHaveURL(/\/products\/[^/]+$/);
+  await expect(owner).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   const saved = (await call(owner, 'GET', '/api/products')).products.find((p: any) => p.name === 'Brand New');
   expect([saved.source, saved.purchases[0].supplier]).toEqual(['Cookies', "Barney's"]);
   ids['Brand New'] = saved.id;
