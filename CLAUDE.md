@@ -156,14 +156,15 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live and dev:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65); dev also has notes-only 0.55.1.
+- **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
+- **Dev:** 0.56.0 (2026-10-22): currency settings (D66); plus notes-only 0.56.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
-   (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
-   converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
-   can be compared. Plan first.
+1. **Currency settings** — **on dev** (0.56.0, D66, 2026-10-22): each purchase in its own currency, the rate for its
+   day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
+   Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
+   "go live".
 2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
    the details in the working conversation.
 
