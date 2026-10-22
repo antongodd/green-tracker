@@ -96,7 +96,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
   start counting animations. It waits for the page-load fade (`enter`) and a menu sliding up (`rise`); a new entrance
-  animation must be added to it. To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
+  animation must be added to it. `textBoxes` calls it itself (0.56.0: boxes measured mid-fade sat 6px off by the
+  last steps). To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
 - `contrastFailures` only photographs the top 390×844. For long screens use `wholeScreenContrastFailures` (top and
   bottom, only text between the header and the tab bar). Prove a readability test bites by dimming the text.
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.

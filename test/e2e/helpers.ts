@@ -119,9 +119,15 @@ export async function contrastFailures(page: Page, boxes: TextBox[], steps = 12)
  */
 export const HERO_TEXT = '.hero h1, .hero-score b, .hero-score .cap, .hero-line > span:not(.tag), .hero-price, .gem-badge > span, .gem-badge .n, .gem-badge .gem';
 export const heroTextBoxes = (page: Page): Promise<TextBox[]> => textBoxes(page, HERO_TEXT);
-/** The same for any text on the page (the Aurora's section titles, D29). */
-export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
-  page.locator('body').evaluate((main, selector) => {
+/**
+ * The same for any text on the page (the Aurora's section titles, D29). Waits for the page-load
+ * fade first (`settled`): it also slides the screen up 6px, and contrastFailures winds it to each of
+ * its steps, so boxes measured mid-slide sat a few pixels off the text by the last steps (0.56.0: a
+ * badge's bright edge read at 1.1 : 1 on a slow CI machine).
+ */
+export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]> => {
+  await settled(page);
+  return page.locator('body').evaluate((main, selector) => {
     const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
     const darkest = (t: HTMLElement) => (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)).reduce((a, b) => (lum(b) < lum(a) ? b : a));
     const els = [...main.querySelectorAll<HTMLElement>(selector)];
@@ -141,6 +147,7 @@ export const textBoxes = (page: Page, selector: string): Promise<TextBox[]> =>
     }
     return out;
   }, selector);
+};
 
 /**
  * contrastFailures for a screen taller than the phone: photographed at the top, then a screen

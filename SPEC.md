@@ -1384,6 +1384,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     address like `/products/…`, which `/products/new` already is, so it read the list before the save finished (a save
     now also reads your main currency, a little longer). Five specs now wait for `/products/(?!new$)…`, as
     `country.spec.ts` already did; proved by holding the save back 1.5s (fails with the old pattern, passes with the new).
+    CI then failed `gems.spec.ts`'s readability test on the Sapphire page (the badge at 1.1 : 1 at steps 10 and 11).
+    The text was measured while the page-load fade (`enter`) was still running, and that fade also slides the screen
+    up 6px; `contrastFailures` winds it to each step, so by the last steps the badge sat a few pixels off its measured
+    boxes. `textBoxes` (so every readability check) now waits for `settled` first. Proved with the animations slowed
+    to 5% (CDP `Animation.setPlaybackRate`): the same failure at steps 10 and 11 before, passing after.
   - *Couldn't check here:* the real rate service (it can't be reached from the build environment; built to its
     published format and tested against the stand-in), and the currency picker under a thumb on a real iPhone.
 
