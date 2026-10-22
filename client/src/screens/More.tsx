@@ -5,7 +5,7 @@ import { MeButton } from '../components/MeButton';
 import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LayoutIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LayoutIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
@@ -16,6 +16,8 @@ import { formatDate, useSession } from '../session';
 import { BOARD_TOPS, LOOKS, PRESETS } from '../../../shared/domain/gems';
 import { useAppearance } from '../components/Gems';
 import { sounds } from '../sounds';
+import { useCurrency } from '../money';
+import { currency } from '../../../shared/domain/currency';
 
 declare const __APP_VERSION__: string;
 
@@ -72,6 +74,7 @@ function summary(products: number | null, counts: { followers: number; following
 export function More() {
   const { me, refresh } = useSession();
   const appearance = useAppearance();
+  const main = useCurrency();
   const [confirmEverywhere, setConfirmEverywhere] = useState(false);
   const [error, setError] = useState('');
   const [archived, setArchived] = useState<number | null>(null);
@@ -146,6 +149,13 @@ export function More() {
             <Row label="Leaderboard colours" value={PRESETS[appearance.preset].label} to="/more/appearance" icon={GemIcon} tint="gem" />
             {/* D57: sounds and ticks have their own screen; saved on this phone. */}
             <Row label="Sounds and ticks" value={sounds().on ? 'On' : 'Off'} to="/more/sounds" icon={SoundIcon} />
+          </div>
+        </div>
+        {/* D66: the currency every price shown together is in. */}
+        <div class="lh cap">Money</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="Main currency" value={`${currency(main).symbol.trim()} ${main}`} to="/more/currency" icon={CoinsIcon} tint="amber" />
           </div>
         </div>
         <div class="lh cap">Data</div>

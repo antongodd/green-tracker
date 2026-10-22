@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
-import { formatGBP, formatScore } from '../../../shared/domain/format';
+import { formatMoney, formatScore } from '../../../shared/domain/format';
+import { useCurrency } from '../money';
 import { leaderboardTiles, rankProducts } from '../../../shared/domain/leaderboard';
 import { matchesName, nameKey, productsNamed, spentOn, usedNames } from '../../../shared/domain/names';
 import { photoUrl } from '../../../shared/domain/photo';
@@ -66,6 +67,7 @@ const SORTS: { key: Sort; label: string }[] = [
  */
 export function BrandsList() {
   const { products, error } = useProducts();
+  const main = useCurrency();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('products');
   const names = (products ? usedNames(products) : []).map((n) => {
@@ -120,7 +122,7 @@ export function BrandsList() {
                     </span>
                   </span>
                   <span class="sub">
-                    {n.products} {n.products === 1 ? 'product' : 'products'} · {formatGBP(n.spent)} spent
+                    {n.products} {n.products === 1 ? 'product' : 'products'} · {formatMoney(n.spent, main)} spent
                   </span>
                   {n.best && <span class="sub best">best: {n.best.name}</span>}
                   <RoleTags brand={n.brand > 0} shop={n.shop > 0} />
@@ -142,6 +144,7 @@ export function BrandsList() {
  * spent on it (D62: as a brand and where you bought, each purchase once). Archived products are left out.
  */
 export function BrandPage(p: { name: string }) {
+  const main = useCurrency();
   const key = nameKey(p.name);
   const { products, error } = useProducts();
   // Opened from the Sources tab it belongs to Sources; from a product page, to the Leaderboard.
@@ -193,7 +196,7 @@ export function BrandPage(p: { name: string }) {
               tiles={[
                 { value: String(tiles.products), label: 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
-                { value: formatGBP(spentOn(products!, key)), label: 'Spent' },
+                { value: formatMoney(spentOn(products!, key), main), label: 'Spent' },
               ]}
               lead={1}
               foot={rows[0] && <span class="who">Best · <b>{rows[0].product.name}</b></span>}

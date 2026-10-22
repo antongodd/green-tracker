@@ -6,6 +6,9 @@ describe('production config', () => {
   it('never relaxes the sign-up rate limit (test servers only)', () => {
     expect(raw).not.toContain('SIGNUP_LIMIT_PER_HOUR');
   });
+  it('asks the real exchange-rate service (D66: the stand-in is for test servers only)', () => {
+    expect(raw).not.toContain('FX_URL');
+  });
   it('binds passkeys to the owner’s address (D11)', () => {
     expect(raw).toContain('"RP_ID": "green-tracker.green-tracker.workers.dev"');
     expect(raw).toContain('"ORIGIN": "https://green-tracker.green-tracker.workers.dev"');

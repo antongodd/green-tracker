@@ -4,6 +4,7 @@
 
 import { autoCapitalise } from './capitalise';
 import { COUNTRIES, OTHER_COUNTRY } from './countries';
+import { currencySign, isCurrencyCode, isValidRate } from './currency';
 import { CONCENTRATE_SUBTYPES, DEFAULT_PRODUCT_TYPE, RATING_CATEGORIES, STRAIN_TYPES, isProductTypeKey, productType, type ProductTypeKey, type RatingKey, type StrainTypeKey } from './productTypes';
 import { MAX_PHOTOS_PER_PRODUCT, parseCrop, type PhotoInput, type PhotoRecord } from './photo';
 import { isValidHitTime, isValidRating, type Ratings } from './ratings';
@@ -14,8 +15,13 @@ export interface PurchaseRecord {
   seq: number;
   date: string | null;
   amount: number | null;
+  /** In `currency`. */
   totalPaid: number;
   supplier: string | null;
+  /** D66: the currency you paid in. */
+  currency: string;
+  /** D66: 1 unit of `currency` in your main currency, saved with the purchase (1 when they're the same). */
+  rate: number;
 }
 
 export interface Product {
@@ -52,6 +58,10 @@ export interface PurchaseInput {
   amount: number | null;
   totalPaid: number | null;
   supplier: string | null;
+  /** D66: absent → your main currency. */
+  currency?: string;
+  /** D66: needed when `currency` isn't your main one; ignored (1) when it is. */
+  rate?: number | null;
 }
 
 /**
@@ -203,7 +213,12 @@ export function validateProductInput(raw: unknown): ValidationResult {
     const p = pRaw as Record<string, unknown>;
     // A purchase with no total paid is discarded on save (brief §9).
     if (p.totalPaid === null || p.totalPaid === undefined) continue;
-    if (typeof p.totalPaid !== 'number' || !Number.isFinite(p.totalPaid) || p.totalPaid < 0 || p.totalPaid > PRODUCT_LIMITS.money) return fail('Total paid must be an amount in £.');
+    if (typeof p.totalPaid !== 'number' || !Number.isFinite(p.totalPaid) || p.totalPaid < 0 || p.totalPaid > PRODUCT_LIMITS.money) return fail('Total paid must be an amount of money.');
+    // D66: the currency and its rate; whether a rate is needed depends on your main currency (the server knows it).
+    const cur = p.currency ?? undefined;
+    if (cur !== undefined && !isCurrencyCode(cur)) return fail('Choose a currency from the list.');
+    const rate = p.rate ?? null;
+    if (rate !== null && !isValidRate(rate)) return fail('An exchange rate must be a number more than 0.');
     const amount = p.amount ?? null;
     if (amount !== null && (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || amount > PRODUCT_LIMITS.money)) return fail('Amount must be more than 0.');
     const date = p.date ?? null;
@@ -215,7 +230,7 @@ export function validateProductInput(raw: unknown): ValidationResult {
       if (supplier && supplier.length > PRODUCT_LIMITS.shortText) return fail(`Keep supplier to ${PRODUCT_LIMITS.shortText} characters.`);
     } else if (sup !== null && sup !== undefined) return fail('A purchase could not be read.');
     const id = typeof p.id === 'string' ? p.id : undefined;
-    purchases.push({ ...(id ? { id } : {}), date, amount, totalPaid: p.totalPaid, supplier });
+    purchases.push({ ...(id ? { id } : {}), date, amount, totalPaid: p.totalPaid, supplier, ...(cur !== undefined ? { currency: cur } : {}), ...(rate !== null ? { rate } : {}) });
   }
 
   const photosIn = r.photos ?? [];
@@ -270,4 +285,22 @@ export function productTypeLabel(p: Pick<Product, 'productType' | 'productTypeOt
     else if (p.concentrateType !== 'not_set') concentrate = def.subtypes.options.find((s) => s.key === p.concentrateType)?.label ?? null;
   }
   return { type, concentrate };
+}
+
+/** A purchase with its currency and rate settled against your main currency (D66). */
+export type SettledPurchase = PurchaseInput & { currency: string; rate: number };
+
+/**
+ * Settles each purchase's currency against your main currency (D66): none given means the main
+ * one; the main one's rate is always 1; any other currency needs its rate.
+ */
+export function settleCurrencies(purchases: readonly PurchaseInput[], main: string): { ok: true; value: SettledPurchase[] } | { ok: false; message: string } {
+  const value: SettledPurchase[] = [];
+  for (const p of purchases) {
+    const cur = p.currency ?? main;
+    if (cur === main) value.push({ ...p, currency: cur, rate: 1 });
+    else if (p.rate == null) return { ok: false, message: `A purchase in ${currencySign(cur)} needs an exchange rate.` };
+    else value.push({ ...p, currency: cur, rate: p.rate });
+  }
+  return { ok: true, value };
 }

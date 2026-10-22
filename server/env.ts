@@ -10,6 +10,8 @@ export interface Env {
   SITE?: string;
   /** Test servers only: raises the sign-up limit. Never set in production (default 10 an hour). */
   SIGNUP_LIMIT_PER_HOUR?: string;
+  /** Test servers only: where exchange rates come from (a stand-in). Never set in production (D66: Frankfurter). */
+  FX_URL?: string;
 }
 
 export interface SessionUser {

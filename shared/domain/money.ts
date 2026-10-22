@@ -6,9 +6,13 @@ export interface Purchase {
   date: string | null;
   /** Grams, or mg of THC for edibles. Optional. */
   amount: number | null;
-  /** Plain £ for every type. A purchase without it is discarded on save. */
+  /** What you paid, in `currency`. A purchase without it is discarded on save. */
   totalPaid: number;
   supplier: string | null;
+  /** D66: the currency you paid in. Absent: the main currency (every purchase before 0.56.0 is £). */
+  currency?: string;
+  /** D66: 1 unit of `currency` in the main currency, saved with the purchase. Absent: 1. */
+  rate?: number;
   /** Insertion order; breaks ties between purchases on the same date. */
   seq: number;
 }
@@ -17,8 +21,18 @@ function hasAmount(amount: number | null | undefined): amount is number {
   return typeof amount === 'number' && Number.isFinite(amount) && amount > 0;
 }
 
-/** Price per unit = total paid ÷ amount. Full precision; null when there is no amount. */
-export function unitPrice(p: Pick<Purchase, 'amount' | 'totalPaid'>): number | null {
+/** What a purchase cost in the main currency (D66): the total paid at its saved rate. */
+export function paidInMain(p: Pick<Purchase, 'totalPaid' | 'rate'>): number {
+  return p.totalPaid * (p.rate ?? 1);
+}
+
+/** Price per unit in the main currency = total paid (converted) ÷ amount. Full precision; null when there is no amount. */
+export function unitPrice(p: Pick<Purchase, 'amount' | 'totalPaid' | 'rate'>): number | null {
+  return hasAmount(p.amount) ? paidInMain(p) / p.amount : null;
+}
+
+/** Price per unit in the currency you paid in (D66), for showing a purchase as it was. */
+export function unitPricePaid(p: Pick<Purchase, 'amount' | 'totalPaid'>): number | null {
   return hasAmount(p.amount) ? p.totalPaid / p.amount : null;
 }
 

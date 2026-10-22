@@ -7,7 +7,7 @@ export interface ApiError {
   message: string;
 }
 
-export function fail(status: 400 | 401 | 403 | 404 | 409 | 429, error: string, message: string, headers?: Record<string, string>): never {
+export function fail(status: 400 | 401 | 403 | 404 | 409 | 429 | 503, error: string, message: string, headers?: Record<string, string>): never {
   const res = new Response(JSON.stringify({ error, message } satisfies ApiError), {
     status,
     headers: { 'content-type': 'application/json', ...headers },

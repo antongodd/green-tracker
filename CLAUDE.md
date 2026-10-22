@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D65 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D66 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D66), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D67), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D65.
+- Reopen any decision D1–D66.
 
 ## Testing notes
 
@@ -96,7 +96,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   directly (`npm run test:e2e` builds for you).
 - Call `settled(page)` after waiting for something on screen, before axe, layout or contrast checks, and before you
   start counting animations. It waits for the page-load fade (`enter`) and a menu sliding up (`rise`); a new entrance
-  animation must be added to it. To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
+  animation must be added to it. `textBoxes` calls it itself (0.56.0: boxes measured mid-fade sat 6px off by the
+  last steps). To prove a timing fix, slow animations with CDP `Animation.setPlaybackRate`.
 - `contrastFailures` only photographs the top 390×844. For long screens use `wholeScreenContrastFailures` (top and
   bottom, only text between the header and the tab bar). Prove a readability test bites by dimming the text.
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
@@ -136,6 +137,13 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   button (axe nested-interactive): the tick is a label pointing at the one hidden switch `#gt-tick`. The browser-test
   servers say they're live: answer `/api/auth/me` with `site: 'dev'` (`page.route`) to see dev-only things.
   `navigator.audioSession` (Safari's sound mode) can be pretended in the same init script (`sounds.spec.ts`).
+- Currencies (D66): exchange rates come from a stand-in, `test/fxStub.mjs`, which both test servers start and pass as
+  `FX_URL` (never put it in `wrangler.jsonc`: `config.test.ts`). Per euro, GBP 0.85 + day/1000 (20 Oct → 0.87), USD
+  1.10 + day/1000, working days only; **any day in 2001 fails** (the service down); rand (ZAR) refuses the ECB choice; `/calls` counts requests. A purchase
+  dated 2001 in another currency also stops a later main-currency change, so give it another date before the test moves
+  on. Set a purchase's currency in a test with `currency` and `rate` on the purchase (a non-main currency needs a rate),
+  the main currency with `PUT /api/money`, and put £ back at the end. The phone remembers the last currency picked in
+  `localStorage['gt.currency.last']`. The real service can't be reached from the cloud environment.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -148,28 +156,23 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.53.1 (2026-10-21): everything up to the website (D63). **Dev:** 0.54.1: live plus the new look, stage 1
-  (Aurora Glass, D64, 0.54.0) and notes-only 0.53.2 and 0.54.1.
+- **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
+- **Dev:** 0.56.0 (2026-10-22): currency settings (D66); plus notes-only 0.56.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **The new look** (Leaderboard design rework, with a font and colour rework for the whole app; Anton, 2026-10-18).
-   **Stage 1 on dev** (0.54.0, D64, 2026-10-21): Aurora Glass (the website's look: drifting lights, frosted glass,
-   Unbounded numbers and titles, Manrope words); Settings → Appearance with a preview, the look, the top of the
-   Leaderboard (glass hero, three tiles, slim strip; the Log, friends' boards and brand pages follow it) and two new
-   colour sets, Aurora and Neon. Everyone moved once to Aurora Glass, glass hero, Aurora colours. Anton checks it on
-   GT Dev. **Stage 2 next:** the other three looks (Neon Night, Holo Pearl, Deep Forest), shown as "Coming next".
-2. **Currency settings** (Anton's idea, 2026-10-20): today every price is in £. Each **purchase** gets its own currency
-   (e.g. € in Amsterdam, £ at home), and the **account** has a main currency: purchases in another currency are
-   converted into it wherever prices are shown together or compared (Leaderboard, value for money, totals), so they
-   can be compared. Plan first.
-3. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+1. **Currency settings** — **on dev** (0.56.0, D66, 2026-10-22): each purchase in its own currency, the rate for its
+   day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
+   Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
+   "go live".
+2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
    the details in the working conversation.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |
 | A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
 | Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |
 | Sources and Settings tabs | 0.51.0 | D61 | 2026-10-20 | 2026-10-21 |

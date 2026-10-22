@@ -16,6 +16,8 @@ import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
 import { Cluster, formatRankValue, Score, Thumb } from '../components/ProductRow';
+// A friend's board never ranks by price (followers never see prices), so no currency is ever shown.
+import { DEFAULT_CURRENCY } from '../../../shared/domain/currency';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
 import { MoreIcon } from '../icons';
 import { fetchPreview } from '../privacy';
@@ -63,7 +65,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
           </div>
         )}
       </div>
-      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value)} />
+      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value, DEFAULT_CURRENCY)} />
     </a>
   );
 }

@@ -133,6 +133,8 @@ export const SoundIcon = icon('M4 9.5h3.5L12 5.5v13l-4.5-4H4Z M15.5 9a4.2 4.2 0 
 export const SparkleIcon = icon('M11 3.5l1.8 5.2 5.2 1.8-5.2 1.8L11 17.5l-1.8-5.2L4 10.5l5.2-1.8ZM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z', { stroke: 1.6 });
 /** The top of the Leaderboard (D64): one wide card over two small ones. */
 export const LayoutIcon = icon('M4 4.5h16v7H4ZM4 14.5h7v5H4ZM13 14.5h7v5h-7Z', { stroke: 1.6 });
+/** Money (D66): a stack of coins. */
+export const CoinsIcon = icon('M12 3.5c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3Z M4 6.5v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5 M4 11.5v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5', { stroke: 1.6 });
 export const GemIcon = icon('M6.5 4h11L21 9l-9 11L3 9ZM3 9h18M8.5 9 12 20l3.5-11M9 4l-.5 5M15 4l.5 5', { stroke: 1.6 });
 export const ChevronDown = icon('M2.5 4.5 6 8l3.5-3.5', { stroke: 1.8, viewBox: '0 0 12 12' });
 export const LockIcon = icon('M7 10V7.5a5 5 0 0 1 10 0V10h.5A1.5 1.5 0 0 1 19 11.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20.5v-9A1.5 1.5 0 0 1 6.5 10Zm2.3 0h5.4V7.5a2.7 2.7 0 0 0-5.4 0Z', { evenodd: true });
