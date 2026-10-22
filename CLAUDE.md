@@ -156,22 +156,19 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
-- **Dev:** 0.56.0 (2026-10-22): currency settings (D66); plus notes-only 0.56.1.
+- **Live and dev:** 0.56.1 (live 2026-10-22): everything up to currency settings (D66); dev also has notes-only 0.56.2.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Currency settings** — **on dev** (0.56.0, D66, 2026-10-22): each purchase in its own currency, the rate for its
-   day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
-   Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
-   "go live".
-2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
-   the details in the working conversation.
+1. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
+   the details in the working conversation (its own conversation, "Green Tracker: edible value for money rework",
+   started 2026-10-22).
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Currency settings: each purchase in its own currency, a main currency (checked on Anton's iPhone) | 0.56.0 | D66 | 2026-10-22 | 2026-10-22 |
 | The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |
 | A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
 | Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |

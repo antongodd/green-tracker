@@ -1398,6 +1398,10 @@ None.
 
 ## 6. Changelog
 
+### 0.56.2 — CLAUDE.md: currency settings are live
+- Currency settings (D66) went live on 2026-10-22 and move from the to-do list to Done; edible value for money is
+  item 1. Notes only.
+
 ### 0.56.1 — CLAUDE.md: currency settings are on dev
 - The to-do list marks currency settings (D66) on dev. Notes only.
 
