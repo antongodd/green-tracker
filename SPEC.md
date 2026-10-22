@@ -1398,6 +1398,9 @@ None.
 
 ## 6. Changelog
 
+### 0.56.1 — CLAUDE.md: currency settings are on dev
+- The to-do list marks currency settings (D66) on dev. Notes only.
+
 ### 0.56.0 — currencies (owner request)
 - Decision D66. Each purchase can be in any of 30 currencies, with the rate for its day looked up and saved with it
   (or typed). Settings → Money → Main currency (£ to start): every price shown together or compared is converted into
