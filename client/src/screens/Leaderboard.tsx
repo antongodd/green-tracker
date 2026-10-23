@@ -127,7 +127,7 @@ export function Leaderboard() {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} value={r.value} />
+              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} filter={view.filter} value={r.value} />
             ))}
           </div>
         )}

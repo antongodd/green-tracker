@@ -107,7 +107,7 @@ function PriceHistory(p: { product: Product }) {
           <span>
             <span class="cap">Value for money</span>
             <span class="small" style={{ display: 'block' }}>
-              Overall ÷ latest {type === 'edibles' ? `${currencySign(main)} per 100mg` : `${currencySign(main)}/g`} · higher is better
+              Overall ÷ latest {type === 'edibles' ? `${currencySign(main)} per 20mg (the same effect as 1g of flower)` : `${currencySign(main)}/g`} · higher is better
             </span>
           </span>
           <b>{formatVFM(vfm)}</b>

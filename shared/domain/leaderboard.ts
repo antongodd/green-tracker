@@ -6,7 +6,7 @@ import {
   productType,
   type RatingKey,
 } from './productTypes';
-import { headlinePrice, purchasedWeight, valueForMoney, type Purchase } from './money';
+import { headlinePrice, pricePerGramEquivalent, purchasedWeight, valueForMoney, type Purchase } from './money';
 import { categoryValue, overall, type Ratings } from './ratings';
 import { bandName, scoreBand, type Appearance, type Band } from './gems';
 
@@ -41,7 +41,8 @@ function isTypeFilter(value: unknown): value is TypeFilter {
 
 /**
  * Rank by options, derived from the rating sets and the filter.
- * All: Overall, then the de-duplicated union of every type's categories (canonical order).
+ * All: Overall, price and value for money (D67: compared as the same effect as a gram of
+ * flower), then the de-duplicated union of every type's categories (canonical order).
  * A type: Overall, price (by unit), value for money, then that type's categories.
  * `money: false` (a followed person's view) never offers price or VFM.
  * Hit time is never offered. (Most used went with Smokes, D60.)
@@ -49,6 +50,7 @@ function isTypeFilter(value: unknown): value is TypeFilter {
 export function rankByOptions(filter: TypeFilter, { money }: { money: boolean }): Option<RankBy>[] {
   const options: Option<RankBy>[] = [{ key: 'overall', label: 'Overall' }];
   if (filter === 'all') {
+    if (money) options.push({ key: 'price', label: 'Price' }, { key: 'vfm', label: 'Value for money' });
     // Every type's set counts towards the union, including Other/Not set.
     const union = new Set(PRODUCT_TYPES.flatMap((t) => t.ratingSet.map((s) => s.key)));
     for (const key of RATING_CATEGORIES) if (union.has(key)) options.push({ key, label: RATING_LABELS[key] });
@@ -87,13 +89,18 @@ export function resolveViewState(stored: { filter?: unknown; rankBy?: unknown },
   return { filter, rankBy, changed: filter !== stored.filter || rankBy !== stored.rankBy };
 }
 
-/** The value a product is ranked on, at full precision. null = unrated / unrankable. */
-export function rankValue(p: RankableProduct, rankBy: RankBy): number | null {
+/**
+ * The value a product is ranked on, at full precision. null = unrated / unrankable. Price under
+ * All is for the same effect as a gram of flower (D67: an edible's is the price of 20mg);
+ * under one type it's that type's own unit.
+ */
+export function rankValue(p: RankableProduct, rankBy: RankBy, filter: TypeFilter = 'all'): number | null {
   switch (rankBy) {
     case 'overall':
       return overall(p.productType, p.ratings);
     case 'price':
-      return p.purchases ? headlinePrice(p.purchases) : null;
+      if (!p.purchases) return null;
+      return filter === 'all' ? pricePerGramEquivalent(p.productType, p.purchases) : headlinePrice(p.purchases);
     case 'vfm':
       return p.purchases ? valueForMoney(p.productType, p.ratings, p.purchases) : null;
     default:
@@ -140,7 +147,7 @@ export function tieBreak(a: RankableProduct, b: RankableProduct): number {
 export function rankProducts<P extends RankableProduct>(products: readonly P[], view: ViewState): RankedRow<P>[] {
   const scored = products
     .filter((p) => matchesFilter(p.productType, view.filter))
-    .map((product) => ({ product, value: rankValue(product, view.rankBy) }))
+    .map((product) => ({ product, value: rankValue(product, view.rankBy, view.filter) }))
     .filter((r) => view.rankBy === 'overall' || r.value !== null);
   scored.sort((a, b) => {
     if (a.value !== b.value) {
