@@ -89,10 +89,31 @@ describe('Rank by (§10.1)', () => {
     expect(rows.map((r) => r.product.id)).toEqual(['dear', 'cheap']);
   });
 
-  it('options under All: Overall then the category union in canonical order; no price, VFM or hit time', () => {
+  it('options under All: Overall, Price, VFM (D67), then the category union in canonical order; no hit time', () => {
     expect(rankByOptions('all', { money: true }).map((o) => o.key)).toEqual([
-      'overall', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
+      'overall', 'price', 'vfm', 'look', 'consistency', 'smell', 'taste', 'burn', 'high',
     ]);
+    expect(rankByOptions('all', { money: true })[1]!.label).toBe('Price');
+  });
+
+  it('under All, price and VFM compare an edible\'s 20mg with a gram (D67); one type keeps its own unit', () => {
+    const list = [
+      p('flower', 'flower', { look: 8 }, { purchases: [buy(5, 1)] }), // £5/g → 1.6
+      p('edible', 'edibles', { taste: 8, high: 8 }, { purchases: [buy(10, 100)] }), // £0.10/mg → £2 per 20mg → 4
+      p('rosin', 'concentrate', { look: 9 }, { purchases: [buy(30, 1)] }), // £30/g → 0.3
+    ];
+    const price = rankProducts(list, { filter: 'all', rankBy: 'price' });
+    expect(price.map((r) => [r.product.id, r.value])).toEqual([['rosin', 30], ['flower', 5], ['edible', 2]]);
+    const vfm = rankProducts(list, { filter: 'all', rankBy: 'vfm' });
+    expect(vfm.map((r) => r.product.id)).toEqual(['edible', 'flower', 'rosin']);
+    expect(vfm[0]!.value).toBeCloseTo(4, 12);
+    expect(vfm.every((r) => r.band === null)).toBe(true);
+    expect(vfm[0]!.first).toBe(true);
+    expect(rankProducts(list, { filter: 'edibles', rankBy: 'price' })[0]!.value).toBeCloseTo(0.1, 12);
+    expect(placeText(1, { filter: 'all', rankBy: 'vfm' }, 'your')).toBe('#1 by Value for money');
+    expect(placeText(2, { filter: 'all', rankBy: 'price' }, 'your')).toBe('#2 by Price');
+    expect(resolveViewState({ filter: 'all', rankBy: 'vfm' }, { money: true })).toMatchObject({ rankBy: 'vfm', changed: false });
+    expect(resolveViewState({ filter: 'all', rankBy: 'vfm' }, { money: false })).toMatchObject({ rankBy: 'overall', changed: true });
   });
 
   it('options under a type include price by unit and VFM, then its categories', () => {

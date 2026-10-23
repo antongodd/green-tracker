@@ -62,14 +62,24 @@ export function headlinePrice(purchases: readonly Purchase[]): number | null {
 }
 
 /**
- * Value for money: Overall ÷ latest price per gram (per 100mg for edibles).
- * A raw ratio; needs both an Overall and a priced latest purchase with an amount.
+ * D67: the latest price for the same effect as a gram of flower: the price per gram, or for
+ * edibles the price of 20mg. What Price ranks on across all types.
+ */
+export function pricePerGramEquivalent(typeKey: string, purchases: readonly Purchase[]): number | null {
+  const price = headlinePrice(purchases);
+  return price === null ? null : price * unitFor(typeKey).perGram;
+}
+
+/**
+ * Value for money: Overall ÷ the latest price for the same effect as a gram of flower (D67:
+ * per gram, per 20mg for edibles), so every type compares. A raw ratio; needs both an
+ * Overall and a priced latest purchase with an amount.
  */
 export function valueForMoney(typeKey: string, ratings: Ratings, purchases: readonly Purchase[]): number | null {
   const o = overall(typeKey, ratings);
-  const price = headlinePrice(purchases);
+  const price = pricePerGramEquivalent(typeKey, purchases);
   if (o === null || price === null || price === 0) return null;
-  return o / (price * unitFor(typeKey).vfmPriceMultiplier);
+  return o / price;
 }
 
 /** Sum of purchase amounts that count towards the weight TOTAL (never edibles). Blank amounts count 0. */
