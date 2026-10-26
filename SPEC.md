@@ -1424,6 +1424,16 @@ None.
 
 ## 6. Changelog
 
+### 0.57.3 — a review panel: six reusable reviewer agents, and their first reviews
+- Notes and tooling only; the app and the website don't change. `.claude/agents/` holds five reviewers (proof-reader,
+  Sam the daily user, a sceptical investor, a marketing professional, a phone app developer) and a judge who checks and
+  combines their reports; `.claude/review-panel/BRIEF.md` is their shared brief and `.claude/skills/review-panel/` how
+  to run them. `.claude/review-panel/capture*.spec.ts` (own Playwright config, not part of the tests) photographs
+  every screen of the app with made-up data, and the website on a phone and a laptop, for them to look at.
+- First reviews: `reviews/2026-10-26-app/` and `reviews/2026-10-26-website/` (each reviewer's report and the judge's
+  `summary.md`; the investor's view kept separate, as Anton asked). They are suggestions only: Anton picks what goes on
+  the to-do list.
+
 ### 0.57.2 — CLAUDE.md: currency settings and edible value for money are live
 - Both to-do items move to Done; the list is empty. Notes only.
 
