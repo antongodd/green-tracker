@@ -1406,6 +1406,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   unit) and a separator before an edible's price when ranked by Price under All. `Profile`'s VFM caption for edibles
   reads "Overall ÷ latest £ per 20mg (the same effect as 1g of flower) · higher is better". A followed person's board
   passes `money: false`, so it never offers either.
+  - *Found while testing (the owner said fix it):* a wide price (£45.00, 22px Unbounded) ran past the row's right edge,
+    and every £x.xx price sat 2px into the row's padding: the score column was a fixed 64px. It is now
+    `minmax(64px, max-content)` on `.row`, so the name gives way instead. Before as well (Concentrate × Price); more likely
+    now that the dearest product tops All × Price. `leaderboard.spec.ts` checks each score stays inside its row's
+    padding, clear of the name (failed with the old column: every row 2px over, the rosin 17px).
   - *Tests:* `money.test.ts` (an edible at £0.05/mg is 8.0; the owner's example 2.78 beside a flower's 0.86; grams per
     gram for every other type), `leaderboard.test.ts` (All's options, price and VFM across types, one type's own unit,
     place text, a stored All × VFM kept or dropped by `money`); `leaderboard.spec.ts` (All × Value for money and All ×
@@ -1423,6 +1428,7 @@ None.
 - Decision D67. Value for money is Overall ÷ the price for the same effect as a gram of flower: per gram, or per 20mg
   for edibles (the owner's 1mg eaten ≈ 10mg smoked, flower about 20% THC). Rank by under All gains Price and Value for
   money; an edible's price there is the price of 20mg, with "per 20mg" before its real price per mg. No data change.
+- A wide price (£45.00) no longer runs past the edge of its Leaderboard row.
 - `CLAUDE.md`: next decision D68; the to-do list.
 
 ### 0.56.1 — CLAUDE.md: currency settings are on dev

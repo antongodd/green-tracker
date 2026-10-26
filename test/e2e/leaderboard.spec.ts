@@ -93,6 +93,16 @@ test('All types ranks by value for money and price, edibles as 20mg for 1g of fl
   await expect(rows().nth(2).locator('.meta')).toHaveText('per 20mg·£0.18/mg·Kiva');
   await expect(rows().nth(3).locator('.meta')).toHaveText('£2.71/g·Cookies');
   await expect(page.locator('.meta .per')).toHaveCount(3);
+  // A wide price (£45.00) stays inside its row, clear of the edge, and the name gives way instead.
+  const spill = await rows().evaluateAll((els) =>
+    els.flatMap((e) => {
+      const row = e.getBoundingClientRect();
+      const b = e.querySelector('.score b')!.getBoundingClientRect();
+      const name = e.querySelector('.name')!.getBoundingClientRect();
+      return b.right > row.right - 12 + 0.5 || name.right > b.left ? [`${e.querySelector('.name')!.textContent}: ${b.right} / ${row.right}`] : [];
+    }),
+  );
+  expect(spill).toEqual([]);
   await shot(page, '20b-all-price');
   // The edible's page says how its value for money is worked out, and keeps its real price.
   await rows().nth(6).click();
