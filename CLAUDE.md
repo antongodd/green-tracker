@@ -159,24 +159,19 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
-- **Dev:** 0.57.0 (2026-10-26): edible value for money (D67), on top of currency settings (D66, 0.56.0); plus
-  notes-only 0.57.1.
+- **Live:** 0.57.1 (live 2026-10-26): everything up to edible value for money (D67).
+- **Dev:** the same as live; plus notes-only 0.57.2.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Currency settings** — **on dev** (0.56.0, D66, 2026-10-22): each purchase in its own currency, the rate for its
-   day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
-   Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
-   "go live".
-2. **Edible value for money rework** — **on dev** (0.57.0, D67, 2026-10-26): value for money and price compare across
-   every type (20mg of an edible counts as 1g of flower); Rank by under All offers Price and Value for money; a wide
-   price no longer runs off its row. Next: Anton checks it on GT Dev, then "go live".
+Empty: ask Anton what's next.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Edible value for money: compares every type (20mg = 1g), Price and Value for money under All (checked on Anton's iPhone) | 0.57.0 | D67 | 2026-10-26 | 2026-10-26 |
+| Currency settings (checked on Anton's iPhone) | 0.56.0 | D66 | 2026-10-22 | 2026-10-22 |
 | The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |
 | A website for the app (Aurora Glass; checked on Anton's iPhone) | 0.53.0 | D63 | 2026-10-20 | 2026-10-21 |
 | Spending, whole card photos, swipe-back | 0.52.0 | D62 | 2026-10-20 | 2026-10-21 |

@@ -1424,6 +1424,9 @@ None.
 
 ## 6. Changelog
 
+### 0.57.2 — CLAUDE.md: currency settings and edible value for money are live
+- Both to-do items move to Done; the list is empty. Notes only.
+
 ### 0.57.1 — CLAUDE.md: edible value for money is on dev
 - The to-do list marks edible value for money (D67) on dev. Notes only.
 
