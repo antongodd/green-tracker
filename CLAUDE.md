@@ -64,6 +64,16 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
+### The review panel (0.57.3)
+
+When Anton asks for a review, feedback, "run the panel" or one reviewer by name: follow
+`.claude/skills/review-panel/SKILL.md`. Five reviewers in `.claude/agents/` (`proofreader`, `stoner` (Sam, a UK daily
+flower smoker), `sceptical-investor`, `marketing-pro`, `app-developer`) and a `review-judge` who checks and combines
+their reports. They only give feedback. Fresh screenshots first (`.claude/review-panel/capture.config.ts`, not part
+of the tests); reports go in `reviews/<date>-<app|website>/`, the judge's `summary.md` also as a phone-readable
+page. The investor's view always stays in its own section (Anton isn't trying to make money; it's the sceptic's
+check). When the app gains a screen, add it to `capture.spec.ts`.
+
 ## Every change
 
 - **SPEC.md:** the §4 section, a new decision number (next is D68), a changelog entry.
