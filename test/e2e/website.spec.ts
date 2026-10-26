@@ -11,7 +11,7 @@ import { contrastFailures, textBoxes } from './helpers';
 const SITE = 'https://site.test';
 const DIR = join(process.cwd(), 'site/public');
 const APP = 'https://green-tracker.green-tracker.workers.dev';
-const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
+const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.vtt': 'text/vtt' };
 const headers = Object.fromEntries(
   readFileSync(join(DIR, '_headers'), 'utf8').split('\n').filter((l) => /^\s+\S+:/.test(l)).map((l) => { const i = l.indexOf(':'); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }),
 );
@@ -75,7 +75,7 @@ test('no accessibility problems, at the top and after scrolling through', async 
 // The words sit over drifting lights (axe can't judge text over moving colour): the lights are
 // paused at several moments and the worst pixel behind each piece of text is measured, all the
 // way down the page. The little picture of the app and of Safari are pictures, not words to read.
-const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .label, .feat p, .verdict, .rate .nm b, .rate .nm small, .rate .sc, .scale span, .step b, .step p, .step .n, .other, .foot span';
+const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .label, .feat p, .verdict, .rate .nm b, .rate .nm small, .rate .sc, .scale span, .step b, .step p, .step .n, .video figcaption, .other, .foot span';
 test('every word is readable over the moving lights, all the way down', async ({ page }) => {
   test.slow();
   await open(page);
@@ -132,6 +132,42 @@ test('"Put it on my iPhone" goes to the steps', async ({ page }) => {
   await page.getByRole('link', { name: 'Put it on my iPhone' }).click();
   await expect.poll(() => page.locator('#install h2').evaluate((h) => h.getBoundingClientRect().top)).toBeLessThan(200);
   await expect(page.locator('#install ol > li')).toHaveCount(3);
+});
+
+// D68: the steps as a video. The thumbnail shows; the video itself downloads only when someone plays it, and
+// it plays only when tapped, with the iPhone's own controls. Captions say what's on screen.
+test('the how-to video: its thumbnail shows, nothing downloads until it is played, and it never plays by itself', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('request', (r) => asked.push(new URL(r.url()).pathname));
+  const { elsewhere, problems } = await open(page);
+  await page.getByRole('link', { name: 'Put it on my iPhone' }).click();
+  const video = page.locator('#install video');
+  await expect(video).toBeInViewport();
+  await page.waitForTimeout(1000);
+  expect(await video.evaluate((v: HTMLVideoElement) => ({ controls: v.controls, inline: v.playsInline, preload: v.preload, autoplay: v.autoplay, muted: v.muted, loop: v.loop, paused: v.paused }))).toEqual({ controls: true, inline: true, preload: 'none', autoplay: false, muted: false, loop: false, paused: true });
+  // The thumbnail (the phone with the leaf), full size.
+  await expect(video).toHaveAttribute('poster', '/media/home-screen.jpg');
+  expect(asked).toContain('/media/home-screen.jpg');
+  expect(await page.evaluate(async () => { const i = new Image(); i.src = '/media/home-screen.jpg'; await i.decode(); return [i.naturalWidth, i.naturalHeight]; })).toEqual([1280, 720]);
+  expect(asked.filter((a) => a.endsWith('.mp4')), 'nothing downloads before play').toEqual([]);
+  // The captions load (the security rules allow the site's own media) and cover the whole video.
+  const cues = await video.evaluate(async (v: HTMLVideoElement) => {
+    const track = v.textTracks[0]!; track.mode = 'hidden';
+    for (let i = 0; i < 50 && !track.cues?.length; i++) await new Promise((r) => setTimeout(r, 100));
+    return [...(track.cues ?? [])].map((c) => [c.startTime, c.endTime]);
+  });
+  expect(cues.length).toBe(9);
+  expect(cues.at(-1)![1]).toBe(24);
+  // Played, it asks this site (and only this site) for the video.
+  await video.evaluate((v: HTMLVideoElement) => { v.play().catch(() => {}); });
+  await expect.poll(() => asked.filter((a) => a === '/media/home-screen.mp4').length).toBeGreaterThan(0);
+  expect(elsewhere).toEqual([]);
+  expect(problems).toEqual([]);
+  // A small file: an H.264 MP4 that every iPhone plays.
+  const mp4 = readFileSync(join(DIR, 'media/home-screen.mp4'));
+  expect(mp4.subarray(4, 8).toString()).toBe('ftyp');
+  expect(mp4.includes(Buffer.from('avc1'))).toBe(true);
+  expect(mp4.length).toBeLessThan(3_000_000);
 });
 
 test('with Reduce Motion on, nothing moves', async ({ browser }) => {

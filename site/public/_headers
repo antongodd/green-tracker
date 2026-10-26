@@ -1,7 +1,8 @@
 # Security headers for the website (D63). It loads nothing from anywhere else: no fonts,
-# scripts, trackers or analytics from other sites, and sends nothing anywhere.
+# scripts, trackers or analytics from other sites, and sends nothing anywhere. media-src 'self'
+# lets its own how-to video play (D68).
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; manifest-src 'self'; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; font-src 'self'; manifest-src 'self'; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()

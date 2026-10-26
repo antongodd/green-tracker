@@ -1,0 +1,57 @@
+<title>Home Screen Tutorial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=block">
+<style>
+/* Player: the 1280x720 frame letterboxed into the window, a slim glass control bar under it. */
+:root { color-scheme: dark; --bg: #010304; --bar: rgba(255,255,255,0.07); --edge: rgba(255,255,255,0.14); --text: #f1f6f3; --text-2: rgba(241,246,243,0.7); --green: #58e08c; --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); display: flex; flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px; gap: 10px; }
+.stage { flex: 1; min-height: 0; display: grid; place-items: center; }
+canvas { display: block; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; width: auto; height: auto; background: #03070a; border-radius: 10px; }
+.bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--edge); border-radius: 999px; background: var(--bar); max-width: 1280px; width: 100%; margin: 0 auto; }
+button { font: 600 14px var(--sans); color: var(--text); background: rgba(255,255,255,0.1); border: 1px solid var(--edge); border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+button[aria-pressed="true"] { background: rgba(88,224,140,0.22); border-color: rgba(88,224,140,0.5); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+#scrub { flex: 1; min-width: 60px; accent-color: var(--green); }
+#time { font: 600 13px var(--sans); color: var(--text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 520px) { .bar { flex-wrap: wrap; border-radius: 18px; } #scrub { order: 5; flex-basis: 100%; } }
+</style>
+<div class="stage"><canvas id="c" width="1280" height="720" aria-label="Animated tutorial: adding Green Tracker to the iPhone Home Screen"></canvas></div>
+<div class="bar">
+  <button id="play" type="button">Play</button>
+  <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub">
+  <span id="time">0.0 / 24.0 s</span>
+  <button id="snd" type="button" aria-pressed="true">Sound on</button>
+  <button id="loop" type="button" aria-pressed="true">Loop</button>
+</div>
+<script>
+/*__LIBS__*/
+</script>
+<script>
+const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+window.DURATION = DURATION; window.scoreSound = scoreSound;
+window.seek = (t) => { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.clearRect(0, 0, 1280, 720); explainer(ctx, 1280, 720, Math.max(0, Math.min(DURATION, t))); };
+const $ = (id) => document.getElementById(id);
+let T = 0, playing = false, last = 0, stopSound = null, soundOn = true, loop = true;
+const ui = () => { $('scrub').value = Math.round(T / DURATION * 1000); $('time').textContent = `${T.toFixed(1)} / ${DURATION.toFixed(1)} s`; $('play').textContent = playing ? 'Pause' : 'Play'; };
+const stopS = () => { if (stopSound) { stopSound(); stopSound = null; } };
+const startS = () => { stopS(); if (soundOn && playing) { try { stopSound = SOUND.live(scoreSound, T, { voiceover: false }); } catch (e) {} } };
+function frame(now) {
+  if (!playing) return;
+  T += (now - last) / 1000; last = now;
+  if (T >= DURATION) { if (loop) { T = 0; startS(); } else { T = DURATION; playing = false; stopS(); } }
+  seek(T); ui(); requestAnimationFrame(frame);
+}
+$('play').onclick = () => { playing = !playing; if (playing) { if (T >= DURATION) T = 0; last = performance.now(); startS(); requestAnimationFrame(frame); } else stopS(); ui(); };
+$('scrub').oninput = (e) => { T = e.target.value / 1000 * DURATION; stopS(); seek(T); ui(); if (playing) { last = performance.now(); startS(); } };
+$('snd').onclick = () => { soundOn = !soundOn; $('snd').setAttribute('aria-pressed', soundOn); $('snd').textContent = soundOn ? 'Sound on' : 'Sound off'; if (soundOn) startS(); else stopS(); };
+$('loop').onclick = () => { loop = !loop; $('loop').setAttribute('aria-pressed', loop); };
+document.addEventListener('keydown', (e) => { if (e.code === 'Space' && e.target === document.body) { e.preventDefault(); $('play').click(); } });
+window.ready = (async () => {
+  for (const f of ['300 20px "Inter"', '400 20px "Inter"', '600 20px "Inter"', '700 20px "Inter"', '800 20px "Inter"']) { try { await document.fonts.load(f, 'AaZz09✓→⋯·'); } catch (e) {} }
+  T = 17.85; seek(T); ui(); T = 0; // show the key moment as the still before play
+  $('scrub').value = 0; $('time').textContent = `0.0 / ${DURATION.toFixed(1)} s`;
+})();
+</script>
