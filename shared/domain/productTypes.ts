@@ -68,8 +68,12 @@ export interface UnitDef {
   readonly amount: 'g' | 'mg';
   /** Rank by label for price. */
   readonly priceLabel: string;
-  /** Value for money divides Overall by (per-unit price × this). */
-  readonly vfmPriceMultiplier: number;
+  /**
+   * D67: how many units give the same effect as a gram of flower, so prices and value for
+   * money compare across types: 1 for grams; 20 for mg of THC eaten (the owner's figure:
+   * 1mg eaten ≈ 10mg smoked, and a gram of flower taken as about 20% THC, 200mg).
+   */
+  readonly perGram: number;
   /** Whether amounts are summed into the TOTAL (weight) tiles. */
   readonly countsTowardsWeightTotal: boolean;
 }
@@ -77,14 +81,14 @@ export interface UnitDef {
 export const GRAMS: UnitDef = {
   amount: 'g',
   priceLabel: 'Price per gram',
-  vfmPriceMultiplier: 1,
+  perGram: 1,
   countsTowardsWeightTotal: true,
 };
 
 export const MG_THC: UnitDef = {
   amount: 'mg',
   priceLabel: 'Price per mg',
-  vfmPriceMultiplier: 100, // VFM is per 100mg for edibles. Knowingly non-comparable.
+  perGram: 20,
   countsTowardsWeightTotal: false,
 };
 

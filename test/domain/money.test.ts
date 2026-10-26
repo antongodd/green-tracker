@@ -7,6 +7,7 @@ import {
   purchasedWeight,
   purchasesNewestFirst,
   unitPrice,
+  pricePerGramEquivalent,
   valueForMoney,
   type Purchase,
 } from '../../shared/domain';
@@ -33,9 +34,18 @@ describe('Derived price (§17 Money)', () => {
     expect(formatVFM(vfm)).toBe('7.00');
   });
 
-  it('edible Overall 8.0 at £0.05/mg → VFM 1.6 (per 100mg)', () => {
+  it('edible Overall 8.0 at £0.05/mg → VFM 8.0 (per 20mg, the same effect as 1g of flower: D67)', () => {
     const vfm = valueForMoney('edibles', { taste: 6, high: 9 }, [buy(5, 100)])!;
-    expect(vfm).toBeCloseTo(1.6, 12);
+    expect(vfm).toBeCloseTo(8, 12);
+    expect(pricePerGramEquivalent('edibles', [buy(5, 100)])).toBeCloseTo(1, 12);
+  });
+
+  it('the owner\'s example: £15 for 100mg, Taste 7, High 9 → 2.78; a flower 8.6 at £10/g stays 0.86 (D67)', () => {
+    expect(formatVFM(valueForMoney('edibles', { taste: 7, high: 9 }, [buy(15, 100)])!)).toBe('2.78');
+    expect(formatVFM(valueForMoney('flower', { look: 8.6 }, [buy(10, 1)])!)).toBe('0.86');
+    // Grams stay per gram, whatever the type.
+    for (const t of ['flower', 'concentrate', 'pre_roll', 'other']) expect(pricePerGramEquivalent(t, [buy(10, 1)])).toBe(10);
+    expect(pricePerGramEquivalent('edibles', [buy(10, null)])).toBeNull();
   });
 
   it('a purchase with a total but no amount shows no per-unit figure and counts 0g', () => {
