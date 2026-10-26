@@ -59,6 +59,62 @@ test('default: Overall, all types; colours by score, #1 marked, tiles, unrated l
   await shot(page, '20-leaderboard');
 });
 
+test('All types ranks by value for money and price, edibles as 20mg for 1g of flower (D67)', async () => {
+  await page.goto('/');
+  await expect(rows()).toHaveCount(16);
+  const read = () => rows().evaluateAll((els) => els.map((e) => [e.querySelector('.name')!.textContent, e.querySelector('.score b')!.textContent]));
+  // Overall ÷ price per gram, or per 20mg for edibles: the brownie's 8.0 ÷ £1.00 tops it.
+  await pill('Rank by').selectOption('vfm');
+  await expect(pillBox('Rank by')).toContainText('Value for money');
+  await expect(rows()).toHaveCount(7); // nothing without a price
+  expect(await read()).toEqual([
+    ['Chocolate Brownie', '8.00'], // 8.0 ÷ (£0.05 × 20)
+    ['Lemon Cherry Gelato', '3.44'], // 8.6 ÷ £2.50
+    ['Peach Rings Gummies', '3.42'], // 8.2 ÷ (£0.12 × 20)
+    ['Gelato 41', '3.28'],
+    ['Camino Midnight Blueberry', '2.31'], // 8.333 ÷ (£0.18 × 20)
+    ['Moroccan Hash', '0.94'],
+    ['Blue Zushi Live Rosin', '0.19'],
+  ]);
+  await expect(rows().nth(0)).toHaveClass(/\bfirst\b/);
+  await expect(page.locator('.row[class*="band"]')).toHaveCount(0);
+  // Price: highest first; an edible's is the price of 20mg, said so before its real price per mg.
+  await pill('Rank by').selectOption('price');
+  await expect(pillBox('Rank by')).toContainText('Price');
+  expect(await read()).toEqual([
+    ['Blue Zushi Live Rosin', '£45.00'],
+    ['Moroccan Hash', '£8.00'],
+    ['Camino Midnight Blueberry', '£3.60'],
+    ['Gelato 41', '£2.71'],
+    ['Lemon Cherry Gelato', '£2.50'],
+    ['Peach Rings Gummies', '£2.40'],
+    ['Chocolate Brownie', '£1.00'],
+  ]);
+  await expect(rows().nth(2).locator('.meta')).toHaveText('per 20mg·£0.18/mg·Kiva');
+  await expect(rows().nth(3).locator('.meta')).toHaveText('£2.71/g·Cookies');
+  await expect(page.locator('.meta .per')).toHaveCount(3);
+  // A wide price (£45.00) stays inside its row, clear of the edge, and the name gives way instead.
+  const spill = await rows().evaluateAll((els) =>
+    els.flatMap((e) => {
+      const row = e.getBoundingClientRect();
+      const b = e.querySelector('.score b')!.getBoundingClientRect();
+      const name = e.querySelector('.name')!.getBoundingClientRect();
+      return b.right > row.right - 12 + 0.5 || name.right > b.left ? [`${e.querySelector('.name')!.textContent}: ${b.right} / ${row.right}`] : [];
+    }),
+  );
+  expect(spill).toEqual([]);
+  await shot(page, '20b-all-price');
+  // The edible's page says how its value for money is worked out, and keeps its real price.
+  await rows().nth(6).click();
+  await expect(page.locator('.vfm b')).toHaveText('8.00');
+  await expect(page.locator('.vfm', { hasText: 'Value for money' })).toContainText('Overall ÷ latest £ per 20mg (the same effect as 1g of flower) · higher is better');
+  await expect(page.locator('.purchase .u')).toHaveText('£0.05/mg');
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(rows()).toHaveCount(7);
+  await pill('Rank by').selectOption('overall');
+  await expect(page.locator('.meta .per')).toHaveCount(0);
+});
+
 test('filter to Edibles: ranks renumber, the #1 mark follows, tiles recalculate, TOTAL 0g', async () => {
   await pill('Type').selectOption('edibles');
   await expect(pillBox('Type')).toHaveClass(/active/);
@@ -80,6 +136,7 @@ test('Rank by Price per mg: highest first, relabelled score, price also on the m
   await expect(rows().nth(1).locator('.score')).toHaveText(/£0\.12\s*Price/i);
   await expect(rows().nth(2).locator('.score')).toHaveText(/£0\.05\s*Price/i);
   await expect(rows().nth(0).locator('.meta')).toContainText('£0.18/mg');
+  await expect(page.locator('.meta .per')).toHaveCount(0); // one type: its own unit, no note (D67)
   await shot(page, '21-edibles-price');
 });
 

@@ -80,6 +80,10 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   expect(options).not.toContain('Price per gram');
   expect(options).not.toContain('Value for money');
   await fan.getByLabel('Type', { exact: true }).selectOption('all');
+  // Nor under All, where your own board now has them (D67).
+  const allOptions = await fan.getByLabel('Rank by').locator('option').allTextContents();
+  expect(allOptions).not.toContain('Price');
+  expect(allOptions).not.toContain('Value for money');
   await shot(fan, '52-their-leaderboard');
 });
 

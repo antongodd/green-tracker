@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D66 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D67 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D67), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D68), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D66.
+- Reopen any decision D1–D67.
 
 ## Testing notes
 
@@ -144,6 +144,9 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   on. Set a purchase's currency in a test with `currency` and `rate` on the purchase (a non-main currency needs a rate),
   the main currency with `PUT /api/money`, and put £ back at the end. The phone remembers the last currency picked in
   `localStorage['gt.currency.last']`. The real service can't be reached from the cloud environment.
+- Value for money (D67): an edible counts 20mg as 1g (`UnitDef.perGram`), so every type compares; Rank by under All
+  offers Price and Value for money, and an edible's row there carries `.meta .per` ("per 20mg"). Under one type, price
+  stays per mg. Any new value-for-money or price comparison uses `pricePerGramEquivalent` / `valueForMoney`.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -157,7 +160,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
-- **Dev:** 0.56.0 (2026-10-22): currency settings (D66); plus notes-only 0.56.1.
+- **Dev:** 0.57.0 (2026-10-26): edible value for money (D67), on top of currency settings (D66, 0.56.0); plus
+  notes-only 0.57.1.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -165,8 +169,9 @@ section, so it must always be current.
    day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
    Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
    "go live".
-2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
-   the details in the working conversation.
+2. **Edible value for money rework** — **on dev** (0.57.0, D67, 2026-10-26): value for money and price compare across
+   every type (20mg of an edible counts as 1g of flower); Rank by under All offers Price and Value for money; a wide
+   price no longer runs off its row. Next: Anton checks it on GT Dev, then "go live".
 
 ### Done (newest first)
 

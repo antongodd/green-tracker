@@ -400,7 +400,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 
 /* ---------- product rows (brief §6.1) ---------- */
 .rows { display: grid; gap: 8px; padding: 0 16px; max-width: 720px; margin: 0 auto; }
-.row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) 64px; align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
+.row { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr) minmax(64px, max-content); align-items: center; gap: 10px; min-height: 76px; padding: 10px 12px 10px 8px; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
 .row .rk { font-size: 14px; font-weight: 700; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
 .row .rk { position: relative; }
 /* Heat (D30, 0.23.0): below the colour bands (D48) a row glows from the right in its score's colour
@@ -501,6 +501,8 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .meta { display: flex; min-width: 0; font-size: 13px; color: var(--text-2); white-space: nowrap; }
 .meta .price { flex: none; font-variant-numeric: tabular-nums; }
 .meta .sep { flex: none; padding: 0 0.4em; }
+/* D67: "per 20mg" before an edible's price when ranked by Price across all types. */
+.meta .per { flex: none; color: var(--text); font-weight: 600; }
 .meta .src { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .score { display: grid; justify-items: end; text-align: right; }
 .score b { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
