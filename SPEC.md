@@ -1442,6 +1442,10 @@ None.
 
 ## 6. Changelog
 
+### 0.58.1 — CLAUDE.md: the website video is live
+- The how-to video on the website (D68) went live on 2026-10-26 and moves to Done; the to-do list is empty. Notes
+  only.
+
 ### 0.58.0 — a how-to video on the website (owner request)
 - Decision D68. A 24-second video above the website's three steps shows adding Green Tracker to the Home Screen in
   Safari on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add). Thumbnail: the phone with the leaf. Plays only
