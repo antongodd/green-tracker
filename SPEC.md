@@ -1442,6 +1442,9 @@ None.
 
 ## 6. Changelog
 
+### 0.58.1 — CLAUDE.md: the website video is on dev
+- The to-do list marks the how-to video (D68) on dev. Notes only.
+
 ### 0.58.0 — a how-to video on the website (owner request)
 - Decision D68. A 24-second video above the website's three steps shows adding Green Tracker to the Home Screen in
   Safari on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add). Thumbnail: the phone with the leaf. Plays only
