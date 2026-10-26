@@ -1,7 +1,7 @@
 # green-tracker
 Mobile-first web app for tracking and rating cannabis products — ratings, purchase history, photos and a personal leaderboard, with accounts and approval-based following. Built on Cloudflare Workers, D1 and R2.
 
-Live: https://green-tracker.green-tracker.workers.dev — on iPhone, open it in Safari, then Share → Add to Home Screen.
+Live: https://green-tracker.green-tracker.workers.dev — on iPhone, open it in Safari, then Share → View More → Add to Home Screen (on iOS 26, tap ⋯ first to find Share).
 
 `SPEC.md` is the living spec: what's built, every decision, and the changelog.
 

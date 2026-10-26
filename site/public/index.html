@@ -101,10 +101,18 @@
     <section class="sec" id="install" aria-labelledby="get">
       <p class="label reveal">Get it</p>
       <h2 id="get" class="reveal">On your iPhone in 20 seconds.</h2>
+      <!-- D68: the steps as a 24-second video. Nothing downloads until it's played; sound only when tapped. -->
+      <figure class="video reveal">
+        <video controls playsinline preload="none" poster="/media/home-screen.jpg" width="1280" height="720" aria-describedby="video-about">
+          <source src="/media/home-screen.mp4" type="video/mp4" />
+          <track kind="captions" src="/media/home-screen.vtt" srclang="en" label="English" />
+        </video>
+        <figcaption id="video-about">Watch it done: Safari, Share, View More, Add to Home Screen, Add. 24 seconds.</figcaption>
+      </figure>
       <ol class="steps">
         <li class="step reveal"><span class="n" aria-hidden="true">1</span><b>Open it in Safari</b><p>Tap Sign up free on this page, in Safari.</p>
           <div class="pic" aria-hidden="true"><div class="safari"><span class="back">‹</span><span class="url">green-tracker.workers.dev</span><span class="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" /></svg></span></div></div></li>
-        <li class="step reveal"><span class="n" aria-hidden="true">2</span><b>Tap Share, then Add to Home Screen</b><p>The Share button is the square with the arrow. Scroll down the list a bit if you need to.</p>
+        <li class="step reveal"><span class="n" aria-hidden="true">2</span><b>Tap Share, then View More, then Add to Home Screen</b><p>On newer iPhones, tap ⋯ at the bottom first to find Share. View More is the last round button.</p>
           <div class="pic menu" aria-hidden="true"><div>Copy <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V4h12" /></svg></div><div class="hit">Add to Home Screen <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /><path d="M12 8v8M8 12h8" /></svg></div><div>Add Bookmark <svg viewBox="0 0 24 24"><path d="M5 4h14v17l-7-5-7 5z" /></svg></div></div></li>
         <li class="step reveal"><span class="n" aria-hidden="true">3</span><b>Tap Add. Done.</b><p>It sits on your Home Screen and opens full screen, like a proper app.</p>
           <div class="pic" aria-hidden="true"><div class="home"><span><i></i></span><span><i></i></span><span><i></i></span><span><img class="gt" src="/favicon.svg" alt="" width="44" height="44" /><span>Green Tracker</span></span></div></div></li>

@@ -6,3 +6,4 @@ dist/
 .playwright/
 client/public/ai/ort-wasm-*.wasm
 site/public/version.txt
+site/video/out/
