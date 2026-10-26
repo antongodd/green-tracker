@@ -52,8 +52,10 @@ Check it yourself before passing it on: anything that's plainly wrong about the 
 
 ## 5. Give it to Anton
 
-- Publish `summary.md` as a page he can read on his phone (Artifact tool; one page per round, reuse the same
-  file path to update it), and send him the link.
+- Turn `summary.md` into a page he can read on his phone and publish it (Artifact tool; one page per round, reuse
+  the same file path to update it), then send him the link:
+  `node .claude/review-panel/make-page.mjs reviews/<folder>/summary.md <scratchpad>/<name>.html "App Review Panel"`
+  (it puts the sceptic's view in its own panel; title "Website Review Panel" for the website).
 - In chat: the "In a nutshell" and the suggested to-do list, in a few lines. The sceptic's view stays separate.
 - Ask which items go on the to-do list; add the ones he picks to CLAUDE.md's to-do list.
 - Commit the `reviews/` folder in the same pull request as any notes (into `dev`, as usual).
