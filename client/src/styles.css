@@ -1359,6 +1359,82 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-neon.band3 { --t1: #ff8fe0; --t2: #ff5cc8; --t3: #ffd0f2; --t4: #f04fb8; --t5: #ffb0ea; --t6: #ff74d4; --dark: 22, 6, 18; }
 .pal-neon.band4 { --t1: #ff6bd5; --t2: #ffd36b; --t3: #d4ff6b; --t4: #6bffe0; --t5: #6bc8ff; --t6: #b98cff; --dark: 10, 6, 20; }
 
+/* Five more sets (D68, 0.58.0), each with something of its own drawn on the card (bandEffect in
+   shared/domain/gems.ts; client/components/Gems.tsx Effects). t3 stays each band's lightest shade (the
+   rank number), and the dark layers stay near-neutral (D49), measured in every band like the rest. */
+.pal-sunset.band1 { --t1: #ffd0a8; --t2: #ffb48a; --t3: #ffe4cc; --t4: #f4a27a; --t5: #ffc9a0; --t6: #ffbe94; --dark: 24, 14, 10; }
+.pal-sunset.band2 { --t1: #ff9a8a; --t2: #ff7a6b; --t3: #ffc4b8; --t4: #f2665a; --t5: #ffad9e; --t6: #ff8c7c; --dark: 24, 10, 10; }
+.pal-sunset.band3 { --t1: #ff8fd0; --t2: #f05fb4; --t3: #ffc8e8; --t4: #e05aa8; --t5: #ffa6dc; --t6: #f27cc4; --dark: 22, 10, 18; }
+.pal-sunset.band4 { --t1: #ffd36b; --t2: #ff9a6b; --t3: #ffe8b0; --t4: #ff6fa8; --t5: #ffb36b; --t6: #c79bff; --dark: 20, 10, 14; }
+.pal-deepsea.band1 { --t1: #a8f0dc; --t2: #7ee0c4; --t3: #d0fff0; --t4: #5fd0b0; --t5: #9cf2dc; --t6: #86e6cc; --dark: 6, 16, 16; }
+.pal-deepsea.band2 { --t1: #6fd6ff; --t2: #3fb8f0; --t3: #c0ecff; --t4: #2fa0e0; --t5: #8ee2ff; --t6: #58c4f4; --dark: 4, 12, 22; }
+.pal-deepsea.band3 { --t1: #8fa6ff; --t2: #6a82f4; --t3: #cdd6ff; --t4: #5a72e0; --t5: #a6b8ff; --t6: #7f94fa; --dark: 8, 10, 22; }
+.pal-deepsea.band4 { --t1: #5ff2e0; --t2: #6fd6ff; --t3: #c8fff6; --t4: #8f9bff; --t5: #a8fff2; --t6: #6fffc8; --dark: 4, 12, 20; }
+.pal-ember.band1 { --t1: #ffb07a; --t2: #e8864e; --t3: #ffd4b0; --t4: #d06a3a; --t5: #ffc49a; --t6: #f09a62; --dark: 24, 12, 8; }
+.pal-ember.band2 { --t1: #ffc36b; --t2: #ff9a3c; --t3: #ffe0a8; --t4: #ff7a2c; --t5: #ffd28a; --t6: #ffae4f; --dark: 24, 14, 6; }
+.pal-ember.band3 { --t1: #8fd8ff; --t2: #5ab4ff; --t3: #d0f0ff; --t4: #4a8cff; --t5: #a8e4ff; --t6: #74c8ff; --dark: 6, 10, 24; }
+.pal-ember.band4 { --t1: #ffe08a; --t2: #ff9a3c; --t3: #fff0c0; --t4: #ff6a3c; --t5: #8fd8ff; --t6: #ffc36b; --dark: 22, 10, 6; }
+.pal-cosmos.band1 { --t1: #dfe6ff; --t2: #bcc8f0; --t3: #f2f5ff; --t4: #a6b4e0; --t5: #d0daff; --t6: #c4ceee; --dark: 10, 12, 20; }
+.pal-cosmos.band2 { --t1: #c8d4ff; --t2: #9fb0ff; --t3: #ece8ff; --t4: #8a9cf0; --t5: #b8c4ff; --t6: #d8ccff; --dark: 8, 10, 22; }
+.pal-cosmos.band3 { --t1: #d08cff; --t2: #b07cff; --t3: #f0d0ff; --t4: #ff8cd8; --t5: #c4a8ff; --t6: #e6a8ff; --dark: 12, 10, 22; }
+.pal-cosmos.band4 { --t1: #ff9ad8; --t2: #b48cff; --t3: #fff2c8; --t4: #7fb8ff; --t5: #ff8cc8; --t6: #9fdcff; --dark: 10, 8, 20; }
+.pal-synthwave.band1 { --t1: #6ff0ff; --t2: #2fd8f0; --t3: #c0faff; --t4: #1ec0e0; --t5: #8cf4ff; --t6: #4fe0f4; --dark: 4, 12, 18; }
+.pal-synthwave.band2 { --t1: #ff6fd8; --t2: #e040c0; --t3: #ffb8ec; --t4: #d84cc0; --t5: #ff8ce0; --t6: #f058cc; --dark: 20, 8, 18; }
+.pal-synthwave.band3 { --t1: #e8ecff; --t2: #b8c0e8; --t3: #ffffff; --t4: #9aa4d8; --t5: #d8deff; --t6: #c8b8ff; --dark: 12, 12, 22; }
+.pal-synthwave.band4 { --t1: #ff74b4; --t2: #ffb36b; --t3: #ffe9a0; --t4: #d68cff; --t5: #5fd8ff; --t6: #ff7ad0; --dark: 18, 6, 20; }
+
+/* Their effects (D68): a layer behind the words (z-index -1 inside the card, like Diamond's glints),
+   drawn only where no text is: on a row, the thin strips along its top and bottom edges and the
+   space round the photo; on a product page, the upper part of the photo, above the name. */
+.tfx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.tfx i { position: absolute; display: block; }
+.hero-photo .tfx { z-index: 1; inset: var(--header-h) 0 auto; height: 170px; }
+/* Sunset: a low sun glowing behind the photo (on a page, from the top corner). */
+.tfx-sun i { left: 67px; top: 50%; width: 76px; height: 76px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 211, 107, 0.75), rgba(255, 111, 168, 0.35) 55%, transparent 72%); }
+.hero-photo .tfx-sun i { left: auto; right: -70px; top: -40px; width: 240px; height: 240px; translate: none; background: radial-gradient(circle, rgba(255, 211, 107, 0.45), rgba(255, 111, 168, 0.18) 50%, transparent 70%); }
+/* Deep Sea: plankton (Cosmos: stars) — small dots that glow. */
+.tfx-plankton i, .tfx-stars i { width: 3px; height: 3px; border-radius: 50%; }
+.tfx-plankton i { background: var(--t5); box-shadow: 0 0 6px 1px var(--t1); }
+.tfx-stars i { background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.9); }
+.tfx-stars i.big { width: 4px; height: 4px; }
+/* Cosmos at 9.5: a pink and blue nebula, faint, round the photo (on a page, across the top). */
+.tfx-stars i.nebula { left: 0; top: 0; width: 130px; height: 100%; border-radius: 0; box-shadow: none; background: radial-gradient(45% 60% at 30% 50%, rgba(255, 140, 200, 0.4), transparent 70%), radial-gradient(45% 60% at 60% 50%, rgba(127, 184, 255, 0.35), transparent 70%); }
+.hero-photo .tfx-stars i.nebula { width: 100%; background: radial-gradient(35% 55% at 25% 45%, rgba(255, 140, 200, 0.28), transparent 70%), radial-gradient(35% 55% at 70% 40%, rgba(127, 184, 255, 0.25), transparent 70%); }
+/* Ember: sparks rising off the bottom edge, and the heat along it. */
+.tfx-sparks i { width: 3px; height: 3px; border-radius: 50%; background: #ffc36b; box-shadow: 0 0 6px #ff9a3c; }
+.tfx-sparks i:nth-child(3n) { background: #ff7a4f; }
+.tfx-sparks i.heat { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 9px; border-radius: 0; box-shadow: none; background: linear-gradient(0deg, rgba(255, 122, 60, 0.55), transparent); }
+.hero-photo .tfx-sparks i.heat { height: 40px; background: linear-gradient(0deg, rgba(255, 122, 60, 0.3), transparent); }
+/* Synthwave: a neon grid floor along the bottom edge, and at 9.5 a striped sun setting into it. */
+.tfx-grid i.floor { left: -20%; right: -20%; bottom: -2px; height: 13px; opacity: 0.55; transform: perspective(40px) rotateX(40deg); transform-origin: bottom;
+  background: repeating-linear-gradient(90deg, var(--t1) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, var(--t1) 0 1px, transparent 1px 5px); }
+.tfx-grid i.sun { left: 50%; bottom: -15px; width: 24px; height: 24px; translate: -50% 0; border-radius: 50%; opacity: 0.8;
+  background: linear-gradient(transparent 30%, rgba(0, 0, 0, 0.85) 30% 36%, transparent 36% 44%, rgba(0, 0, 0, 0.85) 44% 50%, transparent 50%), linear-gradient(#ffe66b, #ff5fa8); }
+.hero-photo .tfx-grid i.floor { bottom: 0; height: 44px; opacity: 0.5; transform: perspective(120px) rotateX(55deg); background: repeating-linear-gradient(90deg, var(--t1) 0 1px, transparent 1px 34px), repeating-linear-gradient(0deg, var(--t1) 0 1px, transparent 1px 11px); }
+.hero-photo .tfx-grid i.sun { left: auto; right: 34px; bottom: 30px; width: 72px; height: 72px; translate: none; opacity: 0.7; }
+@media (prefers-reduced-motion: no-preference) {
+  .tfx-sun i { animation: tfx-pulse 5s ease-in-out infinite; }
+  .tfx-plankton i { animation: tfx-drift var(--d) linear var(--dl) infinite; }
+  .hero-photo .tfx-plankton i { animation-name: tfx-rise; }
+  .tfx-stars i:not(.nebula) { animation: tfx-twinkle var(--d) ease-in-out var(--dl) infinite; }
+  .tfx-stars i.nebula { animation: tfx-nebula 14s ease-in-out infinite alternate; }
+  .tfx-sparks i:not(.heat) { animation: tfx-spark var(--d) ease-out var(--dl) infinite; }
+  .hero-photo .tfx-sparks i:not(.heat) { animation-name: tfx-spark-high; }
+  .tfx-sparks i.heat { animation: tfx-flicker 1.7s steps(1) infinite; }
+  .tfx-grid i.floor { animation: tfx-grid 1.4s linear infinite; }
+}
+@keyframes tfx-pulse { 50% { opacity: 0.6; } }
+@keyframes tfx-drift { 0% { opacity: 0; translate: 0 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; translate: -36px 0; } }
+@keyframes tfx-rise { 0% { opacity: 0; translate: 0 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; translate: 0 -50px; } }
+@keyframes tfx-twinkle { 0%, 100% { opacity: 0.25; scale: 0.6; } 50% { opacity: 1; scale: 1; } }
+@keyframes tfx-nebula { to { translate: 24px 0; scale: 1.1; } }
+@keyframes tfx-spark { 0% { opacity: 0; translate: 0 0; } 15% { opacity: 1; } 100% { opacity: 0; translate: var(--dx) -5px; } }
+@keyframes tfx-spark-high { 0% { opacity: 0; translate: 0 0; } 15% { opacity: 1; } 100% { opacity: 0; translate: var(--dx) -110px; } }
+@keyframes tfx-flicker { 0% { opacity: 0.6; } 20% { opacity: 0.9; } 45% { opacity: 0.7; } 70% { opacity: 1; } 85% { opacity: 0.65; } }
+@keyframes tfx-grid { from { background-position: 0 0, 0 0; } to { background-position: 0 0, 0 5px; } }
+@keyframes tfx-grid-page { to { background-position: 0 0, 0 11px; } }
+@media (prefers-reduced-motion: no-preference) { .hero-photo .tfx-grid i.floor { animation-name: tfx-grid-page; } }
+
 /* Holo Pearl's pearly edges (D65): the stand-out cards get a rainbow rim instead of a plain one. The
    rim is the rainbow drawn under the whole card, so the inside needs a solid pane over it (the
    background colour) or the rainbow tints the words' background too (measured: 4.2 : 1). */

@@ -25,9 +25,11 @@ export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
   return null;
 }
 
-export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals';
-/** In the order Appearance lists them: the two made for the new look (D64) first. */
-export const PRESET_KEYS = ['aurora', 'neon', 'gems', 'prism', 'metals'] as const satisfies readonly Preset[];
+export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals' | 'sunset' | 'deepsea' | 'ember' | 'cosmos' | 'synthwave';
+/** In the order Appearance lists them: the two made for the new look (D64) first, the five of D68 last. */
+export const PRESET_KEYS = ['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'] as const satisfies readonly Preset[];
+/** Marked New in Appearance (D68: only the newest five; Aurora and Neon lost theirs). */
+export const NEW_PRESETS: readonly Preset[] = ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'];
 
 export const PRESETS: Record<Preset, { label: string; description: string; bands: readonly [string, string, string, string] }> = {
   aurora: { label: 'Aurora', description: 'Jade, Lagoon, Violet, Aurora', bands: ['Jade', 'Lagoon', 'Violet', 'Aurora'] },
@@ -35,7 +37,36 @@ export const PRESETS: Record<Preset, { label: string; description: string; bands
   gems: { label: 'Gems', description: 'Emerald, Sapphire, Amethyst, Rainbow', bands: ['Emerald', 'Sapphire', 'Amethyst', 'Rainbow'] },
   prism: { label: 'Prism', description: 'One rainbow that grows stronger', bands: ['Prism', 'Prism', 'Prism', 'Prism'] },
   metals: { label: 'Metals', description: 'Emerald, Rose gold, Diamond, Rainbow', bands: ['Emerald', 'Rose gold', 'Diamond', 'Rainbow'] },
+  sunset: { label: 'Sunset', description: 'Peach, Coral, Magenta, Golden hour', bands: ['Peach', 'Coral', 'Magenta', 'Golden hour'] },
+  deepsea: { label: 'Deep Sea', description: 'Seafoam, Reef, Abyss, Glow', bands: ['Seafoam', 'Reef', 'Abyss', 'Glow'] },
+  ember: { label: 'Ember', description: 'Ember, Flame, Blue flame, Inferno', bands: ['Ember', 'Flame', 'Blue flame', 'Inferno'] },
+  cosmos: { label: 'Cosmos', description: 'Moonlight, Stardust, Nebula, Supernova', bands: ['Moonlight', 'Stardust', 'Nebula', 'Supernova'] },
+  synthwave: { label: 'Synthwave', description: 'Arcade, Laser, Chrome, Synthwave', bands: ['Arcade', 'Laser', 'Chrome', 'Synthwave'] },
 };
+
+/**
+ * Something drawn on a coloured card besides its colours, kept clear of the words: Metals'
+ * Diamond twinkles (D48), and each of D68's sets has its own. Sunset: a sun glowing behind the
+ * photo at 9.5. Deep Sea: glowing plankton drifting by from 9.0 (more at 9.5). Ember: sparks
+ * and a flicker of heat at 9.5. Cosmos: twinkling stars from 8.5, more band by band, and a
+ * nebula at 9.5. Synthwave: a neon grid floor from 9.0 and a striped sun setting into it at 9.5.
+ */
+export type Effect = 'glints' | 'sun' | 'plankton' | 'sparks' | 'stars' | 'grid';
+const EFFECTS: Partial<Record<Preset, { effect: Effect; from: Band }>> = {
+  metals: { effect: 'glints', from: 3 },
+  sunset: { effect: 'sun', from: 4 },
+  deepsea: { effect: 'plankton', from: 3 },
+  ember: { effect: 'sparks', from: 4 },
+  cosmos: { effect: 'stars', from: 2 },
+  synthwave: { effect: 'grid', from: 3 },
+};
+
+/** A band's effect in a preset, or null. Metals' glints are Diamond's alone (band 3, not Rainbow). */
+export function bandEffect(preset: Preset, band: Band | null): Effect | null {
+  const e = EFFECTS[preset];
+  if (!e || band === null || band < e.from || (e.effect === 'glints' && band !== 3)) return null;
+  return e.effect;
+}
 
 /** A band's name in a preset: "Amethyst", "Rose gold", "Prism". */
 export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].bands[band - 1]!;

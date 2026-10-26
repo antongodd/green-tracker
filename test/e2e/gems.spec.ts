@@ -153,6 +153,43 @@ test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothin
   }
 });
 
+test('D68: each new set draws its effect on the page, clear of every word and readable; Reduce Motion holds it still', async () => {
+  test.slow(); // 5 sets × 3 pages, photographed at 4 moments each
+  const effect = (page: Page) =>
+    page.locator('main').evaluate((main) => {
+      const fx = main.querySelector<HTMLElement>('.hero-photo .tfx');
+      if (!fx) return null;
+      const r = fx.getBoundingClientRect();
+      const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
+      return {
+        kind: fx.className.replace('tfx tfx-', ''),
+        // The whole layer sits in the photo's upper part, above every word.
+        clear: texts.every((t) => t.top >= r.bottom),
+        moving: fx.getAnimations({ subtree: true }).length > 0,
+      };
+    });
+  // Secret 9.7 (no photo), Alpha 9.5 (a photo), Charlie 9.3 (an edible, no photo).
+  const want: Record<string, [string | null, string | null]> = { sunset: ['sun', null], deepsea: ['plankton', 'plankton'], ember: ['sparks', null], cosmos: ['stars', 'stars'], synthwave: ['grid', 'grid'] };
+  for (const [preset, [top, third]] of Object.entries(want)) {
+    expect(await appearance(owner, { preset, markFirst: true })).toBe(200);
+    for (const [name, kind] of [['Secret', top], ['Alpha', top], ['Charlie', third]] as const) {
+      await open(owner, `/products/${ids[name]}`);
+      await expect(owner.locator('main')).toHaveAttribute('data-band', name === 'Charlie' ? '3' : '4');
+      expect(await effect(owner), `${preset} ${name}`).toEqual(kind ? { kind, clear: true, moving: true } : null);
+      await settled(owner);
+      if (name !== 'Charlie') await shot(owner, `91-effect-page-${preset}-${name}`);
+      const worst = await contrastFailures(owner, await heroTextBoxes(owner), 4);
+      expect(worst, `${preset} ${name}:\n${worst.join('\n')}`).toEqual([]);
+    }
+  }
+  await owner.emulateMedia({ reducedMotion: 'reduce' });
+  await open(owner, `/products/${ids.Alpha}`);
+  await expect(owner.locator('main')).toHaveAttribute('data-band', '4');
+  expect(await effect(owner)).toEqual({ kind: 'grid', clear: true, moving: false });
+  await owner.emulateMedia({ reducedMotion: 'no-preference' });
+  expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+});
+
 test('the page follows your Type and Rank by, also when opened from the Log; an uncoloured #1 wears gold', async () => {
   await owner.goto('/');
   await owner.getByLabel('Type', { exact: true }).selectOption('flower');

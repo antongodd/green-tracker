@@ -37,7 +37,23 @@ const PRESETS = [
   ['gems', ['Rainbow', 'Amethyst', 'Sapphire', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(181, 152, 240)', 'rgb(127, 176, 255)', 'rgb(47, 216, 147)']], // D49: softer lilac, brighter blue
   ['prism', ['Prism', 'Prism', 'Prism', 'Prism'], ['rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)']],
   ['metals', ['Rainbow', 'Diamond', 'Rose gold', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(169, 220, 255)', 'rgb(242, 169, 150)', 'rgb(47, 216, 147)']],
+  // D68: five more, each with an effect of its own.
+  ['sunset', ['Golden hour', 'Magenta', 'Coral', 'Peach'], ['rgb(255, 154, 107)', 'rgb(240, 95, 180)', 'rgb(255, 122, 107)', 'rgb(255, 180, 138)']],
+  ['deepsea', ['Glow', 'Abyss', 'Reef', 'Seafoam'], ['rgb(111, 214, 255)', 'rgb(106, 130, 244)', 'rgb(63, 184, 240)', 'rgb(126, 224, 196)']],
+  ['ember', ['Inferno', 'Blue flame', 'Flame', 'Ember'], ['rgb(255, 154, 60)', 'rgb(90, 180, 255)', 'rgb(255, 154, 60)', 'rgb(232, 134, 78)']],
+  ['cosmos', ['Supernova', 'Nebula', 'Stardust', 'Moonlight'], ['rgb(180, 140, 255)', 'rgb(176, 124, 255)', 'rgb(159, 176, 255)', 'rgb(188, 200, 240)']],
+  ['synthwave', ['Synthwave', 'Chrome', 'Laser', 'Arcade'], ['rgb(255, 179, 107)', 'rgb(184, 192, 232)', 'rgb(224, 64, 192)', 'rgb(47, 216, 240)']],
 ] as const;
+
+/** Each row's effect (D68), top row first: the layer's kind and how many things it draws. */
+const EFFECTS: Record<string, string[]> = {
+  sunset: ['sun 1', '', '', ''],
+  deepsea: ['plankton 10', 'plankton 6', '', ''],
+  ember: ['sparks 11', '', '', ''],
+  cosmos: ['stars 13', 'stars 8', 'stars 5', ''],
+  synthwave: ['grid 2', 'grid 1', '', ''],
+};
+const effects = () => rows().evaluateAll((els) => els.slice(0, 4).map((e) => { const f = e.querySelector('.tfx'); return f ? `${f.className.replace('tfx tfx-', '')} ${f.children.length}` : ''; }));
 
 test('each band on its row, in every preset: the right colours, each a little stronger than the one below', async () => {
   for (const [preset, , t2] of PRESETS) {
@@ -75,10 +91,41 @@ test('each band on its row, in every preset: the right colours, each a little st
     expect(info.map((i) => i.layer.map((l) => l[3])), preset).toEqual([[0.7, 0.86], [0.8, 0.9], [0.86, 0.93], [0.9, 0.95]]);
     // Gems' Amethyst and Sapphire sit under near-neutral layers, not the violet one that read as a purple slab (D49).
     if (preset === 'gems') expect(info.slice(1, 3).map((i) => i.layer[0]!.slice(0, 3))).toEqual([[12, 14, 22], [10, 16, 26]]);
-    // Only Metals' Diamond twinkles.
+    // Only Metals' Diamond twinkles; D68's sets each draw their own effect, from their band.
     await expect(page.locator('.glint')).toHaveCount(preset === 'metals' ? 3 : 0);
+    expect(await effects(), preset).toEqual(EFFECTS[preset] ?? ['', '', '', '']);
     await shot(page, `150-colours-${preset}`);
   }
+  expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
+});
+
+test('D68: the effects of the new sets stay clear of every word on a row, and Reduce Motion holds them still', async () => {
+  for (const preset of Object.keys(EFFECTS)) {
+    expect(await appearance({ preset, markFirst: true })).toBe(200);
+    await page.goto('/');
+    await expect(rows()).toHaveCount(5);
+    // The dots (plankton, stars, sparks) and the grid and its sun keep to the strips along the edges;
+    // the glows (sun, nebula, heat) are faint and judged by the readability test below.
+    const overlaps = await rows().evaluateAll((els) =>
+      els.slice(0, 4).flatMap((row) => {
+        const texts = [...row.querySelectorAll<HTMLElement>('.rk, .name, .cluster, .meta, .score b, .score .cap')].map((t) => t.getBoundingClientRect());
+        return [...row.querySelectorAll<HTMLElement>('.tfx i:not(.nebula):not(.heat)')].filter((d) => !d.parentElement!.classList.contains('tfx-sun')).flatMap((d) => {
+          const r = d.getBoundingClientRect();
+          return texts.filter((t) => r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top).map(() => `${row.querySelector('.name')!.textContent}: ${d.className || 'dot'}`);
+        });
+      }),
+    );
+    expect(overlaps, preset).toEqual([]);
+  }
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const preset of Object.keys(EFFECTS)) {
+    expect(await appearance({ preset, markFirst: true })).toBe(200);
+    await page.goto('/');
+    await expect(rows()).toHaveCount(5);
+    expect(await effects(), preset).toEqual(EFFECTS[preset]);
+    expect(await page.locator('.tfx').evaluateAll((els) => els.flatMap((e) => e.getAnimations({ subtree: true })).length), preset).toBe(0);
+  }
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
 });
 
@@ -112,7 +159,7 @@ test('#1 wears the crown above its number and a halo in its colour, gently breat
 });
 
 test('the text on every band stays readable throughout the motion, in every preset', async () => {
-  test.slow(); // 5 presets × 12 photographed moments
+  test.slow(); // 10 presets × 12 photographed moments
   for (const [preset] of PRESETS) {
     expect(await appearance({ preset, markFirst: true })).toBe(200);
     await page.goto('/');
@@ -156,9 +203,9 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
   await expect(page).toHaveURL(/\/more\/appearance$/);
   await expect(page.getByRole('radio', { name: /Gems/ })).toBeChecked();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeChecked();
-  // Each preset shows its four colours; the two made for the new look first, marked New (D64).
-  await expect(page.locator('.preset')).toHaveCount(5);
-  await expect(page.locator('.preset .main > span:first-child')).toHaveText(['AuroraNew', 'NeonNew', 'Gems', 'Prism', 'Metals']);
+  // Each preset shows its four colours; the two made for the new look first (D64), D68's five last, marked New.
+  await expect(page.locator('.preset')).toHaveCount(10);
+  await expect(page.locator('.preset .main > span:first-child')).toHaveText(['Aurora', 'Neon', 'Gems', 'Prism', 'Metals', 'SunsetNew', 'Deep SeaNew', 'EmberNew', 'CosmosNew', 'SynthwaveNew']);
   await expect(page.locator('.preset').first().locator('.swatch')).toHaveCount(4);
   await expect(page.locator('.preset').first().locator('.strip-l')).toHaveText(['8.0+', '8.5+', '9.0+', '9.5+']);
   await shot(page, '152-appearance');

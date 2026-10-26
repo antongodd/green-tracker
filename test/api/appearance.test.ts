@@ -39,6 +39,11 @@ describe('appearance settings (D48)', () => {
     expect((await b.req('PUT', '/api/appearance', { look: 'pearl', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
     expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'pearl', top: 'hero', preset: 'prism', markFirst: true });
     expect((await b.req('PUT', '/api/appearance', { look: 'sepia', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(400);
+    // D68's five sets can be saved (the database allows them since 0013_more_colours.sql).
+    for (const preset of ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']) {
+      expect((await b.req('PUT', '/api/appearance', { look: 'aurora', top: 'hero', preset, markFirst: true })).status, preset).toBe(200);
+      expect((await b.get('/api/appearance')).json.appearance, preset).toEqual({ look: 'aurora', top: 'hero', preset, markFirst: true });
+    }
   });
 
   it('never reaches anyone else: a friend’s board carries no appearance', async () => {

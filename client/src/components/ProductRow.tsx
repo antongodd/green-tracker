@@ -13,7 +13,7 @@ import { overall } from '../../../shared/domain/ratings';
 import { LockIcon, TypeMark } from '../icons';
 import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
-import { Glints, RankCrown, rowClass, useAppearance } from './Gems';
+import { Effects, RankCrown, rowClass, useAppearance } from './Gems';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** `2026-08-12` → `12 Aug 2026`. Dates are calendar days: no time zone involved. */
@@ -146,7 +146,7 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
   };
   return (
     <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
-      <Glints band={p.band} appearance={appearance} />
+      <Effects band={p.band} appearance={appearance} />
       <span class="rk">
         <RankCrown look={p} appearance={appearance} />
         {p.rank}

@@ -11,7 +11,7 @@ import type { Appearance } from '../../../shared/domain/gems';
 import type { RankableProduct, RankedRow, ViewState } from '../../../shared/domain/leaderboard';
 import { productType } from '../../../shared/domain/productTypes';
 import { TypeMark } from '../icons';
-import { PhotoGlints, PlaceBadge } from './Gems';
+import { PhotoEffects, PlaceBadge } from './Gems';
 import type { ShownPhoto } from './PhotoViewer';
 import { StrainTag } from './ProductRow';
 
@@ -48,12 +48,12 @@ export function ProductHero(p: {
           <span class="hero-under" style={{ backgroundImage: `url("${p.photo.thumb}")` }} />
           <img src={p.photo.image} alt="" />
           {p.fadeFrom && <img key={p.fadeFrom} class="hero-old" src={p.fadeFrom} alt="" onAnimationEnd={p.onFaded} />}
-          <PhotoGlints band={p.place?.band ?? null} appearance={p.appearance} />
+          <PhotoEffects band={p.place?.band ?? null} appearance={p.appearance} />
         </button>
       ) : (
         <div class="hero-photo">
           {def.icon && <TypeMark icon={def.icon} label={def.label} />}
-          <PhotoGlints band={p.place?.band ?? null} appearance={p.appearance} />
+          <PhotoEffects band={p.place?.band ?? null} appearance={p.appearance} />
         </div>
       )}
       <div class="hero">
