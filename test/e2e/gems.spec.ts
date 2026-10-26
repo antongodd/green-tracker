@@ -153,24 +153,22 @@ test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothin
   }
 });
 
-test('D68: each new set draws its effect on the page, clear of every word and readable; Reduce Motion holds it still', async () => {
-  test.slow(); // 5 sets × 3 pages, photographed at 4 moments each
-  const effect = (page: Page) =>
-    page.locator('main').evaluate((main) => {
-      const fx = main.querySelector<HTMLElement>('.hero-photo .tfx');
-      if (!fx) return null;
-      const r = fx.getBoundingClientRect();
-      const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
-      return {
-        kind: fx.className.replace('tfx tfx-', ''),
-        // The whole layer sits in the photo's upper part, above every word.
-        clear: texts.every((t) => t.top >= r.bottom),
-        moving: fx.getAnimations({ subtree: true }).length > 0,
-      };
-    });
-  // Secret 9.7 (no photo), Alpha 9.5 (a photo), Charlie 9.3 (an edible, no photo).
-  const want: Record<string, [string | null, string | null]> = { sunset: ['sun', null], deepsea: ['plankton', 'plankton'], ember: ['sparks', null], cosmos: ['stars', 'stars'], synthwave: ['grid', 'grid'] };
-  for (const [preset, [top, third]] of Object.entries(want)) {
+/** A page's effect (D68): its kind, whether the whole layer sits above every word, and whether it moves. */
+const effect = (page: Page) =>
+  page.locator('main').evaluate((main) => {
+    const fx = main.querySelector<HTMLElement>('.hero-photo .tfx');
+    if (!fx) return null;
+    const r = fx.getBoundingClientRect();
+    const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
+    return { kind: fx.className.replace('tfx tfx-', ''), clear: texts.every((t) => t.top >= r.bottom), moving: fx.getAnimations({ subtree: true }).length > 0 };
+  });
+
+// D68: each new set's effect on Secret 9.7 (no photo), Alpha 9.5 (a photo) and Charlie 9.3 (an edible, no photo).
+// One test per set: all five in one ran past its time limit with 4 workers sharing the machine.
+const PAGE_EFFECTS: [string, string, string | null][] = [['sunset', 'sun', null], ['deepsea', 'plankton', 'plankton'], ['ember', 'sparks', null], ['cosmos', 'stars', 'stars'], ['synthwave', 'grid', 'grid']];
+for (const [preset, top, third] of PAGE_EFFECTS) {
+  test(`D68: ${preset} draws its effect on the page, clear of every word and readable`, async () => {
+    test.slow(); // 3 pages, photographed at 4 moments each
     expect(await appearance(owner, { preset, markFirst: true })).toBe(200);
     for (const [name, kind] of [['Secret', top], ['Alpha', top], ['Charlie', third]] as const) {
       await open(owner, `/products/${ids[name]}`);
@@ -181,7 +179,12 @@ test('D68: each new set draws its effect on the page, clear of every word and re
       const worst = await contrastFailures(owner, await heroTextBoxes(owner), 4);
       expect(worst, `${preset} ${name}:\n${worst.join('\n')}`).toEqual([]);
     }
-  }
+    expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+  });
+}
+
+test('D68: Reduce Motion holds a page\'s effect still', async () => {
+  expect(await appearance(owner, { preset: 'synthwave', markFirst: true })).toBe(200);
   await owner.emulateMedia({ reducedMotion: 'reduce' });
   await open(owner, `/products/${ids.Alpha}`);
   await expect(owner.locator('main')).toHaveAttribute('data-band', '4');

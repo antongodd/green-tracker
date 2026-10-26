@@ -1437,11 +1437,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - *Found while testing:* Synthwave's 9.5 score read at 2.77 : 1 where its violet (`#c85fff`) passed behind it; the
     violet and pink are lighter (`#d68cff`, `#ff74b4`). Ember's sparks rose 8px and touched the meta line's box on a
     row; they rise 5px. Synthwave's sun (28px) reached 1px into the meta line's box; it is 24px, lower.
+    One test for all five sets' pages ran past its 3 minutes with 4 workers (53s alone): one test per set now, and the
+    rows' readability test, ten sets long, one per set too.
   - *Tests:* `gems.test.ts` (the new names, the list's order and New, `bandEffect` for every set),
     `appearance.test.ts` (each new set saves); `appearance.spec.ts` (every band of all ten sets: colours, layers,
-    motion, effects and their counts; readability through the motion in all ten; no dot, grid or sun overlaps any text
+    motion, effects and their counts; readability through the motion in all ten (one test per set); no dot, grid or sun overlaps any text
     on a row; Reduce Motion: effects drawn, nothing moving; Appearance lists ten, New on the last five);
-    `gems.spec.ts` (each new set's effect on a 9.7 page without a photo, a 9.5 page with one, a 9.3 edible: the right
+    `gems.spec.ts` (one test per set: its effect on a 9.7 page without a photo, a 9.5 page with one, a 9.3 edible: the right
     effect or none, above every word, moving; readability of the hero text at 4 moments; Reduce Motion stills it).
   - *Couldn't check here:* the effects on a real iPhone (their speed and brightness on its screen).
 

@@ -158,9 +158,9 @@ test('#1 wears the crown above its number and a halo in its colour, gently breat
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 });
 
-test('the text on every band stays readable throughout the motion, in every preset', async () => {
-  test.slow(); // 10 presets × 12 photographed moments
-  for (const [preset] of PRESETS) {
+// One test per preset: all ten in one (D68) came near the time limit with workers sharing the machine.
+for (const [preset] of PRESETS) {
+  test(`the text on every band stays readable throughout the motion: ${preset}`, async () => {
     expect(await appearance({ preset, markFirst: true })).toBe(200);
     await page.goto('/');
     await expect(rows()).toHaveCount(5);
@@ -169,9 +169,9 @@ test('the text on every band stays readable throughout the motion, in every pres
     expect(boxes.length).toBe(20);
     const worst = await contrastFailures(page, boxes);
     expect(worst, `${preset}:\n${worst.join('\n')}`).toEqual([]);
-  }
-  expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
-});
+    expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
+  });
+}
 
 test('the Colours key: each colour and its scores, the glow below 8 and the #1 mark; axe finds nothing', async () => {
   await page.goto('/');
