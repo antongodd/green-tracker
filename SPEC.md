@@ -1424,6 +1424,9 @@ None.
 
 ## 6. Changelog
 
+### 0.57.1 — CLAUDE.md: edible value for money is on dev
+- The to-do list marks edible value for money (D67) on dev. Notes only.
+
 ### 0.57.0 — value for money compares every type (owner request)
 - Decision D67. Value for money is Overall ÷ the price for the same effect as a gram of flower: per gram, or per 20mg
   for edibles (the owner's 1mg eaten ≈ 10mg smoked, flower about 20% THC). Rank by under All gains Price and Value for

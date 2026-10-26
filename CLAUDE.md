@@ -160,7 +160,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.55.0 (live 2026-10-21): everything up to the new look (D64, D65).
-- **Dev:** 0.56.0 (2026-10-22): currency settings (D66); plus notes-only 0.56.1.
+- **Dev:** 0.57.0 (2026-10-26): edible value for money (D67), on top of currency settings (D66, 0.56.0); plus
+  notes-only 0.57.1.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -168,8 +169,9 @@ section, so it must always be current.
    day looked up and saved (or typed); Settings → Money → Main currency (£); everything compared is converted. Next:
    Anton tries a € purchase on GT Dev (the real rate service couldn't be reached from the build environment), then
    "go live".
-2. **Edible value for money rework** (Anton's idea, 2026-10-20): rework value for money for edibles. Anton will give
-   the details in the working conversation.
+2. **Edible value for money rework** — **on dev** (0.57.0, D67, 2026-10-26): value for money and price compare across
+   every type (20mg of an edible counts as 1g of flower); Rank by under All offers Price and Value for money; a wide
+   price no longer runs off its row. Next: Anton checks it on GT Dev, then "go live".
 
 ### Done (newest first)
 
