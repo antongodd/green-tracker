@@ -1,4 +1,4 @@
--- Five more Leaderboard colour sets (D68, 0.58.0): Sunset, Deep Sea, Ember, Cosmos, Synthwave.
+-- Five more Leaderboard colour sets (D69, 0.59.0): Sunset, Deep Sea, Ember, Cosmos, Synthwave.
 -- SQLite can't change a CHECK, so the table is rebuilt with the wider list (as 0011 did). Every
 -- row is copied as it is: nobody's look, top, colours or #1 mark changes. The previous build
 -- keeps working while this is applied (it only ever saves the five names it knows).

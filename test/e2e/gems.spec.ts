@@ -153,7 +153,7 @@ test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothin
   }
 });
 
-/** A page's effect (D68): its kind, whether the whole layer sits above every word, and whether it moves. */
+/** A page's effect (D69): its kind, whether the whole layer sits above every word, and whether it moves. */
 const effect = (page: Page) =>
   page.locator('main').evaluate((main) => {
     const fx = main.querySelector<HTMLElement>('.hero-photo .tfx');
@@ -163,11 +163,11 @@ const effect = (page: Page) =>
     return { kind: fx.className.replace('tfx tfx-', ''), clear: texts.every((t) => t.top >= r.bottom), moving: fx.getAnimations({ subtree: true }).length > 0 };
   });
 
-// D68: each new set's effect on Secret 9.7 (no photo), Alpha 9.5 (a photo) and Charlie 9.3 (an edible, no photo).
+// D69: each new set's effect on Secret 9.7 (no photo), Alpha 9.5 (a photo) and Charlie 9.3 (an edible, no photo).
 // One test per set: all five in one ran past its time limit with 4 workers sharing the machine.
 const PAGE_EFFECTS: [string, string, string | null][] = [['sunset', 'sun', null], ['deepsea', 'plankton', 'plankton'], ['ember', 'sparks', null], ['cosmos', 'stars', 'stars'], ['synthwave', 'grid', 'grid']];
 for (const [preset, top, third] of PAGE_EFFECTS) {
-  test(`D68: ${preset} draws its effect on the page, clear of every word and readable`, async () => {
+  test(`D69: ${preset} draws its effect on the page, clear of every word and readable`, async () => {
     test.slow(); // 3 pages, photographed at 4 moments each
     expect(await appearance(owner, { preset, markFirst: true })).toBe(200);
     for (const [name, kind] of [['Secret', top], ['Alpha', top], ['Charlie', third]] as const) {
@@ -183,7 +183,7 @@ for (const [preset, top, third] of PAGE_EFFECTS) {
   });
 }
 
-test('D68: Reduce Motion holds a page\'s effect still', async () => {
+test('D69: Reduce Motion holds a page\'s effect still', async () => {
   expect(await appearance(owner, { preset: 'synthwave', markFirst: true })).toBe(200);
   await owner.emulateMedia({ reducedMotion: 'reduce' });
   await open(owner, `/products/${ids.Alpha}`);

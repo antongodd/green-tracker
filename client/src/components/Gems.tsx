@@ -1,7 +1,7 @@
 // Leaderboard colours (D48, 0.41.0): a row's colour is earned by its score, in your preset
-// (ten since D68), and your #1 can wear a crown and a halo. A product page carries
+// (ten since D69), and your #1 can wear a crown and a halo. A product page carries
 // its row's colour: a holo badge, a haze and a flowing score; Rainbow and the 9.0 band also
-// sweep the photo as it opens; Metals' Diamond twinkles, and D68's sets each have an effect
+// sweep the photo as it opens; Metals' Diamond twinkles, and D69's sets each have an effect
 // of their own (Effects). Styled in styles.css.
 import type { JSX } from 'preact';
 import { bandEffect, bandName, bandRange, DEFAULT_APPEARANCE, PRESETS, type Appearance, type Band, type Effect } from '../../../shared/domain/gems';
@@ -63,7 +63,7 @@ function effectDots(effect: Effect, band: Band, where: Where): JSX.Element[] {
 
 /**
  * What a coloured card shows besides its colours (bandEffect): Metals' Diamond twinkles (three
- * glints in the corners), and D68's sets draw their sun, plankton, sparks, stars or grid, all clear
+ * glints in the corners), and D69's sets draw their sun, plankton, sparks, stars or grid, all clear
  * of the words. Reduce Motion holds them still (the glints, which only twinkle, go).
  */
 export function Effects(p: { band: Band | null; appearance: Appearance; where?: Where }) {

@@ -1359,7 +1359,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-neon.band3 { --t1: #ff8fe0; --t2: #ff5cc8; --t3: #ffd0f2; --t4: #f04fb8; --t5: #ffb0ea; --t6: #ff74d4; --dark: 22, 6, 18; }
 .pal-neon.band4 { --t1: #ff6bd5; --t2: #ffd36b; --t3: #d4ff6b; --t4: #6bffe0; --t5: #6bc8ff; --t6: #b98cff; --dark: 10, 6, 20; }
 
-/* Five more sets (D68, 0.58.0), each with something of its own drawn on the card (bandEffect in
+/* Five more sets (D69, 0.59.0), each with something of its own drawn on the card (bandEffect in
    shared/domain/gems.ts; client/components/Gems.tsx Effects). t3 stays each band's lightest shade (the
    rank number), and the dark layers stay near-neutral (D49), measured in every band like the rest. */
 .pal-sunset.band1 { --t1: #ffd0a8; --t2: #ffb48a; --t3: #ffe4cc; --t4: #f4a27a; --t5: #ffc9a0; --t6: #ffbe94; --dark: 24, 14, 10; }
@@ -1383,7 +1383,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-synthwave.band3 { --t1: #e8ecff; --t2: #b8c0e8; --t3: #ffffff; --t4: #9aa4d8; --t5: #d8deff; --t6: #c8b8ff; --dark: 12, 12, 22; }
 .pal-synthwave.band4 { --t1: #ff74b4; --t2: #ffb36b; --t3: #ffe9a0; --t4: #d68cff; --t5: #5fd8ff; --t6: #ff7ad0; --dark: 18, 6, 20; }
 
-/* Their effects (D68): a layer behind the words (z-index -1 inside the card, like Diamond's glints),
+/* Their effects (D69): a layer behind the words (z-index -1 inside the card, like Diamond's glints),
    drawn only where no text is: on a row, the thin strips along its top and bottom edges and the
    space round the photo; on a product page, the upper part of the photo, above the name. */
 .tfx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }

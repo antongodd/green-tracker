@@ -43,7 +43,7 @@ describe('Leaderboard colours by score (D48)', () => {
     expect(PRESET_KEYS).toEqual(['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']);
   });
 
-  it('D68: five more sets, last in the list and the only ones marked New', () => {
+  it('D69: five more sets, last in the list and the only ones marked New', () => {
     expect(NEW_PRESETS).toEqual(PRESET_KEYS.slice(5));
   });
 

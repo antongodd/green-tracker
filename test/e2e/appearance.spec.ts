@@ -37,7 +37,7 @@ const PRESETS = [
   ['gems', ['Rainbow', 'Amethyst', 'Sapphire', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(181, 152, 240)', 'rgb(127, 176, 255)', 'rgb(47, 216, 147)']], // D49: softer lilac, brighter blue
   ['prism', ['Prism', 'Prism', 'Prism', 'Prism'], ['rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)', 'rgb(255, 201, 150)']],
   ['metals', ['Rainbow', 'Diamond', 'Rose gold', 'Emerald'], ['rgb(255, 201, 150)', 'rgb(169, 220, 255)', 'rgb(242, 169, 150)', 'rgb(47, 216, 147)']],
-  // D68: five more, each with an effect of its own.
+  // D69: five more, each with an effect of its own.
   ['sunset', ['Golden hour', 'Magenta', 'Coral', 'Peach'], ['rgb(255, 154, 107)', 'rgb(240, 95, 180)', 'rgb(255, 122, 107)', 'rgb(255, 180, 138)']],
   ['deepsea', ['Glow', 'Abyss', 'Reef', 'Seafoam'], ['rgb(111, 214, 255)', 'rgb(106, 130, 244)', 'rgb(63, 184, 240)', 'rgb(126, 224, 196)']],
   ['ember', ['Inferno', 'Blue flame', 'Flame', 'Ember'], ['rgb(255, 154, 60)', 'rgb(90, 180, 255)', 'rgb(255, 154, 60)', 'rgb(232, 134, 78)']],
@@ -45,7 +45,7 @@ const PRESETS = [
   ['synthwave', ['Synthwave', 'Chrome', 'Laser', 'Arcade'], ['rgb(255, 179, 107)', 'rgb(184, 192, 232)', 'rgb(224, 64, 192)', 'rgb(47, 216, 240)']],
 ] as const;
 
-/** Each row's effect (D68), top row first: the layer's kind and how many things it draws. */
+/** Each row's effect (D69), top row first: the layer's kind and how many things it draws. */
 const EFFECTS: Record<string, string[]> = {
   sunset: ['sun 1', '', '', ''],
   deepsea: ['plankton 10', 'plankton 6', '', ''],
@@ -91,7 +91,7 @@ test('each band on its row, in every preset: the right colours, each a little st
     expect(info.map((i) => i.layer.map((l) => l[3])), preset).toEqual([[0.7, 0.86], [0.8, 0.9], [0.86, 0.93], [0.9, 0.95]]);
     // Gems' Amethyst and Sapphire sit under near-neutral layers, not the violet one that read as a purple slab (D49).
     if (preset === 'gems') expect(info.slice(1, 3).map((i) => i.layer[0]!.slice(0, 3))).toEqual([[12, 14, 22], [10, 16, 26]]);
-    // Only Metals' Diamond twinkles; D68's sets each draw their own effect, from their band.
+    // Only Metals' Diamond twinkles; D69's sets each draw their own effect, from their band.
     await expect(page.locator('.glint')).toHaveCount(preset === 'metals' ? 3 : 0);
     expect(await effects(), preset).toEqual(EFFECTS[preset] ?? ['', '', '', '']);
     await shot(page, `150-colours-${preset}`);
@@ -99,7 +99,7 @@ test('each band on its row, in every preset: the right colours, each a little st
   expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
 });
 
-test('D68: the effects of the new sets stay clear of every word on a row, and Reduce Motion holds them still', async () => {
+test('D69: the effects of the new sets stay clear of every word on a row, and Reduce Motion holds them still', async () => {
   for (const preset of Object.keys(EFFECTS)) {
     expect(await appearance({ preset, markFirst: true })).toBe(200);
     await page.goto('/');
@@ -158,7 +158,7 @@ test('#1 wears the crown above its number and a halo in its colour, gently breat
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 });
 
-// One test per preset: all ten in one (D68) came near the time limit with workers sharing the machine.
+// One test per preset: all ten in one (D69) came near the time limit with workers sharing the machine.
 for (const [preset] of PRESETS) {
   test(`the text on every band stays readable throughout the motion: ${preset}`, async () => {
     expect(await appearance({ preset, markFirst: true })).toBe(200);
@@ -203,7 +203,7 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
   await expect(page).toHaveURL(/\/more\/appearance$/);
   await expect(page.getByRole('radio', { name: /Gems/ })).toBeChecked();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeChecked();
-  // Each preset shows its four colours; the two made for the new look first (D64), D68's five last, marked New.
+  // Each preset shows its four colours; the two made for the new look first (D64), D69's five last, marked New.
   await expect(page.locator('.preset')).toHaveCount(10);
   await expect(page.locator('.preset .main > span:first-child')).toHaveText(['Aurora', 'Neon', 'Gems', 'Prism', 'Metals', 'SunsetNew', 'Deep SeaNew', 'EmberNew', 'CosmosNew', 'SynthwaveNew']);
   await expect(page.locator('.preset').first().locator('.swatch')).toHaveCount(4);

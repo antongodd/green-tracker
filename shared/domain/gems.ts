@@ -26,9 +26,9 @@ export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
 }
 
 export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals' | 'sunset' | 'deepsea' | 'ember' | 'cosmos' | 'synthwave';
-/** In the order Appearance lists them: the two made for the new look (D64) first, the five of D68 last. */
+/** In the order Appearance lists them: the two made for the new look (D64) first, the five of D69 last. */
 export const PRESET_KEYS = ['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'] as const satisfies readonly Preset[];
-/** Marked New in Appearance (D68: only the newest five; Aurora and Neon lost theirs). */
+/** Marked New in Appearance (D69: only the newest five; Aurora and Neon lost theirs). */
 export const NEW_PRESETS: readonly Preset[] = ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'];
 
 export const PRESETS: Record<Preset, { label: string; description: string; bands: readonly [string, string, string, string] }> = {
@@ -46,7 +46,7 @@ export const PRESETS: Record<Preset, { label: string; description: string; bands
 
 /**
  * Something drawn on a coloured card besides its colours, kept clear of the words: Metals'
- * Diamond twinkles (D48), and each of D68's sets has its own. Sunset: a sun glowing behind the
+ * Diamond twinkles (D48), and each of D69's sets has its own. Sunset: a sun glowing behind the
  * photo at 9.5. Deep Sea: glowing plankton drifting by from 9.0 (more at 9.5). Ember: sparks
  * and a flicker of heat at 9.5. Cosmos: twinkling stars from 8.5, more band by band, and a
  * nebula at 9.5. Synthwave: a neon grid floor from 9.0 and a striped sun setting into it at 9.5.
