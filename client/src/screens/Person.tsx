@@ -3,7 +3,7 @@ import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
 import type { Band } from '../../../shared/domain/gems';
 import { boardPlace, leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
-import { ColoursSheet, Glints, pageClass, RankCrown, rowClass, useAppearance } from '../components/Gems';
+import { ColoursSheet, Effects, pageClass, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
 import { heatStyle } from '../heat';
 import { photoUrl } from '../../../shared/domain/photo';
@@ -50,7 +50,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
   };
   return (
     <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
-      <Glints band={p.band} appearance={appearance} />
+      <Effects band={p.band} appearance={appearance} />
       <span class="rk">
         <RankCrown look={p} appearance={appearance} />
         {p.rank}
