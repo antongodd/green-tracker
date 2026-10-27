@@ -3,7 +3,7 @@
 // account at once, so they follow you to a new phone; a friend's board shows in your look and
 // colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
 import { useRef, useState } from 'preact/hooks';
-import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
+import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, NEW_LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
 import { saveAppearance } from '../appearance';
 import { BackButton, Header, TabBar } from '../components/chrome';
@@ -122,7 +122,10 @@ export function AppearanceScreen() {
                       <b>9.3</b>
                       <i />
                     </span>
-                    <span class="ap-name">{LOOKS[k].label}</span>
+                    <span class="ap-title">
+                      <span class="ap-name">{LOOKS[k].label}</span>
+                      {NEW_LOOKS.includes(k) && <span class="new-tag">New</span>}
+                    </span>
                     <span class="ap-sub">{ready ? LOOKS[k].description : 'Coming next'}</span>
                     <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} />
                   </label>

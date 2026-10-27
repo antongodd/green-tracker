@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -71,10 +72,20 @@ describe('Leaderboard colours by score (D48)', () => {
     }
   });
 
-  it('all four looks can be chosen since D65; anything else is refused', () => {
-    expect(READY_LOOKS).toEqual(['aurora', 'neon', 'pearl', 'forest']);
+  it('all twelve looks can be chosen since D70, the eight new ones marked New; anything else is refused', () => {
+    expect(READY_LOOKS).toEqual(['aurora', 'neon', 'pearl', 'forest', 'sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze']);
+    expect(NEW_LOOKS).toEqual(LOOK_KEYS.slice(4));
     for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
-    expect(LOOK_KEYS.map((l) => LOOK_BG[l])).toEqual(['#03070a', '#06041a', '#08080c', '#050807']);
+    expect(LOOK_KEYS.map((l) => LOOK_BG[l])).toEqual(['#03070a', '#06041a', '#08080c', '#050807', '#130a13', '#040b0b', '#020a14', '#060b12', '#05040c', '#0a0420', '#12060c', '#0c0b10']);
+    expect(new Set(LOOK_KEYS.map((l) => LOOKS[l].label)).size).toBe(LOOK_KEYS.length);
+  });
+
+  it('the phone remembers every look (look.js knows each name and background), and the database allows each', () => {
+    const js = readFileSync(new URL('../../client/public/look.js', import.meta.url), 'utf8');
+    const bgs = Object.fromEntries([...js.matchAll(/(\w+): '(#[0-9a-f]{6})'/g)].map((m) => [m[1], m[2]]));
+    expect(bgs).toEqual(LOOK_BG);
+    const sql = readFileSync(new URL('../../migrations/0014_more_looks.sql', import.meta.url), 'utf8');
+    expect(sql.match(/look IN \(([^)]*)\)/)![1]!.match(/'(\w+)'/g)!.map((q) => q.slice(1, -1))).toEqual([...LOOK_KEYS]);
   });
 
   it('a backup or an open app from before 0.54.0 has no look or top: they take the defaults', () => {
