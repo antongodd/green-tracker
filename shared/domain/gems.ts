@@ -74,18 +74,36 @@ export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].
 /** "8.0 – 8.4" … "9.5 – 10", for the key. */
 export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `${BAND_FLOORS[band - 1]!.toFixed(1)} – ${(BAND_FLOORS[band]! - 0.1).toFixed(1)}`);
 
-/** The whole app's look (D64; all four built since D65). */
-export type Look = 'aurora' | 'neon' | 'pearl' | 'forest';
-export const LOOK_KEYS = ['aurora', 'neon', 'pearl', 'forest'] as const satisfies readonly Look[];
-/** The looks you can choose (a look not listed would show as "Coming next"). All four since D65. */
+/**
+ * The whole app's look (D64; all four built since D65; eight more since D70). A look changes only
+ * colours and the background behind everything, never fonts, sizes or shapes (D70: the owner's rule;
+ * Holo Pearl's and Deep Forest's title fonts are from before it).
+ */
+export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze';
+/** In the order Appearance lists them: the four of D64/D65, then D70's eight. */
+export const LOOK_KEYS = ['aurora', 'neon', 'pearl', 'forest', 'sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze'] as const satisfies readonly Look[];
+/** The looks you can choose (a look not listed would show as "Coming next"). All of them. */
 export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
+/** Marked New in Appearance (D70). */
+export const NEW_LOOKS: readonly Look[] = ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze'];
 /** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
-export const LOOK_BG: Record<Look, string> = { aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807' };
+export const LOOK_BG: Record<Look, string> = {
+  aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807',
+  sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10',
+};
 export const LOOKS: Record<Look, { label: string; description: string }> = {
   aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
   neon: { label: 'Neon Night', description: 'Deep indigo with violet, pink and cyan lights' },
   pearl: { label: 'Holo Pearl', description: 'Near-black with pearly rainbow edges' },
   forest: { label: 'Deep Forest', description: 'The green look, tidied' },
+  sakura: { label: 'Sakura', description: 'Dusk pink with drifting blossom' },
+  fireflies: { label: 'Fireflies', description: 'A summer night, little lights blinking' },
+  deepsea: { label: 'Deep Sea', description: 'Light rays and glowing plankton' },
+  frost: { label: 'Frost', description: 'Icy blue with snow falling' },
+  nebula: { label: 'Nebula', description: 'Stars and slow-turning clouds of colour' },
+  outrun: { label: 'Outrun', description: 'Neon grid and a setting sun' },
+  lava: { label: 'Lava Lamp', description: 'Warm blobs that rise and melt together' },
+  haze: { label: 'Haze', description: 'Slow curls of smoke over soft charcoal' },
 };
 
 /** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. */
