@@ -165,16 +165,18 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.57.1 (live 2026-10-26): everything up to edible value for money (D67).
-- **Dev:** the same as live; plus notes-only 0.57.2.
+- **Dev:** 0.59.0 (2026-10-27): five more Leaderboard colour sets (D69), on top of the website's how-to video (D68,
+  0.58.0); plus notes-only 0.59.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **A how-to video on the website** (0.58.0, D68): a 24-second video above the "Get it" steps showing how to add the
-   app to the Home Screen on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add); thumbnail: the phone with the
-   leaf; written step 2 mentions ⋯ and View More. Next: merge, then Anton checks it on the website preview.
-2. **More Leaderboard colour sets** — in a pull request (0.59.0, D69, 2026-10-26): Sunset, Deep Sea, Ember, Cosmos
-   and Synthwave, ten in all, each with its own effect; listed last in Appearance, marked New. Next: "merge", then
-   Anton tries them on GT Dev.
+1. **A how-to video on the website** — **on dev** (0.58.0, D68, 2026-10-26): a 24-second video above the "Get it"
+   steps showing how to add the app to the Home Screen on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add);
+   thumbnail: the phone with the leaf; written step 2 mentions ⋯ and View More. Next: Anton checks it on the website
+   preview, then "go live".
+2. **More Leaderboard colour sets** — **on dev** (0.59.0, D69, 2026-10-27): Sunset, Deep Sea, Ember, Cosmos and
+   Synthwave, ten in all, each with its own effect; listed last in Appearance, marked New. Next: Anton tries them on
+   GT Dev (the effects couldn't be checked on a real iPhone), then "go live".
 
 ### Done (newest first)
 

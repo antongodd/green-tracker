@@ -1471,6 +1471,9 @@ None.
 
 ## 6. Changelog
 
+### 0.59.1 — CLAUDE.md: the website video and the colour sets are on dev
+- The to-do list marks the how-to video (D68) and the five colour sets (D69) on dev. Notes only.
+
 ### 0.59.0 — five more Leaderboard colour sets (owner request)
 - Decision D69. Sunset, Deep Sea, Ember, Cosmos and Synthwave, ten sets in all, each with an effect of its own (a sun,
   plankton, sparks, stars, a neon grid) kept clear of the words, on rows and product pages. Listed last in Appearance,
