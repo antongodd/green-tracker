@@ -3,12 +3,12 @@
 // account at once, so they follow you to a new phone; a friend's board shows in your look and
 // colours too. (Sounds and ticks have their own screen since 0.48.0, D57: Sounds.tsx.)
 import { useRef, useState } from 'preact/hooks';
-import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
+import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
 import { saveAppearance } from '../appearance';
 import { BackButton, Header, TabBar } from '../components/chrome';
 import { Tiles } from '../components/Controls';
-import { Glints, RankCrown, rowClass, useAppearance } from '../components/Gems';
+import { Effects, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { useOnline } from '../online';
 import { useSession } from '../session';
@@ -29,7 +29,7 @@ function SampleRow(p: { appearance: Appearance; rank: number }) {
   const look = { band: scoreBand('overall', score), first: p.rank === 1 };
   return (
     <div class={`row${rowClass(look, p.appearance)} sample`}>
-      <Glints band={look.band} appearance={p.appearance} />
+      <Effects band={look.band} appearance={p.appearance} />
       <span class="rk">
         <RankCrown look={look} appearance={p.appearance} />
         {p.rank}
@@ -165,7 +165,7 @@ export function AppearanceScreen() {
                   <span class="main">
                     <span>
                       <span class="pl">{PRESETS[k].label}</span>
-                      {(k === 'aurora' || k === 'neon') && <span class="new-tag">New</span>}
+                      {NEW_PRESETS.includes(k) && <span class="new-tag">New</span>}
                     </span>
                     <span class="sub">{PRESETS[k].description}</span>
                     <span class="strip" aria-hidden="true">

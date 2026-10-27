@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -30,12 +30,32 @@ describe('Leaderboard colours by score (D48)', () => {
     expect([1, 2, 3, 4].map((b) => bandName('prism', b as 1))).toEqual(['Prism', 'Prism', 'Prism', 'Prism']);
     expect([1, 2, 3, 4].map((b) => bandName('aurora', b as 1))).toEqual(['Jade', 'Lagoon', 'Violet', 'Aurora']);
     expect([1, 2, 3, 4].map((b) => bandName('neon', b as 1))).toEqual(['Lime', 'Electric', 'Hot pink', 'Neon']);
+    expect([1, 2, 3, 4].map((b) => bandName('sunset', b as 1))).toEqual(['Peach', 'Coral', 'Magenta', 'Golden hour']);
+    expect([1, 2, 3, 4].map((b) => bandName('deepsea', b as 1))).toEqual(['Seafoam', 'Reef', 'Abyss', 'Glow']);
+    expect([1, 2, 3, 4].map((b) => bandName('ember', b as 1))).toEqual(['Ember', 'Flame', 'Blue flame', 'Inferno']);
+    expect([1, 2, 3, 4].map((b) => bandName('cosmos', b as 1))).toEqual(['Moonlight', 'Stardust', 'Nebula', 'Supernova']);
+    expect([1, 2, 3, 4].map((b) => bandName('synthwave', b as 1))).toEqual(['Arcade', 'Laser', 'Chrome', 'Synthwave']);
     expect([1, 2, 3, 4].map((b) => bandRange(b as 1))).toEqual(['8.0 – 8.4', '8.5 – 8.9', '9.0 – 9.4', '9.5 – 10']);
   });
 
   it('everyone starts on Aurora Glass, the glass hero and Aurora colours, with #1 marked (D64)', () => {
     expect(DEFAULT_APPEARANCE).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
-    expect(PRESET_KEYS).toEqual(['aurora', 'neon', 'gems', 'prism', 'metals']);
+    expect(PRESET_KEYS).toEqual(['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']);
+  });
+
+  it('D69: five more sets, last in the list and the only ones marked New', () => {
+    expect(NEW_PRESETS).toEqual(PRESET_KEYS.slice(5));
+  });
+
+  it('each band\'s effect: Diamond\'s glints, and the five new sets each from their own band', () => {
+    const effects = (p: (typeof PRESET_KEYS)[number]) => [null, 1, 2, 3, 4].map((b) => bandEffect(p, b as 1 | null));
+    expect(effects('metals')).toEqual([null, null, null, 'glints', null]);
+    expect(effects('sunset')).toEqual([null, null, null, null, 'sun']);
+    expect(effects('deepsea')).toEqual([null, null, null, 'plankton', 'plankton']);
+    expect(effects('ember')).toEqual([null, null, null, null, 'sparks']);
+    expect(effects('cosmos')).toEqual([null, null, 'stars', 'stars', 'stars']);
+    expect(effects('synthwave')).toEqual([null, null, null, 'grid', 'grid']);
+    for (const p of ['aurora', 'neon', 'gems', 'prism'] as const) expect(effects(p), p).toEqual([null, null, null, null, null]);
   });
 
   it('a settings object must have a ready look, a known top and preset and a true/false #1 mark; anything else is refused', () => {

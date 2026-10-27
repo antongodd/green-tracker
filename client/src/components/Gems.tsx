@@ -1,8 +1,10 @@
 // Leaderboard colours (D48, 0.41.0): a row's colour is earned by its score, in your preset
-// (Gems, Prism, Metals), and your #1 can wear a crown and a halo. A product page carries
+// (ten since D69), and your #1 can wear a crown and a halo. A product page carries
 // its row's colour: a holo badge, a haze and a flowing score; Rainbow and the 9.0 band also
-// sweep the photo as it opens; Metals' Diamond twinkles. Styled in styles.css.
-import { bandName, bandRange, DEFAULT_APPEARANCE, PRESETS, type Appearance, type Band } from '../../../shared/domain/gems';
+// sweep the photo as it opens; Metals' Diamond twinkles, and D69's sets each have an effect
+// of their own (Effects). Styled in styles.css.
+import type { JSX } from 'preact';
+import { bandEffect, bandName, bandRange, DEFAULT_APPEARANCE, PRESETS, type Appearance, type Band, type Effect } from '../../../shared/domain/gems';
 import { placeBadge, type RankableProduct, type RankedRow, type ViewState } from '../../../shared/domain/leaderboard';
 import { CrownIcon } from '../icons';
 import { linkTo } from '../router';
@@ -21,15 +23,64 @@ export function rowClass(look: Look, a: Appearance): string {
   return `${look.band ? ` tier band${look.band} pal-${a.preset}` : ''}${marked(look, a) ? ' first' : ''}`;
 }
 
-/** Only Metals' Diamond twinkles: three glints in the row's corners, clear of all text. */
-export function Glints(p: { band: Band | null; appearance: Appearance }) {
-  if (p.band !== 3 || p.appearance.preset !== 'metals') return null;
+type Where = 'row' | 'page';
+/** [left, top] of each dot: on a row, % across and px from the top (negative: from the bottom),
+ *  in the thin strips along its edges, clear of every word; on a page, % of the photo's upper part. */
+const DOTS: Record<Where, readonly (readonly [number, number])[]> = {
+  row: [[38, 3], [62, 4], [84, -5], [46, -4], [72, 2], [94, -3], [55, -6], [28, 2], [80, 5], [66, -5], [90, 3], [35, -3]],
+  page: [[12, 20], [78, 14], [40, 60], [88, 52], [25, 82], [60, 30], [6, 55], [70, 78], [50, 8], [33, 40], [94, 30], [18, 66]],
+};
+const at = (where: Where, i: number, extra: Record<string, string> = {}): JSX.CSSProperties => {
+  const [x, y] = DOTS[where][i]!;
+  return { left: `${x}%`, top: where === 'page' ? `${y}%` : y < 0 ? `calc(100% + ${y - 3}px)` : `${y}px`, '--d': `${3 + (i % 4) * 0.9}s`, '--dl': `-${((i * 1.3) % 4).toFixed(1)}s`, ...extra };
+};
+const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+
+function effectDots(effect: Effect, band: Band, where: Where): JSX.Element[] {
+  switch (effect) {
+    case 'sun':
+      return [<i key="s" />];
+    case 'plankton':
+      return range(band === 4 ? 10 : 6).map((i) => <i key={i} style={at(where, i, { '--d': `${6 + (i % 3) * 2}s` })} />);
+    case 'stars': {
+      const stars = range([0, 0, 5, 8, 12][band]!).map((i) => <i key={i} class={i % 4 === 1 ? 'big' : undefined} style={at(where, i)} />);
+      return band === 4 ? [<i key="n" class="nebula" />, ...stars] : stars;
+    }
+    case 'sparks':
+      return [
+        <i key="h" class="heat" />,
+        ...range(10).map((i) => {
+          const [x] = DOTS[where][i]!;
+          return <i key={i} style={{ left: `${x}%`, top: where === 'page' ? '96%' : 'calc(100% - 4px)', '--d': `${1.6 + (i % 4) * 0.5}s`, '--dl': `-${((i * 0.7) % 2.4).toFixed(1)}s`, '--dx': `${(i % 5) * 3 - 6}px` }} />;
+        }),
+      ];
+    case 'grid':
+      return band === 4 ? [<i key="s" class="sun" />, <i key="f" class="floor" />] : [<i key="f" class="floor" />];
+    default:
+      return [];
+  }
+}
+
+/**
+ * What a coloured card shows besides its colours (bandEffect): Metals' Diamond twinkles (three
+ * glints in the corners), and D69's sets draw their sun, plankton, sparks, stars or grid, all clear
+ * of the words. Reduce Motion holds them still (the glints, which only twinkle, go).
+ */
+export function Effects(p: { band: Band | null; appearance: Appearance; where?: Where }) {
+  const effect = bandEffect(p.appearance.preset, p.band);
+  if (!effect || !p.band) return null;
+  if (effect === 'glints')
+    return (
+      <>
+        <span class="glint g1" aria-hidden="true" />
+        <span class="glint g2" aria-hidden="true" />
+        <span class="glint g3" aria-hidden="true" />
+      </>
+    );
   return (
-    <>
-      <span class="glint g1" aria-hidden="true" />
-      <span class="glint g2" aria-hidden="true" />
-      <span class="glint g3" aria-hidden="true" />
-    </>
+    <span class={`tfx tfx-${effect}`} aria-hidden="true">
+      {effectDots(effect, p.band, p.where ?? 'row')}
+    </span>
   );
 }
 
@@ -68,9 +119,9 @@ export function PlaceBadge(p: { place: Pick<RankedRow<RankableProduct>, 'rank' |
   );
 }
 
-/** Diamond's glints on its page: three in the photo's upper part, clear of all text. */
-export function PhotoGlints(p: { band: Band | null; appearance: Appearance }) {
-  return <Glints band={p.band} appearance={p.appearance} />;
+/** The effects on a product page: in the photo's upper part, clear of all text. */
+export function PhotoEffects(p: { band: Band | null; appearance: Appearance }) {
+  return <Effects band={p.band} appearance={p.appearance} where="page" />;
 }
 
 /** The Colours button beside Rank by (D48): your preset's four colours as dots; opens the key. */

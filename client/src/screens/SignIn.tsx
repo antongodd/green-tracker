@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { errorText } from '../api';
 import { DEFAULT_APPEARANCE, scoreBand } from '../../../shared/domain/gems';
-import { Glints, RankCrown, rowClass } from '../components/Gems';
+import { Effects, RankCrown, rowClass } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
 import { LeafGlass } from '../icons';
 import { passkeysSupported, signIn } from '../passkey';
@@ -25,7 +25,7 @@ function Showcase() {
           const look = { band: scoreBand('overall', score), first: i === 0 };
           return (
             <div key={product.id} class={`row${rowClass(look, DEFAULT_APPEARANCE)} eg eg${i + 1}`}>
-              <Glints band={look.band} appearance={DEFAULT_APPEARANCE} />
+              <Effects band={look.band} appearance={DEFAULT_APPEARANCE} />
               <span class="rk">
                 <RankCrown look={look} appearance={DEFAULT_APPEARANCE} />
                 {i + 1}
