@@ -29,11 +29,16 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.context().close());
 
-test('everyone starts on Aurora Glass, the glass hero and Aurora colours', async () => {
-  expect(await saved()).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
+test('a new account starts on Aurora Glass, the slim strip and Gems (D71); the glass hero shows the average big', async () => {
+  expect(await saved()).toEqual({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
   await page.goto('/');
   await expect(page.locator('.rows .row')).toHaveCount(12);
   await expect(page.locator('html')).toHaveAttribute('data-look', 'aurora');
+  await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-gems\b/);
+  await expect(page.locator('.banner.strip .tile')).toHaveCount(3);
+  // The rest of this file starts from D64's glass hero and Aurora colours.
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+  await page.goto('/');
   await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-aurora\b/);
   // The glass hero: the average big, products and total beside it, your #1 underneath.
   const hero = page.locator('.banner.hero');
@@ -43,19 +48,32 @@ test('everyone starts on Aurora Glass, the glass hero and Aurora colours', async
   await shot(page, '640-glass-hero');
 });
 
-test('Settings shows the look, the top and the colours; Appearance chooses them, each saved at once', async () => {
+test('Settings shows the look, the top and the colours, each opening its own page (D71) where it is chosen and saved at once', async () => {
   await page.goto('/more');
   await expect(page.getByRole('link', { name: /^Look/ })).toContainText('Aurora Glass');
   await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Glass hero');
   await expect(page.getByRole('link', { name: /Leaderboard colours/ })).toContainText('Aurora');
   await page.getByRole('link', { name: /^Look/ }).click();
-  await expect(page).toHaveURL(/\/more\/appearance$/);
-  // The looks: Aurora Glass chosen; all four can be chosen since D65, none "Coming next".
-  await expect(page.getByRole('radio', { name: /Aurora Glass/ })).toBeChecked();
+  await expect(page).toHaveURL(/\/more\/look$/);
+  await expect(page.locator('.hdr .title')).toHaveText('Look');
+  // The looks: Aurora Glass chosen, first, then A to Z (D71); all can be chosen, none "Coming next"; only looks here.
+  await expect(page.locator('input[name="look"][value="aurora"]')).toBeChecked();
+  await expect(page.locator('.ap-card .ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
   for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
   await expect(page.getByText('Coming next')).toHaveCount(0);
+  await expect(page.locator('input[name="top"], input[name="preset"], .ap-preview')).toHaveCount(0);
+  await shot(page, '641-appearance-look');
+  expect(await axe()).toEqual([]);
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/more$/);
+  await page.getByRole('link', { name: /Leaderboard top/ }).click();
+  await expect(page).toHaveURL(/\/more\/top$/);
+  await expect(page.locator('.hdr .title')).toHaveText('Leaderboard top');
+  // The tops, the default first (D71), with the preview; nothing else.
+  await expect(page.locator('.tops .ap-name')).toHaveText(['Slim strip', 'Glass hero', 'Three tiles']);
   await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
-  await shot(page, '641-appearance');
+  await expect(page.locator('input[name="look"], input[name="preset"]')).toHaveCount(0);
+  await shot(page, '641-appearance-top');
   expect(await axe()).toEqual([]);
 
   // Three tiles: the preview changes at once, it's saved, and the Leaderboard follows.
@@ -65,6 +83,8 @@ test('Settings shows the look, the top and the colours; Appearance chooses them,
   await page.getByRole('radio', { name: /Slim strip/ }).check();
   await expect(page.locator('.ap-preview .banner.strip .tile')).toHaveCount(3);
   await expect.poll(saved).toEqual({ look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true });
+  await page.goto('/more/colours');
+  await expect(page.locator('.hdr .title')).toHaveText('Leaderboard colours');
   await page.locator('input[name="preset"][value="neon"]').check();
   await expect.poll(saved).toEqual({ look: 'aurora', top: 'strip', preset: 'neon', markFirst: true });
   await expect(page.locator('.ap-rows .row').first()).toHaveClass(/\bpal-neon\b/);
@@ -74,6 +94,24 @@ test('Settings shows the look, the top and the colours; Appearance chooses them,
   await page.goto('/more');
   await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Slim strip');
   await expect(page.getByRole('link', { name: /Leaderboard colours/ })).toContainText('Neon');
+  // The one Appearance page's old address opens Settings.
+  await page.goto('/more/appearance');
+  await expect(page).toHaveURL(/\/more$/);
+  await expect(page.getByRole('link', { name: /^Look/ })).toBeVisible();
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
+});
+
+test('the Rank, colours and Type buttons stay above the top, whichever top, on the Leaderboard and the Log (D71)', async () => {
+  for (const top of ['strip', 'hero', 'tiles'] as const) {
+    expect(await put({ look: 'aurora', top, preset: 'aurora', markFirst: true })).toBe(200);
+    for (const path of ['/', '/log']) {
+      await page.goto(path);
+      const stats = page.locator(top === 'tiles' ? '.tiles' : '.banner');
+      await expect(stats).toBeVisible();
+      const [controls, box] = [await page.locator('.controls').boundingBox(), await stats.boundingBox()];
+      expect(controls!.y + controls!.height, `${top} ${path}`).toBeLessThanOrEqual(box!.y + 1);
+    }
+  }
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
@@ -132,8 +170,8 @@ test('a look that doesn’t exist is refused', async () => {
 });
 
 test('quick taps in Appearance: each choice stays chosen, and the last one is what’s saved (0.55.0)', async () => {
-  await page.goto('/more/appearance');
-  await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
+  await page.goto('/more/colours');
+  await expect(page.locator('input[name="preset"][value="aurora"]')).toBeChecked();
   // The first save is slow to come back; the second tap lands while it's on its way.
   let first = true;
   await page.route('**/api/appearance', async (route) => {
@@ -143,15 +181,15 @@ test('quick taps in Appearance: each choice stays chosen, and the last one is wh
     }
     await route.fallback();
   });
-  await page.getByRole('radio', { name: /Three tiles/ }).check();
   await page.locator('input[name="preset"][value="neon"]').check();
+  await page.getByRole('switch', { name: 'Mark my #1' }).uncheck();
   // Through the first save's answer and after: the newest choices stay shown.
   for (let i = 0; i < 12; i++) {
     expect(await page.locator('input[name="preset"][value="neon"]').isChecked(), `still Neon after ${i * 250}ms`).toBe(true);
-    expect(await page.getByRole('radio', { name: /Three tiles/ }).isChecked(), `still Three tiles after ${i * 250}ms`).toBe(true);
+    expect(await page.getByRole('switch', { name: 'Mark my #1' }).isChecked(), `still unmarked after ${i * 250}ms`).toBe(false);
     await page.waitForTimeout(250);
   }
-  await expect.poll(saved).toEqual({ look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true });
+  await expect.poll(saved).toEqual({ look: 'aurora', top: 'hero', preset: 'neon', markFirst: false });
   await page.unroute('**/api/appearance');
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
@@ -165,7 +203,7 @@ const LOOKS = [
 
 test('choosing a look in Appearance changes the whole app at once, its title font and the Home Screen bar, and saves it', async () => {
   for (const l of LOOKS) {
-    await page.goto('/more/appearance');
+    await page.goto('/more/look');
     await page.getByRole('radio', { name: new RegExp(l.name) }).check();
     await expect.poll(saved).toEqual({ look: l.look, top: 'hero', preset: 'aurora', markFirst: true });
     await expect(page.locator('html')).toHaveAttribute('data-look', l.look);
@@ -230,7 +268,8 @@ for (const l of LOOKS) {
     for (const [path, sel] of [
       ['/log', '.group-h, .lrow .name, .tile b, .tile .cap'],
       ['/more', '.lh.cap, .li .main, .li .v, .more-me .who b'],
-      ['/more/appearance', '.lh, .ap-name, .ap-sub, .preset .pl, .preset .sub, .new-tag, .priv-row .main > span'],
+      ['/more/look', '.lh, .ap-name, .ap-sub, .new-tag'],
+      ['/more/colours', '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .preset .pl, .preset .sub, .new-tag, .priv-row .main > span'],
     ] as const) {
       const worst = await wholeScreenContrastFailures(page, path, sel);
       expect(worst, `${l.look} ${path}:\n${worst.join('\n')}`).toEqual([]);

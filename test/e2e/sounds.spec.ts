@@ -119,7 +119,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
 test('More → Sounds and ticks, its own screen (D57): Sounds on to start, Soft or Woody, saved on this phone; off means silence', async ({ browser }) => {
   const page = await open(browser);
   // Leaderboard colours is back to colours only.
-  await page.goto('/more/appearance');
+  await page.goto('/more/colours');
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeVisible();
   await expect(page.getByRole('switch', { name: 'Sounds' })).toHaveCount(0);
   await expect(page.getByRole('radio', { name: /Soft|Woody/ })).toHaveCount(0);
@@ -159,7 +159,7 @@ test('More → Sounds and ticks, its own screen (D57): Sounds on to start, Soft 
   await expectHeard(page, []);
   await page.getByRole('link', { name: 'Back' }).first().click();
   await expect(page.getByRole('link', { name: /Sounds and ticks/ })).toContainText('Off');
-  await page.goto('/more/appearance');
+  await page.goto('/more/colours');
   await page.getByRole('switch', { name: 'Mark my #1' }).click();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).not.toBeChecked();
   await expectHeard(page, []); // a switch's sound plays as it flips, so there'd be one by now

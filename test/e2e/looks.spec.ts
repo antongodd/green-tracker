@@ -48,7 +48,7 @@ test.afterAll(async () => {
 test('each new look is chosen in Appearance, marked New, saved, and changes the whole app and the Home Screen bar at once', async () => {
   test.slow(); // eight looks, three screens each
   for (const l of NEW) {
-    await page.goto('/more/appearance');
+    await page.goto('/more/look');
     const radio = page.locator(`input[name="look"][value="${l.look}"]`);
     await expect(page.locator('.ap-card', { has: radio }).locator('.ap-name')).toHaveText(l.name);
     await expect(page.locator('.ap-card', { has: radio }).locator('.new-tag')).toHaveText('New');
@@ -62,7 +62,7 @@ test('each new look is chosen in Appearance, marked New, saved, and changes the 
     await expect(page.getByRole('link', { name: /^Look/ })).toContainText(l.name);
   }
   // The four from before aren't New.
-  await page.goto('/more/appearance');
+  await page.goto('/more/look');
   for (const look of ['aurora', 'neon', 'pearl', 'forest']) await expect(page.locator('.ap-card', { has: page.locator(`input[name="look"][value="${look}"]`) }).locator('.new-tag')).toHaveCount(0);
   await shot(page, '700-looks-appearance');
   // A phone that remembers one opens in it before the account has loaded.
@@ -95,7 +95,7 @@ test('a look changes only colours and the background: every font, size and shape
   test.slow();
   const before: Record<string, string[]> = {};
   expect(await put('aurora')).toBe(200);
-  for (const path of ['/', '/more', '/more/appearance']) {
+  for (const path of ['/', '/log', '/more', '/more/look', '/more/top', '/more/colours']) {
     await page.goto(path);
     await expect(page.locator('main.screen')).toBeVisible();
     await page.waitForLoadState('networkidle');
@@ -106,7 +106,7 @@ test('a look changes only colours and the background: every font, size and shape
   expect(before['/']![0], 'titles in Unbounded').toMatch(/Unbounded/);
   for (const l of NEW) {
     expect(await put(l.look)).toBe(200);
-    for (const path of ['/', '/more', '/more/appearance']) {
+    for (const path of ['/', '/log', '/more', '/more/look', '/more/top', '/more/colours']) {
       await page.goto(path);
       await expect(page.locator('html')).toHaveAttribute('data-look', l.look);
       await expect(page.locator('main.screen')).toBeVisible();
@@ -180,7 +180,8 @@ for (const l of NEW) {
     for (const [path, sel] of [
       ['/log', '.group-h, .lrow .name, .tile b, .tile .cap'],
       ['/more', '.lh.cap, .li .main, .li .v, .more-me .who b'],
-      ['/more/appearance', '.lh, .ap-name, .ap-sub, .preset .pl, .preset .sub, .new-tag, .priv-row .main > span'],
+      ['/more/look', '.lh, .ap-name, .ap-sub, .new-tag'],
+      ['/more/colours', '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .preset .pl, .preset .sub, .new-tag, .priv-row .main > span'],
     ] as const) {
       const worst = await wholeScreenContrastFailures(page, path, sel);
       expect(worst, `${l.look} ${path}:\n${worst.join('\n')}`).toEqual([]);

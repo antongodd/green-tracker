@@ -26,8 +26,8 @@ export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
 }
 
 export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals' | 'sunset' | 'deepsea' | 'ember' | 'cosmos' | 'synthwave';
-/** In the order Appearance lists them: the two made for the new look (D64) first, the five of D69 last. */
-export const PRESET_KEYS = ['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'] as const satisfies readonly Preset[];
+/** In the order Appearance lists them (D71): Gems, everyone's first colours, then A to Z by name. */
+export const PRESET_KEYS = ['gems', 'aurora', 'cosmos', 'deepsea', 'ember', 'metals', 'neon', 'prism', 'sunset', 'synthwave'] as const satisfies readonly Preset[];
 /** Marked New in Appearance (D69: only the newest five; Aurora and Neon lost theirs). */
 export const NEW_PRESETS: readonly Preset[] = ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'];
 
@@ -80,12 +80,12 @@ export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `$
  * Holo Pearl's and Deep Forest's title fonts are from before it).
  */
 export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze';
-/** In the order Appearance lists them: the four of D64/D65, then D70's eight. */
-export const LOOK_KEYS = ['aurora', 'neon', 'pearl', 'forest', 'sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze'] as const satisfies readonly Look[];
+/** In the order Appearance lists them (D71): Aurora Glass, everyone's first look, then A to Z by name. */
+export const LOOK_KEYS = ['aurora', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura'] as const satisfies readonly Look[];
 /** The looks you can choose (a look not listed would show as "Coming next"). All of them. */
 export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
 /** Marked New in Appearance (D70). */
-export const NEW_LOOKS: readonly Look[] = ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze'];
+export const NEW_LOOKS: readonly Look[] = ['deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura'];
 /** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
 export const LOOK_BG: Record<Look, string> = {
   aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807',
@@ -108,7 +108,7 @@ export const LOOKS: Record<Look, { label: string; description: string }> = {
 
 /** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. */
 export type BoardTop = 'hero' | 'tiles' | 'strip';
-export const BOARD_TOP_KEYS = ['hero', 'tiles', 'strip'] as const satisfies readonly BoardTop[];
+export const BOARD_TOP_KEYS = ['strip', 'hero', 'tiles'] as const satisfies readonly BoardTop[];
 export const BOARD_TOPS: Record<BoardTop, { label: string; description: string }> = {
   hero: { label: 'Glass hero', description: 'One big card' },
   tiles: { label: 'Three tiles', description: 'Side by side' },
@@ -125,8 +125,8 @@ export interface Appearance {
   markFirst: boolean;
 }
 
-/** Where everyone starts (the owner's choice, D64): Aurora Glass, the glass hero, Aurora colours, #1 marked. */
-export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true };
+/** What an account has before it saves any choice (D71: the slim strip and Gems; D64's were the glass hero and Aurora). */
+export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'strip', preset: 'gems', markFirst: true };
 
 /**
  * A whole Appearance object, checked: a look you can choose, a known top and preset, and a boolean.
