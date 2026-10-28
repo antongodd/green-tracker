@@ -63,11 +63,11 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.row', { hasText: 'Hidden Haze' })).toHaveCount(0);
   await expect(fan.locator('.tile')).toHaveCount(2);
   await expect(fan.locator('.tile', { hasText: 'Total' })).toHaveCount(0);
-  expect(await expectStatsFit(fan)).toBe('hero');
-  // Their board wears the colours by score, in the fan's own preset (D48; Aurora, where everyone starts,
-  // D64): Wedding Cake 9.1 → Violet with the #1 mark, Hash Rosin 8.8 → Lagoon.
-  await expect(fan.locator('.row', { hasText: 'Wedding Cake' })).toHaveClass(/\btier band3 pal-aurora first\b/);
-  await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier band2 pal-aurora\b/);
+  expect(await expectStatsFit(fan)).toBe('strip'); // the viewer's own top: a new account's slim strip (D71)
+  // Their board wears the colours by score, in the fan's own preset (D48; Gems, where a new account starts,
+  // D71): Wedding Cake 9.1 → Amethyst with the #1 mark, Hash Rosin 8.8 → Sapphire.
+  await expect(fan.locator('.row', { hasText: 'Wedding Cake' })).toHaveClass(/\btier band3 pal-gems first\b/);
+  await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier band2 pal-gems\b/);
   await expect(fan.locator('.row .glint')).toHaveCount(0); // only Metals' Diamond twinkles
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' }).locator('.meta')).toHaveText('Jungle Boys');
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);

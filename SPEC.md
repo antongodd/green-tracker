@@ -141,6 +141,8 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D67 | **Value for money and price compare across every type: 20mg of an edible counts as 1g** (2026-10-23; to-do item 2 "Edible value for money rework", the owner's idea of 2026-10-20; mockups https://claude.ai/artifact/RmLey97BMB9wCsBHXm5xsp, option A "per 20mg" note; the owner's answers: "I really don't like the fact that you can only sort by value for money when a single product type is selected… I need the vfm numbers between flower and edibles to be comparable"; the owner's figure: 1mg of THC eaten has the effect of 10mg smoked; one fixed strength for flower, not a THC % per product ("it's very hard for customers to actually know the real THC percentage"), taken as about 20%, so 20mg eaten ≈ 1g; concentrates and pre-rolls are grams like flower; price per mg made comparable with price per gram by the same rule). Replaces value for money per 100mg for edibles ("knowingly non-comparable") and the rule that Price and Value for money need one type; D13's 2dp per mg stands. | **Value for money** is Overall ÷ the latest price for **the same effect as 1g of flower**: the price per gram (flower, pre-rolls, concentrates, other) or, for edibles, the price of **20mg** (`UnitDef.perGram`: 1 or 20). Grams are unchanged; an edible's number is 5× what it was (£15 for 100mg, Taste 7, High 9: 0.56 → 2.78). **Rank by** under **All** gains **Price** and **Value for money** (after Overall, as under a type), never on a followed person's board. **Price under All** ranks an edible by the price of 20mg, shown as its score (`£3.00 PRICE`) with **"per 20mg"** before its real price per mg on the row; under one type, price stays that type's own unit (£/g, £/mg) with no note. No colours for either (D48); #1 still gets its crown and halo, and its page's badge ("#1 by Value for money"). An edible's page: "Overall ÷ latest £ per 20mg (the same effect as 1g of flower) · higher is better". Price history, Spent and every price as paid are unchanged. **No data change:** nothing new is saved, so no migration and nothing for Export / Restore; **followers** never see prices or value for money. Both sites alike. See §4 *Value for money across types*. |
 | D68 | **A how-to video on the website** (2026-10-26; the owner asked for an animated explainer of adding the app to an iPhone Home Screen, "cannabis focused", in a frosted-glass style, to put on the website for people to follow; storyboard https://claude.ai/artifact/QcG9dBXBKwakyDFMPLomfm, placement option A of https://claude.ai/artifact/9kFM9FHB46Ru2TDudPVVrj, thumbnail 1 of https://claude.ai/artifact/GTEn99Fn34GBSoFfefK3yn; the owner's screenshots of Safari on iOS 26 showed Add to Home Screen under **View More** in the share sheet, and the Add sheet's "Open as Web App" switch; yes to the ⋯ tip in the written steps). | **A 24-second video above the three steps** in the website's "Get it" section: the app's welcome page in Safari, ⋯ → Share → View More → Add to Home Screen → Add, the leaf landing on the Home Screen, the app opening full screen, then the three steps. Green and teal frosted glass, Inter, synthesized sound; made-up products only, plain figures for people. **Thumbnail:** the phone with the leaf beside "Put it on your Home Screen". **Plays only when tapped**, with sound and the iPhone's own controls; **nothing downloads until then** (`preload="none"`); captions say what's on screen. **Written step 2** becomes "Tap Share, then View More, then Add to Home Screen" with the ⋯ tip. The site still loads nothing from anywhere else: the video is its own file (2.6 MB), and the security rules allow only the site's own media. The video's source lives in `site/video/` (not published). Website only: the app, data, Export / Restore and followers are unchanged; the preview first, public with the next "go live". See §4 *Website video*. |
 | D69 | **Five more Leaderboard colour sets, each with an effect of its own** (2026-10-26; the owner's request for "even more designs… versatile, beautiful… not just restricted by the brand colours… some things out of the box… around 10 in total"; mockup https://claude.ai/artifact/3YgcF8YMhNMmX9oU3ozvas, the five marked as the pick; the owner's answers: those five, so ten in total, effects as shown, added at the bottom of the list, each marked New, Aurora and Neon's New tag taken off). Amends D48 (presets) and D64 (Aurora and Neon marked New). | **Sunset** (Peach, Coral, Magenta, Golden hour): at 9.5 a low sun glows behind the photo, gently pulsing. **Deep Sea** (Seafoam, Reef, Abyss, Glow): glowing plankton drift by from 9.0, more at 9.5. **Ember** (Ember, Flame, Blue flame, Inferno): at 9.5 sparks flick up off the card's bottom edge and its heat flickers. **Cosmos** (Moonlight, Stardust, Nebula, Supernova): stars twinkle from 8.5, more band by band, and at 9.5 a pink and blue nebula drifts behind the photo. **Synthwave** (Arcade, Laser, Chrome, Synthwave): a neon grid floor along the bottom edge from 9.0, and at 9.5 a striped retro sun setting into it. The bands, their score ranges and the dark layers' steps are as in every set (D49); only the colours and the effect differ. **Effects keep clear of every word**: on a row, in the thin strips along its edges and round the photo; on a product page, in the photo's upper part above the name. Product pages carry the effect like the row; the Colours key, the badge ("Golden hour · #1 on your Leaderboard") and Appearance name the new bands. **Appearance** lists them after Metals, each marked **New**; Aurora and Neon are no longer marked. Reduce Motion keeps the colours and the effects, still. **Data:** the database's list of allowed sets grows (`migrations/0013_more_colours.sql` rebuilds `appearance_settings`, every row copied as it is: nobody's choice changes); Export / Restore carry the set as before. A friend's board shows in your own set, as before; nothing about yours is sent to anyone. Both sites alike. See §4 *More colour sets*. |
+| D70 | **Eight more looks, changing only colours and the background** (2026-10-27; the owner asked for "more visual customisation" in Settings → Appearance → Look, as for the colour sets: "versatile, beautiful designs… some things out of the box… around 10"; mockup https://claude.ai/artifact/2hYjS1mSTB9iEgUHVPASKH. The first round (Haze, Lava Lamp, Phosphor, Velvet, Outrun, Ink, Daylight, Sakura, each with its own title font and shapes) was turned down for the rest: "they literally changed the way the app looked… the font, the size / shape of things. we can't do this. we need to keep those consistent". The second round kept the app as it is and changed only colours and the background; the owner liked Sakura ("the best"), Daylight, Outrun, Lava Lamp and Haze from the first round redone that way, and Fireflies, Deep Sea, Frost and Nebula of the new ones (not Midnight Rain); "go ahead" with the suggested split: the eight dark looks first, Daylight, the one light look, on its own after). Amends D64 and D65 (the looks). | **Sakura** (a dusky plum sky, a blossom branch in the corner, petals drifting down; pink), **Fireflies** (a blue-green summer night, fireflies wandering and blinking; firefly yellow-green), **Deep Sea** (sun rays swaying down through dark water, plankton rising; sea-glass teal), **Frost** (cold slate blue, snow falling, near and far; ice blue), **Nebula** (a field of stars, some twinkling, over drifting pink, violet and blue clouds; starlight violet), **Outrun** (a purple sky with stars, a striped sun setting into a neon grid floor that rolls towards you under the tab bar; cyan), **Lava Lamp** (warm orange, pink and amber blobs rising and sinking; amber), **Haze** (lilac and sage smoke drifting up and across soft charcoal; sage). **The rule (the owner's):** a look changes only colours (background, glass, edges, words' greys, highlights and buttons, the tints big numbers flow through, the glow of the chosen tab and the add button) and the background behind everything; every font, size, shape and position is as in Aurora Glass (Holo Pearl's Sora and Deep Forest's Manrope titles are from before the rule and stay). Each background moves in small steps, a few a second, like the lights; still with Reduce Motion; hidden under the viewer and the editors. Nothing in it is brighter than the words allow (the readability tests over every screen), and these looks' glass is a darker pane, so it dims behind every card. Listed after the four in Appearance, in the order above, each marked **New**; the colour sets keep theirs. Twelve looks in all; **Daylight** comes next as its own change. The phone remembers each; the Home Screen bar takes its background. A new migration widens the looks the database allows; nobody's look changes; Export and Restore carry it; followers see your board in their own look. The website stays Aurora Glass. See §4 *The new look*. |
+| D71 | **The top glows with your look; Slim strip and Gems by default; Appearance in three pages; the lists A to Z** (2026-10-28; the owner, with a screenshot: the glass hero "looks weird, and it's just black. It doesn't match… whatever setting you had"; the default top should be the slim strip; Aurora Glass stays the default look; the looks and the colour sets "sorted in alphabetical order", the default colours Gems; "there should still be four buttons, but each brings you to a different settings page"; mockup https://claude.ai/artifact/QrYP3LbkxnQXTzNxdbyqET, option **B** "the Look's glow" chosen over A (the colour set's card) and C (your #1's colour); the defaults for accounts that have saved nothing, the suggested pick; the Rank, colours and Type buttons stay above the top, as they are ("keep them above"); the eight looks of D70 go live together with this). Amends D48 and D64 (defaults, order, one Appearance page). | **The top glows with your look:** the glass hero, the slim strip and the three tiles show the look's own lights inside them, about twice as strong as behind the screen, over a darker pane, with an edge from the look's accent to its violet and a soft glow around (Holo Pearl keeps its rainbow rim). It was black because it shared the product page's name block's dark fade; that is gone, with the space it left under "Your #1". **Defaults:** an account that has saved no appearance starts on **Aurora Glass, the Slim strip and Gems** (#1 marked). Saved choices stay as they are (the appearance is saved whole, the first time any part of it changes; D64 gave every account of the time saved settings). **Order:** Looks: Aurora Glass, then A to Z; Leaderboard colours: Gems, then A to Z; tops: Slim strip, Glass hero, Three tiles; New tags unchanged. **Pages:** Settings → Appearance keeps its four buttons; **Look**, **Leaderboard top** (with the preview) and **Leaderboard colours** (the preview, the sets, Mark my #1) each open their own page; Sounds and ticks as before; the Colours key's link opens the colours page; the old Appearance address opens Settings. No data change; Export, Restore and followers as before. See §4 *The new look*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1354,6 +1356,63 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
       choice clears what's shown (`Appearance.tsx`); `look.spec.ts` holds the first save back and checks both choices
       stay shown and the last is saved (fails on the old code).
     - *Couldn't check here*: the three looks on a real iPhone, and Sora in iOS Safari.
+  - **Stage 3 (D70, 0.60.0): eight more looks.** `LOOK_KEYS` gains `sakura`, `fireflies`, `deepsea`, `frost`, `nebula`,
+    `outrun`, `lava`, `haze` (Appearance's order), all in `READY_LOOKS`; `NEW_LOOKS` marks them New (`.ap-title` holds the
+    name and the tag side by side, the tag outside `.ap-name` so the readability test measures only the name's words).
+    `LOOK_BG` and `client/public/look.js` list each look's background (`gems.test.ts` checks they match, and that the
+    migration `0014_more_looks.sql` allows exactly `LOOK_KEYS`). *Tokens:* one `html[data-look=…]` block each, colours
+    only: never `--display`, `--display-w`, a size or a radius (the owner's rule). New tokens with the old values on
+    `:root`: `--glow` (the chosen tab's icon), `--tab-glow` and `--fab-glow` (the tab's underline, the add button's
+    shadow; fallbacks keep the four older looks exactly as they were). These looks' `--glass` is a darker pane (half
+    opaque), so the background dims behind every card, and `--danger` is a touch lighter (#ff8a8a): "Danger zone" read
+    3.1 : 1 over Frost's snow. *Backgrounds:* the three lights take each look's colours (`--light-1…3`; Lava Lamp draws
+    them as firmer blobs moving further, `bg-lava`; Nebula's are bigger clouds); the rest are painted on
+    `.bg-layer::before` and `::after` (repeating tiles of radial gradients: petals, fireflies, plankton, snow, stars;
+    Deep Sea's rays, masked to fade with depth; Outrun's sky, sun and stripes, and a grid floor tilted in perspective;
+    Lava Lamp's two more blobs; Haze's wisps; Sakura's branch, an SVG data address, the CSP allowing `data:` images).
+    Each moves by `background-position` (or blinks by `opacity`) in `steps()`, never smoothly, under
+    `prefers-reduced-motion: no-preference` only; every keyframe is named `bg-…`. Under the viewer, cropper and country
+    picker both layers are `display: none` and the layer itself has no image and is paused (repeated after the looks'
+    own rules, which would otherwise win). Brightness: whatever drifts behind words stays at about Aurora's lights (a
+    star or flake about a fifth white): the readability tests judge every pixel behind every word at 12 moments of
+    every animation.
+    - *Tests* (`looks.spec.ts`, its own file so it runs beside `look.spec.ts`; parallel, one account per worker): each
+      look chosen in Appearance (its name, New; the four older looks not New), saved, on the page with its background
+      and Home Screen bar, remembered by the phone (on the page before the account loads); **every font, size, shape and
+      position on the Leaderboard, Settings and Appearance the same as in Aurora Glass** (the owner's rule); each
+      background moving only in steps, none with Reduce Motion, gone and still under the country picker; each look
+      readable and accessible on the Leaderboard (the glass hero and the strip, through the background's motion), the
+      Log, Settings and Appearance. The domain and API tests accept the twelve looks.
+    - *Found while testing:* Deep Sea's plankton keyframes were first called `rise`, the name of the menus' slide-up
+      (`settled` waits for it): the later one replaced the menus' animation everywhere and the tests waited for ever
+      on an endless "rise". Every background keyframe is now `bg-…`.
+    - *Couldn't check here*: how smooth the stepped movement looks and how it feels for the battery on a real iPhone,
+      and how bright the petals, fireflies, snow and stars look on its screen.
+  - **The top glows; defaults, order and pages (D71, 0.61.0).** *The black hero:* `.banner.hero` shares the class `hero`
+    with a product page's name block (D22), whose `::before` is a dark fade nearly solid at its foot, plus `gap: 8px`,
+    `z-index: 1` and `pointer-events: none`; the Leaderboard's hero now drops all four (`.banner.hero::before { content:
+    none }`). *The glow:* `--hero-glow` (each look's `--light-1…3`)
+    and `--hero-edge` (`--accent-bright` → `--teal-bright` → `--violet-bright`) are set on `:root` from the look's own
+    tokens, so every look has its own; `.banner.hero`, `.banner.strip` and `.tiles .tile` draw the glow and the look's
+    glass over a solid pane of `--bg` (padding-box) and the edge (border-box), with a `--glow` shadow outside; Holo
+    Pearl keeps its rim. *Found while testing:* lights twice as strong, a glow inside the rim, and a see-through pane
+    (the edge, painted under the whole card, showed through) each put the numbers and labels below the readability
+    tests (2.4–4.4 : 1); `expectStatsFit` accepts the glow as the top's glass. *Defaults:* `DEFAULT_APPEARANCE` is `{ look: 'aurora', top: 'strip', preset: 'gems' }`
+    (used for an account with no `appearance_settings` row and for a backup with no look or top); the table's column
+    defaults are never used (every save writes all four). *Order:* `LOOK_KEYS`, `PRESET_KEYS` and `BOARD_TOP_KEYS` are
+    in Appearance's order, the default first (`gems.test.ts` checks the rest are A to Z by name). *Pages:*
+    `AppearanceScreen` takes `part` (`look`, `top`, `colours`), routed from `/more/look`, `/more/top` and
+    `/more/colours`; `main.tsx` replaces `/more/appearance` with `/more`.
+    - *Tests:* the defaults and A to Z order (domain); a backup with no look or top takes the strip (API); a new
+      account's Leaderboard in the strip and Gems, Settings' three buttons each opening its own page with only its
+      own choices, the old address opening Settings, the Rank / colours / Type row above the top in all three tops on
+      the Leaderboard and the Log (`look.spec.ts`); each page readable (`appearance.spec.ts`); every look's glowing top
+      readable on the Leaderboard and the colours page, and every position unchanged between looks on the three pages
+      and the Log (`looks.spec.ts`).
+    - *Found in the 2-worker run:* `aurora.spec.ts` compares the gutter at one spot before and after scrolling; with
+      the slim strip the #1's breathing halo sits beside that spot (it failed 12 times in 12 under load). The cards'
+      glows are now switched off for those photos, so only the background is compared (30 of 30).
+    - *Couldn't check here:* how the glow looks on the owner's iPhone in each look.
 
 - **Currencies (D66, 0.56.0).** `shared/domain/currency.ts`: `CURRENCIES` (the ECB's 30 reference currencies, the
   usual five first; code, name, sign, decimals: 0 for HUF, ISK, IDR, JPY, KRW), `DEFAULT_CURRENCY` £, `isValidRate`
@@ -1470,6 +1529,27 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.61.1 — CLAUDE.md: the glowing top, new defaults and Appearance pages are on dev
+- D71 is on dev (2026-10-28), with D70's eight Looks; both go live together. Notes only.
+
+### 0.61.0 — the top glows with your look; new defaults; Appearance in three pages (owner request)
+- Decision D71. The glass hero (and the strip and tiles) glow with the look's own lights; the hero was black because
+  it took a product page's dark fade, now gone (and the space it left under "Your #1"). New accounts start on the
+  Slim strip and Gems; the Looks and colour sets are listed default first, then A to Z; Look, Leaderboard top and
+  Leaderboard colours each have their own page in Settings.
+- `CLAUDE.md`: next decision D72; the to-do list; testing notes (the defaults, the pages).
+
+### 0.60.1 — CLAUDE.md: more Looks are on dev; the website video and the colour sets are live
+- The eight Looks (D70) are on dev (2026-10-27); the how-to video on the website (D68, live 2026-10-26) and the five
+  colour sets (D69, live 2026-10-27) move to Done (what 0.59.1, never merged, recorded). Notes only.
+
+### 0.60.0 — eight more looks (owner request)
+- Decision D70. Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp and Haze: twelve looks in all, each
+  changing only colours and the background behind everything (fonts, sizes and shapes as in Aurora Glass, the owner's
+  rule), each background moving in small steps. Listed after the four in Appearance, marked New. One migration widens
+  the looks the database allows; nobody's look changes. Daylight, a light look, comes next on its own.
+- `CLAUDE.md`: next decision D71; the to-do list; testing notes for the looks.
 
 ### 0.59.0 — five more Leaderboard colour sets (owner request)
 - Decision D69. Sunset, Deep Sea, Ember, Cosmos and Synthwave, ten sets in all, each with an effect of its own (a sun,

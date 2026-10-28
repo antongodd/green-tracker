@@ -140,13 +140,13 @@ export function More() {
             <Row label="What followers see" sub={privacy ? privacySummary(privacy) : undefined} to="/more/privacy" icon={EyeIcon} tint="violet" />
           </div>
         </div>
-        {/* D48: how the app looks for you (D64: the look and the Leaderboard's top too, all on one screen); D57: and sounds. */}
+        {/* D48: how the app looks for you (D64: the look and the Leaderboard's top too; D71: each on its own page); D57: and sounds. */}
         <div class="lh cap">Appearance</div>
         <div class="wrap">
           <div class="list">
-            <Row label="Look" value={LOOKS[appearance.look].label} to="/more/appearance" icon={SparkleIcon} tint="violet" />
-            <Row label="Leaderboard top" value={BOARD_TOPS[appearance.top].label} to="/more/appearance" icon={LayoutIcon} tint="violet" />
-            <Row label="Leaderboard colours" value={PRESETS[appearance.preset].label} to="/more/appearance" icon={GemIcon} tint="gem" />
+            <Row label="Look" value={LOOKS[appearance.look].label} to="/more/look" icon={SparkleIcon} tint="violet" />
+            <Row label="Leaderboard top" value={BOARD_TOPS[appearance.top].label} to="/more/top" icon={LayoutIcon} tint="violet" />
+            <Row label="Leaderboard colours" value={PRESETS[appearance.preset].label} to="/more/colours" icon={GemIcon} tint="gem" />
             {/* D57: sounds and ticks have their own screen; saved on this phone. */}
             <Row label="Sounds and ticks" value={sounds().on ? 'On' : 'Off'} to="/more/sounds" icon={SoundIcon} />
           </div>

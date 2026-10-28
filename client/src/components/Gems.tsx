@@ -176,8 +176,8 @@ export function ColoursSheet(p: { onClose: () => void }) {
             )}
           </ul>
           <p class="key-note">Price and value for money aren’t scores, so they have no colours.</p>
-          <a class="opt" href="/more/appearance" onClick={linkTo('/more/appearance')}>
-            Change in Appearance
+          <a class="opt" href="/more/colours" onClick={linkTo('/more/colours')}>
+            Change colours
           </a>
         </div>
         <div class="grp">

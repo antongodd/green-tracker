@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, PRESET_KEYS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -38,13 +39,23 @@ describe('Leaderboard colours by score (D48)', () => {
     expect([1, 2, 3, 4].map((b) => bandRange(b as 1))).toEqual(['8.0 – 8.4', '8.5 – 8.9', '9.0 – 9.4', '9.5 – 10']);
   });
 
-  it('everyone starts on Aurora Glass, the glass hero and Aurora colours, with #1 marked (D64)', () => {
-    expect(DEFAULT_APPEARANCE).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true });
-    expect(PRESET_KEYS).toEqual(['aurora', 'neon', 'gems', 'prism', 'metals', 'sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']);
+  it('an account starts on Aurora Glass, the slim strip and Gems, with #1 marked (D71; D64 had the glass hero and Aurora)', () => {
+    expect(DEFAULT_APPEARANCE).toEqual({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
   });
 
-  it('D69: five more sets, last in the list and the only ones marked New', () => {
-    expect(NEW_PRESETS).toEqual(PRESET_KEYS.slice(5));
+  it('D71: the default first in each list, then A to Z by name; the default top first', () => {
+    expect(PRESET_KEYS).toEqual(['gems', 'aurora', 'cosmos', 'deepsea', 'ember', 'metals', 'neon', 'prism', 'sunset', 'synthwave']);
+    expect(PRESET_KEYS[0]).toBe(DEFAULT_APPEARANCE.preset);
+    const names = PRESET_KEYS.slice(1).map((k) => PRESETS[k].label);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+    expect(LOOK_KEYS[0]).toBe(DEFAULT_APPEARANCE.look);
+    const looks = LOOK_KEYS.slice(1).map((k) => LOOKS[k].label);
+    expect(looks).toEqual([...looks].sort((a, b) => a.localeCompare(b)));
+    expect(BOARD_TOP_KEYS[0]).toBe(DEFAULT_APPEARANCE.top);
+  });
+
+  it('D69: five sets marked New', () => {
+    expect(NEW_PRESETS).toEqual(['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']);
   });
 
   it('each band\'s effect: Diamond\'s glints, and the five new sets each from their own band', () => {
@@ -71,13 +82,24 @@ describe('Leaderboard colours by score (D48)', () => {
     }
   });
 
-  it('all four looks can be chosen since D65; anything else is refused', () => {
-    expect(READY_LOOKS).toEqual(['aurora', 'neon', 'pearl', 'forest']);
+  it('all twelve looks can be chosen since D70, the eight new ones marked New; anything else is refused', () => {
+    expect(READY_LOOKS).toEqual(LOOK_KEYS);
+    expect(LOOK_KEYS).toHaveLength(12);
+    expect([...NEW_LOOKS].sort()).toEqual(['deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura']);
     for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
-    expect(LOOK_KEYS.map((l) => LOOK_BG[l])).toEqual(['#03070a', '#06041a', '#08080c', '#050807']);
+    expect(LOOK_BG).toEqual({ aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807', sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10' });
+    expect(new Set(LOOK_KEYS.map((l) => LOOKS[l].label)).size).toBe(LOOK_KEYS.length);
+  });
+
+  it('the phone remembers every look (look.js knows each name and background), and the database allows each', () => {
+    const js = readFileSync(new URL('../../client/public/look.js', import.meta.url), 'utf8');
+    const bgs = Object.fromEntries([...js.matchAll(/(\w+): '(#[0-9a-f]{6})'/g)].map((m) => [m[1], m[2]]));
+    expect(bgs).toEqual(LOOK_BG);
+    const sql = readFileSync(new URL('../../migrations/0014_more_looks.sql', import.meta.url), 'utf8');
+    expect(sql.match(/look IN \(([^)]*)\)/)![1]!.match(/'(\w+)'/g)!.map((q) => q.slice(1, -1)).sort()).toEqual([...LOOK_KEYS].sort());
   });
 
   it('a backup or an open app from before 0.54.0 has no look or top: they take the defaults', () => {
-    expect(validateAppearance({ preset: 'gems', markFirst: false })).toEqual({ ok: true, value: { look: 'aurora', top: 'hero', preset: 'gems', markFirst: false } });
+    expect(validateAppearance({ preset: 'gems', markFirst: false })).toEqual({ ok: true, value: { look: 'aurora', top: 'strip', preset: 'gems', markFirst: false } });
   });
 });

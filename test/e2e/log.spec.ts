@@ -81,10 +81,10 @@ test('grouped by country, ordered as the brief says, with the right tiles', asyn
   await expect(tile('Products')).toHaveText('11');
   await expect(tile('Countries')).toHaveText('4');
   await expect(tile('Total')).toHaveText('33.5g');
-  expect(await expectStatsFit(page)).toBe('hero'); // everyone starts on the glass hero (D64)
+  expect(await expectStatsFit(page)).toBe('strip'); // a new account starts on the slim strip (D71)
   // COUNTRIES is the longest label: still fits on the narrowest iPhone.
   await page.setViewportSize({ width: 375, height: 812 });
-  expect(await expectStatsFit(page)).toBe('hero'); // everyone starts on the glass hero (D64)
+  expect(await expectStatsFit(page)).toBe('strip'); // a new account starts on the slim strip (D71)
   await page.setViewportSize({ width: 390, height: 844 });
   // The type mark ("has a full profile") is on product rows only.
   const us = group('United States');

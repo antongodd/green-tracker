@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D69 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D71 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D70), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D72), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D69.
+- Reopen any decision D1–D71.
 
 ## Testing notes
 
@@ -109,8 +109,9 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
-  `none`). Set an account's preset in a test with `PUT /api/appearance`. Everyone starts on **Aurora** since D64: a
-  test that names Gems' colours sets Gems first (`gems.spec.ts`). Ten sets since D69; a set's effect (sun, plankton,
+  `none`). Set an account's preset in a test with `PUT /api/appearance`. A new account starts on **Gems** and the **Slim
+  strip** since D71 (Aurora and the glass hero before): a test that names another set's colours or reads the hero
+  sets it first. Ten sets since D69; a set's effect (sun, plankton,
   sparks, stars, grid; Metals' glints) comes from `bandEffect` and is drawn by `Effects` (`span.tfx`, never `.fx`: that's
   the currency tag), always clear of text: `appearance.spec.ts` checks no dot overlaps a row's text.
 - The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
@@ -149,6 +150,15 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Value for money (D67): an edible counts 20mg as 1g (`UnitDef.perGram`), so every type compares; Rank by under All
   offers Price and Value for money, and an edible's row there carries `.meta .per` ("per 20mg"). Under one type, price
   stays per mg. Any new value-for-money or price comparison uses `pricePerGramEquivalent` / `valueForMoney`.
+- Appearance pages (D71): Look `/more/look`, Leaderboard top `/more/top`, Leaderboard colours `/more/colours` (with
+  Mark my #1); `/more/appearance` opens Settings. The top of the Leaderboard (hero, strip, tiles) glows with the look
+  (`--hero-glow`); the glass hero must never take the product page's `.hero` styles (its `::before` fade made it black).
+- Looks (D70): twelve, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
+  the background, never a font, size or shape (`looks.spec.ts` compares every position and font with Aurora Glass). A
+  look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
+  `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits for). Whatever drifts behind words
+  must pass the readability tests at every moment, so keep it about as bright as Aurora's lights. A new look goes in
+  `LOOK_KEYS`, `LOOK_BG`, `look.js` and a migration (`gems.test.ts` checks they agree).
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -164,22 +174,26 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.57.1 (live 2026-10-26): everything up to edible value for money (D67).
-- **Dev:** the same as live; plus notes-only 0.57.2.
+- **Live:** 0.59.0 (live 2026-10-27): everything up to five more Leaderboard colour sets (D69).
+- **Dev:** 0.61.0: live, plus eight more Looks (D70) and the glowing top, new defaults and Appearance pages (D71);
+  plus notes-only 0.61.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **A how-to video on the website** (0.58.0, D68): a 24-second video above the "Get it" steps showing how to add the
-   app to the Home Screen on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add); thumbnail: the phone with the
-   leaf; written step 2 mentions ⋯ and View More. Next: merge, then Anton checks it on the website preview.
-2. **More Leaderboard colour sets** — in a pull request (0.59.0, D69, 2026-10-26): Sunset, Deep Sea, Ember, Cosmos
-   and Synthwave, ten in all, each with its own effect; listed last in Appearance, marked New. Next: "merge", then
-   Anton tries them on GT Dev.
+1. **More Looks** — **on dev** (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving background
+   (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze). Goes live together with item 2.
+2. **The top glows; new defaults; Appearance pages** — **on dev** (0.61.0, D71, 2026-10-28): the glass hero (no
+   longer black), strip and tiles glow with the Look; new accounts start on Slim strip and Gems; Looks and colours A
+   to Z after the default; Look, Leaderboard top and Leaderboard colours each on their own page. Next: Anton checks
+   items 1 and 2 on GT Dev, then "go live" for both.
+3. **Daylight** (a light Look, D70's second step): after that.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |
+| A how-to video on the website (checked on Anton's iPhone on the preview) | 0.58.0 | D68 | 2026-10-26 | 2026-10-26 |
 | Edible value for money: compares every type (20mg = 1g), Price and Value for money under All (checked on Anton's iPhone) | 0.57.0 | D67 | 2026-10-26 | 2026-10-26 |
 | Currency settings (checked on Anton's iPhone) | 0.56.0 | D66 | 2026-10-22 | 2026-10-22 |
 | The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |

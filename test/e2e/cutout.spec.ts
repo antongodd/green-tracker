@@ -122,7 +122,7 @@ test('remove the background on a product page: tap the bud, apply, then restore 
   // Preview, then Apply saves at once (from a product page, like a crop).
   await expect(flow(page).getByRole('img', { name: 'The cut-out' })).toBeVisible();
   // …and on a top row in the top colour of your preset (D48).
-  await expect(flow(page).locator('.cut-row')).toHaveClass(/\btier band4 pal-aurora\b/);
+  await expect(flow(page).locator('.cut-row')).toHaveClass(/\btier band4 pal-gems\b/);
   await settled(page);
   expect(await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze().then((r) => r.violations.map((v) => v.id))).toEqual([]);
   await shot(page, '91-cutout-preview');
