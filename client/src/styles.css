@@ -1550,26 +1550,28 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .banner.strip { display: flex; align-items: center; justify-content: space-around; gap: 8px; min-height: 42px; padding: 6px 14px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-edge); }
 /* The top glows with your look (D71, the owner's choice B: the glass hero read as plain black above the
    coloured rows). Whichever top you chose (the glass hero, the strip or the three tiles): the look's
-   own lights shine inside it, twice as strong as behind the screen, from the top left (--light-1, the
-   strongest), the bottom right (--light-3) and the top right (--light-2), over a darker pane so the
-   numbers stay readable, with an edge running from the look's accent to its violet and a soft glow
-   of its accent around it. Built from each look's tokens, so every look (D64, D65, D70) has its own. */
+   own lights inside it (--light-1 from the top left, --light-3 from the bottom right, --light-2 from
+   the top right), the look's glass over a solid pane of its background (as Holo Pearl's rim, D65: the
+   edge is painted under the whole card, and without the pane it showed through behind the numbers), an edge running from the look's accent to its
+   violet, and its accent glowing round the outside. The glow stays outside the edge: brighter lights
+   behind the numbers and labels, or a glow inside the rim (the strip is only 42px tall), failed the
+   readability tests (2.4 : 1). Built from each look's
+   tokens, so every look (D64, D65, D70) has its own. */
 :root {
-  --hero-glow: radial-gradient(120% 130% at 0% 0%, var(--light-1), transparent 62%), radial-gradient(120% 130% at 0% 0%, var(--light-1), transparent 62%),
-    radial-gradient(110% 130% at 100% 100%, var(--light-3), transparent 62%), radial-gradient(110% 130% at 100% 100%, var(--light-3), transparent 62%),
-    radial-gradient(80% 100% at 100% 0%, var(--light-2), transparent 60%), radial-gradient(80% 100% at 100% 0%, var(--light-2), transparent 60%);
-  --hero-shade: color-mix(in srgb, var(--bg) 45%, transparent);
-  --hero-edge: linear-gradient(120deg, color-mix(in srgb, var(--accent-bright) 70%, transparent), color-mix(in srgb, var(--teal-bright) 45%, transparent) 50%, color-mix(in srgb, var(--violet-bright) 70%, transparent));
+  --hero-glow: radial-gradient(120% 130% at 0% 0%, var(--light-1), transparent 62%), radial-gradient(110% 130% at 100% 100%, var(--light-3), transparent 62%),
+    radial-gradient(80% 100% at 100% 0%, var(--light-2), transparent 60%);
+  --hero-edge: linear-gradient(120deg, color-mix(in srgb, var(--accent-bright) 75%, transparent), color-mix(in srgb, var(--teal-bright) 50%, transparent) 50%, color-mix(in srgb, var(--violet-bright) 75%, transparent));
 }
 /* The glass hero shares the class `hero` with a product page's name and score (D22), and took that
-   block's dark fade (`.hero::before`, nearly solid at its foot) over the whole card: on the owner's
-   iPhone it read as plain black in every look (D71). The Leaderboard's hero has none of it. */
+   block's dark fade (`.hero::before`, nearly solid at its foot), its gap and its stacking over the
+   whole card: on the owner's iPhone it read as plain black in every look, with a space under "Your
+   #1" (D71). The Leaderboard's hero has none of it. */
 .banner.hero { z-index: auto; gap: 0; pointer-events: auto; }
 .banner.hero::before { content: none; }
 .banner.hero, .banner.strip, .tiles .tile {
   border: 1px solid transparent;
-  background: var(--hero-glow) padding-box, linear-gradient(var(--hero-shade), var(--hero-shade)) padding-box, var(--hero-edge) border-box;
-  box-shadow: 0 0 22px -8px var(--glow);
+  background: var(--hero-glow) padding-box, linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--hero-edge) border-box;
+  box-shadow: 0 0 22px -6px var(--glow);
 }
 .banner.strip .tile { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
 .banner.strip .tile + .tile { padding-left: 10px; border-left: 1px solid var(--hairline-strong); }
@@ -1720,7 +1722,7 @@ html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile, .scard, .
   border-color: transparent;
   background: linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box;
 }
-html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile) { background: var(--hero-glow) padding-box, linear-gradient(var(--hero-shade), var(--hero-shade)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
+html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile) { background: var(--hero-glow) padding-box, linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
 html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-soft), var(--accent-soft)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
 
 /* ---------- currencies (D66) ---------- */

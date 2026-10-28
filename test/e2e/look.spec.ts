@@ -46,6 +46,25 @@ test('a new account starts on Aurora Glass, the slim strip and Gems (D71); the g
   await expect(hero.locator('.tile:not(.lead) b')).toHaveText(['12', '999.5g']);
   await expect(hero.locator('.foot')).toHaveText('Your #1 · Glass Kush 1');
   await shot(page, '640-glass-hero');
+  // D71: it glows with the look, never the product page's dark fade (that made it plain black on the owner's
+  // iPhone): no fade over it, and the corner inside its edge is lit by the look's green, not near-black.
+  expect(await hero.evaluate((e) => getComputedStyle(e, '::before').content)).toBe('none');
+  const box = (await hero.boundingBox())!;
+  const png = (await page.screenshot({ clip: { x: box.x + 3, y: box.y + 3, width: 8, height: 8 }, animations: 'disabled' })).toString('base64');
+  const corner = await page.evaluate(async (png) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${png}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    [c.width, c.height] = [img.width, img.height];
+    const x = c.getContext('2d')!;
+    x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, c.width, c.height).data;
+    const sum = [0, 0, 0];
+    for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) sum[k]! += d[i + k]!;
+    return sum.map((v) => v / (d.length / 4));
+  }, png);
+  expect(corner[1]! - 7, `the hero's corner ${corner}`).toBeGreaterThan(15); // --bg is rgb(3, 7, 10)
 });
 
 test('Settings shows the look, the top and the colours, each opening its own page (D71) where it is chosen and saved at once', async () => {

@@ -1391,11 +1391,13 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - **The top glows; defaults, order and pages (D71, 0.61.0).** *The black hero:* `.banner.hero` shares the class `hero`
     with a product page's name block (D22), whose `::before` is a dark fade nearly solid at its foot, plus `gap: 8px`,
     `z-index: 1` and `pointer-events: none`; the Leaderboard's hero now drops all four (`.banner.hero::before { content:
-    none }`). *The glow:* `--hero-glow` (each look's `--light-1…3`, each painted twice, so about twice as strong as the
-    background's lights), `--hero-shade` (the look's `--bg` at 45%) and `--hero-edge` (`--accent-bright` → `--teal-bright` →
-    `--violet-bright`) are set on `:root` from the look's own tokens, so every look has its own; `.banner.hero`,
-    `.banner.strip` and `.tiles .tile` draw them (padding-box / border-box) with a `--glow` shadow; Holo Pearl keeps its
-    rim with the glow inside. *Defaults:* `DEFAULT_APPEARANCE` is `{ look: 'aurora', top: 'strip', preset: 'gems' }`
+    none }`). *The glow:* `--hero-glow` (each look's `--light-1…3`)
+    and `--hero-edge` (`--accent-bright` → `--teal-bright` → `--violet-bright`) are set on `:root` from the look's own
+    tokens, so every look has its own; `.banner.hero`, `.banner.strip` and `.tiles .tile` draw the glow and the look's
+    glass over a solid pane of `--bg` (padding-box) and the edge (border-box), with a `--glow` shadow outside; Holo
+    Pearl keeps its rim. *Found while testing:* lights twice as strong, a glow inside the rim, and a see-through pane
+    (the edge, painted under the whole card, showed through) each put the numbers and labels below the readability
+    tests (2.4–4.4 : 1); `expectStatsFit` accepts the glow as the top's glass. *Defaults:* `DEFAULT_APPEARANCE` is `{ look: 'aurora', top: 'strip', preset: 'gems' }`
     (used for an account with no `appearance_settings` row and for a backup with no look or top); the table's column
     defaults are never used (every save writes all four). *Order:* `LOOK_KEYS`, `PRESET_KEYS` and `BOARD_TOP_KEYS` are
     in Appearance's order, the default first (`gems.test.ts` checks the rest are A to Z by name). *Pages:*

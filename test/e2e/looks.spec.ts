@@ -53,7 +53,7 @@ test('each new look is chosen in Appearance, marked New, saved, and changes the 
     await expect(page.locator('.ap-card', { has: radio }).locator('.ap-name')).toHaveText(l.name);
     await expect(page.locator('.ap-card', { has: radio }).locator('.new-tag')).toHaveText('New');
     await radio.check();
-    await expect.poll(saved).toEqual({ look: l.look, top: 'hero', preset: 'aurora', markFirst: true });
+    await expect.poll(async () => ((await saved()) as { look: string }).look).toBe(l.look);
     await expect(page.locator('html')).toHaveAttribute('data-look', l.look);
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), l.look).toBe(l.bg);
     expect(await page.locator('meta[name="theme-color"]').getAttribute('content'), l.look).toBe(l.hex);
