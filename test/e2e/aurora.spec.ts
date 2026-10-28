@@ -75,8 +75,13 @@ test('the lights are behind every screen, drifting, and stay put as you scroll',
   const atEnd = await photos();
   const moved = Math.max(...atEnd.flatMap((c, k) => c.map((v, i) => Math.abs(v - atStart[k]![i]!))));
   expect(moved, `drift ${JSON.stringify(atStart)} → ${JSON.stringify(atEnd)}`).toBeGreaterThan(2);
+  // Scrolled down, the lights haven't gone anywhere: the same colour at the same moment. Only the background
+  // is compared: the cards' glows (the #1's breathing halo, the top's glow since D71) reach the gutter, so
+  // they're switched off for the photos (0.61.0: with the slim strip the #1's halo sat beside this spot).
+  await page.evaluate(() => {
+    for (const e of document.querySelectorAll<HTMLElement>('.row, .banner, .tiles .tile')) e.style.setProperty('box-shadow', 'none', 'important');
+  });
   const later = await colour(2, 230);
-  // Scrolled down, the lights haven't gone anywhere: the same colour at the same moment.
   await page.mouse.wheel(0, 700);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(400);
   await holdLights(24000);

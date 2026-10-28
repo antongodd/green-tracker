@@ -1409,6 +1409,9 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
       the Leaderboard and the Log (`look.spec.ts`); each page readable (`appearance.spec.ts`); every look's glowing top
       readable on the Leaderboard and the colours page, and every position unchanged between looks on the three pages
       and the Log (`looks.spec.ts`).
+    - *Found in the 2-worker run:* `aurora.spec.ts` compares the gutter at one spot before and after scrolling; with
+      the slim strip the #1's breathing halo sits beside that spot (it failed 12 times in 12 under load). The cards'
+      glows are now switched off for those photos, so only the background is compared (30 of 30).
     - *Couldn't check here:* how the glow looks on the owner's iPhone in each look.
 
 - **Currencies (D66, 0.56.0).** `shared/domain/currency.ts`: `CURRENCIES` (the ECB's 30 reference currencies, the
