@@ -50,7 +50,7 @@ test('a new account starts on Aurora Glass, the slim strip and Gems (D71); the g
   // iPhone): no fade over it, and the corner inside its edge is lit by the look's green, not near-black.
   expect(await hero.evaluate((e) => getComputedStyle(e, '::before').content)).toBe('none');
   const box = (await hero.boundingBox())!;
-  const png = (await page.screenshot({ clip: { x: box.x + 3, y: box.y + 3, width: 8, height: 8 }, animations: 'disabled' })).toString('base64');
+  const png = Buffer.from(await page.screenshot({ clip: { x: box.x + 3, y: box.y + 3, width: 8, height: 8 }, animations: 'disabled' })).toString('base64');
   const corner = await page.evaluate(async (png) => {
     const img = new Image();
     img.src = `data:image/png;base64,${png}`;
