@@ -170,27 +170,22 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.57.1 (live 2026-10-26): everything up to edible value for money (D67).
-- **Dev:** the same as live; plus notes-only 0.57.2.
+- **Live:** 0.59.0 (live 2026-10-27): everything up to five more Leaderboard colour sets (D69).
+- **Dev:** 0.60.0: live, plus eight more Looks (D70); plus notes-only 0.60.1.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **A how-to video on the website** (0.58.0, D68): a 24-second video above the "Get it" steps showing how to add the
-   app to the Home Screen on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add); thumbnail: the phone with the
-   leaf; written step 2 mentions ⋯ and View More. Next: merge, then Anton checks it on the website preview.
-2. **More Leaderboard colour sets** — in a pull request (0.59.0, D69, 2026-10-26): Sunset, Deep Sea, Ember, Cosmos
-   and Synthwave, ten in all, each with its own effect; listed last in Appearance, marked New. Next: "merge", then
-   Anton tries them on GT Dev.
-
-3. **More Looks** — in a pull request (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving
-   background (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze), listed after the four, marked
-   New. Next: "merge", then Anton tries them on GT Dev.
-4. **Daylight** (a light Look, D70's second step): next, once the eight are checked.
+1. **More Looks** — **on dev** (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving background
+   (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze), listed after the four, marked New. Next:
+   Anton tries them on GT Dev, then "go live".
+2. **Daylight** (a light Look, D70's second step): next, once the eight are checked.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |
+| A how-to video on the website (checked on Anton's iPhone on the preview) | 0.58.0 | D68 | 2026-10-26 | 2026-10-26 |
 | Edible value for money: compares every type (20mg = 1g), Price and Value for money under All (checked on Anton's iPhone) | 0.57.0 | D67 | 2026-10-26 | 2026-10-26 |
 | Currency settings (checked on Anton's iPhone) | 0.56.0 | D66 | 2026-10-22 | 2026-10-22 |
 | The new look: Aurora Glass, Appearance, three more looks (checked on Anton's iPhone) | 0.54.0, 0.55.0 | D64, D65 | 2026-10-21 | 2026-10-21 |

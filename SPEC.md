@@ -1504,6 +1504,10 @@ None.
 
 ## 6. Changelog
 
+### 0.60.1 — CLAUDE.md: more Looks are on dev; the website video and the colour sets are live
+- The eight Looks (D70) are on dev (2026-10-27); the how-to video on the website (D68, live 2026-10-26) and the five
+  colour sets (D69, live 2026-10-27) move to Done (what 0.59.1, never merged, recorded). Notes only.
+
 ### 0.60.0 — eight more looks (owner request)
 - Decision D70. Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp and Haze: twelve looks in all, each
   changing only colours and the background behind everything (fonts, sizes and shapes as in Aurora Glass, the owner's
