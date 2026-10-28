@@ -82,6 +82,8 @@ function App() {
     if (!me || fresh) return;
     if (!signedIn && !SIGNED_OUT_PATHS.includes(path)) navigate('/signin', { replace: true });
     if (signedIn && SIGNED_OUT_PATHS.includes(path)) navigate('/', { replace: true });
+    // The one Appearance page (D48–D70) became three (D71): its old address opens Settings.
+    if (signedIn && path === '/more/appearance') navigate('/more', { replace: true });
   }, [me, signedIn, path, fresh]);
 
   if (!me) {
@@ -182,8 +184,14 @@ function App() {
         case '/more/privacy':
           screen = <PrivacyScreen />;
           break;
-        case '/more/appearance':
-          screen = <AppearanceScreen />;
+        case '/more/look': // D71: each Appearance choice on its own page
+          screen = <AppearanceScreen part="look" />;
+          break;
+        case '/more/top':
+          screen = <AppearanceScreen part="top" />;
+          break;
+        case '/more/colours':
+          screen = <AppearanceScreen part="colours" />;
           break;
         case '/more/sounds':
           screen = <SoundsScreen />;

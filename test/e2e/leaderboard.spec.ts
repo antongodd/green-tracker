@@ -42,9 +42,9 @@ test('default: Overall, all types; colours by score, #1 marked, tiles, unrated l
   await page.goto('/');
   await expect(rows()).toHaveCount(16);
   await expect(rows().nth(0)).toContainText('Gelato 41');
-  // Colours by score in Aurora, where everyone starts (D48, D64): 8.9 and 8.6 Lagoon, 8.4 → 8.0 Jade; below 8 the heat glow (D30).
+  // Colours by score in Gems, where a new account starts (D48, D71): 8.9 and 8.6 Sapphire, 8.4 → 8.0 Emerald; below 8 the heat glow (D30).
   const bands = await rows().evaluateAll((els) => els.slice(0, 7).map((e) => [...e.classList].filter((c) => /^(band\d|pal-.+|first)$/.test(c)).join(' ')));
-  expect(bands).toEqual(['band2 pal-aurora first', 'band2 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', '']);
+  expect(bands).toEqual(['band2 pal-gems first', 'band2 pal-gems', 'band1 pal-gems', 'band1 pal-gems', 'band1 pal-gems', 'band1 pal-gems', '']);
   await expect(rows().nth(6)).toHaveAttribute('data-heat');
   await expect(rows().nth(0).locator('.rk .rank-crown')).toHaveCount(1);
   await expect(page.locator('.rank-crown')).toHaveCount(1);
@@ -53,7 +53,7 @@ test('default: Overall, all types; colours by score, #1 marked, tiles, unrated l
   await expect(tile('Products')).toHaveText('16');
   await expect(tile('Average')).toHaveText('6.7'); // 100.758 ÷ 15 rated
   await expect(tile('Total')).toHaveText('12.5g'); // 3.5 + 7 + 1 + 1; no edibles
-  expect(await expectStatsFit(page)).toBe('hero'); // everyone starts on the glass hero (D64)
+  expect(await expectStatsFit(page)).toBe('strip'); // a new account starts on the slim strip (D71; the glass hero since D64)
   await expect(pillBox('Rank by')).not.toHaveClass(/active/);
   await expect(pillBox('Type')).not.toHaveClass(/active/);
   await shot(page, '20-leaderboard');

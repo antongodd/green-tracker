@@ -36,7 +36,8 @@ export async function expectStatsFit(page: Page): Promise<'hero' | 'tiles' | 'st
     const box = first.closest('.banner, .tiles') as HTMLElement;
     const layout = box.classList.contains('hero') ? 'hero' : box.classList.contains('strip') ? 'strip' : 'tiles';
     const b = box.getBoundingClientRect();
-    const glass = (el: Element) => /rgba\(255, 255, 255, 0\.0[5-9]\)/.test(getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
+    // Glass: Aurora's white pane, or since D71 the look's glow (its lights over its glass) in any look.
+    const glass = (el: Element) => /rgba\(255, 255, 255, 0\.0[5-9]\)|radial-gradient/.test(getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
     const texts = [...box.querySelectorAll<HTMLElement>('.tile b, .tile .cap')].map((c) => {
       const tile = c.closest('.tile')!.getBoundingClientRect();
       const range = document.createRange();

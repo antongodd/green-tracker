@@ -185,13 +185,14 @@ test('the Colours key: each colour and its scores, the glow below 8 and the #1 m
   expect(await axe()).toEqual([]);
   await key.getByRole('button', { name: 'Done' }).click();
   await expect(key).toHaveCount(0);
-  // Tapping outside closes it too; its link goes to Appearance.
+  // Tapping outside closes it too; its link goes to the colours page (D71).
   await page.getByRole('button', { name: 'What the colours mean' }).click();
   await page.locator('.scrim').click({ position: { x: 20, y: 120 } });
   await expect(key).toHaveCount(0);
   await page.getByRole('button', { name: 'What the colours mean' }).click();
-  await key.getByRole('link', { name: 'Change in Appearance' }).click();
-  await expect(page).toHaveURL(/\/more\/appearance$/);
+  await key.getByRole('link', { name: 'Change colours' }).click();
+  await expect(page).toHaveURL(/\/more\/colours$/);
+  await expect(page.locator('.hdr .title')).toHaveText('Leaderboard colours');
 });
 
 test('More → Appearance: choose a preset and the #1 mark; each saves at once, to your account', async () => {
@@ -200,22 +201,24 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
   await expect(page.locator('.lh', { hasText: 'Appearance' })).toBeVisible();
   await expect(row).toContainText('Gems');
   await row.click();
-  await expect(page).toHaveURL(/\/more\/appearance$/);
+  await expect(page).toHaveURL(/\/more\/colours$/);
   await expect(page.getByRole('radio', { name: /Gems/ })).toBeChecked();
   await expect(page.getByRole('switch', { name: 'Mark my #1' })).toBeChecked();
-  // Each preset shows its four colours; the two made for the new look first (D64), D69's five last, marked New.
+  // Each preset shows its four colours; Gems first, then A to Z (D71); D69's five marked New.
   await expect(page.locator('.preset')).toHaveCount(10);
-  await expect(page.locator('.preset .main > span:first-child')).toHaveText(['Aurora', 'Neon', 'Gems', 'Prism', 'Metals', 'SunsetNew', 'Deep SeaNew', 'EmberNew', 'CosmosNew', 'SynthwaveNew']);
+  await expect(page.locator('.preset .main > span:first-child')).toHaveText(['Gems', 'Aurora', 'CosmosNew', 'Deep SeaNew', 'EmberNew', 'Metals', 'Neon', 'Prism', 'SunsetNew', 'SynthwaveNew']);
+  // This page is only the colours and the #1 mark (D71): the looks and tops have pages of their own.
+  await expect(page.locator('input[name="look"], input[name="top"]')).toHaveCount(0);
   await expect(page.locator('.preset').first().locator('.swatch')).toHaveCount(4);
   await expect(page.locator('.preset').first().locator('.strip-l')).toHaveText(['8.0+', '8.5+', '9.0+', '9.5+']);
   await shot(page, '152-appearance');
   expect(await axe()).toEqual([]);
 
   await page.getByRole('radio', { name: /Metals/ }).check();
-  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: true });
+  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: true });
   await expect(page.locator('.ap-rows .row').first()).toHaveClass(/\bpal-metals\b/);
   await page.getByRole('switch', { name: 'Mark my #1' }).uncheck();
-  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: false });
+  await expect.poll(() => page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: false });
   await expect(page.locator('.ap-rows .rank-crown')).toHaveCount(0);
 
   // The Leaderboard follows straight away, and after a reload (it's your account's, not this phone's).
@@ -236,13 +239,15 @@ test('More → Appearance: choose a preset and the #1 mark; each saves at once, 
   expect(await appearance({ preset: 'gems', markFirst: true })).toBe(200);
 });
 
-test('Appearance is readable from top to bottom', async () => {
-  const worst = await wholeScreenContrastFailures(
-    page,
-    '/more/appearance',
-    '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .ap-preview .foot .who, .ap-name, .ap-sub, .preset .pl, .preset .sub, .preset .strip-l, .new-tag, .priv-row .main > span, .priv-foot',
-  );
-  expect(worst, worst.join('\n')).toEqual([]);
+test('the Look, Leaderboard top and Leaderboard colours pages are readable from top to bottom', async () => {
+  for (const [path, sel] of [
+    ['/more/look', '.lh, .ap-name, .ap-sub, .new-tag, .priv-foot'],
+    ['/more/top', '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .ap-name, .ap-sub, .priv-foot'],
+    ['/more/colours', '.lh, .ap-preview .tile b, .ap-preview .tile .cap, .preset .pl, .preset .sub, .preset .strip-l, .new-tag, .priv-row .main > span, .priv-foot'],
+  ] as const) {
+    const worst = await wholeScreenContrastFailures(page, path, sel);
+    expect(worst, `${path}:\n${worst.join('\n')}`).toEqual([]);
+  }
 });
 
 test('the Colours button fits beside Rank by and Type at 375px', async () => {

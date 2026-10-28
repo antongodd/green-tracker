@@ -49,9 +49,9 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Recovery codes', icon: true, tint: 'amber', href: '/more/recovery-codes' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
     { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
-    { label: 'Look', icon: true, tint: 'violet', href: '/more/appearance' }, // D64
-    { label: 'Leaderboard top', icon: true, tint: 'violet', href: '/more/appearance' }, // D64
-    { label: 'Leaderboard colours', icon: true, tint: 'gem', href: '/more/appearance' }, // D48
+    { label: 'Look', icon: true, tint: 'violet', href: '/more/look' }, // D64; its own page since D71
+    { label: 'Leaderboard top', icon: true, tint: 'violet', href: '/more/top' }, // D64; D71
+    { label: 'Leaderboard colours', icon: true, tint: 'gem', href: '/more/colours' }, // D48; D71
     { label: 'Sounds and ticks', icon: true, tint: 'green', href: '/more/sounds' }, // D57
     { label: 'Main currency', icon: true, tint: 'amber', href: '/more/currency' }, // D66
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },

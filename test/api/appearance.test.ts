@@ -34,7 +34,7 @@ describe('appearance settings (D48)', () => {
     expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'tiles', preset: 'neon', markFirst: true });
     // An app still open from before 0.54.0 sends no look or top: they take the defaults.
     expect((await b.req('PUT', '/api/appearance', { preset: 'prism', markFirst: true })).status).toBe(200);
-    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'prism', markFirst: true });
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'prism', markFirst: true });
     // Every look can be saved since D65; one that doesn't exist is refused.
     expect((await b.req('PUT', '/api/appearance', { look: 'pearl', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
     expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'pearl', top: 'hero', preset: 'prism', markFirst: true });
@@ -81,8 +81,8 @@ describe('export and restore (D48)', () => {
     const bad = await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'gold', markFirst: true } });
     expect(bad.status).toBe(400);
     expect((await b.get('/api/appearance')).json.appearance).toEqual(theirs);
-    // A file from before 0.54.0 has a preset but no look or top: those take the defaults (D64).
+    // A file from before 0.54.0 has a preset but no look or top: those take the defaults (D64; the slim strip since D71).
     expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'metals', markFirst: true } })).status).toBe(200);
-    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'metals', markFirst: true });
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: true });
   });
 });

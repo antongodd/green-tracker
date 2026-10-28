@@ -24,10 +24,10 @@ test('the headline and the example Leaderboard, in its colours', async ({ page }
   await expect(rows).toHaveCount(3);
   expect(await rows.locator('.name').allTextContents()).toEqual(['Wedding Cake', 'Gelato 41', 'Zkittlez']);
   expect(await rows.locator('.score b').allTextContents()).toEqual(['9.7', '9.2', '8.7']);
-  await expect(rows.nth(0)).toHaveClass(/\btier band4 pal-aurora first\b/);
+  await expect(rows.nth(0)).toHaveClass(/\btier band4 pal-gems first\b/);
   await expect(rows.nth(0).locator('.rank-crown')).toHaveCount(1);
-  await expect(rows.nth(1)).toHaveClass(/\btier band3 pal-aurora\b/);
-  await expect(rows.nth(2)).toHaveClass(/\btier band2 pal-aurora\b/);
+  await expect(rows.nth(1)).toHaveClass(/\btier band3 pal-gems\b/);
+  await expect(rows.nth(2)).toHaveClass(/\btier band2 pal-gems\b/);
   await expect(rows.nth(2)).not.toHaveAttribute('data-heat');
   await expect(page.locator('.showcase .glint')).toHaveCount(0);
   await expect(page.locator('.showcase figcaption')).toHaveText('Example Leaderboard');
