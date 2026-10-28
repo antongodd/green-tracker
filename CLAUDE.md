@@ -175,16 +175,17 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.59.0 (live 2026-10-27): everything up to five more Leaderboard colour sets (D69).
-- **Dev:** 0.60.1: live, plus eight more Looks (D70).
+- **Dev:** 0.61.0: live, plus eight more Looks (D70) and the glowing top, new defaults and Appearance pages (D71);
+  plus notes-only 0.61.1.
 
 ### To-do list (suggested order; Anton decides)
 
 1. **More Looks** — **on dev** (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving background
    (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze). Goes live together with item 2.
-2. **The top glows; new defaults; Appearance pages** — in a pull request (0.61.0, D71, 2026-10-28): the glass hero
-   (no longer black), strip and tiles glow with the Look; new accounts start on Slim strip and Gems; Looks and colours
-   A to Z after the default; Look, Leaderboard top and Leaderboard colours each on their own page. Next: "merge", then
-   Anton checks items 1 and 2 on GT Dev, then "go live" for both.
+2. **The top glows; new defaults; Appearance pages** — **on dev** (0.61.0, D71, 2026-10-28): the glass hero (no
+   longer black), strip and tiles glow with the Look; new accounts start on Slim strip and Gems; Looks and colours A
+   to Z after the default; Look, Leaderboard top and Leaderboard colours each on their own page. Next: Anton checks
+   items 1 and 2 on GT Dev, then "go live" for both.
 3. **Daylight** (a light Look, D70's second step): after that.
 
 ### Done (newest first)
