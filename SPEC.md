@@ -1530,6 +1530,9 @@ None.
 
 ## 6. Changelog
 
+### 0.61.1 — CLAUDE.md: the glowing top, new defaults and Appearance pages are on dev
+- D71 is on dev (2026-10-28), with D70's eight Looks; both go live together. Notes only.
+
 ### 0.61.0 — the top glows with your look; new defaults; Appearance in three pages (owner request)
 - Decision D71. The glass hero (and the strip and tiles) glow with the look's own lights; the hero was black because
   it took a product page's dark fade, now gone (and the space it left under "Your #1"). New accounts start on the
