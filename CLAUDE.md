@@ -174,24 +174,19 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.59.0 (live 2026-10-27): everything up to five more Leaderboard colour sets (D69).
-- **Dev:** 0.61.0: live, plus eight more Looks (D70) and the glowing top, new defaults and Appearance pages (D71);
-  plus notes-only 0.61.1.
+- **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
+- **Dev:** the same as live; plus notes-only 0.61.2.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **More Looks** — **on dev** (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving background
-   (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze). Goes live together with item 2.
-2. **The top glows; new defaults; Appearance pages** — **on dev** (0.61.0, D71, 2026-10-28): the glass hero (no
-   longer black), strip and tiles glow with the Look; new accounts start on Slim strip and Gems; Looks and colours A
-   to Z after the default; Look, Leaderboard top and Leaderboard colours each on their own page. Next: Anton checks
-   items 1 and 2 on GT Dev, then "go live" for both.
-3. **Daylight** (a light Look, D70's second step): after that.
+1. **Daylight** (a light Look, D70's second step): next. Needs a mockup, a plan and "go ahead" first.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The top glows with your Look (the black hero fixed); new defaults (Slim strip, Gems); Looks and colours A to Z; Appearance in three pages | 0.61.0 | D71 | 2026-10-28 | 2026-10-28 |
+| Eight more Looks: Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze | 0.60.0 | D70 | 2026-10-27 | 2026-10-28 |
 | More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |
 | A how-to video on the website (checked on Anton's iPhone on the preview) | 0.58.0 | D68 | 2026-10-26 | 2026-10-26 |
 | Edible value for money: compares every type (20mg = 1g), Price and Value for money under All (checked on Anton's iPhone) | 0.57.0 | D67 | 2026-10-26 | 2026-10-26 |

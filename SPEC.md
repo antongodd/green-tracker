@@ -1530,6 +1530,10 @@ None.
 
 ## 6. Changelog
 
+### 0.61.2 — CLAUDE.md: the eight Looks and the glowing top are live
+- D70 (on dev 2026-10-27) and D71 (on dev 2026-10-28) went live on 2026-10-28 and move to Done; Daylight is next.
+  Notes only.
+
 ### 0.61.1 — CLAUDE.md: the glowing top, new defaults and Appearance pages are on dev
 - D71 is on dev (2026-10-28), with D70's eight Looks; both go live together. Notes only.
 
