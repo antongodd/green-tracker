@@ -1558,6 +1558,9 @@ None.
 
 ## 6. Changelog
 
+### 0.63.1 — CLAUDE.md: the Look page's two sections are on dev
+- D73 is on dev (2026-10-29), with D72's Daylights; both go live together on "go live". Notes only.
+
 ### 0.63.0 — the Look page in two sections: Dark mode and Light mode (owner request)
 - Decision D73. Dark mode (a moon) over Aurora Glass and the other dark looks, A to Z; Light mode (a sun) at the bottom
   over the three Daylights. Still one choice. No change to data.
