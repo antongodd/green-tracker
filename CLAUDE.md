@@ -178,13 +178,13 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
-- **Dev:** the same as live.
+- **Dev:** 0.62.1: live plus the Daylight looks (D72).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Daylight looks** — in a pull request (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky,
-   light cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: "merge",
-   then Anton tries them on GT Dev.
+1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
+   cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
+   GT Dev, then "go live".
 
 ### Done (newest first)
 
