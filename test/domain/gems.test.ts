@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LIGHT_LOOKS, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -82,12 +82,13 @@ describe('Leaderboard colours by score (D48)', () => {
     }
   });
 
-  it('all twelve looks can be chosen since D70, the eight new ones marked New; anything else is refused', () => {
+  it('all fifteen looks can be chosen since D72 (eight more in D70, three light ones in D72), the new ones marked New; anything else is refused', () => {
     expect(READY_LOOKS).toEqual(LOOK_KEYS);
-    expect(LOOK_KEYS).toHaveLength(12);
-    expect([...NEW_LOOKS].sort()).toEqual(['deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura']);
+    expect(LOOK_KEYS).toHaveLength(15);
+    expect(LIGHT_LOOKS).toEqual(['daymint', 'daypearl', 'daysky']);
+    expect([...NEW_LOOKS].sort()).toEqual(['daymint', 'daypearl', 'daysky', 'deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura']);
     for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
-    expect(LOOK_BG).toEqual({ aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807', sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10' });
+    expect(LOOK_BG).toEqual({ aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807', sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10', daymint: '#eef4f0', daypearl: '#f5f4f8', daysky: '#eef3fa' });
     expect(new Set(LOOK_KEYS.map((l) => LOOKS[l].label)).size).toBe(LOOK_KEYS.length);
   });
 
@@ -95,7 +96,7 @@ describe('Leaderboard colours by score (D48)', () => {
     const js = readFileSync(new URL('../../client/public/look.js', import.meta.url), 'utf8');
     const bgs = Object.fromEntries([...js.matchAll(/(\w+): '(#[0-9a-f]{6})'/g)].map((m) => [m[1], m[2]]));
     expect(bgs).toEqual(LOOK_BG);
-    const sql = readFileSync(new URL('../../migrations/0014_more_looks.sql', import.meta.url), 'utf8');
+    const sql = readFileSync(new URL('../../migrations/0015_daylight.sql', import.meta.url), 'utf8');
     expect(sql.match(/look IN \(([^)]*)\)/)![1]!.match(/'(\w+)'/g)!.map((q) => q.slice(1, -1)).sort()).toEqual([...LOOK_KEYS].sort());
   });
 

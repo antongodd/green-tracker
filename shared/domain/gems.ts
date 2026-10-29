@@ -75,21 +75,24 @@ export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].
 export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `${BAND_FLOORS[band - 1]!.toFixed(1)} – ${(BAND_FLOORS[band]! - 0.1).toFixed(1)}`);
 
 /**
- * The whole app's look (D64; all four built since D65; eight more since D70). A look changes only
+ * The whole app's look (D64; all four built since D65; eight more since D70; three light ones since D72). A look changes only
  * colours and the background behind everything, never fonts, sizes or shapes (D70: the owner's rule;
  * Holo Pearl's and Deep Forest's title fonts are from before it).
  */
-export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze';
+export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze' | 'daymint' | 'daypearl' | 'daysky';
 /** In the order Appearance lists them (D71): Aurora Glass, everyone's first look, then A to Z by name. */
-export const LOOK_KEYS = ['aurora', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura'] as const satisfies readonly Look[];
+export const LOOK_KEYS = ['aurora', 'daymint', 'daypearl', 'daysky', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura'] as const satisfies readonly Look[];
 /** The looks you can choose (a look not listed would show as "Coming next"). All of them. */
 export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
 /** Marked New in Appearance (D70). */
-export const NEW_LOOKS: readonly Look[] = ['deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura'];
+export const NEW_LOOKS: readonly Look[] = ['daymint', 'daypearl', 'daysky', 'deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura'];
+/** The light looks (D72, the three Daylights): light colours, the iPhone's own parts in their light style, light cards. Everyone starts dark: a light look is only ever chosen. */
+export const LIGHT_LOOKS: readonly Look[] = ['daymint', 'daypearl', 'daysky'];
 /** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
 export const LOOK_BG: Record<Look, string> = {
   aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807',
   sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10',
+  daymint: '#eef4f0', daypearl: '#f5f4f8', daysky: '#eef3fa',
 };
 export const LOOKS: Record<Look, { label: string; description: string }> = {
   aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
@@ -104,6 +107,9 @@ export const LOOKS: Record<Look, { label: string; description: string }> = {
   outrun: { label: 'Outrun', description: 'Neon grid and a setting sun' },
   lava: { label: 'Lava Lamp', description: 'Warm blobs that rise and melt together' },
   haze: { label: 'Haze', description: 'Slow curls of smoke over soft charcoal' },
+  daymint: { label: 'Daylight Mint', description: 'Light and fresh, with soft green light' },
+  daypearl: { label: 'Daylight Pearl', description: 'Clean white with a pastel shimmer' },
+  daysky: { label: 'Daylight Sky', description: 'A clear blue morning, a warm glow' },
 };
 
 /** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. */

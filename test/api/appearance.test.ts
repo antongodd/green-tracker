@@ -44,8 +44,8 @@ describe('appearance settings (D48)', () => {
       expect((await b.req('PUT', '/api/appearance', { look: 'aurora', top: 'hero', preset, markFirst: true })).status, preset).toBe(200);
       expect((await b.get('/api/appearance')).json.appearance, preset).toEqual({ look: 'aurora', top: 'hero', preset, markFirst: true });
     }
-    // D70's eight looks can be saved (the database allows them since 0014_more_looks.sql).
-    for (const look of ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze']) {
+    // D70's eight looks and D72's three light ones can be saved (the database allows them since 0014 and 0015).
+    for (const look of ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze', 'daymint', 'daypearl', 'daysky']) {
       expect((await b.req('PUT', '/api/appearance', { look, top: 'hero', preset: 'cosmos', markFirst: true })).status, look).toBe(200);
       expect((await b.get('/api/appearance')).json.appearance, look).toEqual({ look, top: 'hero', preset: 'cosmos', markFirst: true });
     }
