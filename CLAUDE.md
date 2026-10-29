@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D72 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D73 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D73), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D74), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D72.
+- Reopen any decision D1–D73.
 
 ## Testing notes
 
@@ -158,6 +158,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Light looks (D72): `daymint`, `daypearl`, `daysky` (`LIGHT_LOOKS`) set `html[data-tone="light"]`; anything with a colour
   of its own needs a light version under `html[data-tone="light"]` (end of `styles.css`), and the coloured rows are light
   cards there. `textBoxes` judges gradient text at both extremes. `daylight.spec.ts` sweeps screens with axe in each.
+  The Look page lists them last, under *Light mode* (D73; the dark looks under *Dark mode*): two `radiogroup`s, one
+  radio name. `LOOK_KEYS` keeps that order (`gems.test.ts`).
 - Looks (D70): fifteen since D72, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
   the background, never a font, size or shape (`looks.spec.ts` compares every position and font with Aurora Glass). A
   look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
@@ -187,6 +189,8 @@ section, so it must always be current.
 1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
    cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
    GT Dev, then "go live".
+2. **Look page in two sections** — in a pull request (0.63.0, D73, 2026-10-29): Dark mode (moon) and Light mode (sun)
+   headings, the Daylights at the bottom. Next: "merge", then it goes live with the Daylights.
 
 ### Done (newest first)
 

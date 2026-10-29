@@ -58,6 +58,8 @@ test('the app starts dark; choosing a Daylight makes it light, the iPhone’s ow
     await page.locator(`input[name="look"][value="${d.look}"]`).check();
     await expect(page.locator('html')).toHaveAttribute('data-look', d.look);
     await expect(page.locator('html')).toHaveAttribute('data-tone', 'light');
+    // D73: one choice across Dark mode and Light mode: only the Daylight is ticked.
+    await expect(page.locator('input[name="look"]:checked')).toHaveCount(1);
     expect(await tone(), d.look).toEqual({ tone: 'light', scheme: 'light', meta: 'light', bar: 'default' });
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), d.look).toBe(d.bg);
   }

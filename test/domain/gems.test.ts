@@ -49,8 +49,13 @@ describe('Leaderboard colours by score (D48)', () => {
     const names = PRESET_KEYS.slice(1).map((k) => PRESETS[k].label);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
     expect(LOOK_KEYS[0]).toBe(DEFAULT_APPEARANCE.look);
-    const looks = LOOK_KEYS.slice(1).map((k) => LOOKS[k].label);
+    // D73: the dark looks, then the light ones at the end (Appearance's Dark mode and Light mode), each A to Z.
+    const dark = LOOK_KEYS.filter((k) => !LIGHT_LOOKS.includes(k));
+    expect(LOOK_KEYS).toEqual([...dark, ...LIGHT_LOOKS]);
+    const looks = dark.slice(1).map((k) => LOOKS[k].label);
     expect(looks).toEqual([...looks].sort((a, b) => a.localeCompare(b)));
+    const light = LIGHT_LOOKS.map((k) => LOOKS[k].label);
+    expect(light).toEqual([...light].sort((a, b) => a.localeCompare(b)));
     expect(BOARD_TOP_KEYS[0]).toBe(DEFAULT_APPEARANCE.top);
   });
 

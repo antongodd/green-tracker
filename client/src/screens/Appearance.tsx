@@ -5,7 +5,7 @@
 // to a new phone; a friend's board shows in your look and colours too. (Sounds and ticks have their
 // own screen since 0.48.0, D57: Sounds.tsx.)
 import { useRef, useState } from 'preact/hooks';
-import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LOOK_KEYS, LOOKS, NEW_LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
+import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LIGHT_LOOKS, LOOK_KEYS, LOOKS, NEW_LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
 import { saveAppearance } from '../appearance';
 import { BackButton, Header, TabBar } from '../components/chrome';
@@ -53,6 +53,34 @@ function SampleRow(p: { appearance: Appearance; rank: number }) {
     </div>
   );
 }
+
+/**
+ * The Look page's two sections (D73): Dark mode (Aurora Glass first, then A to Z) and, at the end, Light mode (the
+ * Daylights). One choice across both: a single radio name, so picking a light look unticks the dark one.
+ */
+const MODES = [
+  {
+    id: 'ap-dark',
+    title: 'Dark mode',
+    looks: LOOK_KEYS.filter((k) => !LIGHT_LOOKS.includes(k)),
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'ap-light',
+    title: 'Light mode',
+    looks: LOOK_KEYS.filter((k) => LIGHT_LOOKS.includes(k)),
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2" fill="currentColor" />
+        <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+      </svg>
+    ),
+  },
+];
 
 export type AppearancePart = 'look' | 'top' | 'colours';
 const TITLES: Record<AppearancePart, string> = {
@@ -131,34 +159,36 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
             </div>
           </section>
         )}
-        {p.part === 'look' && (
-          <section aria-labelledby="ap-look">
-            <h2 class="lh cap" id="ap-look">
-              Look
-            </h2>
-            <div class="wrap">
-              <div class="ap-cards looks" role="radiogroup" aria-labelledby="ap-look">
-                {LOOK_KEYS.map((k) => {
-                  const ready = READY_LOOKS.includes(k);
-                  return (
-                    <label key={k} class={`ap-card look-${k}${ready ? '' : ' soon'}`}>
-                      <span class="look-sw" aria-hidden="true">
-                        <b>9.3</b>
-                        <i />
-                      </span>
-                      <span class="ap-title">
-                        <span class="ap-name">{LOOKS[k].label}</span>
-                        {NEW_LOOKS.includes(k) && <span class="new-tag">New</span>}
-                      </span>
-                      <span class="ap-sub">{ready ? LOOKS[k].description : 'Coming next'}</span>
-                      <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} />
-                    </label>
-                  );
-                })}
+        {p.part === 'look' &&
+          MODES.map((m) => (
+            <section key={m.id} aria-labelledby={m.id}>
+              <h2 class="lh cap ap-mode" id={m.id}>
+                {m.icon}
+                {m.title}
+              </h2>
+              <div class="wrap">
+                <div class="ap-cards looks" role="radiogroup" aria-labelledby={m.id}>
+                  {m.looks.map((k) => {
+                    const ready = READY_LOOKS.includes(k);
+                    return (
+                      <label key={k} class={`ap-card look-${k}${ready ? '' : ' soon'}`}>
+                        <span class="look-sw" aria-hidden="true">
+                          <b>9.3</b>
+                          <i />
+                        </span>
+                        <span class="ap-title">
+                          <span class="ap-name">{LOOKS[k].label}</span>
+                          {NEW_LOOKS.includes(k) && <span class="new-tag">New</span>}
+                        </span>
+                        <span class="ap-sub">{ready ? LOOKS[k].description : 'Coming next'}</span>
+                        <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} />
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          ))}
         {p.part === 'top' && (
           <section aria-labelledby="ap-top">
             <h2 class="lh cap" id="ap-top">
