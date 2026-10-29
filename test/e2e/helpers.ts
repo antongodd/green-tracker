@@ -64,7 +64,8 @@ export async function expectStatsFit(page: Page): Promise<'hero' | 'tiles' | 'st
   return report.layout as 'hero' | 'tiles' | 'strip';
 }
 
-export interface TextBox { label: string; x: number; y: number; w: number; h: number; color: string; large: boolean }
+/** `alt`: for gradient text, its other extreme (the lightest colour, with `color` the darkest); both are judged. */
+export interface TextBox { label: string; x: number; y: number; w: number; h: number; color: string; alt?: string; large: boolean }
 
 /**
  * Readability over moving colour (axe can't judge text over a gradient): pauses every
@@ -96,13 +97,15 @@ export async function contrastFailures(page: Page, boxes: TextBox[], steps = 12)
       const lum = (r: number, g: number, b: number) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * ([0.2126, 0.7152, 0.0722][i] ?? 0), 0);
       return boxes.map((b) => {
         const d = ctx.getImageData(Math.round(b.x * k), Math.round(b.y * k), Math.max(1, Math.round(b.w * k)), Math.max(1, Math.round(b.h * k))).data;
-        const [fr = 0, fg = 0, fb = 0, fa = 1] = b.color.match(/[\d.]+/g)!.map(Number);
         let min = Infinity;
-        for (let i = 0; i < d.length; i += 4) {
-          const [br, bg, bb] = [d[i] ?? 0, d[i + 1] ?? 0, d[i + 2] ?? 0];
-          const f = [fr * fa + br * (1 - fa), fg * fa + bg * (1 - fa), fb * fa + bb * (1 - fa)];
-          const [a, z] = [lum(f[0]!, f[1]!, f[2]!), lum(br, bg, bb)];
-          min = Math.min(min, (Math.max(a, z) + 0.05) / (Math.min(a, z) + 0.05));
+        for (const colour of [b.color, ...(b.alt ? [b.alt] : [])]) {
+          const [fr = 0, fg = 0, fb = 0, fa = 1] = colour.match(/[\d.]+/g)!.map(Number);
+          for (let i = 0; i < d.length; i += 4) {
+            const [br, bg, bb] = [d[i] ?? 0, d[i + 1] ?? 0, d[i + 2] ?? 0];
+            const f = [fr * fa + br * (1 - fa), fg * fa + bg * (1 - fa), fb * fa + bb * (1 - fa)];
+            const [a, z] = [lum(f[0]!, f[1]!, f[2]!), lum(br, bg, bb)];
+            min = Math.min(min, (Math.max(a, z) + 0.05) / (Math.min(a, z) + 0.05));
+          }
         }
         return { ...b, ratio: min };
       });
@@ -130,7 +133,14 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
   await settled(page);
   return page.locator('body').evaluate((main, selector) => {
     const lum = ([r, g, b]: number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
-    const darkest = (t: HTMLElement) => (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)/g) ?? []).map((c) => c.match(/[\d.]+/g)!.map(Number).slice(0, 3)).reduce((a, b) => (lum(b) < lum(a) ? b : a));
+    // Each colour a gradient flows through: rgb(…), or color(srgb …) for a mixed colour (D72's deep shades).
+    const stops = (t: HTMLElement) =>
+      (getComputedStyle(t).backgroundImage.match(/rgba?\([^)]*\)|color\(srgb [^)]*\)/g) ?? []).map((c) =>
+        c.startsWith('color(') ? c.slice(11).match(/[\d.]+/g)!.map(Number).slice(0, 3).map((v) => v * 255) : c.match(/[\d.]+/g)!.map(Number).slice(0, 3),
+      );
+    const darkest = (t: HTMLElement) => stops(t).reduce((a, b) => (lum(b) < lum(a) ? b : a));
+    // Dark words on a light look (D72) are hardest to read at the lightest colour they flow through.
+    const lightest = (t: HTMLElement) => stops(t).reduce((a, b) => (lum(b) > lum(a) ? b : a));
     const els = [...main.querySelectorAll<HTMLElement>(selector)];
     const out = els.map((t) => {
       const range = document.createRange();
@@ -139,7 +149,13 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
       const b = t.getBoundingClientRect();
       const x0 = Math.max(tr.left, b.left) + 1, x1 = Math.min(tr.right, b.right) - 1, y0 = Math.max(tr.top, b.top) + 1, y1 = Math.min(tr.bottom, b.bottom) - 1;
       const gradient = getComputedStyle(t).backgroundClip === 'text';
-      return { label: `${t.tagName.toLowerCase()}.${t.className || ''} "${t.textContent?.slice(0, 20)}"`, x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0), color: gradient ? `rgb(${darkest(t).join(', ')})` : getComputedStyle(t).color, large: parseFloat(getComputedStyle(t).fontSize) >= 18.66 };
+      return {
+        label: `${t.tagName.toLowerCase()}.${t.className || ''} "${t.textContent?.slice(0, 20)}"`,
+        x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0),
+        color: gradient ? `rgb(${darkest(t).join(', ')})` : getComputedStyle(t).color,
+        ...(gradient ? { alt: `rgb(${lightest(t).join(', ')})` } : {}),
+        large: parseFloat(getComputedStyle(t).fontSize) >= 18.66,
+      };
     });
     for (const t of els) {
       t.style.setProperty('color', 'transparent');

@@ -12,6 +12,10 @@ test.describe.configure({ mode: 'parallel' });
 let page: Page;
 
 const NEW = [
+  // D72: the three light looks, through every check the dark ones have (their own extras: daylight.spec.ts).
+  { look: 'daymint', name: 'Daylight Mint', bg: 'rgb(238, 244, 240)', hex: '#eef4f0' },
+  { look: 'daypearl', name: 'Daylight Pearl', bg: 'rgb(245, 244, 248)', hex: '#f5f4f8' },
+  { look: 'daysky', name: 'Daylight Sky', bg: 'rgb(238, 243, 250)', hex: '#eef3fa' },
   { look: 'sakura', name: 'Sakura', bg: 'rgb(19, 10, 19)', hex: '#130a13' },
   { look: 'fireflies', name: 'Fireflies', bg: 'rgb(4, 11, 11)', hex: '#040b0b' },
   { look: 'deepsea', name: 'Deep Sea', bg: 'rgb(2, 10, 20)', hex: '#020a14' },

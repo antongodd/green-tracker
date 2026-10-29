@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import './styles.css';
 import { api, type Me } from './api';
-import { DEFAULT_APPEARANCE, LOOK_BG } from '../../shared/domain/gems';
+import { DEFAULT_APPEARANCE, LIGHT_LOOKS, LOOK_BG } from '../../shared/domain/gems';
 import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
@@ -71,6 +71,12 @@ function App() {
     if (!look) return;
     document.documentElement.dataset.look = look;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', LOOK_BG[look]);
+    // D72: a light look takes the light tone, and the iPhone's own controls and status bar follow.
+    const light = LIGHT_LOOKS.includes(look);
+    if (light) document.documentElement.dataset.tone = 'light';
+    else delete document.documentElement.dataset.tone;
+    document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', light ? 'light' : 'dark');
+    document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute('content', light ? 'default' : 'black-translucent');
     try {
       localStorage.setItem('gt.look', look);
     } catch {}
