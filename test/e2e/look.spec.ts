@@ -77,7 +77,7 @@ test('Settings shows the look, the top and the colours, each opening its own pag
   await expect(page.locator('.hdr .title')).toHaveText('Look');
   // The looks: Aurora Glass chosen, first, then A to Z (D71); all can be chosen, none "Coming next"; only looks here.
   await expect(page.locator('input[name="look"][value="aurora"]')).toBeChecked();
-  await expect(page.locator('.ap-card .ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
+  await expect(page.locator('.ap-card .ap-name')).toHaveText(['Aurora Glass', 'Daylight Mint', 'Daylight Pearl', 'Daylight Sky', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
   for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
   await expect(page.getByText('Coming next')).toHaveCount(0);
   await expect(page.locator('input[name="top"], input[name="preset"], .ap-preview')).toHaveCount(0);
