@@ -103,6 +103,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
+- CI's test job may run 30 minutes (0.62.1): the browser tests take 15 to 20 on a GitHub runner. A run "cancelled" at the
+  limit with no test failed means the suite outgrew it, not a flaky test.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
@@ -178,13 +180,13 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
-- **Dev:** the same as live.
+- **Dev:** 0.62.1: live plus the Daylight looks (D72).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Daylight looks** — in a pull request (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky,
-   light cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: "merge",
-   then Anton tries them on GT Dev.
+1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
+   cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
+   GT Dev, then "go live".
 
 ### Done (newest first)
 

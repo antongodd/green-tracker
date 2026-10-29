@@ -1550,6 +1550,11 @@ None.
 
 ## 6. Changelog
 
+### 0.62.1 — CLAUDE.md: the Daylight looks are on dev
+- D72 is on dev (2026-10-29); Anton tries them on GT Dev before they go live.
+- CI: the test job may run for 30 minutes, not 20. The browser tests now take 15 to 20 minutes on a GitHub runner, and
+  this pull request's first run was cut off at 20 minutes with no test failed.
+
 ### 0.62.0 — three light looks: the Daylights (owner request)
 - Decision D72. Daylight Mint, Daylight Pearl and Daylight Sky, fifteen looks in all: light colours, the iPhone's
   own controls and status bar in their light style, and light cards for the colour sets. Everyone starts dark; a light
