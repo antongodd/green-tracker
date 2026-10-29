@@ -103,6 +103,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
+- CI's test job may run 30 minutes (0.62.1): the browser tests take 15 to 20 on a GitHub runner. A run "cancelled" at the
+  limit with no test failed means the suite outgrew it, not a flaky test.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
