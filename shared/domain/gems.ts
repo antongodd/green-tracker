@@ -80,8 +80,11 @@ export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `$
  * Holo Pearl's and Deep Forest's title fonts are from before it).
  */
 export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze' | 'daymint' | 'daypearl' | 'daysky';
-/** In the order Appearance lists them (D71): Aurora Glass, everyone's first look, then A to Z by name. */
-export const LOOK_KEYS = ['aurora', 'daymint', 'daypearl', 'daysky', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura'] as const satisfies readonly Look[];
+/**
+ * In the order Appearance lists them: under Dark mode, Aurora Glass (everyone's first look, D71), then A to Z by
+ * name; under Light mode (D73), at the end, the light looks A to Z.
+ */
+export const LOOK_KEYS = ['aurora', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura', 'daymint', 'daypearl', 'daysky'] as const satisfies readonly Look[];
 /** The looks you can choose (a look not listed would show as "Coming next"). All of them. */
 export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
 /** Marked New in Appearance (D70). */
