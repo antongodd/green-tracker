@@ -181,21 +181,19 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
-- **Dev:** 0.63.1: live plus the Daylight looks (D72) and the Look page's Dark mode and Light mode (D73).
+- **Live:** 0.63.1 (live 2026-10-30): everything up to the Daylight looks and the Look page's Dark mode and Light mode (D73).
+- **Dev:** the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
-   cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
-   GT Dev, then "go live".
-2. **Look page in two sections** — **on dev** (0.63.0, D73, 2026-10-29): Dark mode (moon) and Light mode (sun)
-   headings, the Daylights at the bottom. Next: Anton tries it on GT Dev; it goes live with the Daylights.
+Nothing waiting. Ask Anton what's next.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |
+| Three light looks: Daylight Mint, Daylight Pearl, Daylight Sky (light cards; everyone starts dark) | 0.62.0 | D72 | 2026-10-29 | 2026-10-30 |
 | The top glows with your Look (the black hero fixed); new defaults (Slim strip, Gems); Looks and colours A to Z; Appearance in three pages | 0.61.0 | D71 | 2026-10-28 | 2026-10-28 |
 | Eight more Looks: Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze | 0.60.0 | D70 | 2026-10-27 | 2026-10-28 |
 | More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |

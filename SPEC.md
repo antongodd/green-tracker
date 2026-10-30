@@ -1558,6 +1558,9 @@ None.
 
 ## 6. Changelog
 
+### 0.63.2 — CLAUDE.md: the Daylight looks and the Look page's two sections are live
+- D72 and D73 (on dev 2026-10-29) went live on 2026-10-30 and move to Done. Notes only.
+
 ### 0.63.1 — CLAUDE.md: the Look page's two sections are on dev
 - D73 is on dev (2026-10-29), with D72's Daylights; both go live together on "go live". Notes only.
 
