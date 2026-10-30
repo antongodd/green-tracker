@@ -1558,6 +1558,13 @@ None.
 
 ## 6. Changelog
 
+### 0.63.2 — CLAUDE.md: the Daylight looks and the Look page's two sections are live
+- D72 and D73 (on dev 2026-10-29) went live on 2026-10-30 and move to Done.
+- Tests: `look.spec.ts`'s "buttons stay above the top" test now waits for the page's slide-in (`settled`) before
+  measuring. On CI it read the buttons and the top at different moments of the 6px slide and saw a 5px overlap that
+  isn't there (reproduced with slowed animations and a pause between the two reads; passes with the fix, and the
+  file passed 78 of 78 with `--workers=3 --repeat-each=6`).
+
 ### 0.63.1 — CLAUDE.md: the Look page's two sections are on dev
 - D73 is on dev (2026-10-29), with D72's Daylights; both go live together on "go live". Notes only.
 
