@@ -132,6 +132,9 @@ test('the Rank, colours and Type buttons stay above the top, whichever top, on t
       await page.goto(path);
       const stats = page.locator(top === 'tiles' ? '.tiles' : '.banner');
       await expect(stats).toBeVisible();
+      // 0.63.3: measured mid-way through the page's slide-in (6px), the two boxes, read one after the other, were
+      // caught at different moments and the buttons seemed to overlap the top by 5px (CI). Wait for it to finish.
+      await settled(page);
       const [controls, box] = [await page.locator('.controls').boundingBox(), await stats.boundingBox()];
       expect(controls!.y + controls!.height, `${top} ${path}`).toBeLessThanOrEqual(box!.y + 1);
     }
