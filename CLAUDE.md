@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D71 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D73 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D72), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D74), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D71.
+- Reopen any decision D1–D73.
 
 ## Testing notes
 
@@ -103,6 +103,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
+- CI's test job may run 30 minutes (0.62.1): the browser tests take 15 to 20 on a GitHub runner. A run "cancelled" at the
+  limit with no test failed means the suite outgrew it, not a flaky test.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
@@ -153,7 +155,12 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Appearance pages (D71): Look `/more/look`, Leaderboard top `/more/top`, Leaderboard colours `/more/colours` (with
   Mark my #1); `/more/appearance` opens Settings. The top of the Leaderboard (hero, strip, tiles) glows with the look
   (`--hero-glow`); the glass hero must never take the product page's `.hero` styles (its `::before` fade made it black).
-- Looks (D70): twelve, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
+- Light looks (D72): `daymint`, `daypearl`, `daysky` (`LIGHT_LOOKS`) set `html[data-tone="light"]`; anything with a colour
+  of its own needs a light version under `html[data-tone="light"]` (end of `styles.css`), and the coloured rows are light
+  cards there. `textBoxes` judges gradient text at both extremes. `daylight.spec.ts` sweeps screens with axe in each.
+  The Look page lists them last, under *Light mode* (D73; the dark looks under *Dark mode*): two `radiogroup`s, one
+  radio name. `LOOK_KEYS` keeps that order (`gems.test.ts`).
+- Looks (D70): fifteen since D72, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
   the background, never a font, size or shape (`looks.spec.ts` compares every position and font with Aurora Glass). A
   look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
   `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits for). Whatever drifts behind words
@@ -174,24 +181,23 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.59.0 (live 2026-10-27): everything up to five more Leaderboard colour sets (D69).
-- **Dev:** 0.61.0: live, plus eight more Looks (D70) and the glowing top, new defaults and Appearance pages (D71);
-  plus notes-only 0.61.1.
+- **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
+- **Dev:** 0.63.1: live plus the Daylight looks (D72) and the Look page's Dark mode and Light mode (D73).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **More Looks** — **on dev** (0.60.0, D70, 2026-10-27): eight more, changing only colours and the moving background
-   (Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze). Goes live together with item 2.
-2. **The top glows; new defaults; Appearance pages** — **on dev** (0.61.0, D71, 2026-10-28): the glass hero (no
-   longer black), strip and tiles glow with the Look; new accounts start on Slim strip and Gems; Looks and colours A
-   to Z after the default; Look, Leaderboard top and Leaderboard colours each on their own page. Next: Anton checks
-   items 1 and 2 on GT Dev, then "go live" for both.
-3. **Daylight** (a light Look, D70's second step): after that.
+1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
+   cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
+   GT Dev, then "go live".
+2. **Look page in two sections** — **on dev** (0.63.0, D73, 2026-10-29): Dark mode (moon) and Light mode (sun)
+   headings, the Daylights at the bottom. Next: Anton tries it on GT Dev; it goes live with the Daylights.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The top glows with your Look (the black hero fixed); new defaults (Slim strip, Gems); Looks and colours A to Z; Appearance in three pages | 0.61.0 | D71 | 2026-10-28 | 2026-10-28 |
+| Eight more Looks: Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze | 0.60.0 | D70 | 2026-10-27 | 2026-10-28 |
 | More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |
 | A how-to video on the website (checked on Anton's iPhone on the preview) | 0.58.0 | D68 | 2026-10-26 | 2026-10-26 |
 | Edible value for money: compares every type (20mg = 1g), Price and Value for money under All (checked on Anton's iPhone) | 0.57.0 | D67 | 2026-10-26 | 2026-10-26 |

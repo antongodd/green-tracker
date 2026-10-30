@@ -76,8 +76,13 @@ test('Settings shows the look, the top and the colours, each opening its own pag
   await expect(page).toHaveURL(/\/more\/look$/);
   await expect(page.locator('.hdr .title')).toHaveText('Look');
   // The looks: Aurora Glass chosen, first, then A to Z (D71); all can be chosen, none "Coming next"; only looks here.
+  // D73: two sections, Dark mode (with its moon) and Light mode (with its sun) at the end, the Daylights there.
   await expect(page.locator('input[name="look"][value="aurora"]')).toBeChecked();
-  await expect(page.locator('.ap-card .ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
+  await expect(page.locator('h2.ap-mode')).toHaveText(['Dark mode', 'Light mode']);
+  await expect(page.locator('h2.ap-mode svg')).toHaveCount(2);
+  await expect(page.getByRole('radiogroup', { name: 'Dark mode' }).locator('.ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
+  await expect(page.getByRole('radiogroup', { name: 'Light mode' }).locator('.ap-name')).toHaveText(['Daylight Mint', 'Daylight Pearl', 'Daylight Sky']);
+  await expect(page.locator('.ap-card .ap-name').last()).toHaveText('Daylight Sky');
   for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
   await expect(page.getByText('Coming next')).toHaveCount(0);
   await expect(page.locator('input[name="top"], input[name="preset"], .ap-preview')).toHaveCount(0);

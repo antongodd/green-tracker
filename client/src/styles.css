@@ -302,6 +302,71 @@ html[data-look="haze"] {
   --danger: #ff8a8a; /* a touch lighter than :root's, to stay readable over what drifts behind it */
 }
 
+/* Three light looks (D72, 0.62.0): the Daylights. Colours only, as every look (D70), plus the light
+   tone (html[data-tone="light"], set with the look by look.js and main.tsx): the iPhone's own controls
+   in their light style and light cards for the colour sets, below. Everyone starts dark (Aurora Glass);
+   a light look is only ever chosen. */
+/* Daylight Mint: cool mint-white, soft green, sky and sunny lights, dark green words, leaf-green buttons. */
+html[data-look="daymint"] {
+  --bg: #eef4f0; --surface-1: #ffffff; --surface-2: rgba(16, 32, 26, 0.05); --surface-3: #ffffff;
+  --glass: rgba(255, 255, 255, 0.66); --glass-strong: rgba(255, 255, 255, 0.82); --glass-edge: rgba(16, 32, 26, 0.13);
+  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)), #eef4f0;
+  --hairline: rgba(16, 32, 26, 0.1); --hairline-strong: rgba(16, 32, 26, 0.18);
+  --bar: color-mix(in srgb, #eef4f0 80%, transparent); --bar-solid: #eef4f0;
+  --text: #10201a; --text-2: rgba(16, 32, 26, 0.74); --text-3: rgba(16, 32, 26, 0.66);
+  --accent: #127a41; --accent-bright: #0e6a37; --accent-soft: rgba(22, 136, 74, 0.12); --on-accent: #ffffff;
+  --teal: #0f7373; --teal-bright: #0b6262; --violet: #5a48c8; --violet-bright: #4a3ab4;
+  --card-edge: rgba(16, 32, 26, 0.11); --divider: rgba(16, 32, 26, 0.08); --bar-line: rgba(16, 32, 26, 0.09); --photo-edge: 0 0 0 1px rgba(16, 32, 26, 0.1);
+  --bar-fill: linear-gradient(90deg, #127a41, #0f7373);
+  --grad: linear-gradient(100deg, #13703f, #14657e 55%, #4a3cc0);
+  --primary: linear-gradient(135deg, #17804a, #126f70);
+  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(88, 224, 140, 0.22), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(139, 123, 255, 0.14), transparent 60%);
+  --light-1: rgba(88, 224, 140, 0.32); --light-2: rgba(120, 190, 255, 0.28); --light-3: rgba(255, 214, 120, 0.26);
+  --sticky-bg: color-mix(in srgb, #eef4f0 72%, transparent); --controls-bg: color-mix(in srgb, #eef4f0 40%, transparent);
+  --danger: #c22c37; --star: #c98a0e;
+  --glow: rgba(22, 136, 74, 0.4); --tab-glow: var(--glow); --fab-glow: var(--glow);
+}
+/* Daylight Pearl: clean near-white with a faint pastel rainbow, graphite words, violet-blue buttons. */
+html[data-look="daypearl"] {
+  --bg: #f5f4f8; --surface-1: #ffffff; --surface-2: rgba(26, 26, 36, 0.05); --surface-3: #ffffff;
+  --glass: rgba(255, 255, 255, 0.66); --glass-strong: rgba(255, 255, 255, 0.82); --glass-edge: rgba(26, 26, 36, 0.13);
+  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)), #f5f4f8;
+  --hairline: rgba(26, 26, 36, 0.1); --hairline-strong: rgba(26, 26, 36, 0.18);
+  --bar: color-mix(in srgb, #f5f4f8 80%, transparent); --bar-solid: #f5f4f8;
+  --text: #1a1a24; --text-2: rgba(26, 26, 36, 0.74); --text-3: rgba(26, 26, 36, 0.66);
+  --accent: #4c3fc4; --accent-bright: #4033b0; --accent-soft: rgba(76, 63, 196, 0.1); --on-accent: #ffffff;
+  --teal: #13708f; --teal-bright: #0f5f7a; --violet: #6a3fc0; --violet-bright: #5a32aa;
+  --card-edge: rgba(26, 26, 36, 0.11); --divider: rgba(26, 26, 36, 0.08); --bar-line: rgba(26, 26, 36, 0.09); --photo-edge: 0 0 0 1px rgba(26, 26, 36, 0.1);
+  --bar-fill: linear-gradient(90deg, #4c3fc4, #13708f);
+  --grad: linear-gradient(100deg, #a82c64, #4c3fc4 50%, #13708f);
+  --primary: linear-gradient(135deg, #5345c9, #2c6fb8);
+  --hero-wash: linear-gradient(120deg, rgba(255, 154, 168, 0.16), rgba(255, 242, 168, 0.1) 30%, rgba(166, 240, 193, 0.12) 55%, rgba(159, 220, 255, 0.14) 78%, rgba(205, 189, 255, 0.18));
+  --light-1: rgba(255, 170, 190, 0.3); --light-2: rgba(170, 210, 255, 0.3); --light-3: rgba(210, 190, 255, 0.3);
+  --sticky-bg: color-mix(in srgb, #f5f4f8 72%, transparent); --controls-bg: color-mix(in srgb, #f5f4f8 40%, transparent);
+  --danger: #c22c37; --star: #c98a0e;
+  --glow: rgba(76, 63, 196, 0.35); --tab-glow: var(--glow); --fab-glow: var(--glow);
+}
+/* Daylight Sky: soft blue-white like a clear morning, a warm sunny glow, navy words, ocean-blue buttons. */
+html[data-look="daysky"] {
+  --bg: #eef3fa; --surface-1: #ffffff; --surface-2: rgba(15, 26, 44, 0.05); --surface-3: #ffffff;
+  --glass: rgba(255, 255, 255, 0.66); --glass-strong: rgba(255, 255, 255, 0.82); --glass-edge: rgba(15, 26, 44, 0.13);
+  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)), #eef3fa;
+  --hairline: rgba(15, 26, 44, 0.1); --hairline-strong: rgba(15, 26, 44, 0.18);
+  --bar: color-mix(in srgb, #eef3fa 80%, transparent); --bar-solid: #eef3fa;
+  --text: #0f1a2c; --text-2: rgba(15, 26, 44, 0.74); --text-3: rgba(15, 26, 44, 0.66);
+  --accent: #1460b8; --accent-bright: #0f55a6; --accent-soft: rgba(20, 96, 184, 0.1); --on-accent: #ffffff;
+  --teal: #0f6f80; --teal-bright: #0b5d6b; --violet: #5a48c8; --violet-bright: #4a3ab4;
+  --card-edge: rgba(15, 26, 44, 0.11); --divider: rgba(15, 26, 44, 0.08); --bar-line: rgba(15, 26, 44, 0.09); --photo-edge: 0 0 0 1px rgba(15, 26, 44, 0.1);
+  --bar-fill: linear-gradient(90deg, #1460b8, #0f6f80);
+  --grad: linear-gradient(100deg, #1460b8, #0f6f80 55%, #a2501c);
+  --primary: linear-gradient(135deg, #1f66c2, #137d90);
+  --hero-wash: radial-gradient(120% 90% at 100% 0%, rgba(255, 210, 120, 0.26), transparent 60%), radial-gradient(100% 90% at 0% 100%, rgba(120, 180, 255, 0.2), transparent 60%);
+  --light-1: rgba(120, 180, 255, 0.3); --light-2: rgba(255, 210, 120, 0.38); --light-3: rgba(140, 220, 230, 0.26);
+  --sticky-bg: color-mix(in srgb, #eef3fa 72%, transparent); --controls-bg: color-mix(in srgb, #eef3fa 40%, transparent);
+  --danger: #c22c37; --star: #c98a0e;
+  --glow: rgba(20, 96, 184, 0.35); --tab-glow: var(--glow); --fab-glow: var(--glow);
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 /* iPhone rules (brief §11) — do not undo:
@@ -1585,6 +1650,9 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .ap-preview .banner.hero .tile.lead b { font-size: 36px; }
 .ap-rows { display: grid; gap: 8px; padding-top: 16px; }
 .ap-cards { display: grid; gap: 10px; }
+/* D73: the Look page's Dark mode and Light mode headings, each with its moon or sun. */
+.ap-mode { display: flex; align-items: center; gap: 6px; }
+.ap-mode svg { width: 14px; height: 14px; flex: none; }
 .ap-cards.looks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ap-cards.tops { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .ap-card { position: relative; display: grid; gap: 2px; align-content: start; padding: 8px 8px 10px; border-radius: 16px; background: var(--glass); border: 1px solid var(--glass-edge); cursor: pointer; min-width: 0; }
@@ -1615,6 +1683,10 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .look-outrun { --sw-bg: #0a0420; --sw-lights: linear-gradient(transparent 62%, #ff7ae0 62% 64%, transparent 64%), repeating-linear-gradient(90deg, rgba(255, 79, 216, 0.6) 0 1px, transparent 1px 14px) 0 100% / 100% 36% no-repeat, radial-gradient(circle at 50% 66%, #ffb36b 0 18%, transparent 19%), linear-gradient(#0a0420, #3a0f52 60%, #0a0420 64%); --sw-card: rgba(20, 6, 40, 0.6); --sw-grad: linear-gradient(100deg, #7ff4ff, #ff8ad8); }
 .look-lava { --sw-bg: #12060c; --sw-lights: radial-gradient(circle at 25% 75%, rgba(255, 122, 60, 0.9) 0 22%, transparent 42%), radial-gradient(circle at 75% 30%, rgba(255, 61, 139, 0.8) 0 18%, transparent 38%), radial-gradient(circle at 60% 95%, rgba(255, 176, 60, 0.8) 0 14%, transparent 32%); --sw-card: rgba(255, 200, 170, 0.1); --sw-grad: linear-gradient(100deg, #ffe08a, #ff9a6b); }
 .look-haze { --sw-bg: #0c0b10; --sw-lights: radial-gradient(90% 50% at 20% 30%, rgba(214, 200, 255, 0.45), transparent 70%), radial-gradient(90% 40% at 80% 75%, rgba(185, 232, 207, 0.35), transparent 70%); --sw-card: rgba(235, 228, 255, 0.1); --sw-grad: linear-gradient(100deg, #ece4ff, #b9e8cf); }
+.look-daymint { --sw-bg: #eef4f0; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(88, 224, 140, 0.5), transparent 70%), radial-gradient(60% 70% at 100% 30%, rgba(120, 190, 255, 0.45), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(255, 214, 120, 0.45), transparent 70%); --sw-card: rgba(255, 255, 255, 0.8); --sw-grad: linear-gradient(100deg, #13703f, #14657e); }
+.look-daypearl { --sw-bg: #f5f4f8; --sw-lights: linear-gradient(120deg, rgba(255, 154, 168, 0.35), rgba(255, 242, 168, 0.25) 35%, rgba(159, 220, 255, 0.32) 70%, rgba(205, 189, 255, 0.4)); --sw-card: rgba(255, 255, 255, 0.85); --sw-grad: linear-gradient(100deg, #a82c64, #4c3fc4); }
+.look-daysky { --sw-bg: #eef3fa; --sw-lights: radial-gradient(70% 70% at 100% 0%, rgba(255, 210, 120, 0.6), transparent 70%), radial-gradient(70% 70% at 0% 70%, rgba(120, 180, 255, 0.45), transparent 70%); --sw-card: rgba(255, 255, 255, 0.82); --sw-grad: linear-gradient(100deg, #1460b8, #0f6f80); }
+:is(.look-daymint, .look-daypearl, .look-daysky) .look-sw i { border-color: rgba(16, 32, 26, 0.15); }
 /* Each top's little diagram. */
 .top-dia { display: grid; gap: 4px; align-content: start; height: 54px; padding: 7px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
 .top-dia i { display: block; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); }
@@ -1752,3 +1824,56 @@ html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-
 .fxline .warn { color: var(--warning); font-size: 13px; }
 /* Settings → Money → Main currency: each currency's sign in its own tile. */
 .cur-row .cur-sign { flex: none; display: grid; place-items: center; width: 44px; height: 30px; border-radius: 8px; background: rgba(240, 196, 106, 0.14); color: #f0c46a; font-size: 12px; font-weight: 800; white-space: nowrap; }
+
+/* ---------- the light tone (D72): the three Daylights ----------
+   Everything that had a dark colour of its own (made for the dark looks) takes a light one here.
+   The photo viewer, cropper and cut-out tools stay black, as photos look best on black. */
+html[data-tone="light"] { color-scheme: light; }
+/* Light cards (the owner's choice): a coloured row is a white card with its colour set shimmering
+   through at the edges, stronger band by band (the white layer thins as the score rises, as the dark
+   one does in the dark looks); the score and rank in a deep shade of the colours (--tier-ink). The
+   swatches (Colours key, Appearance) and a product page's badge are the same light cards. */
+html[data-tone="light"] :is(.row.tier, .tiered, .swatch, .gem-badge) { --tier-ink: linear-gradient(90deg, color-mix(in srgb, var(--t1) 38%, var(--text)), color-mix(in srgb, var(--t2) 38%, var(--text)), color-mix(in srgb, var(--t3) 38%, var(--text)), color-mix(in srgb, var(--t4) 38%, var(--text)), color-mix(in srgb, var(--t5) 38%, var(--text)), color-mix(in srgb, var(--t6) 38%, var(--text)), color-mix(in srgb, var(--t1) 38%, var(--text)), color-mix(in srgb, var(--t2) 38%, var(--text)), color-mix(in srgb, var(--t3) 38%, var(--text)), color-mix(in srgb, var(--t4) 38%, var(--text)), color-mix(in srgb, var(--t5) 38%, var(--text)), color-mix(in srgb, var(--t6) 38%, var(--text)), color-mix(in srgb, var(--t1) 38%, var(--text))); }
+html[data-tone="light"] :is(.row.tier, .swatch[class*="band"]) {
+  background: linear-gradient(115deg, rgba(255, 255, 255, calc(var(--d1) - 0.1)), rgba(255, 255, 255, calc(var(--d2) - 0.06)) 70%) padding-box, var(--tier-grad) padding-box, var(--tier-grad) border-box;
+  background-size: 100% 100%, 200% 100%, 200% 100%;
+}
+html[data-tone="light"] .row.tier { color: var(--text); }
+html[data-tone="light"] :is(.row.tier .meta, .row.tier .score .cap) { color: var(--text-2); }
+html[data-tone="light"] .row.tier .rk { color: color-mix(in srgb, var(--t4) 38%, var(--text)); }
+html[data-tone="light"] :is(.row.tier .score b, .tiered .hero-score b, .gem-badge .n, .gem-badge .gem) { color: color-mix(in srgb, var(--t2) 38%, var(--text)); background: var(--tier-ink); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+html[data-tone="light"] .gem-badge { color: var(--text);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.92) 70%) padding-box, var(--tier-grad) padding-box, var(--tier-grad) border-box;
+  background-size: 100% 100%, 200% 100%, 200% 100%; }
+/* The colour sets' effects in deeper shades, so they show on white. */
+html[data-tone="light"] :is(.glint::before, .glint::after) { background: var(--t4); }
+html[data-tone="light"] .tfx-stars i:not(.nebula) { background: var(--t4); box-shadow: 0 0 4px var(--t2); }
+html[data-tone="light"] .tfx-plankton i { background: var(--t4); box-shadow: 0 0 5px var(--t2); }
+html[data-tone="light"] :is(.tfx-grid i.floor) { background: repeating-linear-gradient(90deg, var(--t4) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, var(--t4) 0 1px, transparent 1px 5px); }
+/* Below 8 the heat glow stays; its score in a deeper shade of the heat. */
+html[data-tone="light"] :is(.row[data-heat] .score b, .rbar[data-heat] .v, .rate[data-heat] .rate-top .val:not(input)) { color: color-mix(in srgb, var(--heat) 45%, var(--text)); }
+/* A product page: the fade behind the name is the look's own background, and its words are dark. */
+html[data-tone="light"] .hero::before { background: linear-gradient(180deg, transparent 0, color-mix(in srgb, var(--bg) 55%, transparent) 60px, color-mix(in srgb, var(--bg) 86%, transparent) 130px, color-mix(in srgb, var(--bg) 94%, transparent) 75%, var(--bg) 100%); }
+html[data-tone="light"] :is(.hero-score .cap, .hero-line) { color: var(--text-2); }
+/* Greys, tracks and panes that were light-on-dark. */
+html[data-tone="light"] :is(.rbar.muted .fill, .rate.muted .slider-fill) { background: color-mix(in srgb, var(--text) 28%, transparent); }
+html[data-tone="light"] .sk { background: color-mix(in srgb, var(--text) 7%, transparent); }
+html[data-tone="light"] .data-progress .bar { background: color-mix(in srgb, var(--text) 9%, transparent); }
+html[data-tone="light"] .pv-nothing { border-color: color-mix(in srgb, var(--text) 16%, transparent); }
+html[data-tone="light"] .ap-card .radio { background: color-mix(in srgb, var(--bg) 70%, transparent); }
+html[data-tone="light"] .top-dia { background: color-mix(in srgb, var(--text) 4%, transparent); }
+html[data-tone="light"] .top-dia i { background: color-mix(in srgb, var(--text) 18%, transparent); }
+html[data-tone="light"] .tag-latest { background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--bg); }
+html[data-tone="light"] .fx { background: linear-gradient(rgba(90, 72, 200, 0.12), rgba(90, 72, 200, 0.12)), var(--bg); border-color: rgba(90, 72, 200, 0.35); }
+html[data-tone="light"] .fxline { background: linear-gradient(rgba(90, 72, 200, 0.07), rgba(90, 72, 200, 0.07)), var(--surface-1); border-color: rgba(90, 72, 200, 0.25); }
+html[data-tone="light"] .switch::after { background: #ffffff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+/* Strain tags, icons and small labels in colours that read on white. */
+html[data-tone="light"] .tag.indica { color: #5b3fc4; border-color: rgba(91, 63, 196, 0.35); background: rgba(91, 63, 196, 0.07); }
+html[data-tone="light"] .tag.sativa { color: #8a5600; border-color: rgba(138, 86, 0, 0.35); background: rgba(240, 169, 59, 0.1); }
+html[data-tone="light"] .tag.hybrid { color: #0f6b38; border-color: rgba(15, 107, 56, 0.35); background: rgba(22, 136, 74, 0.08); }
+html[data-tone="light"] :is(.li-ic.amber, .cur-row .cur-sign) { color: #8a5600; }
+html[data-tone="light"] :is(.li-ic.teal, .data-mark.teal, .role.shop) { color: var(--teal-bright); }
+html[data-tone="light"] :is(.li-ic.violet, .pv-cap, .pv-cap a, .pv-note a) { color: var(--violet-bright); }
+html[data-tone="light"] .li-ic.gem { color: #7a3fc0; }
+/* No drifting extras on the light looks: their lights alone. */
+html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::after { content: none; }
