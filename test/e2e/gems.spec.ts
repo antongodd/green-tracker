@@ -276,7 +276,7 @@ test('Reduce Motion keeps the colours but nothing moves, sweeps or twinkles', as
   await owner.emulateMedia({ reducedMotion: 'no-preference' });
 });
 
-test('a friend’s product page gets its colour and place on their board, worked out only from what you can see, in your preset', async () => {
+test('a friend’s product page gets its colour and place on their board, worked out only from what you can see, in their preset', async () => {
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.row.tier')).toHaveCount(5);
   await fan.locator('.row', { hasText: 'Alpha' }).click();
@@ -295,10 +295,15 @@ test('a friend’s product page gets its colour and place on their board, worked
   await expect(fan.locator('main')).toHaveAttribute('data-band', 'none');
   await expect(fan.locator('.gem-badge')).toHaveCount(0);
 
-  // The fan's own preset, not the owner's.
+  // The owner's preset, not the fan's (D74; the fan's own before).
   expect(await appearance(fan, { preset: 'prism', markFirst: true })).toBe(200);
+  await fan.goto(`/u/${ownerName}`);
+  await expect(fan.locator('.row.tier.pal-gems')).toHaveCount(5);
+  await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(0);
+  expect(await appearance(owner, { preset: 'prism', markFirst: true })).toBe(200);
   await open(fan, `/u/${ownerName}/p/${ids.Delta}`);
   await expect(fan.locator('.gem-badge')).toHaveText('Prism · #4 on their Leaderboard');
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(5);
+  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'gems', markFirst: true })).toBe(200);
 });

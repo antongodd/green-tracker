@@ -1,9 +1,10 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { countryDisplay } from '../../../shared/domain/countries';
 import { formatScore } from '../../../shared/domain/format';
 import type { Band } from '../../../shared/domain/gems';
 import { boardPlace, leaderboardEmptyState, leaderboardTiles, rankByCaption, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
-import { ColoursSheet, Effects, pageClass, RankCrown, rowClass, useAppearance } from '../components/Gems';
+import { ColoursSheet, Effects, InTheirLook, pageClass, RankCrown, rowClass, useAppearance } from '../components/Gems';
 import { ProductHero } from '../components/ProductHero';
 import { heatStyle } from '../heat';
 import { photoUrl } from '../../../shared/domain/photo';
@@ -26,6 +27,7 @@ import * as api from '../people';
 import { cameFrom, linkTo, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadOthersView, saveOthersView } from '../viewState';
+import { useTheirLook } from '../theirLook';
 import { Avatar } from '../components/Avatar';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
@@ -38,6 +40,15 @@ const shown = (ph: { id: string; version: string; cutout: boolean }): ShownPhoto
 
 /** Where someone's board lives: theirs under /u/…, or your own as followers see it (D45). */
 const boardPath = (username: string, preview?: boolean) => (preview ? '/more/privacy/preview' : `/u/${enc(username)}`);
+
+/**
+ * Their pages in their look, top and colours (D74); your own board as followers see it (D45) is in
+ * yours, which is the same thing. Each screen returns it as its root in every state, so their look
+ * stays on while the screen moves from loading to loaded.
+ */
+function Theirs(p: { username: string; preview?: boolean; children: ComponentChildren }) {
+  return p.preview ? <>{p.children}</> : <InTheirLook username={p.username}>{p.children}</InTheirLook>;
+}
 
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
 function SharedRow(p: { username: string; product: SharedProduct; rank: number; band: Band | null; first: boolean; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean }) {
@@ -203,7 +214,7 @@ export function Person(p: { username: string; preview?: boolean }) {
       </>
     );
   }
-  if (!person) return <><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="people" /></>;
+  if (!person) return <Theirs username={p.username} preview={p.preview}><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="people" /></Theirs>;
   if (person.relation !== 'following') return <Stranger person={person} onChange={setPerson} />;
 
   const rows = products ? rankProducts(products, view) : [];
@@ -219,7 +230,7 @@ export function Person(p: { username: string; preview?: boolean }) {
 
   // "@username" in the header is the signal you're viewing someone else's tracker (design §8).
   return (
-    <>
+    <Theirs username={p.username} preview={p.preview}>
       <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to={back} />} />
       <main class="screen">
         {p.preview && <PreviewNote />}
@@ -268,8 +279,8 @@ export function Person(p: { username: string; preview?: boolean }) {
         )}
       </main>
       <TabBar active={tab} />
-      {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
-    </>
+      {showKey && <ColoursSheet onClose={() => setShowKey(false)} owner={p.preview ? undefined : person.username} />}
+    </Theirs>
   );
 }
 
@@ -286,7 +297,10 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   // same Rank by as their board.
   const [list, setList] = useState<SharedProduct[] | null>(null);
   const [view, setView] = useState(() => loadOthersView());
-  const appearance = useAppearance();
+  // Read here, outside the page's own InTheirLook: theirs once known (D74), your own on the preview.
+  const own = useAppearance();
+  const theirs = useTheirLook(p.username);
+  const appearance = (!p.preview && theirs) || own;
 
   useEffect(() => {
     const board = p.preview ? fetchPreview() : api.theirBoard(p.username);
@@ -312,11 +326,11 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const tab = p.preview ? 'more' : 'people';
   if (!product) {
     return (
-      <>
+      <Theirs username={p.username} preview={p.preview}>
         <Header title={`@${p.username}`} leaf={false} left={<BackButton to={backTo} />} />
         <main class="screen">{error ? <div class="empty"><h2>Not available</h2><p>{error}</p></div> : <Skeleton kind="product" />}</main>
         <TabBar active={tab} />
-      </>
+      </Theirs>
     );
   }
   const o = overall(product.productType, product.ratings);
@@ -337,7 +351,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const value = (k: string, v: string) => (k === 'Source' ? <NameLink name={v} to={brandPath(v, backTo)} /> : v);
 
   return (
-    <>
+    <Theirs username={p.username} preview={p.preview}>
       <Header title={`@${p.username} / ${product.name}`} leaf={false} left={<BackButton to={backTo} />} />
       <main class={`screen${pageClass(place, appearance)}`} data-band={list ? place?.band ?? 'none' : undefined}>
         <ProductHero
@@ -372,7 +386,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
       </main>
       <TabBar active={tab} />
       {viewing !== null && <PhotoViewer photos={photos} start={viewing} onClose={() => setViewing(null)} />}
-    </>
+    </Theirs>
   );
 }
 
@@ -397,7 +411,7 @@ export function TheirBrandPage(p: { username: string; name: string; preview?: bo
   const backTo = boardPath(p.username, p.preview);
   const tab = p.preview ? 'more' : 'people';
   return (
-    <>
+    <Theirs username={p.username} preview={p.preview}>
       <Header title={name} leaf={false} left={<BackButton to={backTo} />} />
       <main class="screen">
         {p.preview && <PreviewNote />}
@@ -434,6 +448,6 @@ export function TheirBrandPage(p: { username: string; name: string; preview?: bo
         )}
       </main>
       <TabBar active={tab} />
-    </>
+    </Theirs>
   );
 }
