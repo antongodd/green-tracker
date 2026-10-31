@@ -4,7 +4,8 @@ import { DEFAULT_APPEARANCE, type Appearance } from '../../shared/domain/gems';
 import { emptyProductInput } from '../../shared/domain/product';
 import { Browser, signUp } from './client';
 
-// Appearance (D48, 0.41.0): your Leaderboard colours and #1 mark, saved to your account.
+// Appearance (D48, 0.41.0): your Leaderboard colours and #1 mark, saved to your account; since D74
+// your approved followers get it with your board, so they see it in your look.
 
 describe('appearance settings (D48)', () => {
   it('start on Gems with #1 marked, come with who you are, are yours only, and refuse anything but a full set', async () => {
@@ -51,20 +52,49 @@ describe('appearance settings (D48)', () => {
     }
   });
 
-  it('never reaches anyone else: a friend’s board carries no appearance', async () => {
+  it('reaches only approved followers, with their board and product pages (D74; D48 kept it from everyone)', async () => {
     const owner = new Browser();
     const fan = new Browser();
+    const asker = new Browser();
     const ownerName = (await signUp(owner)).username;
     const fanName = (await signUp(fan)).username;
-    await owner.req('PUT', '/api/appearance', { preset: 'metals', markFirst: false });
-    await owner.post('/api/products', { ...emptyProductInput(), name: 'Shown', ratings: { look: 9 } });
+    await signUp(asker);
+    const theirs: Appearance = { look: 'outrun', top: 'tiles', preset: 'metals', markFirst: false };
+    expect((await owner.req('PUT', '/api/appearance', theirs)).status).toBe(200);
+    const shown = (await owner.post('/api/products', { ...emptyProductInput(), name: 'Shown', ratings: { look: 9 } })).json.product;
+    const hidden = (await owner.post('/api/products', { ...emptyProductInput(), name: 'Hidden', private: true, ratings: { look: 9 } })).json.product;
+    // Not following, or only asked: their name and nothing else (brief §5).
+    await asker.post(`/api/people/u/${ownerName}/follow`);
+    for (const path of [`/api/people/u/${ownerName}`, `/api/people/u/${ownerName}/products`, `/api/people/u/${ownerName}/products/${shown.id}`]) {
+      const r = await asker.get(path);
+      expect(JSON.stringify(r.json), path).not.toMatch(/outrun|metals|preset|markFirst|appearance/i);
+    }
     await fan.post(`/api/people/u/${ownerName}/follow`);
     expect((await owner.post(`/api/people/requests/${fanName}/approve`)).status).toBe(200);
+    // Approved: their four choices come with their board and each product page, and nothing more.
     const board = await fan.get(`/api/people/u/${ownerName}/products`);
     expect(board.status).toBe(200);
-    expect(JSON.stringify(board.json)).not.toMatch(/metals|preset|markFirst|appearance/i);
+    expect(board.json.appearance).toEqual(theirs);
+    expect(Object.keys(board.json).sort()).toEqual(['appearance', 'person', 'products']);
+    const page = await fan.get(`/api/people/u/${ownerName}/products/${shown.id}`);
+    expect(page.json.appearance).toEqual(theirs);
+    expect(Object.keys(page.json).sort()).toEqual(['appearance', 'person', 'product']);
+    // A private product is still not found, appearance or not.
+    const missing = await fan.get(`/api/people/u/${ownerName}/products/${hidden.id}`);
+    expect(missing.status).toBe(404);
+    expect(JSON.stringify(missing.json)).not.toMatch(/outrun|metals/i);
+    // The person card alone carries none of it.
+    expect(JSON.stringify((await fan.get(`/api/people/u/${ownerName}`)).json)).not.toMatch(/outrun|metals|appearance/i);
+    // A change shows on the next load; unfollowing ends it at once.
+    const next: Appearance = { look: 'daysky', top: 'hero', preset: 'gems', markFirst: true };
+    await owner.req('PUT', '/api/appearance', next);
+    expect((await fan.get(`/api/people/u/${ownerName}/products`)).json.appearance).toEqual(next);
     // The fan's own setting is untouched.
     expect((await fan.get('/api/appearance')).json.appearance).toEqual(DEFAULT_APPEARANCE);
+    await fan.req('DELETE', `/api/people/u/${ownerName}/follow`);
+    const after = await fan.get(`/api/people/u/${ownerName}/products`);
+    expect(after.status).toBe(403);
+    expect(JSON.stringify(after.json)).not.toMatch(/daysky|appearance/i);
   });
 });
 

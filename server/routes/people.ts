@@ -6,14 +6,16 @@ import { hit } from '../lib/rateLimit';
 import { requireUser } from '../lib/session';
 import { blockedEitherWay, canView, findUser, photoColumnSql, relationTo, shareProducts, toCards, visiblePhoto, type UserRef } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
+import { loadAppearance } from '../lib/appearance';
 import { serveImage } from '../lib/photos';
 import { load } from './products';
 
 // People (brief §5). Following is one-way and needs approval; blocks remove follows
 // both ways and hide the blocker. Nothing about another person is ever returned
 // except their username and your own relation to them, unless you're an approved
-// follower — and then only the shared product fields (lib/social.ts). Profile
-// photos (D23) are added only where lib/social.ts's photo rule allows.
+// follower — and then only the shared product fields (lib/social.ts) and their
+// appearance (D74: their board is seen in their look). Profile photos (D23) are
+// added only where lib/social.ts's photo rule allows.
 
 export const people = new Hono<AppEnv>();
 people.use('*', requireUser());
@@ -188,21 +190,23 @@ async function sharedFor(c: Context<AppEnv>) {
   // D45: their own privacy settings decide what is shared, on every request.
   const privacy = await loadEffectivePrivacy(db, them.id);
   const products = privacy.shareBoard ? shareProducts(await load(db, them.id, { archived: false }), privacy) : [];
-  return { them, products };
+  // D74: their look, top and colours, so their board and product pages look the way they chose.
+  const appearance = await loadAppearance(db, them.id);
+  return { them, products, appearance };
 }
 
-/** Their Leaderboard: visible products, shared fields only (D45). */
+/** Their Leaderboard: visible products, shared fields only (D45), in their appearance (D74). */
 people.get('/u/:username/products', async (c) => {
-  const { them, products } = await sharedFor(c);
-  return c.json({ person: await card(c, them, 'following'), products });
+  const { them, products, appearance } = await sharedFor(c);
+  return c.json({ person: await card(c, them, 'following'), products, appearance });
 });
 
 /** One of their product profiles. Private, archived or unknown → not found. */
 people.get('/u/:username/products/:id', async (c) => {
-  const { them, products } = await sharedFor(c);
+  const { them, products, appearance } = await sharedFor(c);
   const product = products.find((p) => p.id === c.req.param('id'));
   if (!product) fail(404, 'not_found', 'That product isn’t available.');
-  return c.json({ person: await card(c, them, 'following'), product });
+  return c.json({ person: await card(c, them, 'following'), product, appearance });
 });
 
 // Their profile photo (D23) -----------------------------------------------------

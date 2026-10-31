@@ -1329,6 +1329,8 @@ html.vt-back::view-transition-old(root) { animation: gt-vt-out 0.22s ease-out bo
 html.vt-back::view-transition-new(root) { animation: gt-vt-in 0.24s ease-out both; }
 @keyframes gt-vt-out { to { opacity: 0; } }
 @keyframes gt-vt-in { from { opacity: 0; } }
+/* Someone's look fading in over yours on their board (D74, screenLook.ts): the whole screen cross-fades. */
+html.vt-look::view-transition-old(root), html.vt-look::view-transition-new(root) { animation-duration: 0.35s; animation-timing-function: ease-out; }
 
 /* ---------- loading placeholders (D37, 0.30.0) ----------
    Faint shapes laid out like the screen that's coming; a soft green-white light sweeps across
