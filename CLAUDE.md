@@ -187,13 +187,13 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.63.1 (live 2026-10-30): everything up to the Daylight looks and the Look page's Dark mode and Light mode (D73).
-- **Dev:** the same as live.
+- **Dev:** 0.64.1: live plus their look on their pages (D74).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Their look on their pages** — pull request into `dev` open (0.64.0, D74): someone you follow's board, product and
-   brand pages in their Look, top and colours, fading in as their board arrives (option B); yours comes back when you
-   leave. Next: "merge", then Anton tries it on GT Dev.
+1. **Their look on their pages** — **on dev** (0.64.0, D74, 2026-10-31): someone you follow's board, product and brand
+   pages in their Look, top and colours, fading in as their board arrives (option B); yours comes back when you leave.
+   Next: Anton tries it on GT Dev (with a follower whose look differs), then "go live".
 
 ### Done (newest first)
 

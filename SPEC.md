@@ -1584,6 +1584,9 @@ None.
 
 ## 6. Changelog
 
+### 0.64.1 — CLAUDE.md: their look on their pages is on dev
+- D74 is on dev (2026-10-31); Anton tries it on GT Dev before it goes live. Notes only.
+
 ### 0.64.0 — their look on their pages (owner request)
 - Decision D74. Someone you follow's board, product pages and brand pages show in their Look, Leaderboard top and
   colours (with their Mark my #1); their look fades in as their board arrives and stays on between their pages; leaving
