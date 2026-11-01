@@ -173,7 +173,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
   `useAppearance` there returns theirs. A component that reads the appearance outside its own wrapper (as
   `SharedProfile` does for its hero) must use `useTheirLook`. The look on the screen goes through `screenLook.ts`
   (`setOwnLook`, `borrowLook`), never straight to `html[data-look]`. Record the looks a page shows with a
-  MutationObserver (`theirlook.spec.ts` `recordLooks`); a fade shows as `+fade` (`html.vt-look`).
+  MutationObserver (`theirlook.spec.ts` `recordLooks`); a fade shows as `+fade` (`html.vt-look`). To change screen
+  without a reload, wait for `.tabs` first (`theirlook.spec.ts` `go`): the router listens only after the first render.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -187,7 +188,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.63.1 (live 2026-10-30): everything up to the Daylight looks and the Look page's Dark mode and Light mode (D73).
-- **Dev:** 0.64.1: live plus their look on their pages (D74).
+- **Dev:** 0.64.2: live plus their look on their pages (D74).
 
 ### To-do list (suggested order; Anton decides)
 

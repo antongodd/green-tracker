@@ -43,12 +43,18 @@ const recordLooks = (page: Page) =>
   });
 const looks = (page: Page) => page.evaluate(() => (window as unknown as { looks: string[] }).looks);
 const html = (page: Page) => page.locator('html');
-/** Opens a path inside the app (no reload), as tapping a link does (router.ts follows history). */
-const go = (page: Page, path: string) =>
-  page.evaluate((path) => {
+/**
+ * Opens a path inside the app (no reload), as tapping a link does (router.ts follows history). It waits
+ * for the tab bar first: the router starts listening just after the app's first render, and a jump made
+ * before then changed the address but not the screen (0.64.2: once on CI, straight after a page load).
+ */
+const go = async (page: Page, path: string) => {
+  await expect(page.locator('.tabs')).toBeVisible();
+  await page.evaluate((path) => {
     history.pushState(null, '', path);
     dispatchEvent(new PopStateEvent('popstate'));
   }, path);
+};
 
 test.beforeAll(async ({ browser }) => {
   ({ page: owner, name: ownerName } = await person(browser, 'look'));
