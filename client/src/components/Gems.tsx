@@ -3,15 +3,40 @@
 // its row's colour: a holo badge, a haze and a flowing score; Rainbow and the 9.0 band also
 // sweep the photo as it opens; Metals' Diamond twinkles, and D69's sets each have an effect
 // of their own (Effects). Styled in styles.css.
-import type { JSX } from 'preact';
+import { createContext, type ComponentChildren, type JSX } from 'preact';
+import { useContext, useLayoutEffect, useRef } from 'preact/hooks';
 import { bandEffect, bandName, bandRange, DEFAULT_APPEARANCE, PRESETS, type Appearance, type Band, type Effect } from '../../../shared/domain/gems';
 import { placeBadge, type RankableProduct, type RankedRow, type ViewState } from '../../../shared/domain/leaderboard';
 import { CrownIcon } from '../icons';
 import { linkTo } from '../router';
+import { borrowLook } from '../screenLook';
 import { useSession } from '../session';
+import { useTheirLook } from '../theirLook';
 
-/** Your appearance settings (D48); the defaults until you've signed in. */
-export const useAppearance = (): Appearance => useSession().me.appearance ?? DEFAULT_APPEARANCE;
+const Theirs = createContext<Appearance | null>(null);
+
+/** Your appearance settings (D48), or theirs inside InTheirLook (D74); the defaults until you've signed in. */
+export function useAppearance(): Appearance {
+  const theirs = useContext(Theirs);
+  const own = useSession().me.appearance ?? DEFAULT_APPEARANCE;
+  return theirs ?? own;
+}
+
+/**
+ * The board and product pages of someone you follow, in their look, top and colours (D74), once
+ * known. A look known when the screen opens is on before it's drawn (so going between their pages
+ * never shows yours); one that arrives later fades in. Leaving puts yours back.
+ */
+export function InTheirLook(p: { username: string; children: ComponentChildren }) {
+  const theirs = useTheirLook(p.username);
+  const opened = useRef(false);
+  useLayoutEffect(() => {
+    if (theirs) borrowLook(theirs.look, opened.current);
+    opened.current = true;
+  }, [theirs?.look]);
+  useLayoutEffect(() => () => borrowLook(null), []);
+  return <Theirs.Provider value={theirs}>{p.children}</Theirs.Provider>;
+}
 
 type Look = Pick<RankedRow<RankableProduct>, 'band' | 'first'>;
 
@@ -140,8 +165,8 @@ export function ColoursButton(p: { onClick: () => void }) {
 
 const BANDS: Band[] = [1, 2, 3, 4];
 
-/** The key (D48): each colour in your preset and the scores that earn it, top first. */
-export function ColoursSheet(p: { onClose: () => void }) {
+/** The key (D48): each colour in your preset and the scores that earn it, top first; on a friend's board their preset (D74). */
+export function ColoursSheet(p: { onClose: () => void; owner?: string }) {
   const a = useAppearance();
   return (
     <>
@@ -150,7 +175,7 @@ export function ColoursSheet(p: { onClose: () => void }) {
         <div class="grp">
           <div class="ttl">
             <strong id="key-title">Leaderboard colours</strong>
-            A product’s colour comes from its score. Yours are {PRESETS[a.preset].label}.
+            A product’s colour comes from its score. {p.owner ? `@${p.owner}’s are` : 'Yours are'} {PRESETS[a.preset].label}.
           </div>
           <ul class="key-list">
             {[...BANDS].reverse().map((b) => (
@@ -171,14 +196,16 @@ export function ColoursSheet(p: { onClose: () => void }) {
                   <CrownIcon />
                 </span>
                 <b>Crown and halo</b>
-                <span class="range">your #1</span>
+                <span class="range">{p.owner ? 'their #1' : 'your #1'}</span>
               </li>
             )}
           </ul>
           <p class="key-note">Price and value for money aren’t scores, so they have no colours.</p>
-          <a class="opt" href="/more/colours" onClick={linkTo('/more/colours')}>
-            Change colours
-          </a>
+          {!p.owner && (
+            <a class="opt" href="/more/colours" onClick={linkTo('/more/colours')}>
+              Change colours
+            </a>
+          )}
         </div>
         <div class="grp">
           <button type="button" class="opt bold" onClick={p.onClose} autoFocus>

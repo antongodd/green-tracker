@@ -2,7 +2,9 @@ import { render } from 'preact';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import './styles.css';
 import { api, type Me } from './api';
-import { DEFAULT_APPEARANCE, LIGHT_LOOKS, LOOK_BG } from '../../shared/domain/gems';
+import { DEFAULT_APPEARANCE } from '../../shared/domain/gems';
+import { setOwnLook } from './screenLook';
+import { forgetTheirLooks } from './theirLook';
 import { LeafGlass } from './icons';
 import { navigate, usePath } from './router';
 import { registerServiceWorker, useOnline } from './online';
@@ -50,6 +52,7 @@ function App() {
           clearProductCache();
           clearPrivacyCache();
           clearEntryCache();
+          forgetTheirLooks();
         }
         return next;
       });
@@ -63,23 +66,11 @@ function App() {
     refresh();
   }, [refresh]);
 
-  // The whole app's look (D64, D65): html[data-look] picks its colours, the Home Screen app's top bar
-  // follows, and this phone remembers it so the next launch opens in it (look.js). Signed out, the
-  // last look stays until someone signs in.
+  // The whole app's look (D64, D65, D72): screenLook.ts puts it on (someone you follow's instead on their
+  // pages, D74). Signed out, the last look stays until someone signs in.
   const look = me?.user ? (me.appearance?.look ?? DEFAULT_APPEARANCE.look) : null;
   useEffect(() => {
-    if (!look) return;
-    document.documentElement.dataset.look = look;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', LOOK_BG[look]);
-    // D72: a light look takes the light tone, and the iPhone's own controls and status bar follow.
-    const light = LIGHT_LOOKS.includes(look);
-    if (light) document.documentElement.dataset.tone = 'light';
-    else delete document.documentElement.dataset.tone;
-    document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', light ? 'light' : 'dark');
-    document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')?.setAttribute('content', light ? 'default' : 'black-translucent');
-    try {
-      localStorage.setItem('gt.look', look);
-    } catch {}
+    if (look) setOwnLook(look);
   }, [look]);
 
   // Keep the address bar honest: signed-out people live on the sign-in paths, everyone else never sees them.

@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D73 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D74 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -66,7 +66,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D74), a changelog entry.
+- **SPEC.md:** the §4 section, a new decision number (next is D75), a changelog entry.
 - **Version:** bump `package.json`, then `npm install --package-lock-only`.
 - **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
 - Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
@@ -86,7 +86,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D73.
+- Reopen any decision D1–D74.
 
 ## Testing notes
 
@@ -169,6 +169,12 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
+- Their look (D74): a friend's board, product and brand pages are wrapped in `InTheirLook` (`components/Gems.tsx`);
+  `useAppearance` there returns theirs. A component that reads the appearance outside its own wrapper (as
+  `SharedProfile` does for its hero) must use `useTheirLook`. The look on the screen goes through `screenLook.ts`
+  (`setOwnLook`, `borrowLook`), never straight to `html[data-look]`. Record the looks a page shows with a
+  MutationObserver (`theirlook.spec.ts` `recordLooks`); a fade shows as `+fade` (`html.vt-look`). To change screen
+  without a reload, wait for `.tabs` first (`theirlook.spec.ts` `go`): the router listens only after the first render.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -181,21 +187,21 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.61.1 (live 2026-10-28): everything up to the glowing top, new defaults and Appearance pages (D71).
-- **Dev:** 0.63.1: live plus the Daylight looks (D72) and the Look page's Dark mode and Light mode (D73).
+- **Live:** 0.63.1 (live 2026-10-30): everything up to the Daylight looks and the Look page's Dark mode and Light mode (D73).
+- **Dev:** 0.64.2: live plus their look on their pages (D74).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Daylight looks** — **on dev** (0.62.0, D72, 2026-10-29): Daylight Mint, Daylight Pearl and Daylight Sky, light
-   cards for the colour sets, the iPhone's own controls light too; everyone still starts dark. Next: Anton tries them on
-   GT Dev, then "go live".
-2. **Look page in two sections** — **on dev** (0.63.0, D73, 2026-10-29): Dark mode (moon) and Light mode (sun)
-   headings, the Daylights at the bottom. Next: Anton tries it on GT Dev; it goes live with the Daylights.
+1. **Their look on their pages** — **on dev** (0.64.0, D74, 2026-10-31): someone you follow's board, product and brand
+   pages in their Look, top and colours, fading in as their board arrives (option B); yours comes back when you leave.
+   Next: Anton tries it on GT Dev (with a follower whose look differs), then "go live".
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |
+| Three light looks: Daylight Mint, Daylight Pearl, Daylight Sky (light cards; everyone starts dark) | 0.62.0 | D72 | 2026-10-29 | 2026-10-30 |
 | The top glows with your Look (the black hero fixed); new defaults (Slim strip, Gems); Looks and colours A to Z; Appearance in three pages | 0.61.0 | D71 | 2026-10-28 | 2026-10-28 |
 | Eight more Looks: Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze | 0.60.0 | D70 | 2026-10-27 | 2026-10-28 |
 | More Leaderboard colour sets: Sunset, Deep Sea, Ember, Cosmos, Synthwave, each with its own effect | 0.59.0 | D69 | 2026-10-27 | 2026-10-27 |
