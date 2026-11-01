@@ -1584,6 +1584,9 @@ None.
 
 ## 6. Changelog
 
+### 0.64.3 — CLAUDE.md: their look on their pages is live
+- D74 (on dev 2026-10-31) went live on 2026-11-01 and moves to Done. Notes only.
+
 ### 0.64.2 — a steadier test for their look (tests only)
 - `theirlook.spec.ts`'s `go` (open a path inside the app) now waits for the tab bar first. The router starts listening
   just after the app's first render; on CI one jump, made straight after a page load, came before that, so the address

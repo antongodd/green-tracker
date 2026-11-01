@@ -187,19 +187,18 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.63.1 (live 2026-10-30): everything up to the Daylight looks and the Look page's Dark mode and Light mode (D73).
-- **Dev:** 0.64.2: live plus their look on their pages (D74).
+- **Live:** 0.64.2 (live 2026-11-01): everything up to their look on their pages (D74).
+- **Dev:** 0.64.3, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Their look on their pages** — **on dev** (0.64.0, D74, 2026-10-31): someone you follow's board, product and brand
-   pages in their Look, top and colours, fading in as their board arrives (option B); yours comes back when you leave.
-   Next: Anton tries it on GT Dev (with a follower whose look differs), then "go live".
+Nothing waiting. Ask Anton what's next.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Their look on their pages: a friend's board, product and brand pages in their Look, top and colours, fading in | 0.64.0 | D74 | 2026-10-31 | 2026-11-01 |
 | The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |
 | Three light looks: Daylight Mint, Daylight Pearl, Daylight Sky (light cards; everyone starts dark) | 0.62.0 | D72 | 2026-10-29 | 2026-10-30 |
 | The top glows with your Look (the black hero fixed); new defaults (Slim strip, Gems); Looks and colours A to Z; Appearance in three pages | 0.61.0 | D71 | 2026-10-28 | 2026-10-28 |
