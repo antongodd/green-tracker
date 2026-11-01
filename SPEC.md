@@ -1584,6 +1584,13 @@ None.
 
 ## 6. Changelog
 
+### 0.64.2 — a steadier test for their look (tests only)
+- `theirlook.spec.ts`'s `go` (open a path inside the app) now waits for the tab bar first. The router starts listening
+  just after the app's first render; on CI one jump, made straight after a page load, came before that, so the address
+  changed but the screen stayed on People and the stranger test failed once (release run, 2026-10-31). Reproduced by
+  jumping at `DOMContentLoaded` (address changed, screen didn't); jumping once the tab bar exists always lands. No app
+  change: a person can't tap within the moment before the router listens.
+
 ### 0.64.1 — CLAUDE.md: their look on their pages is on dev
 - D74 is on dev (2026-10-31); Anton tries it on GT Dev before it goes live. Notes only.
 
