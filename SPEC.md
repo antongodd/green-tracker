@@ -1621,6 +1621,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — looks and colour sets without a database change are live
+- D76 (on dev 2026-11-02) went live on 2026-11-02 and moves to Done. Notes only.
+
 ### 0.65.0 — looks and colour sets without a database change (owner request)
 - Decision D76. The database no longer keeps its own list of the looks and colour sets, so adding one needs no
   database change; the app checks them, as it already did. Everyone's settings are copied across unchanged. A setting
