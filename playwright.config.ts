@@ -6,6 +6,9 @@ export default defineConfig({
   testDir: 'test/e2e',
   outputDir: '.playwright/results',
   timeout: 60_000,
+  // D75: on CI a failed test gets one more try. A real break fails both; one that passes on the second try is
+  // listed as flaky in the log, to be fixed in the next change.
+  retries: process.env.CI ? 1 : 0,
   use: {
     baseURL: `http://localhost:${port}`,
     // iPhone-sized (390 × 844, the design width). Chromium stands in for Safari here (D10).
