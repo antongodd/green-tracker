@@ -141,11 +141,13 @@ test('Delete account: red throughout, what goes, Export first, and the username 
   const input = page.getByLabel('Type your username to confirm');
   const button = page.getByRole('button', { name: 'Delete my account' });
   await expect(button).toBeDisabled();
-  await expect(button.locator('svg')).toBeVisible(); // Face ID
+  await expect(button.locator('svg')).toBeVisible(); // the bin
   await input.fill('wrong');
   await expect(input).not.toHaveClass(/armed/);
   await input.fill(username.toUpperCase());
   await expect(input).toHaveClass(/armed/);
+  await expect(button).toBeDisabled(); // D80: and your password
+  await page.getByLabel('Your password').fill('anything');
   await expect(button).toBeEnabled();
   await shot(page, '66-delete');
 

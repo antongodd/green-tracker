@@ -14,6 +14,7 @@ import { privacy } from './routes/privacy';
 import { appearance } from './routes/appearance';
 import { money } from './routes/money';
 import { posts } from './routes/posts';
+import { testHooks } from './routes/testHooks';
 
 export type { Env } from './env';
 
@@ -61,6 +62,7 @@ app.route('/privacy', privacy);
 app.route('/appearance', appearance);
 app.route('/money', money);
 app.route('/posts', posts);
+app.route('/test', testHooks);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
 

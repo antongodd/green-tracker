@@ -1,10 +1,9 @@
 import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
-import { errorText } from '../api';
+import { api, errorText } from '../api';
 import { buildExport, deliver, readExport, restore, type ExportSummary } from '../backup';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
-import { CheckIcon, ChevronRight, CrossIcon, DashIcon, DownloadIcon, FaceIdIcon, FileIcon, TrashIcon, UploadIcon } from '../icons';
-import { deleteAccount } from '../passkey';
+import { CheckIcon, ChevronRight, CrossIcon, DashIcon, DownloadIcon, FileIcon, TrashIcon, UploadIcon } from '../icons';
 import { navigate } from '../router';
 import { formatDate, useSession } from '../session';
 
@@ -98,7 +97,7 @@ export function ExportScreen() {
               </li>
               <li class="not">
                 <DashIcon />
-                <span>Not included: who you follow, your followers and blocks, your passkeys and recovery codes, and your filter settings</span>
+                <span>Not included: who you follow, your followers and blocks, your email, password and passkeys, and your filter settings</span>
               </li>
             </ul>
           </section>
@@ -270,10 +269,11 @@ export const takeDeletedNotice = () => {
   return n;
 };
 
-/** More → Delete account: type the username, confirm with the passkey. Irreversible. (Look: D40.) */
+/** More → Delete account: type the username, confirm with your password (D80). Irreversible. (Look: D40.) */
 export function DeleteAccount() {
   const { me, refresh } = useSession();
   const [typed, setTyped] = useState('');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const username = me.user!.username;
@@ -283,7 +283,7 @@ export function DeleteAccount() {
     setBusy(true);
     setError('');
     try {
-      await deleteAccount(typed.trim());
+      await api('POST', '/data/delete', { username: typed.trim(), password });
       deletedNotice = true;
       await refresh();
     } catch (e) {
@@ -323,7 +323,7 @@ export function DeleteAccount() {
               </li>
               <li class="gone">
                 <CrossIcon />
-                <span>Your passkeys and recovery codes</span>
+                <span>Your email, password and passkeys</span>
               </li>
             </ul>
           </section>
@@ -342,16 +342,19 @@ export function DeleteAccount() {
             <label for="confirm-username">Type your username to confirm</label>
             <input id="confirm-username" class={`input${matches ? ' armed' : ''}`} value={typed} onInput={(e) => setTyped(e.currentTarget.value)} placeholder={username} autoCapitalize="none" autoCorrect="off" spellcheck={false} autoComplete="off" />
           </div>
+          <div class="field">
+            <label for="confirm-password">Your password</label>
+            <input id="confirm-password" class="input" type="password" value={password} onInput={(e) => setPassword(e.currentTarget.value)} autoComplete="current-password" />
+          </div>
           {error && (
             <p class="error" role="alert">
               {error}
             </p>
           )}
-          <button class="btn danger-solid" onClick={go} disabled={!matches || busy}>
-            <FaceIdIcon />
-            {busy ? 'Waiting for your passkey…' : 'Delete my account'}
+          <button class="btn danger-solid" onClick={go} disabled={!matches || !password || busy}>
+            <TrashIcon />
+            {busy ? 'Deleting…' : 'Delete my account'}
           </button>
-          <p class="hint data-note">You’ll be asked for Face ID or your passkey to confirm.</p>
         </div>
       </main>
       <TabBar active="more" />

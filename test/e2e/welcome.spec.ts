@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { contrastFailures, settled, shot, textBoxes } from './helpers';
 
@@ -5,8 +6,8 @@ import { contrastFailures, settled, shot, textBoxes } from './helpers';
 // "Your stash, ranked.", and an example Leaderboard drawn with the real row styles (since D48 the
 // colours by score in Aurora since D64: the aurora with the crown and halo, Violet, Lagoon), labelled as an
 // example, decorative and not tappable.
-// The buttons are unchanged and always fit without scrolling. Sign-up and recovery screens get a
-// glowing leaf tile, a glowing current step and the username in a green card.
+// The buttons always fit without scrolling (since D80: Sign in, Create account, Sign in with Face ID). The
+// sign-in and sign-up screens get a glowing leaf tile and a glowing current step.
 
 const fits = (page: Page) =>
   page.evaluate(() => {
@@ -61,27 +62,44 @@ for (const [w, h, name] of [[390, 844, 'iPhone 13–16'], [375, 667, 'iPhone SE'
   });
 }
 
-test('the buttons still lead where they did', async ({ page }) => {
+test('the buttons lead where they should (D80)', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Sign in with passkey' })).toBeVisible();
+  // Three buttons, in this order; no recovery codes.
+  expect(await page.locator('.welcome .actions .btn').allTextContents()).toEqual(['Sign in', 'Create account', 'Sign in with Face ID']);
   await page.getByRole('link', { name: 'Create account' }).click();
   await expect(page).toHaveURL(/\/signup$/);
   await page.goto('/');
-  await page.getByRole('link', { name: 'Use a recovery code' }).click();
-  await expect(page).toHaveURL(/\/recover$/);
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+  // The old address of recovery codes is just the welcome screen now.
+  await page.goto('/recover');
+  await expect(page).toHaveURL(/\/signin$/);
 });
 
-test('sign-up and recovery: the glowing leaf tile, a glowing step and the green card', async ({ page }) => {
+test('sign-in and sign-up: the glowing leaf tile, a glowing step, glass cards', async ({ page }) => {
   await page.goto('/signup');
-  await expect(page.getByRole('heading', { name: 'Choose a username' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
   await expect(page.locator('.auth-mark svg')).toBeVisible();
   expect(await page.locator('.steps i.on').evaluate((e) => getComputedStyle(e).boxShadow)).toContain('rgba(88, 224, 140');
-  await expect(page.locator('.fgroup').getByLabel('Username')).toBeVisible();
+  await expect(page.locator('.fgroup').getByLabel('Email')).toBeVisible();
   // A glass card since D64 (was D18's green wash).
   expect(await page.locator('.fgroup').evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgba(255, 255, 255, 0.05)');
-  await page.goto('/recover');
-  await expect(page.getByRole('heading', { name: 'Use a recovery code' })).toBeVisible();
+  await page.goto('/login');
+  await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   await expect(page.locator('.auth-mark svg')).toBeVisible();
+});
+
+test('sign-in and sign-up screens: axe finds nothing, and the words are readable', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/login', '/signup']) {
+    await page.goto(path);
+    await expect(page.locator('.form-page h1')).toBeVisible();
+    await settled(page);
+    expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => `${path}: ${v.id}`)).toEqual([]);
+    const boxes = await textBoxes(page, '.form-page h1, .form-page .lead, .field label, .hint, .btn.text, .pw .show');
+    expect(await contrastFailures(page, boxes), path).toEqual([]);
+  }
 });
 
 test('readable: headline, words and the example rows, through the shimmer', async ({ page }) => {

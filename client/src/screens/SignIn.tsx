@@ -1,11 +1,13 @@
 import { useState } from 'preact/hooks';
-import { errorText } from '../api';
+import { api, errorText } from '../api';
+import { AuthMark } from '../components/chrome';
+import { PasswordField } from '../components/inputs';
 import { DEFAULT_APPEARANCE, scoreBand } from '../../../shared/domain/gems';
 import { Effects, RankCrown, rowClass } from '../components/Gems';
 import { Cluster, Score, Thumb, type RowProduct } from '../components/ProductRow';
-import { LeafGlass } from '../icons';
+import { BackIcon, FaceIdIcon, LeafGlass } from '../icons';
 import { passkeysSupported, signIn } from '../passkey';
-import { linkTo } from '../router';
+import { linkTo, navigate } from '../router';
 import { useSession } from '../session';
 import { takeDeletedNotice } from './Data';
 
@@ -45,6 +47,7 @@ function Showcase() {
   );
 }
 
+/** The welcome screen (D36): Sign in (email and password, D80), Create account, and Face ID for those with a passkey. */
 export function SignIn() {
   const { refresh, me } = useSession();
   const [busy, setBusy] = useState(false);
@@ -52,7 +55,7 @@ export function SignIn() {
   const [deleted] = useState(takeDeletedNotice);
   const supported = passkeysSupported();
 
-  async function go() {
+  async function faceId() {
     setBusy(true);
     setError('');
     try {
@@ -89,22 +92,103 @@ export function SignIn() {
         <Showcase />
       </div>
       <div class="actions">
-        {!supported && <p class="error">This browser can’t use passkeys. Open Green Tracker in Safari on your iPhone, or another up-to-date browser.</p>}
         {error && (
           <p class="error" role="alert">
             {error}
           </p>
         )}
-        <button class="btn primary" onClick={go} disabled={busy || !supported}>
-          {busy ? 'Waiting for your passkey…' : 'Sign in with passkey'}
-        </button>
+        <a class="btn primary" href="/login" onClick={linkTo('/login')}>
+          Sign in
+        </a>
         <a class="btn secondary" href="/signup" onClick={linkTo('/signup')}>
           Create account
         </a>
-        <a class="btn text" href="/recover" onClick={linkTo('/recover')}>
-          Use a recovery code
-        </a>
+        {supported && (
+          <button class="btn text" onClick={faceId} disabled={busy}>
+            <FaceIdIcon />
+            {busy ? 'Waiting for Face ID…' : 'Sign in with Face ID'}
+          </button>
+        )}
       </div>
+    </main>
+  );
+}
+
+/** Sign in with email and password (D80); Face ID underneath for anyone with a passkey. */
+export function EmailSignIn() {
+  const { refresh } = useSession();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState<'' | 'password' | 'faceid'>('');
+  const [error, setError] = useState('');
+
+  async function submit(e: Event) {
+    e.preventDefault();
+    setBusy('password');
+    setError('');
+    try {
+      await api('POST', '/auth/signin', { email: email.trim(), password });
+      await refresh();
+    } catch (err) {
+      setError(errorText(err));
+      setBusy('');
+    }
+  }
+
+  async function faceId() {
+    setBusy('faceid');
+    setError('');
+    try {
+      await signIn();
+      await refresh();
+    } catch (err) {
+      setError(errorText(err));
+      setBusy('');
+    }
+  }
+
+  return (
+    <main class="fullscreen">
+      <div class="fs-top">
+        <button class="hbtn" onClick={() => navigate('/signin')} aria-label="Back">
+          <BackIcon />
+        </button>
+      </div>
+      <form class="form-page" onSubmit={submit}>
+        <AuthMark />
+        <h1>Welcome back</h1>
+        <div class="fgroup">
+          <div class="field">
+            <label for="signin-email">Email</label>
+            <input id="signin-email" class="input" type="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellcheck={false} required />
+          </div>
+          <PasswordField id="signin-password" label="Password" value={password} onInput={setPassword} autoComplete="current-password" bad={!!error} />
+          {error && (
+            <p class="error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+        <button class="btn primary" type="submit" disabled={!!busy || !email.trim() || !password}>
+          {busy === 'password' ? 'Signing in…' : 'Sign in'}
+        </button>
+        {passkeysSupported() && (
+          <>
+            <div class="or" aria-hidden="true">
+              <span />
+              or
+              <span />
+            </div>
+            <button class="btn secondary" type="button" onClick={faceId} disabled={!!busy}>
+              <FaceIdIcon />
+              {busy === 'faceid' ? 'Waiting for Face ID…' : 'Sign in with Face ID'}
+            </button>
+          </>
+        )}
+        <a class="btn text" href="/signup" onClick={linkTo('/signup')}>
+          New here? Create account
+        </a>
+      </form>
     </main>
   );
 }

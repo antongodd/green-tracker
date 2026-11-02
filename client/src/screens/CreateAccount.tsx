@@ -1,30 +1,43 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { USERNAME_MAX, USERNAME_PROBLEM_TEXT, usernameProblem } from '../../../shared/domain/account';
-import { api, errorText } from '../api';
-import { RecoveryCodesBlock } from '../components/RecoveryCodes';
+import { EMAIL_PROBLEM_TEXT, PASSWORD_MIN, USERNAME_MAX, USERNAME_PROBLEM_TEXT, emailProblem, passwordProblem, usernameProblem } from '../../../shared/domain/account';
+import { ApiError, api, errorText } from '../api';
+import { PasswordField } from '../components/inputs';
 import { BackIcon, CheckIcon, CrossIcon } from '../icons';
 import { AuthMark } from '../components/chrome';
-import { passkeysSupported, signUp } from '../passkey';
 import { linkTo, navigate } from '../router';
 
 type Availability = { state: 'idle' | 'checking' } | { state: 'ok' } | { state: 'bad'; message: string };
 
-function Steps(p: { step: 1 | 2 | 3 }) {
+function Steps(p: { step: 1 | 2 }) {
   return (
-    <div class="steps" role="img" aria-label={`Step ${p.step} of 3`}>
-      {[1, 2, 3].map((n) => (
+    <div class="steps" role="img" aria-label={`Step ${p.step} of 2`}>
+      {[1, 2].map((n) => (
         <i key={n} class={n <= p.step ? 'on' : ''} />
       ))}
     </div>
   );
 }
 
+/** The password's rule as you type: grey until it's long enough, then green with a tick (D80). */
+export function PasswordHint(p: { password: string }) {
+  const ok = !passwordProblem(p.password);
+  return (
+    <p class={`hint${ok ? ' ok' : ''}`}>
+      {ok && <CheckIcon />}
+      At least {PASSWORD_MIN} characters
+    </p>
+  );
+}
+
 /**
- * Create account: 1 username (live availability) → 2 passkey → 3 recovery codes.
- * The account exists from step 2; step 3 is shown by `CodesStep` from App.
+ * Create account (D80): 1 email and password → 2 username (live availability). Nothing is saved until
+ * step 2's Create account; the server checks everything again, and a taken email sends you back to step 1.
  */
-export function CreateAccount(p: { onCreated: (username: string, codes: string[]) => void }) {
+export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
   const [step, setStep] = useState<1 | 2>(1);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [username, setUsername] = useState('');
   const [avail, setAvail] = useState<Availability>({ state: 'idle' });
   const [busy, setBusy] = useState(false);
@@ -49,15 +62,31 @@ export function CreateAccount(p: { onCreated: (username: string, codes: string[]
     return () => clearTimeout(t);
   }, [username]);
 
-  async function createPasskey() {
+  function next(e: Event) {
+    e.preventDefault();
+    const problem = emailProblem(email);
+    if (problem) return setEmailError(EMAIL_PROBLEM_TEXT[problem]);
+    if (passwordProblem(password)) return;
+    setEmailError('');
+    setStep(2);
+  }
+
+  async function create(e: Event) {
+    e.preventDefault();
+    if (avail.state !== 'ok') return;
     setBusy(true);
     setError('');
     try {
-      const r = await signUp(username);
-      p.onCreated(r.user.username, r.recoveryCodes);
-    } catch (e) {
-      setError(errorText(e));
+      await api('POST', '/auth/signup', { email: email.trim(), password, username });
+      await p.onCreated();
+    } catch (err) {
       setBusy(false);
+      if (err instanceof ApiError && err.code.startsWith('email_')) {
+        setEmailError(err.message);
+        setStep(1);
+      } else if (err instanceof ApiError && err.code.startsWith('password_')) {
+        setStep(1);
+      } else setError(errorText(err));
     }
   }
 
@@ -73,31 +102,63 @@ export function CreateAccount(p: { onCreated: (username: string, codes: string[]
       </div>
       <Steps step={step} />
       {step === 1 ? (
-        <form
-          class="form-page"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (avail.state === 'ok') setStep(2);
-          }}
-        >
+        <form class="form-page" onSubmit={next} noValidate>
           <AuthMark />
-          <h1>Choose a username</h1>
-          <p class="lead">People search for you by this name. It’s the only thing others see until you approve them.</p>
+          <h1>Create your account</h1>
+          <p class="lead">Your email is private. Nobody else ever sees it.</p>
           <div class="fgroup">
             <div class="field">
-              <label for="username">Username</label>
+              <label for="email">Email</label>
               <input
-                id="username"
-                class="input"
-                value={username}
-                onInput={(e) => setUsername(e.currentTarget.value.trim())}
-                maxLength={USERNAME_MAX + 5}
-                autoComplete="username"
+                id="email"
+                class={`input${emailError ? ' bad' : ''}`}
+                type="email"
+                value={email}
+                onInput={(e) => (setEmail(e.currentTarget.value), setEmailError(''))}
+                autoComplete="email"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellcheck={false}
                 autoFocus
               />
+              {emailError && (
+                <p class="hint bad" role="alert">
+                  <CrossIcon /> {emailError}
+                </p>
+              )}
+            </div>
+            <PasswordField id="password" label="Password" value={password} onInput={setPassword} autoComplete="new-password" hint={<PasswordHint password={password} />} />
+          </div>
+          <button class="btn primary" type="submit" disabled={!email.trim() || !!passwordProblem(password)}>
+            Continue
+          </button>
+          <a class="btn text" href="/login" onClick={linkTo('/login')}>
+            I already have an account
+          </a>
+        </form>
+      ) : (
+        <form class="form-page" onSubmit={create}>
+          <AuthMark />
+          <h1>Pick your @name</h1>
+          <p class="lead">Friends find you by this name. It’s the only thing others see until you approve them.</p>
+          <div class="fgroup">
+            <div class="field">
+              <label for="username">Username</label>
+              <div class="at-input">
+                <span aria-hidden="true">@</span>
+                <input
+                  id="username"
+                  class="input"
+                  value={username}
+                  onInput={(e) => setUsername(e.currentTarget.value.trim())}
+                  maxLength={USERNAME_MAX + 5}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellcheck={false}
+                  autoFocus
+                />
+              </div>
               <p class={`hint${avail.state === 'ok' ? ' ok' : avail.state === 'bad' ? ' bad' : ''}`} role="status">
                 {avail.state === 'ok' && (
                   <>
@@ -114,57 +175,16 @@ export function CreateAccount(p: { onCreated: (username: string, codes: string[]
               </p>
             </div>
           </div>
-          <button class="btn primary" type="submit" disabled={avail.state !== 'ok'}>
-            Continue
-          </button>
-          <a class="btn text" href="/signin" onClick={linkTo('/signin')}>
-            I already have an account
-          </a>
-        </form>
-      ) : (
-        <div class="form-page">
-          <AuthMark />
-          <h1>Create your passkey</h1>
-          <p class="lead">
-            Your device will ask for Face ID, Touch ID or your screen lock. That’s how you’ll sign in as <strong>@{username}</strong>. There’s no password.
-          </p>
-          {!passkeysSupported() && <p class="error">This browser can’t create passkeys. Open Green Tracker in Safari on your iPhone.</p>}
           {error && (
             <p class="error" role="alert">
               {error}
             </p>
           )}
-          <button class="btn primary" onClick={createPasskey} disabled={busy || !passkeysSupported()}>
-            {busy ? 'Waiting for your passkey…' : 'Create passkey'}
+          <button class="btn primary" type="submit" disabled={avail.state !== 'ok' || busy}>
+            {busy ? 'Creating your account…' : 'Create account'}
           </button>
-        </div>
+        </form>
       )}
-    </main>
-  );
-}
-
-/** Step 3: the codes are shown once; Continue waits for "I've saved these". */
-export function CodesStep(p: { username: string; codes: string[]; onDone: () => void }) {
-  const [saved, setSaved] = useState(false);
-  return (
-    <main class="fullscreen">
-      <div class="fs-top" />
-      <Steps step={3} />
-      <div class="form-page">
-        <AuthMark />
-        <h1>Save your recovery codes</h1>
-        <p class="lead">
-          If you lose your passkey, one of these codes gets you back in. Each code works once. <strong>This is the only time you’ll see them.</strong>
-        </p>
-        <RecoveryCodesBlock username={p.username} codes={p.codes} />
-        <label class="check">
-          <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.currentTarget.checked)} />
-          I’ve saved these codes somewhere safe
-        </label>
-        <button class="btn primary" disabled={!saved} onClick={p.onDone}>
-          Continue
-        </button>
-      </div>
     </main>
   );
 }

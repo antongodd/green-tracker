@@ -1,86 +1,194 @@
 import { describe, expect, it } from 'vitest';
 import { SoftPasskey } from './authenticator';
-import { Browser, addPasskey, signIn, signUp, uniqueName } from './client';
+import { Browser, PASSWORD, addPasskey, emailFor, makeOldAccount, signIn, signInWithPassword, signUp, uniqueName } from './client';
+import { d1 } from './store';
 
-describe('sign-up', () => {
-  it('creates an account with a passkey, 10 recovery codes and a session', async () => {
+describe('sign-up (D80): email, password and a username', () => {
+  const signup = (b: Browser, body: Record<string, string>) => b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName(), ...body });
+
+  it('creates an account and a session; no passkey needed, and no recovery codes', async () => {
     const b = new Browser();
-    const { username, codes } = await signUp(b);
-    expect(codes).toHaveLength(10);
-    for (const c of codes) expect(c).toMatch(/^[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$/);
-    expect(new Set(codes).size).toBe(10);
-
+    const username = uniqueName();
+    const res = await signup(b, { username, email: ` ${emailFor(username)} ` });
+    expect(res.status).toBe(200);
+    expect(res.json).toEqual({ user: { username } });
     const me = await b.get('/api/auth/me');
-    expect(me.json).toMatchObject({ user: { username }, needsPasskey: false, passkeys: 1, recoveryCodesLeft: 10 });
+    expect(me.json).toMatchObject({ user: { username }, email: emailFor(username), needsLogin: false, passkeys: 0 });
+    expect(me.json).not.toHaveProperty('recoveryCodesLeft');
+  });
+
+  it('stores only a salted hash of the password, never the password', async () => {
+    const b = new Browser();
+    const username = uniqueName();
+    await signup(b, { username });
+    const [row] = d1<{ password_hash: string; email: string; email_lower: string }>('SELECT password_hash, email, email_lower FROM users WHERE username_lower = ?', username.toLowerCase());
+    expect(row!.password_hash).toMatch(/^pbkdf2-sha256\$100000\$[\w-]{22}\$[\w-]{43}$/);
+    expect(row!.password_hash).not.toContain(PASSWORD);
+    // Two accounts with the same password get different hashes (each has its own salt).
+    const other = uniqueName();
+    await signup(new Browser(), { username: other });
+    expect(d1<{ password_hash: string }>('SELECT password_hash FROM users WHERE username_lower = ?', other.toLowerCase())[0]!.password_hash).not.toBe(row!.password_hash);
   });
 
   it('sets an HttpOnly, SameSite=Lax session cookie', async () => {
     const b = new Browser();
-    const passkey = new SoftPasskey();
-    const opts = await b.post('/api/auth/signup/options', { username: uniqueName() });
-    await b.post('/api/auth/signup/verify', { challengeId: opts.json.challengeId, response: await passkey.register(opts.json.options) });
+    await signup(b, {});
     const cookie = b.lastSetCookie.find((c) => c.startsWith('gt_session='))!;
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/SameSite=Lax/i);
     expect(cookie).toMatch(/Max-Age=5184000/); // 60 days
   });
 
+  it('one account per email, whatever the case', async () => {
+    const username = uniqueName();
+    await signup(new Browser(), { username, email: emailFor(username) });
+    const again = await signup(new Browser(), { email: emailFor(username).toUpperCase() });
+    expect(again.status).toBe(409);
+    expect(again.json.error).toBe('email_taken');
+  });
+
   it('keeps usernames as typed but unique case-insensitively', async () => {
     const name = uniqueName('Mixed');
-    const { username } = await signUp(new Browser(), name);
+    const { username } = await signUp(new Browser(), name, { passkey: false });
     const me = await new Browser().get(`/api/auth/username?u=${name.toLowerCase()}`);
     expect(me.json).toEqual({ available: false, message: 'That username is taken.' });
-    const again = await new Browser().post('/api/auth/signup/options', { username: name.toUpperCase() });
+    const again = await signup(new Browser(), { username: name.toUpperCase() });
     expect(again.status).toBe(409);
     expect(again.json.error).toBe('username_taken');
     expect(username).toBe(name);
   });
 
-  it('rejects usernames outside the rules (D7)', async () => {
+  it('rejects usernames, emails and passwords outside the rules, and creates nothing', async () => {
     const b = new Browser();
-    for (const [u, error] of [
-      ['ab', 'username_too_short'],
-      ['a'.repeat(21), 'username_too_long'],
-      ['has space', 'username_invalid_chars'],
-      ['émile', 'username_invalid_chars'],
-      ['dash-name', 'username_invalid_chars'],
+    for (const [body, error] of [
+      [{ username: 'ab' }, 'username_too_short'],
+      [{ username: 'a'.repeat(21) }, 'username_too_long'],
+      [{ username: 'has space' }, 'username_invalid_chars'],
+      [{ username: 'émile' }, 'username_invalid_chars'],
+      [{ email: '' }, 'email_empty'],
+      [{ email: 'not-an-email' }, 'email_invalid'],
+      [{ password: '1234567' }, 'password_too_short'],
+      [{ password: 'a'.repeat(201) }, 'password_too_long'],
     ] as const) {
-      const res = await b.post('/api/auth/signup/options', { username: u });
-      expect(res.status, u).toBe(400);
-      expect(res.json.error, u).toBe(error);
+      const res = await signup(b, body);
+      expect(res.status, JSON.stringify(body)).toBe(400);
+      expect(res.json.error, JSON.stringify(body)).toBe(error);
     }
+    expect((await b.get('/api/auth/me')).json.user).toBeNull();
     const ok = await b.get('/api/auth/username?u=Good_name_1');
     expect(ok.json.available).toBe(true);
   });
 
-  it('creates no account when the passkey step is abandoned', async () => {
-    const b = new Browser();
-    const username = uniqueName();
-    await b.post('/api/auth/signup/options', { username });
-    expect((await b.get(`/api/auth/username?u=${username}`)).json.available).toBe(true);
+  it('the old passkey sign-up is gone', async () => {
+    expect((await new Browser().post('/api/auth/signup/options', { username: uniqueName() })).status).toBe(404);
+  });
+});
+
+describe('sign-in with email and password (D80)', () => {
+  it('signs in on a new device, the email in any case', async () => {
+    const { username, email } = await signUp(new Browser(), uniqueName(), { passkey: false });
+    const phone = new Browser();
+    const res = await signInWithPassword(phone, ` ${email.toUpperCase()} `);
+    expect(res.status).toBe(200);
+    expect(res.json.user.username).toBe(username);
+    expect((await phone.get('/api/auth/me')).json.user.username).toBe(username);
   });
 
-  it('rejects a passkey made for another site', async () => {
-    const b = new Browser();
-    const opts = await b.post('/api/auth/signup/options', { username: uniqueName() });
-    const res = await b.post('/api/auth/signup/verify', {
-      challengeId: opts.json.challengeId,
-      response: await new SoftPasskey().register(opts.json.options, { origin: 'https://evil.example' }),
-    });
-    expect(res.status).toBe(400);
-    expect(res.json.error).toBe('passkey_failed');
-    expect((await b.get('/api/auth/me')).json.user).toBeNull();
+  it('gives the same answer for a wrong password and an unknown email', async () => {
+    const { email } = await signUp(new Browser(), uniqueName(), { passkey: false });
+    const wrong = await signInWithPassword(new Browser(), email, 'not the password');
+    const unknown = await signInWithPassword(new Browser(), 'nobody-here@example.test');
+    for (const res of [wrong, unknown]) {
+      expect(res.status).toBe(400);
+      expect(res.json).toEqual({ error: 'signin_failed', message: 'That email and password don’t match.' });
+    }
   });
 
-  it('uses each challenge once', async () => {
+  it('slows down guessing: 10 tries per email every 15 minutes, from anywhere', async () => {
+    const { email } = await signUp(new Browser(), uniqueName(), { passkey: false });
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) statuses.push((await signInWithPassword(new Browser(), email, `guess ${i}`)).status);
+    expect(statuses).toEqual([...Array(10).fill(400), 429]);
+    // Even the right password waits now.
+    expect((await signInWithPassword(new Browser(), email)).status).toBe(429);
+  });
+});
+
+describe('accounts from before email and password (D80)', () => {
+  it('sign in with Face ID, can do nothing until they add an email and password, then everything works', async () => {
     const b = new Browser();
-    const opts = await b.post('/api/auth/signup/options', { username: uniqueName() });
-    const passkey = new SoftPasskey();
-    const response = await passkey.register(opts.json.options);
-    expect((await b.post('/api/auth/signup/verify', { challengeId: opts.json.challengeId, response })).status).toBe(200);
-    const replay = await new Browser().post('/api/auth/signup/verify', { challengeId: opts.json.challengeId, response });
-    expect(replay.status).toBe(400);
-    expect(replay.json.error).toBe('challenge_expired');
+    const { username, passkey } = await signUp(b);
+    await makeOldAccount(username);
+    expect((await b.get('/api/auth/me')).json).toMatchObject({ user: { username }, email: null, needsLogin: true, passkeys: 1 });
+    const blocked = await b.get('/api/products');
+    expect(blocked.status).toBe(403);
+    expect(blocked.json.error).toBe('needs_login');
+
+    // A new device signs in with the passkey and lands in the same place.
+    const phone = new Browser();
+    expect((await signIn(phone, passkey)).status).toBe(200);
+    expect((await phone.get('/api/auth/me')).json.needsLogin).toBe(true);
+
+    expect((await phone.post('/api/account/login', { email: 'nope', password: PASSWORD })).json.error).toBe('email_invalid');
+    expect((await phone.post('/api/account/login', { email: emailFor(username), password: 'short' })).json.error).toBe('password_too_short');
+    const added = await phone.post('/api/account/login', { email: emailFor(username), password: PASSWORD });
+    expect(added.status).toBe(200);
+    expect((await b.get('/api/auth/me')).json).toMatchObject({ email: emailFor(username), needsLogin: false });
+    expect((await b.get('/api/products')).status).toBe(200);
+    expect((await signInWithPassword(new Browser(), emailFor(username))).status).toBe(200);
+
+    // Only once: after that, Settings changes them (with the password).
+    const again = await phone.post('/api/account/login', { email: emailFor(uniqueName()), password: PASSWORD });
+    expect(again.status).toBe(409);
+    expect(again.json.error).toBe('login_exists');
+  });
+
+  it("can't take an email another account has", async () => {
+    const { email } = await signUp(new Browser(), uniqueName(), { passkey: false });
+    const b = new Browser();
+    const { username } = await signUp(b);
+    await makeOldAccount(username);
+    const res = await b.post('/api/account/login', { email: email.toUpperCase(), password: PASSWORD });
+    expect(res.status).toBe(409);
+    expect(res.json.error).toBe('email_taken');
+  });
+});
+
+describe('changing your email and password (D80)', () => {
+  it('a new email, after your password', async () => {
+    const b = new Browser();
+    const { email } = await signUp(b, uniqueName(), { passkey: false });
+    const fresh = emailFor(uniqueName());
+    expect((await b.req('PUT', '/api/account/email', { email: fresh, password: 'wrong password' })).json.error).toBe('wrong_password');
+    expect((await b.req('PUT', '/api/account/email', { email: fresh, password: PASSWORD })).json).toEqual({ email: fresh });
+    expect((await b.get('/api/auth/me')).json.email).toBe(fresh);
+    expect((await signInWithPassword(new Browser(), email)).status).toBe(400);
+    expect((await signInWithPassword(new Browser(), fresh)).status).toBe(200);
+    // Someone else's email is refused.
+    const { email: theirs } = await signUp(new Browser(), uniqueName(), { passkey: false });
+    expect((await b.req('PUT', '/api/account/email', { email: theirs, password: PASSWORD })).json.error).toBe('email_taken');
+  });
+
+  it('a new password, after the current one; other devices are signed out, this one stays', async () => {
+    const b = new Browser();
+    const { email } = await signUp(b, uniqueName(), { passkey: false });
+    const other = new Browser();
+    await signInWithPassword(other, email);
+    expect((await b.req('PUT', '/api/account/password', { current: 'wrong password', password: 'a brand new one' })).json.error).toBe('wrong_password');
+    expect((await b.req('PUT', '/api/account/password', { current: PASSWORD, password: 'short' })).json.error).toBe('password_too_short');
+    expect((await b.req('PUT', '/api/account/password', { current: PASSWORD, password: 'a brand new one' })).status).toBe(200);
+    expect((await b.get('/api/auth/me')).json.user).not.toBeNull();
+    expect((await other.get('/api/auth/me')).json.user).toBeNull();
+    expect((await signInWithPassword(new Browser(), email)).status).toBe(400);
+    expect((await signInWithPassword(new Browser(), email, 'a brand new one')).status).toBe(200);
+  });
+
+  it('wrong passwords there are limited too', async () => {
+    const b = new Browser();
+    await signUp(b, uniqueName(), { passkey: false });
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) statuses.push((await b.req('PUT', '/api/account/password', { current: `guess ${i}`, password: 'a brand new one' })).status);
+    expect(statuses).toEqual([...Array(10).fill(400), 429]);
   });
 });
 
@@ -168,62 +276,18 @@ describe('sessions', () => {
   });
 });
 
-describe('recovery codes', () => {
-  it('signs in with a code, then requires a new passkey before anything else (D4)', async () => {
-    const { username, codes } = await signUp(new Browser());
-    const lost = new Browser();
-    const res = await lost.post('/api/auth/recover', { username: username.toUpperCase(), code: codes[3]!.toLowerCase().replace('-', ' ') });
-    expect(res.status).toBe(200);
-    expect(res.json.needsPasskey).toBe(true);
-    expect((await lost.get('/api/auth/me')).json).toMatchObject({ needsPasskey: true, recoveryCodesLeft: 9 });
-
-    const blocked = await lost.get('/api/account/passkeys');
-    expect(blocked.status).toBe(403);
-    expect(blocked.json.error).toBe('needs_passkey');
-
-    const { res: added } = await addPasskey(lost);
-    expect(added.status).toBe(200);
-    expect(added.json.passkeys).toHaveLength(2);
-    expect((await lost.get('/api/auth/me')).json.needsPasskey).toBe(false);
-    expect((await lost.get('/api/account/passkeys')).status).toBe(200);
-  });
-
-  it('uses each code once', async () => {
-    const { username, codes } = await signUp(new Browser());
-    expect((await new Browser().post('/api/auth/recover', { username, code: codes[0] })).status).toBe(200);
-    const again = await new Browser().post('/api/auth/recover', { username, code: codes[0] });
-    expect(again.status).toBe(400);
-    expect(again.json.error).toBe('recovery_failed');
-  });
-
-  it('gives the same answer for a wrong code and an unknown user', async () => {
-    const { username, codes } = await signUp(new Browser());
-    const wrongCode = await new Browser().post('/api/auth/recover', { username, code: 'ABCD-EFGH' });
-    const noUser = await new Browser().post('/api/auth/recover', { username: uniqueName('nobody'), code: codes[0] });
-    expect(wrongCode.status).toBe(400);
-    expect(noUser.json).toEqual(wrongCode.json);
-  });
-
-  it('does not accept one account’s code for another', async () => {
-    const a = await signUp(new Browser());
-    const b = await signUp(new Browser());
-    const res = await new Browser().post('/api/auth/recover', { username: b.username, code: a.codes[0] });
-    expect(res.status).toBe(400);
-  });
-
-  it('regenerating cancels the old set', async () => {
+describe('recovery codes are gone (D80)', () => {
+  it('their addresses no longer exist', async () => {
     const b = new Browser();
-    const { username, codes: old } = await signUp(b);
-    const fresh = await b.post('/api/account/recovery-codes');
-    expect(fresh.json.recoveryCodes).toHaveLength(10);
-    expect((await b.get('/api/account/recovery-codes')).json.remaining).toBe(10);
-    expect((await new Browser().post('/api/auth/recover', { username, code: old[0] })).status).toBe(400);
-    expect((await new Browser().post('/api/auth/recover', { username, code: fresh.json.recoveryCodes[0] })).status).toBe(200);
+    await signUp(b, uniqueName(), { passkey: false });
+    expect((await b.post('/api/auth/recover', { username: 'x', code: 'ABCD-EFGH' })).status).toBe(404);
+    expect((await b.get('/api/account/recovery-codes')).status).toBe(404);
+    expect((await b.post('/api/account/recovery-codes')).status).toBe(404);
   });
 });
 
 describe('passkeys', () => {
-  it('allows more than one passkey and refuses to remove the last', async () => {
+  it('allows more than one passkey, and any can go, the last too (D80: the password always works)', async () => {
     const b = new Browser();
     await signUp(b);
     const { passkey: second } = await addPasskey(b);
@@ -234,9 +298,9 @@ describe('passkeys', () => {
     list = (await b.get('/api/account/passkeys')).json.passkeys;
     expect(list.map((p: { id: string }) => p.id)).toEqual([second.id]);
 
-    const last = await b.del(`/api/account/passkeys/${second.id}`);
-    expect(last.status).toBe(409);
-    expect(last.json.error).toBe('last_passkey');
+    expect((await b.del(`/api/account/passkeys/${second.id}`)).status).toBe(200);
+    expect((await b.get('/api/account/passkeys')).json.passkeys).toEqual([]);
+    expect((await b.get('/api/auth/me')).json.passkeys).toBe(0);
   });
 
   it('a removed passkey can no longer sign in', async () => {
@@ -258,30 +322,16 @@ describe('passkeys', () => {
     expect(res.status).toBe(404);
     expect((await victim.get('/api/account/passkeys')).json.passkeys).toHaveLength(2);
   });
-
-  it('cannot finish a sign-up challenge as an existing user', async () => {
-    const b = new Browser();
-    await signUp(b);
-    const opts = await b.post('/api/auth/signup/options', { username: uniqueName() });
-    const res = await b.post('/api/account/passkeys/verify', { challengeId: opts.json.challengeId, response: await new SoftPasskey().register(opts.json.options) });
-    expect(res.status).toBe(400);
-  });
 });
 
 describe('rate limits', () => {
-  it('limits recovery attempts per username', async () => {
-    const { username } = await signUp(new Browser());
-    const statuses: number[] = [];
-    for (let i = 0; i < 6; i++) statuses.push((await new Browser().post('/api/auth/recover', { username, code: 'ABCD-EFGH' })).status);
-    expect(statuses).toEqual([400, 400, 400, 400, 400, 429]);
-  });
-
   it('limits sign-ups per client', async () => {
     const b = new Browser();
     const statuses: number[] = [];
-    for (let i = 0; i < 10; i++) statuses.push((await b.post('/api/auth/signup/options', { username: uniqueName() })).status);
-    expect(statuses.every((s) => s === 200)).toBe(true);
-    const last = await b.post('/api/auth/signup/options', { username: uniqueName() });
+    // A refused sign-up counts too, so ten bad tries cost nothing in accounts.
+    for (let i = 0; i < 10; i++) statuses.push((await b.post('/api/auth/signup', { email: 'x', password: 'x', username: 'x' })).status);
+    expect(statuses.every((s) => s === 400)).toBe(true);
+    const last = await b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName() });
     expect(last.status).toBe(429);
     expect(Number(last.headers.get('retry-after'))).toBeGreaterThan(0);
   });

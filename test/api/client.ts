@@ -68,15 +68,31 @@ let nameCounter = 0;
  */
 export const uniqueName = (prefix = 'user') => `${prefix}${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 6)}${++nameCounter}`.slice(0, 20);
 
-/** Signs up a new account in `browser`; returns its passkey and recovery codes. */
-export async function signUp(browser: Browser, username = uniqueName()) {
-  const passkey = new SoftPasskey();
-  const opts = await browser.post('/api/auth/signup/options', { username });
-  if (opts.status !== 200) throw new Error(`signup options ${opts.status} ${JSON.stringify(opts.json)}`);
-  const verify = await browser.post('/api/auth/signup/verify', { challengeId: opts.json.challengeId, response: await passkey.register(opts.json.options) });
-  if (verify.status !== 200) throw new Error(`signup verify ${verify.status} ${JSON.stringify(verify.json)}`);
-  return { username, passkey, codes: verify.json.recoveryCodes as string[] };
+/** A made-up email no other test has, for `username`. */
+export const emailFor = (username: string) => `${username.toLowerCase()}@example.test`;
+export const PASSWORD = 'correct horse battery';
+
+/**
+ * Signs up a new account in `browser` with an email and password (D80), then adds a passkey, as the
+ * Face ID offer after sign-up does, so tests can still sign in with Face ID.
+ */
+export async function signUp(browser: Browser, username = uniqueName(), opts: { passkey?: boolean } = {}) {
+  const email = emailFor(username);
+  const res = await browser.post('/api/auth/signup', { email, password: PASSWORD, username });
+  if (res.status !== 200) throw new Error(`signup ${res.status} ${JSON.stringify(res.json)}`);
+  if (opts.passkey === false) return { username, email, password: PASSWORD, passkey: null as unknown as SoftPasskey };
+  const { passkey, res: added } = await addPasskey(browser);
+  if (added.status !== 200) throw new Error(`add passkey ${added.status} ${JSON.stringify(added.json)}`);
+  return { username, email, password: PASSWORD, passkey };
 }
+
+/** D80: makes the account one from before email and password (a test-server hook). */
+export async function makeOldAccount(username: string) {
+  const res = await new Browser().post('/api/test/old-account', { username });
+  if (res.status !== 200) throw new Error(`old-account ${res.status}`);
+}
+
+export const signInWithPassword = (browser: Browser, email: string, password = PASSWORD) => browser.post('/api/auth/signin', { email, password });
 
 export async function signIn(browser: Browser, passkey: SoftPasskey) {
   const opts = await browser.post('/api/auth/signin/options');

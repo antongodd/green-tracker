@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { PASSWORD, shot, signUp } from './helpers';
 
 const post = (page: Page, path: string, body: unknown): Promise<any> =>
   page.evaluate(async ({ path, body }) => (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json(), { path, body });
@@ -65,7 +65,7 @@ test('export everything, restore it after changes, then delete the account', asy
   expect(json.logEntries.map((e) => [e.name, e.amount, !!e.photo])).toEqual([['Quick One', 1, true]]);
   expect(json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: false });
   const text = readFileSync(path, 'utf8');
-  for (const key of ['follows', 'followers', 'blocks', 'passkeys', 'recovery', 'gt.view', 'rankBy', 'smokes']) expect(text).not.toContain(`"${key}`);
+  for (const key of ['follows', 'followers', 'blocks', 'passkeys', 'recovery', 'email', 'password', 'gt.view', 'rankBy', 'smokes']) expect(text).not.toContain(`"${key}`);
 
   // D60: a file made before Smokes went still has them (and the old Smokes privacy switches); it restores without them.
   const old = { ...json, appVersion: '0.49.0', privacy: { ...json.privacy, shareSmokeCounts: true, shareMostUsed: false, shareSmokes: false } } as ExportFile;
@@ -101,13 +101,18 @@ test('export everything, restore it after changes, then delete the account', asy
   await page.goto('/log');
   await expect(page.locator('.lrow', { hasText: 'Quick One' })).toBeVisible();
 
-  // Delete the account: the username must be typed, and the passkey confirms.
+  // Delete the account: the username must be typed, and your password confirms (D80).
   await page.goto('/more/delete');
   const button = page.getByRole('button', { name: 'Delete my account' });
   await expect(button).toBeDisabled();
   await page.getByLabel('Type your username to confirm').fill('wrong');
   await expect(button).toBeDisabled();
   await page.getByLabel('Type your username to confirm').fill(username.toUpperCase());
+  await expect(button).toBeDisabled();
+  await page.getByLabel('Your password').fill('not my password');
+  await button.click();
+  await expect(page.getByRole('alert')).toHaveText('That password isn’t right.');
+  await page.getByLabel('Your password').fill(PASSWORD);
   await shot(page, '62-delete');
   await button.click();
   await expect(page).toHaveURL(/\/signin$/);
