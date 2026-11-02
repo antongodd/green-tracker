@@ -231,15 +231,12 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.64.3 (2026-11-02): everything up to their look on their pages (D74), and the faster way of working (D75).
-- **Dev:** 0.65.0: live plus looks and colour sets without a database change (D76).
+- **Live:** 0.65.0 (2026-11-02): everything up to looks and colour sets without a database change (D76).
+- **Dev:** 0.65.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Looks and colour sets without a database change** — **on dev** (0.65.0, D76, 2026-11-02): a new Look or colour
-   set no longer needs a database change. Nothing changes on screen, so there's nothing to try on GT Dev.
-   Next: Anton says "go live".
-2. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D77). Post what you're
+1. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D77). Post what you're
    smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
    comments and a 🔥; a **Feed** tab in People's place; a friend's page in two tabs, Leaderboard | Posts. Anton's
    answers and the full brief: `design/posts-feed-brief.md`. Next: the mockups.
@@ -248,6 +245,7 @@ section, so it must always be current.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Looks and colour sets without a database change (nothing on screen changes) | 0.65.0 | D76 | 2026-11-02 | 2026-11-02 |
 | A faster way of working: Claude merges and releases small changes itself; a 2-minute quick check, a 5-minute full check on six machines shared by time | (0.64.3) | D75 | 2026-11-02 | 2026-11-02 |
 | Their look on their pages: a friend's board, product and brand pages in their Look, top and colours, fading in | 0.64.0 | D74 | 2026-10-31 | 2026-11-01 |
 | The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |
