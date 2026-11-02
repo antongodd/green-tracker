@@ -1,7 +1,14 @@
-# Tests every pull request. On dev, tests then deploys the dev site (D47) and the website's
-# preview (D63); on main, tests then deploys the live site and the website (D63). Each deploy
-# checks its site is serving the new build. Needs one repository secret, CLOUDFLARE_API_TOKEN (the account ID is in
-# wrangler.jsonc).
+# How a change is checked (D75):
+# - A pull request into dev runs the quick check: typecheck, the unit and API tests, and the core
+#   browser tests (npm run test:e2e:core).
+# - A pull request into main (going live) runs the full check: every browser test.
+# - The browser tests are split across four machines at once (the repository is public, so it's free).
+# - A change that only touches notes (*.md, design/) skips the tests: nothing in the app changed.
+# - A push to dev or main isn't tested again when its pull request already tested the same code;
+#   it goes straight to the deploy.
+# On dev it then deploys the dev site (D47) and the website's preview (D63); on main the live site and
+# the website (D63). Each deploy checks its site is serving the new build. Needs one repository secret,
+# CLOUDFLARE_API_TOKEN (the account ID is in wrangler.jsonc).
 name: CI
 
 on:
@@ -17,10 +24,29 @@ env:
   WRANGLER_SEND_METRICS: 'false'
 
 jobs:
-  test:
+  # Decides what to check: skip, core or full (scripts/ci-plan.mjs).
+  plan:
     runs-on: ubuntu-latest
-    # 0.62.1: the browser tests take 15-20 minutes on a GitHub runner since D72; 20 cut a passing run off.
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: What to check
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          REF: ${{ github.ref }}
+        run: node scripts/ci-plan.mjs >> "$GITHUB_OUTPUT"
+
+  checks:
+    needs: plan
+    if: needs.plan.outputs.mode != 'skip'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -30,19 +56,60 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+
+  # The browser tests, split across four machines that run at the same time.
+  browser:
+    needs: plan
+    if: needs.plan.outputs.mode != 'skip'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - name: Core browser tests
+        if: needs.plan.outputs.mode == 'core'
+        run: npm run test:e2e:core -- --shard=${{ matrix.shard }}/4
+      - name: All browser tests
+        if: needs.plan.outputs.mode == 'full'
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.shard }}
           path: .playwright/
           include-hidden-files: true
           retention-days: 7
 
+  # The one check GitHub's ruleset requires ("test"): green when everything that ran passed.
+  test:
+    needs: [plan, checks, browser]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          MODE: ${{ needs.plan.outputs.mode }}
+          PLAN: ${{ needs.plan.result }}
+          CHECKS: ${{ needs.checks.result }}
+          BROWSER: ${{ needs.browser.result }}
+        run: |
+          echo "plan $PLAN ($MODE), checks $CHECKS, browser tests $BROWSER"
+          [ "$PLAN" = success ] || exit 1
+          if [ "$MODE" = skip ]; then exit 0; fi
+          [ "$CHECKS" = success ] && [ "$BROWSER" = success ]
+
   deploy:
     needs: test
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: ${{ !cancelled() && needs.test.result == 'success' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # One deploy at a time; a newer push waits rather than racing.
@@ -106,7 +173,7 @@ jobs:
   # no check from outside here: the deploy step itself fails if the new build doesn't go out.
   deploy-dev:
     needs: test
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
+    if: ${{ !cancelled() && needs.test.result == 'success' && github.event_name != 'pull_request' && github.ref == 'refs/heads/dev' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
