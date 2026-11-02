@@ -16,7 +16,7 @@ import { ApiError, errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
-import { Cluster, formatRankValue, Score, Thumb } from '../components/ProductRow';
+import { Cluster, formatRankValue, PhotoButton, photoTap, Score, Thumb } from '../components/ProductRow';
 // A friend's board never ranks by price (followers never see prices), so no currency is ever shown.
 import { DEFAULT_CURRENCY } from '../../../shared/domain/currency';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
@@ -54,33 +54,38 @@ function Theirs(p: { username: string; preview?: boolean; children: ComponentChi
 }
 
 /** Their row: identity, flag, type, score; the metadata line carries Source only (D12). */
-function SharedRow(p: { username: string; product: SharedProduct; rank: number; band: Band | null; first: boolean; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean }) {
+function SharedRow(p: { username: string; product: SharedProduct; rank: number; band: Band | null; first: boolean; value: number | null; rankBy: ViewState['rankBy']; preview?: boolean; onPhoto?: () => void }) {
   const appearance = useAppearance();
   const href = `${boardPath(p.username, p.preview)}/p/${enc(p.product.id)}`;
   const key = `u:${p.username}`;
   const open = (e: MouseEvent) => {
+    // D79: a tap on the photo opens their shared photos, with no bar (they aren't yours).
+    if (photoTap(e, p.onPhoto)) return;
     rememberRow(key, p.product.id, e.currentTarget as HTMLElement);
     openRow(e, href);
   };
   return (
-    <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
-      <Effects band={p.band} appearance={appearance} />
-      <span class="rk">
-        <RankCrown look={p} appearance={appearance} />
-        {p.rank}
-      </span>
-      <Thumb product={p.product} />
-      <div class="mid">
-        <div class="name">{p.product.name}</div>
-        <Cluster product={p.product} />
-        {p.product.source && (
-          <div class="meta">
-            <span class="src">{p.product.source}</span>
-          </div>
-        )}
-      </div>
-      <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value, DEFAULT_CURRENCY)} />
-    </a>
+    <>
+      <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, p.rankBy, p.value)} href={href} onClick={open} data-return={`${key}:${p.product.id}`}>
+        <Effects band={p.band} appearance={appearance} />
+        <span class="rk">
+          <RankCrown look={p} appearance={appearance} />
+          {p.rank}
+        </span>
+        <Thumb product={p.product} />
+        <div class="mid">
+          <div class="name">{p.product.name}</div>
+          <Cluster product={p.product} />
+          {p.product.source && (
+            <div class="meta">
+              <span class="src">{p.product.source}</span>
+            </div>
+          )}
+        </div>
+        <Score value={p.value} label={rankByCaption(p.rankBy)} text={p.value === null ? undefined : formatRankValue(p.rankBy, p.value, DEFAULT_CURRENCY)} />
+      </a>
+      <PhotoButton name={p.product.name} onPhoto={p.onPhoto} photos={p.product.photos.length} />
+    </>
   );
 }
 
@@ -222,6 +227,8 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
   const listKey = p.preview ? 'u:preview' : `u:${p.username}`;
   // D48: the Colours key.
   const [showKey, setShowKey] = useState(false);
+  // D79: the product whose photos are open from its row.
+  const [photosOf, setPhotosOf] = useState<SharedProduct | null>(null);
 
   useEffect(() => {
     const show = (board: { products: SharedProduct[] }) => {
@@ -329,7 +336,7 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy={view.rankBy} preview={own} />
+              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy={view.rankBy} preview={own} onPhoto={() => setPhotosOf(r.product)} />
             ))}
           </div>
         )}
@@ -338,6 +345,7 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
       </main>
       <TabBar active={tabBar} />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} owner={p.preview ? undefined : person.username} />}
+      {photosOf && <PhotoViewer photos={photosOf.photos.map(shown)} start={0} onClose={() => setPhotosOf(null)} />}
     </Theirs>
   );
 }
@@ -456,6 +464,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
 export function TheirBrandPage(p: { username: string; name: string; preview?: boolean }) {
   const [products, setProducts] = useState<SharedProduct[] | null>(null);
   const [error, setError] = useState('');
+  const [photosOf, setPhotosOf] = useState<SharedProduct | null>(null);
   useEffect(() => {
     (p.preview ? fetchPreview() : api.theirBoard(p.username))
       .then((b) => setProducts(b.products))
@@ -499,13 +508,14 @@ export function TheirBrandPage(p: { username: string; name: string; preview?: bo
             />
             <div class="rows">
               {rows.map((r) => (
-                <SharedRow key={r.product.id} username={p.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy="overall" preview={p.preview} />
+                <SharedRow key={r.product.id} username={p.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy="overall" preview={p.preview} onPhoto={() => setPhotosOf(r.product)} />
               ))}
             </div>
           </>
         )}
       </main>
       <TabBar active={tab} />
+      {photosOf && <PhotoViewer photos={photosOf.photos.map(shown)} start={0} onClose={() => setPhotosOf(null)} />}
     </Theirs>
   );
 }

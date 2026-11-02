@@ -14,6 +14,7 @@ import { LockIcon, TypeMark } from '../icons';
 import { openRow } from '../router';
 import { rememberRow } from '../scrollReturn';
 import { Effects, RankCrown, rowClass, useAppearance } from './Gems';
+import { tappedPhoto } from './ProductPhotos';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** `2026-08-12` → `12 Aug 2026`. Dates are calendar days: no time zone involved. */
@@ -33,6 +34,29 @@ export const asPurchases = (p: Product): Purchase[] =>
 export function StrainTag(p: { strain: string | null }) {
   const s = STRAIN_TYPES.find((x) => x.key === p.strain);
   return s ? <span class={`tag ${s.key}`}>{s.label}</span> : null;
+}
+
+/**
+ * D79: a tap on a row's photo opens it full screen (`onPhoto`) instead of the row's page. The photo
+ * isn't a button of its own inside the row's link (VoiceOver and axe forbid one control inside
+ * another), so the row's click sees where it landed (`tappedPhoto`), and a hidden button after the
+ * row, "Photos of …", is VoiceOver's way to the same thing.
+ */
+export function PhotoButton(p: { name: string; onPhoto?: () => void; photos: number }) {
+  if (!p.onPhoto || p.photos === 0) return null;
+  return (
+    <button type="button" class="visually-hidden row-photos" onClick={p.onPhoto}>
+      Photos of {p.name}
+    </button>
+  );
+}
+
+/** With `onPhoto` (D79), a tap on the row's photo opens its photos instead of its page; true when it did. */
+export function photoTap(e: MouseEvent, onPhoto?: () => void): boolean {
+  if (!onPhoto || !tappedPhoto(e)) return false;
+  e.preventDefault();
+  onPhoto();
+  return true;
 }
 
 /** What a row needs to draw a product — your own, or one shared with you by someone you follow. */
@@ -134,30 +158,34 @@ export function Score(p: { value: number | null; label?: string; text?: string }
  * relabelled (`7.8 TASTE`, `£0.18 PRICE`); Overall by default. `meta` replaces the
  * metadata line (a brand's page shows Brand / Bought here there, D59).
  */
-export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; filter?: TypeFilter; value?: number | null; list?: string; meta?: ComponentChildren }) {
+export function ProductRow(p: { product: Product; rank: number; band: Band | null; first: boolean; rankBy?: RankBy; filter?: TypeFilter; value?: number | null; list?: string; meta?: ComponentChildren; onPhoto?: () => void }) {
   const appearance = useAppearance();
   const currency = useCurrency();
   const href = `/products/${p.product.id}`;
   const rankBy = p.rankBy ?? 'overall';
   const value = p.value !== undefined ? p.value : overall(p.product.productType, p.product.ratings);
   const open = (e: MouseEvent) => {
+    if (photoTap(e, p.onPhoto)) return;
     if (p.list) rememberRow(p.list, p.product.id, e.currentTarget as HTMLElement);
     openRow(e, href);
   };
   return (
-    <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
-      <Effects band={p.band} appearance={appearance} />
-      <span class="rk">
-        <RankCrown look={p} appearance={appearance} />
-        {p.rank}
-      </span>
-      <Thumb product={p.product} />
-      <div class="mid">
-        <div class="name">{p.product.name}</div>
-        <Cluster product={p.product} showLock />
-        {p.meta ?? <MetaLine product={p.product} perGram={rankBy === 'price' && p.filter === 'all'} />}
-      </div>
-      <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value, currency)} />
-    </a>
+    <>
+      <a class={`row${rowClass(p, appearance)}`} {...heatStyle(p.band, rankBy, value)} href={href} onClick={open} data-return={p.list ? `${p.list}:${p.product.id}` : undefined}>
+        <Effects band={p.band} appearance={appearance} />
+        <span class="rk">
+          <RankCrown look={p} appearance={appearance} />
+          {p.rank}
+        </span>
+        <Thumb product={p.product} />
+        <div class="mid">
+          <div class="name">{p.product.name}</div>
+          <Cluster product={p.product} showLock />
+          {p.meta ?? <MetaLine product={p.product} perGram={rankBy === 'price' && p.filter === 'all'} />}
+        </div>
+        <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value, currency)} />
+      </a>
+      <PhotoButton name={p.product.name} onPhoto={p.onPhoto} photos={p.product.photos.length} />
+    </>
   );
 }
