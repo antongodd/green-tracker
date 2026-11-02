@@ -274,8 +274,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.67.0 (2026-11-02): everything up to posts, comments and a Feed (D77) with several photos a post (D78).
-- **Dev:** 0.67.1: live plus the composer's lists newest first.
+- **Live:** 0.67.1 (2026-11-02): everything up to posts (D77, D78), with the composer's lists newest first.
+- **Dev:** 0.67.1, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -285,6 +285,7 @@ Nothing waiting. Ask Anton what's next.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Posting: Your Leaderboard and Your Log newest first when picking what a post is about | 0.67.1 | | 2026-11-02 | 2026-11-02 |
 | Posts, comments and a Feed: a Feed tab in People's place, comments and a 🔥, Leaderboard \| Posts pages; several photos a post, swiped, and the product's photo in the card (checked on Anton's iPhone on GT Dev) | 0.66.0–0.67.0 | D77, D78 | 2026-11-02 | 2026-11-02 |
 | Recipes for each kind of change (`.claude/skills/`), two conversations at once, and Anton's guide `WORKFLOW.md` | (notes) | | 2026-11-02 | notes only |
 | Looks and colour sets without a database change (nothing on screen changes) | 0.65.0 | D76 | 2026-11-02 | 2026-11-02 |
