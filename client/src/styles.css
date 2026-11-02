@@ -1896,11 +1896,23 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 .post-who .who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; min-height: 44px; }
 .post-who .u { min-width: 0; display: grid; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .post-who time { font-weight: 500; }
-.post-photo { display: block; background: var(--surface-1); }
-.post-photo img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: cover; }
-/* A cut-out (D26) shows without a background, on a soft glow like a product's photo. */
-.post-photo.cut { background: radial-gradient(70% 60% at 50% 45%, var(--accent-soft), transparent 70%); }
-.post-photo.cut img { object-fit: contain; }
+.post-photo { position: relative; display: block; background: var(--surface-1); }
+/* D78: the photos side by side, one at a time, snapping; each the first one's shape (--ratio, 4:5 to 1.91:1). */
+.post-photo .track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+.post-photo .track::-webkit-scrollbar { display: none; }
+.post-photo .track .slide { display: block; flex: 0 0 100%; width: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.post-photo .track img { display: block; width: 100%; aspect-ratio: var(--ratio, 1); object-fit: cover; }
+/* A cut-out (D26) shows whole, without a background, on a soft glow like a product's photo. */
+.post-photo.cut, .post-photo .track img.cut { background: radial-gradient(70% 60% at 50% 45%, var(--accent-soft), transparent 70%); }
+.post-photo .track img.cut { object-fit: contain; }
+.photo-count { position: absolute; top: 10px; right: 10px; padding: 3px 9px; border-radius: 999px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; pointer-events: none; }
+.photo-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 0; }
+.photo-dots span { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--text) 30%, transparent); }
+.photo-dots span.on { background: var(--accent-bright); }
+.row.about .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.row.about .thumb.cut img { object-fit: contain; }
+.compose-photos { display: grid; gap: 8px; }
+.compose-photos .add-cell { font: inherit; }
 .row.about { grid-template-columns: 54px minmax(0, 1fr) minmax(56px, max-content); margin: 12px 12px 0; min-height: 72px; padding: 8px 12px 8px 8px; }
 .row.about.log, .row.about.plain { grid-template-columns: 54px minmax(0, 1fr) max-content; }
 .row.about.log { border-style: dashed; border-color: var(--hairline-strong); }

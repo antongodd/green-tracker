@@ -10,7 +10,7 @@ import { validateProductInput, type ProductInput } from './product';
 import { validatePrivacy, type Privacy } from './privacy';
 import { validateAppearance, type Appearance } from './gems';
 import { isCurrencyCode } from './currency';
-import { validateCaption } from './posts';
+import { POST_PHOTOS_MAX, validateCaption } from './posts';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -91,13 +91,16 @@ export interface ExportPost {
   about: PostAboutRef;
   /** The name and type as posted, for a card whose product or entry has gone. */
   aboutName: { name: string; productType: string | null; productTypeOther: string | null; strainType: string | null } | null;
+  /** The first photo's cropped image (base64), as before D78. */
   image: string;
   cutout?: boolean;
+  /** D78: every photo in order, the first included (absent in files from 0.66: `image` alone). */
+  photos?: { image: string; cutout?: boolean }[];
 }
 
-export interface RestorePost extends Omit<ExportPost, 'image' | 'cutout'> {
-  /** The post's photo, uploaded as a set (cropped + thumb). */
-  upload: string;
+export interface RestorePost extends Omit<ExportPost, 'image' | 'cutout' | 'photos'> {
+  /** The post's photos, each uploaded as a set (cropped + thumb), in order (D78: one to ten). */
+  uploads: string[];
 }
 
 /** D66: your main currency. */
@@ -193,7 +196,10 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
     for (const p of f.posts as Record<string, unknown>[]) {
       const ok =
         !!p && typeof p === 'object' && validateCaption(p.caption).ok && isTime(p.createdAt) && editedOk(p.editedAt) && isB64(p.image) &&
-        (p.cutout === undefined || typeof p.cutout === 'boolean') && postRefsOk(p, f.products.length, f.logEntries.length);
+        (p.cutout === undefined || typeof p.cutout === 'boolean') && postRefsOk(p, f.products.length, f.logEntries.length) &&
+        (p.photos === undefined ||
+          (Array.isArray(p.photos) && p.photos.length >= 1 && p.photos.length <= POST_PHOTOS_MAX &&
+            (p.photos as Record<string, unknown>[]).every((x) => !!x && isB64(x.image) && (x.cutout === undefined || typeof x.cutout === 'boolean'))));
       if (!ok) return bad('A post in the file couldn’t be read.');
     }
   }
@@ -268,11 +274,11 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
       const caption = validateCaption(raw.caption);
       if (!caption.ok) return bad(`Post ${i + 1}: ${caption.message}`);
       if (!isTime(raw.createdAt) || !editedOk(raw.editedAt) || !postRefsOk(raw, products.length, logEntries.length)) return bad1();
-      if (typeof raw.upload !== 'string' || !raw.upload || uploads.has(raw.upload)) return bad1();
-      uploads.add(raw.upload);
+      const ups = Array.isArray(raw.uploads) ? (raw.uploads as unknown[]) : [];
+      if (ups.length < 1 || ups.length > POST_PHOTOS_MAX || !ups.every((u) => typeof u === 'string' && u && !uploads.has(u) && (uploads.add(u), true))) return bad1();
       const a = raw.about as PostAboutRef;
       if (a && 'keptBy' in a && !logEntries[a.keptBy]!.kept) return bad1();
-      posts.push({ caption: caption.value, createdAt: raw.createdAt, editedAt: (raw.editedAt as number | null) ?? null, about: a, aboutName: (raw.aboutName as ExportPost['aboutName']) ?? null, upload: raw.upload });
+      posts.push({ caption: caption.value, createdAt: raw.createdAt, editedAt: (raw.editedAt as number | null) ?? null, about: a, aboutName: (raw.aboutName as ExportPost['aboutName']) ?? null, uploads: ups as string[] });
     }
   }
   const extra = { ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}), ...(money ? { money: { currency: money.currency } } : {}), ...(posts ? { posts } : {}) };

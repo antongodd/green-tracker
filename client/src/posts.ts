@@ -27,6 +27,8 @@ export interface OwnPost {
   aboutName: { name: string; productType: string | null; productTypeOther: string | null; strainType: string | null } | null;
   caption: string;
   image: { version: string; cutout: boolean };
+  /** D78: every photo, in order. */
+  photos: { version: string; cutout: boolean }[];
   createdAt: number;
   editedAt: number | null;
 }

@@ -70,7 +70,7 @@ data.post('/restore', async (c) => {
     if (profilePhoto && cutouts.has(profilePhoto.upload!)) fail(400, 'invalid_restore', 'The profile photo in the file couldn’t be read.');
   }
   // D77: a post's photo is a cropped image and thumbnail (no original), uploaded like any other.
-  const postUploads = (posts ?? []).map((p) => p.upload);
+  const postUploads = (posts ?? []).flatMap((p) => p.uploads);
   if (postUploads.length) {
     const { results } = await db
       .prepare('SELECT id, cutout FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))')
@@ -170,7 +170,10 @@ data.post('/restore', async (c) => {
 
   // D77: the posts being replaced, and their photo files.
   if (posts) {
-    const { results: oldPosts } = await db.prepare('SELECT image_set FROM posts WHERE user_id = ?1').bind(userId).all<{ image_set: string }>();
+    const { results: oldPosts } = await db
+      .prepare('SELECT image_set FROM posts WHERE user_id = ?1 UNION SELECT image_set FROM post_photos WHERE user_id = ?1')
+      .bind(userId)
+      .all<{ image_set: string }>();
     for (const o of oldPosts) old.push({ original_set: o.image_set, image_set: o.image_set });
   }
   const postRows = (posts ?? []).map((p) => {
@@ -184,8 +187,10 @@ data.post('/restore', async (c) => {
       typeOther: p.aboutName?.productTypeOther ?? null,
       strain: p.aboutName?.strainType ?? null,
       caption: p.caption,
-      set: p.upload,
-      cut: cutouts.has(p.upload) ? 1 : 0,
+      set: p.uploads[0]!,
+      cut: cutouts.has(p.uploads[0]!) ? 1 : 0,
+      // D78: every photo, in order.
+      photos: p.uploads.map((u) => ({ set: u, cut: cutouts.has(u) ? 1 : 0 })),
       created: p.createdAt,
       edited: p.editedAt,
     };
@@ -250,6 +255,14 @@ data.post('/restore', async (c) => {
           `INSERT INTO posts (id, user_id, product_id, log_entry_id, about_name, about_type, about_type_other, about_strain, caption, image_set, cutout, created_at, edited_at)
            SELECT ${j('id')}, ?1, ${j('p')}, ${j('e')}, ${j('name')}, ${j('type')}, ${j('typeOther')}, ${j('strain')}, ${j('caption')}, ${j('set')}, ${j('cut')}, ${j('created')}, ${j('edited')} FROM json_each(?2)`,
         )
+        .bind(userId, chunk),
+    );
+  }
+  const postPhotoRows = postRows.flatMap((r) => r.photos.map((ph, position) => ({ post: r.id, pos: position, set: ph.set, cut: ph.cut })));
+  for (const chunk of chunks(postPhotoRows)) {
+    statements.push(
+      db
+        .prepare(`INSERT INTO post_photos (post_id, user_id, position, image_set, cutout) SELECT ${j('post')}, ?1, ${j('pos')}, ${j('set')}, ${j('cut')} FROM json_each(?2)`)
         .bind(userId, chunk),
     );
   }

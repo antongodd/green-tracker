@@ -178,6 +178,33 @@ test('your own page from People: the same two tabs, your posts with Edit and Del
   await expect(first).toContainText('edited');
 });
 
+test('several photos (D78): add the product’s second photo, post, then swipe through them; the card shows its cover', async () => {
+  const two = await call(owner, 'POST', '/api/products', P({ name: 'Two Shots', ratings: { look: 8.2 }, photos: [{ upload: await upload(owner, '#d9c45a'), crop: null }, { upload: await upload(owner, '#5ab0d9'), crop: null }] }));
+  await owner.goto(`/feed/new/p/${two.product.id}`);
+  await expect(owner.locator('.compose-photos .pslot')).toHaveCount(1);
+  await owner.getByRole('button', { name: 'Its photo 2' }).click();
+  await expect(owner.locator('.compose-photos .pslot')).toHaveCount(2);
+  await expect(owner.locator('.compose-photo .photo-count')).toHaveText('1/2');
+  await settled(owner);
+  await shot(owner, 'posts-08-composer-two');
+  await owner.getByRole('button', { name: 'Post' }).click();
+  await expect(owner).toHaveURL(/\/feed$/);
+  const first = owner.locator('.post').first();
+  await expect(first.locator('.post-photo img')).toHaveCount(2);
+  await expect(first.locator('.photo-count')).toHaveText('1/2');
+  await expect(first.locator('.photo-dots span')).toHaveCount(2);
+  // The card's thumbnail is the product's cover, not the icon.
+  await expect(first.locator('.row.about .thumb img')).toHaveCount(1);
+  await first.locator('.track').evaluate((t) => t.scrollTo({ left: t.clientWidth }));
+  await expect(first.locator('.photo-count')).toHaveText('2/2');
+  await expect(first.locator('.photo-dots span.on')).toHaveCount(1);
+  // Both photos are the same height (the first one's shape).
+  const heights = await first.locator('.post-photo img').evaluateAll((imgs) => imgs.map((i) => Math.round(i.getBoundingClientRect().height)));
+  expect(new Set(heights).size).toBe(1);
+  await settled(owner);
+  await shot(owner, 'posts-09-feed-two');
+});
+
 for (const look of ['aurora', 'daymint'] as const) {
   test(`readable and accessible in ${look}: the Feed, a post’s page and the composer`, async () => {
     test.slow();

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { photoUrl } from '../../../shared/domain/photo';
 import { scoreBand } from '../../../shared/domain/gems';
 import { formatScore } from '../../../shared/domain/format';
 import { postPhotoUrl, timeLabel, type Post, type PostAbout } from '../../../shared/domain/posts';
@@ -39,7 +40,10 @@ export function AboutCard(p: { about: PostAbout }) {
   const body = (
     <>
       {a.kind === 'product' && <Effects band={band} appearance={appearance} />}
-      <span class="thumb">{def?.icon && <TypeMark icon={def.icon} label={def.label} />}</span>
+      {/* D78: the product's cover, as on their board; otherwise the type's icon. */}
+      <span class={`thumb${a.photo?.cutout ? ' cut' : ''}`}>
+        {a.photo ? <img src={photoUrl(a.photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def?.icon && <TypeMark icon={def.icon} label={def.label} />}
+      </span>
       <div class="mid">
         <div class="name">{a.name}</div>
         <div class="cluster">
@@ -82,6 +86,67 @@ export function AboutCard(p: { about: PostAbout }) {
     <div class={cls} {...heat}>
       {body}
     </div>
+  );
+}
+
+/**
+ * D78: a post's photos, swiped sideways one at a time (snapping), with "2/3" in the corner and dots underneath. Every
+ * photo takes the first one's shape (between 4:5 and 1.91:1, as Instagram), so the post doesn't change height as you
+ * swipe; a cut-out is shown whole on its glow.
+ */
+function PostPhotos(p: { post: Post; href?: string }) {
+  const post = p.post;
+  const photos = post.photos?.length ? post.photos : [post.image];
+  const [at, setAt] = useState(0);
+  const [ratio, setRatio] = useState<number | null>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const n = photos.length;
+  const alt = (i: number) => (post.about ? `Photo ${n > 1 ? `${i + 1} of ${n} ` : ''}of ${post.about.name}` : `Photo ${n > 1 ? `${i + 1} of ${n} ` : ''}by @${post.username}`);
+  const onScroll = () => {
+    const t = track.current;
+    if (t) setAt(Math.max(0, Math.min(n - 1, Math.round(t.scrollLeft / Math.max(1, t.clientWidth)))));
+  };
+  const style = ratio ? { '--ratio': String(Math.min(1.91, Math.max(0.8, ratio))) } : undefined;
+  // In a list each photo opens the post (so the strip, which scrolls, holds links you can reach by keyboard);
+  // on the post's own page the strip itself takes focus, to scroll with the arrow keys.
+  const cls = `post-photo${post.image.cutout ? ' cut' : ''}${n > 1 ? ' many' : ''}`;
+  const img = (ph: { version: string; cutout: boolean }, i: number) => (
+    <img
+      class={ph.cutout ? 'cut' : undefined}
+      src={postPhotoUrl(post, 'cropped', i)}
+      alt={alt(i)}
+      loading={i === 0 ? undefined : 'lazy'}
+      decoding="async"
+      draggable={false}
+      onLoad={i === 0 ? (e) => setRatio(e.currentTarget.naturalWidth / Math.max(1, e.currentTarget.naturalHeight)) : undefined}
+    />
+  );
+  return (
+    <>
+      <div class={cls} style={style}>
+        <div class="track" ref={track} onScroll={onScroll} {...(!p.href && n > 1 ? { tabIndex: 0, role: 'group', 'aria-label': `${n} photos: swipe for more` } : {})}>
+          {photos.map((ph, i) =>
+            p.href ? (
+              <a key={ph.version} class="slide" href={p.href} onClick={linkTo(p.href)} aria-label={n > 1 ? `Open the post (photo ${i + 1} of ${n})` : 'Open the post'}>
+                {img(ph, i)}
+              </a>
+            ) : (
+              <div key={ph.version} class="slide">
+                {img(ph, i)}
+              </div>
+            ),
+          )}
+        </div>
+        {n > 1 && <span class="photo-count">{`${at + 1}/${n}`}</span>}
+      </div>
+      {n > 1 && (
+        <div class="photo-dots" aria-hidden="true">
+          {photos.map((ph, i) => (
+            <span key={ph.version} class={i === at ? 'on' : undefined} />
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -231,15 +296,7 @@ export function PostCard(p: { post: Post; full?: boolean; onChange: (post: Post)
           </button>
         )}
       </div>
-      {p.full ? (
-        <div class={`post-photo${post.image.cutout ? ' cut' : ''}`}>
-          <img src={postPhotoUrl(post, 'cropped')} alt={post.about ? `Photo of ${post.about.name}` : `Photo by @${post.username}`} decoding="async" />
-        </div>
-      ) : (
-        <a class={`post-photo${post.image.cutout ? ' cut' : ''}`} href={href} onClick={linkTo(href)} aria-label="Open the post">
-          <img src={postPhotoUrl(post, 'cropped')} alt={post.about ? `Photo of ${post.about.name}` : `Photo by @${post.username}`} loading="lazy" decoding="async" />
-        </a>
-      )}
+      <PostPhotos post={post} href={p.full ? undefined : href} />
       {post.about && <AboutCard about={post.about} />}
       <div class="post-acts">
         <button type="button" class={`act fire${post.youFired ? ' on' : ''}${popped ? ' pop' : ''}`} aria-pressed={post.youFired} aria-label="Give a fire" onClick={fire} onAnimationEnd={() => setPopped(false)}>

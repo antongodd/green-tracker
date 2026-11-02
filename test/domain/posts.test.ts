@@ -22,7 +22,13 @@ describe('post limits (D77)', () => {
   });
 
   it('a post: one photo (one of yours or an upload), about one thing or nothing', () => {
-    expect(validatePostInput({ photo: { upload: 'u1' } })).toEqual({ ok: true, value: { caption: '', about: null, photo: { upload: 'u1' }, makeVisible: false } });
+    expect(validatePostInput({ photo: { upload: 'u1' } })).toEqual({ ok: true, value: { caption: '', about: null, photos: [{ upload: 'u1' }], makeVisible: false } });
+    // D78: up to ten, in order, none twice.
+    expect(validatePostInput({ photos: [{ upload: 'u1' }, { fromPhotoId: 'p1' }] })).toMatchObject({ ok: true, value: { photos: [{ upload: 'u1' }, { fromPhotoId: 'p1' }] } });
+    expect(validatePostInput({ photos: Array.from({ length: 10 }, (_, i) => ({ upload: `u${i}` })) }).ok).toBe(true);
+    expect(validatePostInput({ photos: Array.from({ length: 11 }, (_, i) => ({ upload: `u${i}` })) }).ok).toBe(false);
+    expect(validatePostInput({ photos: [{ upload: 'u1' }, { upload: 'u1' }] }).ok).toBe(false);
+    expect(validatePostInput({ photos: [] }).ok).toBe(false);
     expect(validatePostInput({ caption: 'x', about: { product: 'p1' }, photo: { fromPhotoId: 'ph1' }, makeVisible: true }).ok).toBe(true);
     expect(validatePostInput({ about: { logEntry: 'e1' }, photo: { upload: 'u1' } }).ok).toBe(true);
     expect(validatePostInput({ about: null }).ok).toBe(false); // no photo
@@ -69,12 +75,16 @@ describe('posts in Export and Restore', () => {
     expect(checkExportFile(file([{ ...good, about: { logEntry: 0, product: 0 } }])).ok).toBe(false);
     expect(checkExportFile(file([{ ...good, caption: 'x'.repeat(501) }])).ok).toBe(false);
     expect(checkExportFile(file([{ ...good, image: '' }])).ok).toBe(false);
+    expect(checkExportFile(file([{ ...good, photos: [{ image: 'AAAA' }, { image: 'BBBB', cutout: true }] }])).ok).toBe(true);
+    expect(checkExportFile(file([{ ...good, photos: [] }])).ok).toBe(false);
   });
   it('a restore’s posts: each its own upload; keptBy only for an entry that keeps a product', () => {
     const base = { products: [], logEntries: [{ name: 'E', productType: 'flower', createdAt: 1, photos: [] }] };
-    const p = { caption: '', createdAt: 5, editedAt: null, about: null, aboutName: null, upload: 'u1' };
+    const p = { caption: '', createdAt: 5, editedAt: null, about: null, aboutName: null, uploads: ['u1'] };
     expect(validateRestore({ ...base, posts: [p] }).ok).toBe(true);
     expect(validateRestore({ ...base, posts: [p, p] }).ok).toBe(false);
+    expect(validateRestore({ ...base, posts: [{ ...p, uploads: ['a', 'b', 'c'] }] }).ok).toBe(true);
+    expect(validateRestore({ ...base, posts: [{ ...p, uploads: [] }] }).ok).toBe(false);
     expect(validateRestore({ ...base, posts: [{ ...p, about: { keptBy: 0 } }] }).ok).toBe(false);
   });
 });
