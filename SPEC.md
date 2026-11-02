@@ -1621,6 +1621,12 @@ None.
 
 ## 6. Changelog
 
+### Notes — recipes for each kind of change (owner request; no app change, version unchanged)
+- Step-by-step recipes (Claude Code skills, `.claude/skills/`) for starting a conversation, a small change, a big
+  change, going live, undoing a broken release, and adding a Look or colour set; Claude picks the right one from what
+  the owner says. New rules in `CLAUDE.md` for two conversations at once (whoever merges second sorts out clashes; a
+  release never takes a big change live before its "go live"). `WORKFLOW.md`: a one-page guide for the owner.
+
 ### Notes — looks and colour sets without a database change are live
 - D76 (on dev 2026-11-02) went live on 2026-11-02 and moves to Done. Notes only.
 
