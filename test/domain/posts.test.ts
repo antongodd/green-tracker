@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAPTION_MAX, COMMENT_MAX, cursorOf, parseCursor, timeLabel, validateCaption, validateComment, validatePostInput } from '../../shared/domain/posts';
+import { CAPTION_MAX, COMMENT_MAX, cursorOf, newestFirst, parseCursor, timeLabel, validateCaption, validateComment, validatePostInput } from '../../shared/domain/posts';
 import { checkExportFile, EXPORT_FORMAT, validateRestore } from '../../shared/domain/backup';
 
 describe('post limits (D77)', () => {
@@ -86,5 +86,13 @@ describe('posts in Export and Restore', () => {
     expect(validateRestore({ ...base, posts: [{ ...p, uploads: ['a', 'b', 'c'] }] }).ok).toBe(true);
     expect(validateRestore({ ...base, posts: [{ ...p, uploads: [] }] }).ok).toBe(false);
     expect(validateRestore({ ...base, posts: [{ ...p, about: { keptBy: 0 } }] }).ok).toBe(false);
+  });
+});
+
+describe('the composer’s lists', () => {
+  it('newest first, leaving the original list alone', () => {
+    const list = [{ name: 'old', createdAt: 1 }, { name: 'newest', createdAt: 30 }, { name: 'middle', createdAt: 20 }];
+    expect(newestFirst(list).map((x) => x.name)).toEqual(['newest', 'middle', 'old']);
+    expect(list[0]!.name).toBe('old');
   });
 });

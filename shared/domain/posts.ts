@@ -175,3 +175,9 @@ export function parseCursor(raw: string | undefined | null): { t: number; id: st
   const m = /^(\d{1,16})_([A-Za-z0-9_-]{1,64})$/.exec(raw);
   return m ? { t: Number(m[1]), id: m[2]! } : null;
 }
+
+/**
+ * The composer's lists (your Leaderboard, your Log): newest first, so what you've just added is at the top, quickest
+ * to post (owner request, 0.67.1). Ties keep their order.
+ */
+export const newestFirst = <T extends { createdAt: number }>(items: readonly T[]): T[] => [...items].sort((a, b) => b.createdAt - a.createdAt);

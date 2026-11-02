@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { CAPTION_MAX, POST_PHOTOS_MAX, type PostAbout, type PostInput } from '../../../shared/domain/posts';
+import { CAPTION_MAX, newestFirst, POST_PHOTOS_MAX, type PostAbout, type PostInput } from '../../../shared/domain/posts';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
@@ -175,7 +175,7 @@ export function Composer(p: { product?: string; entry?: string }) {
     return (
       <Picker
         title="Your Leaderboard"
-        items={products?.filter((x) => !x.archived) ?? null}
+        items={products ? newestFirst(products.filter((x) => !x.archived)) : null}
         error={error}
         note="Archived products and ones returned to the Log aren’t listed: post their Log entry instead."
         onBack={() => setStep('choose')}
@@ -205,7 +205,7 @@ export function Composer(p: { product?: string; entry?: string }) {
     return (
       <Picker
         title="Your Log"
-        items={entries}
+        items={entries ? newestFirst(entries) : null}
         error={error}
         note="Followers see only its name and type."
         onBack={() => setStep('choose')}

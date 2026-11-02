@@ -143,6 +143,10 @@ test('from the Feed’s + button: what’s it about, then just a photo needs a p
   await owner.goto('/feed');
   await owner.getByRole('button', { name: 'New post' }).click();
   await expect(owner.getByRole('dialog', { name: 'What’s this about?' })).toBeVisible();
+  // Your Leaderboard to pick from, newest first (0.67.1): Purple Punch was added after Lemon Haze.
+  await owner.getByRole('button', { name: 'Something on my Leaderboard' }).click();
+  await expect(owner.locator('.pick-list .pick b')).toHaveText(['Purple Punch', 'Lemon Haze']);
+  await owner.getByRole('button', { name: 'Back' }).click();
   await owner.getByRole('button', { name: 'Just a photo' }).click();
   await expect(owner.getByRole('button', { name: 'Post' })).toBeDisabled();
   await expect(owner.getByText('Add a photo to post')).toBeVisible();
