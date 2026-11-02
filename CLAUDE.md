@@ -234,7 +234,10 @@ section, so it must always be current.
 
 ### To-do list (suggested order; Anton decides)
 
-Nothing waiting. Ask Anton what's next.
+1. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D76). Post what you're
+   smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
+   comments and a 🔥; a **Feed** tab in People's place; a friend's page in two tabs, Leaderboard | Posts. Anton's
+   answers and the full brief: `design/posts-feed-brief.md`. Next: the mockups.
 
 ### Done (newest first)
 
