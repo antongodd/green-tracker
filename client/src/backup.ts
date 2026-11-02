@@ -42,7 +42,7 @@ export async function buildExport(username: string, progress: Progress): Promise
   const [active, archived, entries, me, privacy, mine] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchPrivacy(), ownPosts()]);
   const products: Product[] = [...active, ...archived];
   const profile = me.user?.photo ?? null;
-  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0) + (profile ? 1 : 0) + mine.length;
+  const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0) + (profile ? 1 : 0) + mine.reduce((n, p) => n + p.photos.length, 0);
   let done = 0;
   progress(0, photos);
   const embed = async (ph: PhotoRecord, url = (v: 'original' | 'cropped') => photoUrl(ph, v)): Promise<ExportPhoto> => {
@@ -113,9 +113,13 @@ export async function buildExport(username: string, progress: Progress): Promise
           : p.logEntryId && entryAt.has(p.logEntryId)
             ? { logEntry: entryAt.get(p.logEntryId)! }
             : null;
-    const image = await toBase64(await fetchBlob(postPhotoUrl(p, 'cropped')));
-    progress(++done, photos);
-    exportPosts.push({ caption: p.caption, createdAt: p.createdAt, editedAt: p.editedAt, about, aboutName: p.aboutName, image, ...(p.image.cutout ? { cutout: true } : {}) });
+    // D78: every photo, in order; `image` (the first) as well, for an older app reading the file.
+    const pics: { image: string; cutout?: boolean }[] = [];
+    for (const [n, ph] of p.photos.entries()) {
+      pics.push({ image: await toBase64(await fetchBlob(postPhotoUrl(p, 'cropped', n))), ...(ph.cutout ? { cutout: true } : {}) });
+      progress(++done, photos);
+    }
+    exportPosts.push({ caption: p.caption, createdAt: p.createdAt, editedAt: p.editedAt, about, aboutName: p.aboutName, image: pics[0]!.image, ...(pics[0]!.cutout ? { cutout: true } : {}), photos: pics });
   }
 
   const file: ExportFile = {
@@ -169,6 +173,8 @@ export interface ExportSummary {
   profilePhoto: 'included' | 'none' | 'not-in-file';
   /** D77: the file's posts, or null for a file from before 0.66.0 (restoring it leaves your posts alone). */
   posts: number | null;
+  /** D78: the photos in those posts. */
+  postPhotos: number;
 }
 
 /** Reads and checks a chosen export file. Nothing is changed. */
@@ -190,6 +196,7 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
     photos: f.products.reduce((n, p) => n + p.photos.length, 0) + f.logEntries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0),
     profilePhoto: f.profilePhoto === undefined ? 'not-in-file' : f.profilePhoto ? 'included' : 'none',
     posts: f.posts ? f.posts.length : null,
+    postPhotos: f.posts ? f.posts.reduce((n, p) => n + (p.photos?.length ?? 1), 0) : 0,
   };
 }
 
@@ -201,7 +208,7 @@ export async function readExport(file: Blob): Promise<ExportSummary> {
 export async function restore(summary: ExportSummary, progress: Progress): Promise<void> {
   const uploads: string[] = [];
   let done = 0;
-  const total = summary.photos + (summary.profilePhoto === 'included' ? 1 : 0) + (summary.posts ?? 0);
+  const total = summary.photos + (summary.profilePhoto === 'included' ? 1 : 0) + summary.postPhotos;
   progress(0, total);
   const upload = async (ph: ExportPhoto) => {
     const cutout = ph.cutout === true;
@@ -240,13 +247,17 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     // D77: each post's photo as its own set (the cropped image and a fresh thumbnail; no original).
     if (summary.file.posts) {
       payload.posts = [];
-      for (const { image, cutout, ...post } of summary.file.posts) {
-        const cropped = fromBase64(image, cutout ? 'image/png' : 'image/jpeg');
-        const thumb = await renderThumb(await loadImage(cropped), !!cutout);
-        const id = await uploadSet({ cropped, thumb, cutout: !!cutout });
-        uploads.push(id);
-        progress(++done, total);
-        payload.posts.push({ ...post, upload: id });
+      for (const { image, cutout, photos, ...post } of summary.file.posts) {
+        const ids: string[] = [];
+        for (const ph of photos ?? [{ image, cutout }]) {
+          const cropped = fromBase64(ph.image, ph.cutout ? 'image/png' : 'image/jpeg');
+          const thumb = await renderThumb(await loadImage(cropped), !!ph.cutout);
+          const id = await uploadSet({ cropped, thumb, cutout: !!ph.cutout });
+          uploads.push(id);
+          ids.push(id);
+          progress(++done, total);
+        }
+        payload.posts.push({ ...post, uploads: ids });
       }
     }
     await api('POST', '/data/restore', payload);

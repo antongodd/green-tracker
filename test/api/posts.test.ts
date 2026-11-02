@@ -200,7 +200,7 @@ describe('making a post', () => {
     const p = await post(owner, { caption: 'from the log', about: { logEntry: entry.id }, photo: { fromPhotoId: entry.photo!.id } });
     expect(p.about).toMatchObject({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', href: `/log/${entry.id}` });
     const seen = (await fan.get(`/api/posts/${p.id}`)).json.post.about;
-    expect(seen).toEqual({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', productTypeOther: null, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null });
+    expect(seen).toEqual({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', productTypeOther: null, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null, photo: null });
     expect(JSON.stringify(seen)).not.toContain('0.5');
 
     const promoted = await owner.post(`/api/log/${entry.id}/promote`, { ...emptyProductInput(), name: 'Logged Cart', productType: 'concentrate', ratings: { look: 8, smell: 8, taste: 8, consistency: 8 }, photos: [{ id: entry.photo!.id, crop: null }] });
@@ -228,6 +228,46 @@ describe('making a post', () => {
     expect((await owner.del(`/api/posts/${p.id}`)).status).toBe(200);
     expect(await eventually(() => r2Keys(`u/${id}/s/${p.image.version}/`).length === 0)).toBe(true);
     expect((await fan.get(`/api/posts/${p.id}`)).status).toBe(404);
+  });
+});
+
+describe('several photos in a post (D78)', () => {
+  it('up to ten, in order, each its own copy; each served only to those who may see the post', async () => {
+    const prod = await make(owner, { name: 'Dump Kush', photos: [{ upload: await newSet(owner, 'dump-a'), crop: null }, { upload: await newSet(owner, 'dump-b'), crop: null }] });
+    const p = await post(owner, { caption: 'a dump', about: { product: prod.id }, photos: [{ fromPhotoId: prod.photos[1]!.id }, { upload: await postSet(owner, 'joint') }, { fromPhotoId: prod.photos[0]!.id }] });
+    expect(p.photos).toHaveLength(3);
+    expect(p.image.version).toBe(p.photos[0]!.version);
+    const texts = [];
+    for (let n = 0; n < 3; n++) texts.push(text((await fan.raw(postPhotoUrl(p, 'cropped', n))).bytes));
+    expect(texts).toEqual(['dump-b-cropped', 'joint-cropped', 'dump-a-cropped']);
+    expect((await fan.raw(postPhotoUrl(p, 'thumb', 3))).status).toBe(403); // no fourth
+    for (const b of [stranger, pending]) expect((await b.raw(postPhotoUrl(p, 'cropped', 1))).status).toBe(403);
+    const eleven = await Promise.all(Array.from({ length: 11 }, (_, i) => postSet(owner, `many${i}`)));
+    expect((await owner.post('/api/posts', { about: null, photos: eleven.map((upload) => ({ upload })) })).status).toBe(400);
+    // Deleting it deletes every photo's files.
+    const id = userId(ownerName)!;
+    expect((await owner.del(`/api/posts/${p.id}`)).status).toBe(200);
+    for (const ph of p.photos) expect(await eventually(() => r2Keys(`u/${id}/s/${ph.version}/`).length === 0)).toBe(true);
+  });
+
+  it('one missing photo stops the whole post, and nothing is left behind', async () => {
+    const before = (await owner.get(`/api/posts/by/${ownerName}`)).json.posts.length;
+    const r = await owner.post('/api/posts', { about: null, photos: [{ upload: await postSet(owner, 'fine') }, { upload: 'expired' }] });
+    expect(r.status).toBe(400);
+    expect((await owner.get(`/api/posts/by/${ownerName}`)).json.posts.length).toBe(before);
+  });
+
+  it('the card shows the product’s cover while their Privacy shares photos; never a Log entry’s photo', async () => {
+    const prod = await make(owner, { name: 'Covered', photos: [{ upload: await newSet(owner, 'cov'), crop: null }] });
+    const p = await post(owner, { about: { product: prod.id }, photos: [{ upload: await postSet(owner, 'x') }] });
+    let a = (await fan.get(`/api/posts/${p.id}`)).json.post.about;
+    expect(a.photo).toEqual({ id: prod.photos[0]!.id, version: prod.photos[0]!.version, cutout: false });
+    expect((await fan.raw(`/api/photos/${a.photo.id}/thumb`)).status).toBe(200);
+    await owner.req('PUT', '/api/privacy', { shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: false, shareProfilePhoto: true });
+    a = (await fan.get(`/api/posts/${p.id}`)).json.post.about;
+    expect(a.photo).toBeNull();
+    expect((await owner.get(`/api/posts/${p.id}`)).json.post.about.photo).not.toBeNull(); // yours, always
+    await owner.req('PUT', '/api/privacy', { shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true });
   });
 });
 
@@ -418,9 +458,9 @@ describe('export, restore and deleting an account', () => {
       products: [{ ...emptyProductInput(), name: 'Restored Bud', ratings: { look: 8 }, archived: false, createdAt: 1 }],
       logEntries: [{ ...emptyLogEntryInput(), name: 'Restored Entry', createdAt: 2 }],
       posts: [
-        { caption: 'about the bud', createdAt: 10, editedAt: null, about: { product: 0 }, aboutName: { name: 'Restored Bud', productType: 'flower', productTypeOther: null, strainType: null }, upload: await postSet(b, 'r1') },
-        { caption: 'about the entry', createdAt: 11, editedAt: 12, about: { logEntry: 0 }, aboutName: { name: 'Restored Entry', productType: 'flower', productTypeOther: null, strainType: null }, upload: await postSet(b, 'r2') },
-        { caption: 'just a photo', createdAt: 12, editedAt: null, about: null, aboutName: null, upload: await postSet(b, 'r3') },
+        { caption: 'about the bud', createdAt: 10, editedAt: null, about: { product: 0 }, aboutName: { name: 'Restored Bud', productType: 'flower', productTypeOther: null, strainType: null }, uploads: [await postSet(b, 'r1'), await postSet(b, 'r1b')] },
+        { caption: 'about the entry', createdAt: 11, editedAt: 12, about: { logEntry: 0 }, aboutName: { name: 'Restored Entry', productType: 'flower', productTypeOther: null, strainType: null }, uploads: [await postSet(b, 'r2')] },
+        { caption: 'just a photo', createdAt: 12, editedAt: null, about: null, aboutName: null, uploads: [await postSet(b, 'r3')] },
       ],
     };
     const r = await b.post('/api/data/restore', payload);
@@ -432,11 +472,12 @@ describe('export, restore and deleting an account', () => {
     expect(after[0].productId).toBe(products[0]!.id);
     expect(after[1].logEntryId).toBeTruthy();
     expect(after[1].editedAt).toBe(12);
+    expect(after[0].photos).toHaveLength(2); // D78: every photo comes back, in order
     // A file without posts leaves them alone.
     expect((await b.post('/api/data/restore', { products: [], logEntries: [] })).json.posts).toBe('kept');
     expect((await b.get('/api/posts/mine')).json.posts).toHaveLength(3);
     // A bad reference is refused before anything changes.
-    const bad = await b.post('/api/data/restore', { products: [], logEntries: [], posts: [{ caption: '', createdAt: 1, editedAt: null, about: { product: 5 }, aboutName: null, upload: await postSet(b, 'bad') }] });
+    const bad = await b.post('/api/data/restore', { products: [], logEntries: [], posts: [{ caption: '', createdAt: 1, editedAt: null, about: { product: 5 }, aboutName: null, uploads: [await postSet(b, 'bad')] }] });
     expect(bad.status).toBe(400);
   });
 

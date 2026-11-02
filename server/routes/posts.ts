@@ -148,7 +148,7 @@ interface AboutProductRow {
 async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promise<Map<string, PostAbout | null>> {
   const productIds = [...new Set(rows.map((r) => r.product_id).filter((x): x is string => !!x))];
   const entryIds = [...new Set(rows.map((r) => r.log_entry_id).filter((x): x is string => !!x))];
-  const [prods, ratings, entries] = await db.batch<unknown>([
+  const [prods, ratings, entries, covers] = await db.batch<unknown>([
     db
       .prepare(
         `SELECT pr.id, pr.user_id, pr.name, pr.product_type, pr.product_type_other, pr.strain_type, pr.source, pr.country, pr.country_other, pr.private, pr.archived,
@@ -158,7 +158,14 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
       .bind(JSON.stringify(productIds)),
     db.prepare('SELECT product_id, category, value FROM ratings WHERE product_id IN (SELECT value FROM json_each(?1))').bind(JSON.stringify(productIds)),
     db.prepare('SELECT id, user_id, name, product_type, product_type_other FROM log_entries WHERE id IN (SELECT value FROM json_each(?1))').bind(JSON.stringify(entryIds)),
+    // D78: each product's cover (its first photo), for the card.
+    db
+      .prepare('SELECT id, product_id, image_set, cutout FROM photos WHERE product_id IN (SELECT value FROM json_each(?1)) ORDER BY product_id, position')
+      .bind(JSON.stringify(productIds)),
   ]);
+  const coverOf = new Map<string, { id: string; version: string; cutout: boolean }>();
+  for (const x of covers!.results as { id: string; product_id: string; image_set: string; cutout: number }[])
+    if (!coverOf.has(x.product_id)) coverOf.set(x.product_id, { id: x.id, version: x.image_set, cutout: x.cutout === 1 });
   const productById = new Map((prods!.results as AboutProductRow[]).map((p) => [p.id, p]));
   const ratingsById = new Map<string, Ratings>();
   for (const r of ratings!.results as { product_id: string; category: string; value: number }[]) {
@@ -179,7 +186,7 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
   const out = new Map<string, PostAbout | null>();
   for (const r of rows) {
     const mine = r.user_id === viewer;
-    const base = { score: null, preset: null, source: null, country: null, countryOther: null };
+    const base = { score: null, preset: null, source: null, country: null, countryOther: null, photo: null };
     const plain = (): PostAbout | null =>
       r.about_name
         ? { kind: 'plain', name: r.about_name, productType: r.about_type as ProductTypeKey | null, productTypeOther: r.about_type_other, strainType: r.about_strain as StrainTypeKey | null, ...base, href: null }
@@ -207,6 +214,8 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
         country: shareCountry ? p.country : null,
         countryOther: shareCountry && p.country === 'OTHER' ? p.country_other : null,
         href: mine ? `/products/${encodeURIComponent(p.id)}` : `/u/${encodeURIComponent(r.username)}/p/${encodeURIComponent(p.id)}`,
+        // Its cover, as their board shows it: only while their Privacy shares product photos (D45).
+        photo: mine || pv.sharePhotos ? (coverOf.get(p.id) ?? null) : null,
       });
     } else if (e && e.user_id === r.user_id) {
       // A Log entry: its name and type only. The Log is never shared, so it opens only for you.
@@ -228,6 +237,13 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
 async function build(db: D1Database, viewer: string, rows: PostRow[], perPost: number): Promise<Post[]> {
   if (!rows.length) return [];
   const [about, comments] = [await aboutFor(db, viewer, rows), await commentsFor(db, viewer, rows.map((r) => r.id), perPost)];
+  // D78: every photo of these posts (already ones the viewer may see), in order.
+  const { results: pics } = await db
+    .prepare('SELECT post_id, image_set, cutout FROM post_photos WHERE post_id IN (SELECT value FROM json_each(?1)) ORDER BY post_id, position')
+    .bind(JSON.stringify(rows.map((r) => r.id)))
+    .all<{ post_id: string; image_set: string; cutout: number }>();
+  const photos = new Map<string, { version: string; cutout: boolean }[]>();
+  for (const x of pics) photos.set(x.post_id, [...(photos.get(x.post_id) ?? []), { version: x.image_set, cutout: x.cutout === 1 }]);
   return rows.map((r) => ({
     id: r.id,
     username: r.username,
@@ -237,6 +253,7 @@ async function build(db: D1Database, viewer: string, rows: PostRow[], perPost: n
     createdAt: r.created_at,
     editedAt: r.edited_at,
     image: { version: r.image_set, cutout: r.cutout === 1 },
+    photos: photos.get(r.id) ?? [{ version: r.image_set, cutout: r.cutout === 1 }],
     about: about.get(r.id) ?? null,
     fires: r.fires,
     youFired: r.you_fired === 1,
@@ -309,6 +326,11 @@ posts.get('/mine', async (c) => {
   )
     .bind(c.var.user!.id)
     .all<{ id: string; product_id: string | null; log_entry_id: string | null; about_name: string | null; about_type: string | null; about_type_other: string | null; about_strain: string | null; caption: string; image_set: string; cutout: number; created_at: number; edited_at: number | null }>();
+  const { results: pics } = await c.env.DB.prepare('SELECT post_id, image_set, cutout FROM post_photos WHERE user_id = ?1 ORDER BY post_id, position')
+    .bind(c.var.user!.id)
+    .all<{ post_id: string; image_set: string; cutout: number }>();
+  const photos = new Map<string, { version: string; cutout: boolean }[]>();
+  for (const x of pics) photos.set(x.post_id, [...(photos.get(x.post_id) ?? []), { version: x.image_set, cutout: x.cutout === 1 }]);
   return c.json({
     posts: results.map((r) => ({
       id: r.id,
@@ -317,6 +339,7 @@ posts.get('/mine', async (c) => {
       aboutName: r.about_name === null ? null : { name: r.about_name, productType: r.about_type, productTypeOther: r.about_type_other, strainType: r.about_strain },
       caption: r.caption,
       image: { version: r.image_set, cutout: r.cutout === 1 },
+      photos: photos.get(r.id) ?? [{ version: r.image_set, cutout: r.cutout === 1 }],
       createdAt: r.created_at,
       editedAt: r.edited_at,
     })),
@@ -370,23 +393,39 @@ posts.post('/', async (c) => {
     about = { productId: null, logEntryId: e.id, name: e.name, type: e.product_type, typeOther: e.product_type_other, strain: null };
   }
 
-  // The photo: a copy of one of yours, or a fresh upload (its original, if any, is never kept).
-  let imageSet: string;
-  let cutout: number;
+  // D78: the photos, in order, each a copy of one of yours or a fresh upload (an upload's original is never kept).
+  // All are checked before anything is copied, so a missing one changes nothing.
   const statements: D1PreparedStatement[] = [];
   const unused: string[] = [];
-  if ('fromPhotoId' in input.photo) {
-    const ph = await db.prepare('SELECT image_set, cutout FROM photos WHERE id = ?1 AND user_id = ?2').bind(input.photo.fromPhotoId, me).first<{ image_set: string; cutout: number }>();
-    if (!ph) fail(400, 'photo_missing', 'That photo couldn’t be found. Please choose another.');
-    imageSet = await copyImageSet(c.env.PHOTOS, me, ph.image_set);
-    cutout = ph.cutout;
-  } else {
-    const up = await db.prepare('SELECT id, has_original, cutout FROM uploads WHERE id = ?1 AND user_id = ?2').bind(input.photo.upload, me).first<{ id: string; has_original: number; cutout: number }>();
-    if (!up) fail(400, 'photo_upload_missing', 'The photo upload has expired. Please add the photo again.');
-    imageSet = up.id;
-    cutout = up.cutout;
-    statements.push(db.prepare('DELETE FROM uploads WHERE id = ?1 AND user_id = ?2').bind(up.id, me));
-    if (up.has_original === 1) unused.push(photoKey(me, up.id, 'original'));
+  const copies: string[] = [];
+  const fromIds = input.photos.flatMap((x) => ('fromPhotoId' in x ? [x.fromPhotoId] : []));
+  const upIds = input.photos.flatMap((x) => ('upload' in x ? [x.upload] : []));
+  const [ownPhotos, ups] = await db.batch<unknown>([
+    db.prepare('SELECT id, image_set, cutout FROM photos WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(me, JSON.stringify(fromIds)),
+    db.prepare('SELECT id, has_original, cutout FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(me, JSON.stringify(upIds)),
+  ]);
+  const photoById = new Map((ownPhotos!.results as { id: string; image_set: string; cutout: number }[]).map((r) => [r.id, r]));
+  const upById = new Map((ups!.results as { id: string; has_original: number; cutout: number }[]).map((r) => [r.id, r]));
+  if (fromIds.some((x) => !photoById.has(x))) fail(400, 'photo_missing', 'That photo couldn’t be found. Please choose another.');
+  if (upIds.some((x) => !upById.has(x))) fail(400, 'photo_upload_missing', 'The photo upload has expired. Please add the photo again.');
+  const sets: { set: string; cutout: number }[] = [];
+  try {
+    for (const x of input.photos) {
+      if ('fromPhotoId' in x) {
+        const ph = photoById.get(x.fromPhotoId)!;
+        const set = await copyImageSet(c.env.PHOTOS, me, ph.image_set);
+        copies.push(set);
+        sets.push({ set, cutout: ph.cutout });
+      } else {
+        const up = upById.get(x.upload)!;
+        sets.push({ set: up.id, cutout: up.cutout });
+        statements.push(db.prepare('DELETE FROM uploads WHERE id = ?1 AND user_id = ?2').bind(up.id, me));
+        if (up.has_original === 1) unused.push(photoKey(me, up.id, 'original'));
+      }
+    }
+  } catch (e) {
+    deleteLater(c.executionCtx, c.env.PHOTOS, copies.flatMap((set) => imageKeys(me, set)));
+    throw e;
   }
 
   const id = randomId();
@@ -398,12 +437,18 @@ posts.post('/', async (c) => {
         `INSERT INTO posts (id, user_id, product_id, log_entry_id, about_name, about_type, about_type_other, about_strain, caption, image_set, cutout, created_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)`,
       )
-      .bind(id, me, about.productId, about.logEntryId, about.name, about.type, about.typeOther, about.strain, input.caption, imageSet, cutout, now),
+      .bind(id, me, about.productId, about.logEntryId, about.name, about.type, about.typeOther, about.strain, input.caption, sets[0]!.set, sets[0]!.cutout, now),
+    db
+      .prepare(
+        `INSERT INTO post_photos (post_id, user_id, position, image_set, cutout)
+         SELECT ?1, ?2, key, json_extract(value, '$.set'), json_extract(value, '$.cutout') FROM json_each(?3)`,
+      )
+      .bind(id, me, JSON.stringify(sets)),
   );
   try {
     await db.batch(statements);
   } catch (e) {
-    if ('fromPhotoId' in input.photo) deleteLater(c.executionCtx, c.env.PHOTOS, imageKeys(me, imageSet));
+    deleteLater(c.executionCtx, c.env.PHOTOS, copies.flatMap((set) => imageKeys(me, set)));
     throw e;
   }
   deleteLater(c.executionCtx, c.env.PHOTOS, unused);
@@ -424,9 +469,11 @@ posts.put('/:id', async (c) => {
 /** Delete (yours only): its comments and fires go with it, then its own photo files. */
 posts.delete('/:id', async (c) => {
   const me = c.var.user!.id;
-  const row = await c.env.DB.prepare('DELETE FROM posts WHERE id = ?1 AND user_id = ?2 RETURNING image_set').bind(c.req.param('id'), me).first<{ image_set: string }>();
+  const db = c.env.DB;
+  const { results: sets } = await db.prepare('SELECT pp.image_set FROM post_photos pp JOIN posts p ON p.id = pp.post_id WHERE p.id = ?1 AND p.user_id = ?2').bind(c.req.param('id'), me).all<{ image_set: string }>();
+  const row = await db.prepare('DELETE FROM posts WHERE id = ?1 AND user_id = ?2 RETURNING image_set').bind(c.req.param('id'), me).first<{ image_set: string }>();
   if (!row) GONE();
-  deleteLater(c.executionCtx, c.env.PHOTOS, imageKeys(me, row.image_set));
+  deleteLater(c.executionCtx, c.env.PHOTOS, [...new Set([row.image_set, ...sets.map((x) => x.image_set)])].flatMap((set) => imageKeys(me, set)));
   return c.json({ ok: true });
 });
 
@@ -434,7 +481,22 @@ posts.delete('/:id', async (c) => {
 
 posts.get('/:id', async (c) => c.json({ post: await one(c, c.req.param('id')) }));
 
-/** The post's own photo, cropped or thumb only, after the same check; the same 403 for every refusal. */
+/** D78: the post's `n`th photo, cropped or thumb only, after the same check; the same 403 for every refusal. */
+posts.get('/:id/photos/:n/:variant', async (c) => {
+  const variant = c.req.param('variant');
+  const n = Number(c.req.param('n'));
+  const denied: () => never = () => fail(403, 'not_authorised', 'You can’t see this photo.');
+  if ((variant !== 'cropped' && variant !== 'thumb') || !Number.isInteger(n) || n < 0) denied();
+  const row = await c.env.DB.prepare(
+    `SELECT p.user_id, pp.image_set FROM posts p JOIN post_photos pp ON pp.post_id = p.id AND pp.position = ?3 WHERE p.id = ?2 AND ${visiblePostSql('p')}`,
+  )
+    .bind(c.var.user!.id, c.req.param('id'), n)
+    .first<{ user_id: string; image_set: string }>();
+  if (!row) denied();
+  return serveImage(c.env.PHOTOS, c.req.header('if-none-match'), row.user_id, row.image_set, variant);
+});
+
+/** The post's first photo (before D78's several), kept for addresses already on a phone. */
 posts.get('/:id/photo/:variant', async (c) => {
   const variant = c.req.param('variant');
   const denied: () => never = () => fail(403, 'not_authorised', 'You can’t see this photo.');

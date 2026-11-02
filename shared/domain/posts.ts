@@ -11,6 +11,8 @@ export const COMMENT_MAX = 300;
 export const POSTS_PAGE = 20;
 /** Comments shown under a post in a list (the rest are on its page). */
 export const PREVIEW_COMMENTS = 2;
+/** D78: photos in one post. */
+export const POST_PHOTOS_MAX = 10;
 
 /**
  * The card under a post's photo.
@@ -36,6 +38,11 @@ export interface PostAbout {
   countryOther: string | null;
   /** Where tapping the card goes, or null: it doesn't open. */
   href: string | null;
+  /**
+   * D78: the product's cover, when you may see it (yours, or their Privacy shares photos); otherwise null and the
+   * card shows the type's icon. Never a Log entry's photo (the Log is never shared).
+   */
+  photo: { id: string; version: string; cutout: boolean } | null;
 }
 
 export interface PostComment {
@@ -57,8 +64,10 @@ export interface Post {
   caption: string;
   createdAt: number;
   editedAt: number | null;
-  /** The post's own photo: its version (for the address) and whether it's a cut-out (D26). */
+  /** The post's first photo: its version (for the address) and whether it's a cut-out (D26). */
   image: { version: string; cutout: boolean };
+  /** D78: every photo, in order (the first is `image`). */
+  photos: { version: string; cutout: boolean }[];
   about: PostAbout | null;
   fires: number;
   youFired: boolean;
@@ -68,8 +77,8 @@ export interface Post {
 }
 
 /** Every key a Post may have — the allow-list the tests check raw replies against. */
-export const POST_KEYS: readonly (keyof Post)[] = ['id', 'username', 'photo', 'mine', 'caption', 'createdAt', 'editedAt', 'image', 'about', 'fires', 'youFired', 'commentCount', 'comments'];
-export const POST_ABOUT_KEYS: readonly (keyof PostAbout)[] = ['kind', 'name', 'productType', 'productTypeOther', 'strainType', 'score', 'preset', 'source', 'country', 'countryOther', 'href'];
+export const POST_KEYS: readonly (keyof Post)[] = ['id', 'username', 'photo', 'mine', 'caption', 'createdAt', 'editedAt', 'image', 'photos', 'about', 'fires', 'youFired', 'commentCount', 'comments'];
+export const POST_ABOUT_KEYS: readonly (keyof PostAbout)[] = ['kind', 'name', 'productType', 'productTypeOther', 'strainType', 'score', 'preset', 'source', 'country', 'countryOther', 'href', 'photo'];
 
 export type PostPhotoInput = { fromPhotoId: string } | { upload: string };
 export type PostAboutInput = { product: string } | { logEntry: string } | null;
@@ -77,7 +86,8 @@ export type PostAboutInput = { product: string } | { logEntry: string } | null;
 export interface PostInput {
   caption: string;
   about: PostAboutInput;
-  photo: PostPhotoInput;
+  /** D78: one to ten, in order. */
+  photos: PostPhotoInput[];
   /** Pressed "Make visible and post" on a Private product. */
   makeVisible: boolean;
 }
@@ -118,17 +128,25 @@ export function validatePostInput(raw: unknown): Result<PostInput> {
     else if (id(a.logEntry) && a.product === undefined) about = { logEntry: a.logEntry };
     else return { ok: false, message: 'What the post is about couldn’t be read.' };
   }
-  const ph = r.photo as Record<string, unknown> | null | undefined;
-  let photo: PostPhotoInput;
-  if (ph && typeof ph === 'object' && id(ph.fromPhotoId) && ph.upload === undefined) photo = { fromPhotoId: ph.fromPhotoId };
-  else if (ph && typeof ph === 'object' && id(ph.upload) && ph.fromPhotoId === undefined) photo = { upload: ph.upload };
-  else return { ok: false, message: 'Add a photo to post.' };
-  return { ok: true, value: { caption: caption.value, about, photo, makeVisible: r.makeVisible === true } };
+  // D78: `photos`, one to ten (`photo`, a single one, as before D78).
+  const list = Array.isArray(r.photos) ? (r.photos as unknown[]) : r.photo !== undefined ? [r.photo] : [];
+  if (!list.length) return { ok: false, message: 'Add a photo to post.' };
+  if (list.length > POST_PHOTOS_MAX) return { ok: false, message: `A post can have up to ${POST_PHOTOS_MAX} photos.` };
+  const photos: PostPhotoInput[] = [];
+  for (const raw of list) {
+    const ph = raw as Record<string, unknown> | null;
+    if (ph && typeof ph === 'object' && id(ph.fromPhotoId) && ph.upload === undefined) photos.push({ fromPhotoId: ph.fromPhotoId });
+    else if (ph && typeof ph === 'object' && id(ph.upload) && ph.fromPhotoId === undefined) photos.push({ upload: ph.upload });
+    else return { ok: false, message: 'A photo couldn’t be read.' };
+  }
+  const keys = photos.map((x) => ('upload' in x ? `u:${x.upload}` : `p:${x.fromPhotoId}`));
+  if (new Set(keys).size !== keys.length) return { ok: false, message: 'A photo was listed twice.' };
+  return { ok: true, value: { caption: caption.value, about, photos, makeVisible: r.makeVisible === true } };
 }
 
-/** A post's photo, through the access check (D77); never a public address. */
-export const postPhotoUrl = (post: { id: string; image: { version: string } }, variant: 'cropped' | 'thumb') =>
-  `/api/posts/${encodeURIComponent(post.id)}/photo/${variant}?v=${encodeURIComponent(post.image.version)}`;
+/** A post's photo (the `n`th, D78), through the access check (D77); never a public address. */
+export const postPhotoUrl = (post: { id: string; image: { version: string }; photos?: { version: string }[] }, variant: 'cropped' | 'thumb', n = 0) =>
+  `/api/posts/${encodeURIComponent(post.id)}/photos/${n}/${variant}?v=${encodeURIComponent(post.photos?.[n]?.version ?? post.image.version)}`;
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
