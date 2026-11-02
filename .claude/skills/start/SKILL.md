@@ -16,8 +16,8 @@ CLAUDE.md is the rule book; this is the routine for the first few minutes. Do it
    - `claude/*` branches pushed in the last day that have no pull request yet;
    - CI runs still in progress on `dev` or `main`.
    Anything there is probably another conversation's work. Note what it touches (which screens, the version, a
-   decision number, CLAUDE.md's to-do list). An open pull request more than a few days old is probably a leftover: list
-   it for Anton and ask whether to close it; never close or merge one yourself.
+   decision number, CLAUDE.md's to-do list). An open pull request more than a few days old (#88, #93, #96 and the like) is
+   not yours to handle (Anton, 2026-11-02): leave it alone, don't ask about it, never close or merge it.
 4. **Where things stand:** compare CLAUDE.md's Live / Dev lines with what's really on `main` and `dev`
    (`package.json` version on each, `git log origin/main..origin/dev`). If they disagree, say so and fix the notes in
    your next pull request.
