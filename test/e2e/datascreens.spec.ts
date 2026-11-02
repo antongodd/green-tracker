@@ -108,7 +108,7 @@ test('Restore: the file as tiles, a different file, and a progress bar while pho
   await expect(contents.locator('.file-head b')).toHaveText(new RegExp(`^green-tracker-${username}-\\d{4}-\\d{2}-\\d{2}\\.json$`));
   await expect(contents.locator('.file-head .who span')).toContainText(`by @${username}`);
   expect(await contents.locator('.data-tile').evaluateAll((ts) => ts.map((t) => [t.querySelector('b')!.textContent, t.querySelector('span')!.textContent]))).toEqual([['1', 'Products'], ['1', 'Log'], ['2', 'Photos']]);
-  await expect(contents.locator('.hint')).toHaveText('+ 1 archived product. No profile photo: yours will be removed. Your posts are left as they are.');
+  await expect(contents.locator('.hint')).toHaveText('+ 1 archived product. No profile photo: yours will be removed. No posts: yours will be removed.');
   // The same picker, now reading "Choose a different file", under the Replace button.
   await expect(page.getByLabel('Choose an export file')).toHaveCount(0);
   await expect(page.getByLabel('Choose a different file')).toHaveCount(1);

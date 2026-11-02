@@ -1658,6 +1658,10 @@ None.
 
 ## 6. Changelog
 
+### 0.66.1 — the Restore screen's line about posts
+- Restoring a file with no posts says "No posts: yours will be removed." (it said "0 posts: they replace yours…"); one
+  from before posts says "Your posts are left as they are."
+
 ### 0.66.0 — posts, comments and a Feed (owner request)
 - Decision D77. Post what you're smoking: a photo and a caption, usually with one of your products or Log entries as a
   card. Only your approved followers see it. They can comment and give a fire. A new **Feed** tab in People's place shows
