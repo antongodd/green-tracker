@@ -18,6 +18,10 @@ import { cameFrom, linkTo, navigate, openPlainRow, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
+import { PhotoButton, photoTap } from '../components/ProductRow';
+import { RowPhotos } from '../components/ProductPhotos';
+import { PhotoViewer } from '../components/PhotoViewer';
+import { shownFromRecord } from '../components/PhotoGrid';
 
 type Source = { kind: 'product'; product: Product } | { kind: 'loose'; entry: LogEntry };
 
@@ -36,26 +40,32 @@ function toRows(products: Product[], entries: LogEntry[]): { rows: LogRow[]; sou
   return { rows, sources };
 }
 
-function Row(p: { row: LogRow; source: Source }) {
+function Row(p: { row: LogRow; source: Source; onPhoto: (source: Source) => void }) {
   const key = `${p.row.kind === 'product' ? 'p' : 'e'}:${p.row.id}`;
   const href = p.row.kind === 'product' ? `/products/${p.row.id}` : `/log/${p.row.id}`;
   const def = productType(p.row.productType);
   const photo = p.source.kind === 'product' ? p.source.product.photos[0] : p.source.entry.photo;
+  const onPhoto = () => p.onPhoto(p.source);
   const open = (e: MouseEvent) => {
+    // D79: a tap on the photo opens it full screen (a product's, with the bar, as on its page).
+    if (photoTap(e, onPhoto)) return;
     rememberRow('log', key, e.currentTarget as HTMLElement);
     // Products, and loose entries with a photo (D41), fly it into their page's top (D20).
     if (p.row.kind === 'product' || photo) openRow(e, href);
     else openPlainRow(e, href);
   };
   return (
-    // The whole row is the tap target — the thumbnail opens the row, not a viewer.
-    <a class="lrow" href={href} onClick={open} data-return={`log:${key}`}>
-      <div class={`thumb${photo?.cutout ? ' cut' : ''}`}>{photo ? <img src={photoUrl(photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
-      <span class="name">{p.row.name}</span>
-      {/* The type mark means "has a full profile": product rows only (Other / Not set have none). */}
-      {p.row.kind === 'product' && def.icon ? <TypeMark icon={def.icon} label={`${def.label} product`} class="mk" /> : <span />}
-      <ChevronRight class="chev" />
-    </a>
+    // The row opens its page; its photo (D79), the viewer.
+    <>
+      <a class="lrow" href={href} onClick={open} data-return={`log:${key}`}>
+        <div class={`thumb${photo?.cutout ? ' cut' : ''}`}>{photo ? <img src={photoUrl(photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+        <span class="name">{p.row.name}</span>
+        {/* The type mark means "has a full profile": product rows only (Other / Not set have none). */}
+        {p.row.kind === 'product' && def.icon ? <TypeMark icon={def.icon} label={`${def.label} product`} class="mk" /> : <span />}
+        <ChevronRight class="chev" />
+      </a>
+      <PhotoButton name={p.row.name} onPhoto={onPhoto} photos={photo ? 1 : 0} />
+    </>
   );
 }
 
@@ -64,6 +74,8 @@ export function Log() {
   const [entries, setEntries] = useState<LogEntry[] | null>(cachedEntries());
   const [view, setView] = useState<ViewState>(loadView);
   const [error, setError] = useState('');
+  // D79: the row whose photos are open.
+  const [photosOf, setPhotosOf] = useState<Source | null>(null);
   const arrivedFromRow = useRef(/^\/(products|log)\//.test(cameFrom() ?? ''));
 
   useEffect(() => {
@@ -154,7 +166,7 @@ export function Log() {
                     <div class="lrows">
                       {g.rows.map((r) => {
                         const k = `${r.kind === 'product' ? 'p' : 'e'}:${r.id}`;
-                        return <Row key={k} row={r} source={sources.get(k)!} />;
+                        return <Row key={k} row={r} source={sources.get(k)!} onPhoto={setPhotosOf} />;
                       })}
                     </div>
                   </section>
@@ -169,6 +181,9 @@ export function Log() {
         <PlusIcon />
       </button>
       <TabBar active="log" />
+      {photosOf?.kind === 'product' && <RowPhotos product={photosOf.product} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
+      {/* A Log entry's own photo, as on its page: no bar. */}
+      {photosOf?.kind === 'loose' && photosOf.entry.photo && <PhotoViewer photos={[shownFromRecord(photosOf.entry.photo)]} start={0} onClose={() => setPhotosOf(null)} />}
     </>
   );
 }

@@ -8,6 +8,7 @@ import { BackButton, Header, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ProductRow } from '../components/ProductRow';
+import { RowPhotos } from '../components/ProductPhotos';
 import { ColoursSheet } from '../components/Gems';
 import { PlusIcon } from '../icons';
 import { EmptyCard } from '../components/EmptyCard';
@@ -71,6 +72,8 @@ export function Leaderboard() {
   const [error, setError] = useState('');
   // D48: the Colours key.
   const [showKey, setShowKey] = useState(false);
+  // D79: the product whose photos are open from its row.
+  const [photosOf, setPhotosOf] = useState<Product | null>(null);
   const arrivedFromProduct = useRef(/^\/products\//.test(cameFrom() ?? ''));
 
   useEffect(() => {
@@ -127,7 +130,7 @@ export function Leaderboard() {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} filter={view.filter} value={r.value} />
+              <ProductRow key={r.product.id} list="leaderboard" product={r.product} rank={r.rank} band={r.band} first={r.first} rankBy={view.rankBy} filter={view.filter} value={r.value} onPhoto={() => setPhotosOf(r.product)} />
             ))}
           </div>
         )}
@@ -137,6 +140,7 @@ export function Leaderboard() {
       </button>
       <TabBar active="leaderboard" />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
+      {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
     </>
   );
 }
@@ -145,6 +149,7 @@ export function Leaderboard() {
 export function Archive() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState('');
+  const [photosOf, setPhotosOf] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchArchived()
@@ -183,7 +188,7 @@ export function Archive() {
         <div class="rows">
           {rows.map((r) => (
             <div class="archived-row" key={r.product.id}>
-              <ProductRow product={r.product} rank={r.rank} band={null} first={false} />
+              <ProductRow product={r.product} rank={r.rank} band={null} first={false} onPhoto={() => setPhotosOf(r.product)} />
               <button class="btn secondary unarchive" style={{ width: 'auto', height: '40px' }} onClick={() => unarchive(r.product.id)}>
                 Un-archive
               </button>
@@ -192,6 +197,7 @@ export function Archive() {
         </div>
       </main>
       <TabBar active="more" />
+      {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
     </>
   );
 }
