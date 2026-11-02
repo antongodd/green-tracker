@@ -26,7 +26,9 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test('find someone and request to follow', async () => {
-  await fan.getByRole('link', { name: 'People' }).click();
+  // D77: People is the button at the top of the Feed.
+  await fan.getByRole('link', { name: 'Feed' }).click();
+  await fan.getByRole('link', { name: 'People', exact: true }).click();
   await fan.getByPlaceholder('Search usernames').fill(ownerName.slice(0, 6).toLowerCase());
   const row = fan.locator('.prow', { hasText: `@${ownerName}` });
   await row.getByRole('button', { name: 'Follow' }).click();
@@ -40,9 +42,12 @@ test('find someone and request to follow', async () => {
 
 test('the owner sees the request as a badge and approves it', async () => {
   await owner.reload();
-  const badge = owner.getByRole('link', { name: /People/ }).locator('.badge');
+  // D77: the number is on the Feed tab, and on the People button at the top of the Feed.
+  const badge = owner.getByRole('link', { name: /^Feed/ }).locator('.badge');
   await expect(badge).toHaveText('1');
-  await owner.getByRole('link', { name: /People/ }).click();
+  await owner.getByRole('link', { name: /^Feed/ }).click();
+  await expect(owner.getByRole('link', { name: 'People, 1 follow request' }).locator('.badge')).toHaveText('1');
+  await owner.getByRole('link', { name: /^People/ }).click();
   // D24: People opens on Following; the badge on Requests shows what's waiting.
   await expect(owner.getByRole('tab').first()).toHaveText(/^Following/);
   await expect(owner.getByRole('tab', { name: /Following/ })).toHaveAttribute('aria-selected', 'true');
@@ -73,7 +78,7 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);
   await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(0);
   await expect(fan.getByRole('img', { name: 'Private' })).toHaveCount(0);
-  await expect(fan.getByRole('link', { name: 'People' })).toHaveAttribute('aria-current', 'page');
+  await expect(fan.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
   // Rank by never offers Price or Value for money.
   await fan.getByLabel('Type', { exact: true }).selectOption('flower');
   const options = await fan.getByLabel('Rank by').locator('option').allTextContents();
@@ -107,7 +112,7 @@ test('removing a follower ends access at once', async () => {
   await owner.getByRole('dialog').getByRole('button', { name: 'Remove follower' }).click();
   await expect(owner.getByText('No followers yet.')).toBeVisible();
   await fan.reload();
-  await expect(fan.getByText('Follow to see their leaderboard.')).toBeVisible();
+  await expect(fan.getByText('Follow to see their leaderboard and posts.')).toBeVisible();
   await expect(fan.locator('.row')).toHaveCount(0);
   await shot(fan, '54-stranger');
 });

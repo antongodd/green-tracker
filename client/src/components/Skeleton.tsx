@@ -5,7 +5,7 @@ import { useEffect, useState } from 'preact/hooks';
  * soft light sweeping across (still under Reduce Motion). Nothing shows for the first 250ms, so a
  * quick load never flickers. Screen readers hear "Loading".
  */
-export type SkeletonKind = 'board' | 'log' | 'product' | 'people';
+export type SkeletonKind = 'board' | 'log' | 'product' | 'people' | 'posts';
 
 const DELAY_MS = 250;
 
@@ -67,6 +67,19 @@ const SHAPES: Record<SkeletonKind, () => preact.JSX.Element> = {
     </>
   ),
   people: () => <>{rows(3, true)}</>,
+  // D77: three post-shaped cards (who, the photo, the card under it, two lines).
+  posts: () => (
+    <>
+      {[0, 1, 2].map((i) => (
+        <div class="sk-post" key={i}>
+          <Row round />
+          <span class="sk sk-photo" />
+          <span class="sk sk-l1" />
+          <span class="sk sk-l2" />
+        </div>
+      ))}
+    </>
+  ),
 };
 
 export function Skeleton(p: { kind: SkeletonKind }) {

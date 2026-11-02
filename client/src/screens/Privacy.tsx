@@ -170,6 +170,7 @@ export function PrivacyScreen() {
               you’ve made Private stays hidden whatever these say. Prices, purchases, suppliers, notes, date tried, Leafly links and your Log are never
               shared.
             </p>
+            <p class="footnote priv-foot">Posts are always shared with your followers.</p>
           </div>
         )}
       </main>

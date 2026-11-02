@@ -224,6 +224,7 @@ export function RestoreScreen() {
                 <p class="hint">
                   {summary.archived ? `+ ${plural(summary.archived, 'archived product')}. ` : ''}
                   {PROFILE_PHOTO[summary.profilePhoto]}
+                  {summary.posts === null ? ' Your posts are left as they are.' : ` ${plural(summary.posts, 'post')}: they replace yours, and comments and fires on your posts now go.`}
                 </p>
               </section>
               {progress ? (

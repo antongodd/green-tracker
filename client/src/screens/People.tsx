@@ -147,9 +147,14 @@ function MeCard(p: { followers?: number; following?: number }) {
         </span>
       </button>
       <div class="me-text">
-        <span class="me-name">@{username}</span>
+        <a class="me-name" href={`/u/${encodeURIComponent(username)}`} onClick={linkTo(`/u/${encodeURIComponent(username)}`)}>
+          @{username}
+        </a>
         {counts && <span class="small num">{counts}</span>}
-        <span>
+        <span class="me-links">
+          <a class="link-btn" href={`/u/${encodeURIComponent(username)}`} onClick={linkTo(`/u/${encodeURIComponent(username)}`)}>
+            Your page
+          </a>
           <button type="button" class="link-btn" onClick={tap}>
             {photo ? 'Change photo' : 'Add a photo'}
           </button>
@@ -271,6 +276,9 @@ export function People() {
   return (
     <>
       <Header
+        title="People"
+        leaf={false}
+        left={<BackButton to="/feed" />}
         right={
           <MeButton
             onHere={() => {
@@ -429,7 +437,7 @@ export function People() {
           </div>
         )}
       </main>
-      <TabBar active="people" />
+      <TabBar active="feed" />
       {menu && <Sheet title={menu.title} options={menu.options} onCancel={() => setMenu(null)} />}
       {confirm && <Sheet title={confirm.title} message={confirm.message} options={[{ label: confirm.label, danger: true, onSelect: () => act(confirm.run) }]} onCancel={() => setConfirm(null)} />}
     </>

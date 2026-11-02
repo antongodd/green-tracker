@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D76 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D77 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -132,7 +132,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D77) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D78) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -156,7 +156,9 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D76.
+- Reopen any decision D1–D77.
+- Loosen the posts rule (D77, `visiblePostSql` / `actorShownSql` in `server/routes/posts.ts`): the owner and approved
+  followers only, checked in SQL on every request.
 
 ## Testing notes
 
@@ -249,6 +251,15 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   (`setOwnLook`, `borrowLook`), never straight to `html[data-look]`. Record the looks a page shows with a
   MutationObserver (`theirlook.spec.ts` `recordLooks`); a fade shows as `+fade` (`html.vt-look`). To change screen
   without a reload, wait for `.tabs` first (`theirlook.spec.ts` `go`): the router listens only after the first render.
+- Posts (D77): the rule is `visiblePostSql` (the owner, or `canView`) and, for comments and fires, `actorShownSql` (the
+  author can still see the post; no block with the viewer); any new query listing posts, comments or fires uses them in
+  SQL. A post in a test: upload a set (`cropped` + `thumb`, an original is optional) and `POST /api/posts` with
+  `{ caption, about: { product } | { logEntry } | null, photo: { upload } | { fromPhotoId } }`; a second account follows
+  with `POST /api/people/u/<them>/follow` and `POST /api/people/requests/<you>/approve` (`posts.spec.ts` `call`,
+  `upload`). The Feed's first page marks it seen (`feedNew` on `/api/auth/me`). People has no tab since D77: reach it
+  with the Feed tab, then the **People** button (its name carries the requests: "People, 1 follow request"); the
+  requests number is on the Feed tab, and a `.badge.dot` when there are none and something's new. Posting is limited
+  to 30 an hour per account, so keep a file's posts per account under that.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -262,14 +273,16 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.65.0 (2026-11-02): everything up to looks and colour sets without a database change (D76).
-- **Dev:** 0.65.0, the same as live.
+- **Dev:** 0.66.0: live plus posts, comments and a Feed (D77).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D77). Post what you're
+1. **Posts, comments and a Feed** — **on dev** (0.66.0, D77, 2026-11-02; Anton's friends' idea). Post what you're
    smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
-   comments and a 🔥; a **Feed** tab in People's place; a friend's page in two tabs, Leaderboard | Posts. Anton's
-   answers and the full brief: `design/posts-feed-brief.md`. Next: the mockups.
+   comments and a 🔥; a **Feed** tab in People's place; a friend's page and your own in two tabs, Leaderboard | Posts.
+   The brief: `design/posts-feed-brief.md`; mockups https://claude.ai/artifact/MSmw7yHV12a6SkSHmCqSfd (Anton's picks:
+   all five recommendations, the round + for New post). Next: Anton tries it on GT Dev with a second account, then
+   says "go live". Not checked on a real iPhone yet: the camera and photo library, the keyboard over the comment box.
 
 ### Done (newest first)
 

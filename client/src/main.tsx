@@ -33,6 +33,9 @@ import { AppearanceScreen } from './screens/Appearance';
 import { CurrencyScreen } from './screens/Currency';
 import { SoundsScreen } from './screens/Sounds';
 import { BrandPage, BrandsList } from './screens/Brands';
+import { Feed } from './screens/Feed';
+import { PostPage } from './screens/PostPage';
+import { Composer } from './screens/Composer';
 
 const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
 
@@ -132,10 +135,14 @@ function App() {
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
-    const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
+    const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+)|\/brands\/([^/]+)|\/(posts))?$/);
+    const postPage = path.match(/^\/posts\/([^/]+)$/); // D77
+    const compose = path.match(/^\/feed\/new(?:\/(p|log)\/([^/]+))?$/);
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
     const brand = path.match(/^\/brands\/([^/]+)$/); // D59
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
+    else if (postPage) screen = <PostPage key={path} id={decodeURIComponent(postPage[1]!)} />;
+    else if (compose) screen = <Composer key={path} product={compose[1] === 'p' ? decodeURIComponent(compose[2]!) : undefined} entry={compose[1] === 'log' ? decodeURIComponent(compose[2]!) : undefined} />;
     else if (preview?.[1]) screen = <SharedProfile key={path} username={me.user!.username} id={decodeURIComponent(preview[1])} preview />;
     else if (preview?.[2]) screen = <TheirBrandPage key={path} username={me.user!.username} name={decodeURIComponent(preview[2])} preview />;
     else if (brand) screen = <BrandPage key={path} name={decodeURIComponent(brand[1]!)} />;
@@ -146,7 +153,7 @@ function App() {
     else if (entry) screen = <LogEntryPage key={entry[1]} id={decodeURIComponent(entry[1]!)} />;
     else if (them?.[2]) screen = <SharedProfile key={path} username={decodeURIComponent(them[1]!)} id={decodeURIComponent(them[2])} />;
     else if (them?.[3]) screen = <TheirBrandPage key={path} username={decodeURIComponent(them[1]!)} name={decodeURIComponent(them[3])} />;
-    else if (them) screen = <Person key={path} username={decodeURIComponent(them[1]!)} />;
+    else if (them) screen = <Person key={them[1]} username={decodeURIComponent(them[1]!)} tab={them[4] ? 'posts' : 'board'} />;
     else if (product?.[2]) screen = <Editor key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else
@@ -156,6 +163,9 @@ function App() {
           break;
         case '/people':
           screen = <People />;
+          break;
+        case '/feed': // D77: in People's place in the tab bar
+          screen = <Feed />;
           break;
         case '/more/blocked':
           screen = <BlockedPeople />;
