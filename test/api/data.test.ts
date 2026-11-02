@@ -4,7 +4,7 @@ import { emptyLogEntryInput, type LogEntry } from '../../shared/domain/logEntry'
 import { photoUrl } from '../../shared/domain/photo';
 import { emptyProductInput, type Product } from '../../shared/domain/product';
 import { SoftPasskey } from './authenticator';
-import { Browser, signUp } from './client';
+import { Browser, PASSWORD, signInWithPassword, signUp } from './client';
 import { d1, r2Keys, userId } from './store';
 
 const jpeg = (label: string) => new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new TextEncoder().encode(label)]);
@@ -157,6 +157,20 @@ describe('delete account (brief §4, §17)', () => {
     expect((await b.get('/api/auth/me')).json.user.username).toBe(username);
   });
 
+  it('D80: your password confirms it too; a wrong one deletes nothing', async () => {
+    const b = new Browser();
+    const { username, email } = await signUp(b, undefined, { passkey: false });
+    const wrong = await b.post('/api/data/delete', { username, password: 'not my password' });
+    expect(wrong.status).toBe(400);
+    expect(wrong.json.error).toBe('wrong_password');
+    expect((await b.post('/api/data/delete', { username: 'someone-else', password: PASSWORD })).json.error).toBe('username_mismatch');
+    expect((await b.get('/api/auth/me')).json.user.username).toBe(username);
+    expect((await b.post('/api/data/delete', { username, password: PASSWORD })).status).toBe(200);
+    expect((await b.get('/api/auth/me')).json.user).toBeNull();
+    expect((await signInWithPassword(new Browser(), email)).json.error).toBe('signin_failed');
+    expect(userId(username)).toBeUndefined();
+  });
+
   it('removes everything: rows in every table, every R2 file, follows both ways, pending requests, blocks', async () => {
     const [b, fan, idol, blocked] = [new Browser(), new Browser(), new Browser(), new Browser()];
     const { username, passkey } = await signUp(b);
@@ -189,7 +203,7 @@ describe('delete account (brief §4, §17)', () => {
 
     // Signed out, and the passkey leads nowhere.
     expect((await b.get('/api/auth/me')).json.user).toBeNull();
-    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'recovery_codes WHERE user_id', 'profile_photos WHERE user_id']) {
+    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'profile_photos WHERE user_id']) {
       expect(d1(`SELECT COUNT(*) AS n FROM ${table} = ?`, id), table).toEqual([{ n: 0 }]);
     }
     expect(d1('SELECT COUNT(*) AS n FROM follows WHERE follower_id = ? OR followed_id = ?', id, id)).toEqual([{ n: 0 }]);

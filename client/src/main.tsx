@@ -12,22 +12,23 @@ import { installPress } from './press';
 import { installSounds, ticksSupported } from './sounds';
 import { TickSwitch } from './components/Tick';
 import { SessionContext } from './session';
-import { CodesStep, CreateAccount } from './screens/CreateAccount';
+import { CreateAccount } from './screens/CreateAccount';
+import { AddLogin, ChangeEmail, ChangePassword, FaceIdOffer } from './screens/LoginDetails';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
 import { Editor } from './screens/Editor';
 import { Log } from './screens/Log';
 import { LogEditor } from './screens/LogEditor';
 import { LogEntryPage } from './screens/LogEntry';
 import { Archive, Leaderboard } from './screens/Leaderboard';
-import { More, Passkeys, RecoveryCodes } from './screens/More';
+import { More, Passkeys } from './screens/More';
 import { Profile } from './screens/Profile';
 import { clearProductCache } from './products';
 import { clearPrivacyCache } from './privacy';
 import { clearEntryCache } from './logEntries';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
-import { NewPasskey, Recover } from './screens/Recover';
-import { SignIn } from './screens/SignIn';
+import { EmailSignIn, SignIn } from './screens/SignIn';
+import { passkeysSupported } from './passkey';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
 import { CurrencyScreen } from './screens/Currency';
@@ -37,13 +38,14 @@ import { Feed } from './screens/Feed';
 import { PostPage } from './screens/PostPage';
 import { Composer } from './screens/Composer';
 
-const SIGNED_OUT_PATHS = ['/signin', '/signup', '/recover'];
+const SIGNED_OUT_PATHS = ['/signin', '/login', '/signup'];
 
 function App() {
   const [me, setMe] = useState<Me | null>(null);
   const [loadError, setLoadError] = useState(false);
   // Sign-up step 3: the account exists but the codes must be shown once before anything else.
-  const [fresh, setFresh] = useState<{ username: string; codes: string[] } | null>(null);
+  // D80: just created an account: offer Face ID once (where the browser has passkeys) before the app opens.
+  const [fresh, setFresh] = useState(false);
   const path = usePath();
 
   const refresh = useCallback(async () => {
@@ -107,11 +109,9 @@ function App() {
   let screen;
   if (fresh) {
     screen = (
-      <CodesStep
-        username={fresh.username}
-        codes={fresh.codes}
+      <FaceIdOffer
         onDone={() => {
-          setFresh(null);
+          setFresh(false);
           navigate('/', { replace: true });
         }}
       />
@@ -120,18 +120,19 @@ function App() {
     screen =
       path === '/signup' ? (
         <CreateAccount
-          onCreated={async (username, codes) => {
-            setFresh({ username, codes });
+          onCreated={async () => {
+            if (passkeysSupported()) setFresh(true);
+            else navigate('/', { replace: true });
             await refresh();
           }}
         />
-      ) : path === '/recover' ? (
-        <Recover />
+      ) : path === '/login' ? (
+        <EmailSignIn />
       ) : (
         <SignIn />
       );
-  } else if (me.needsPasskey) {
-    screen = <NewPasskey />;
+  } else if (me.needsLogin) {
+    screen = <AddLogin />;
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
@@ -185,8 +186,11 @@ function App() {
         case '/more/passkeys':
           screen = <Passkeys />;
           break;
-        case '/more/recovery-codes':
-          screen = <RecoveryCodes />;
+        case '/more/email': // D80
+          screen = <ChangeEmail />;
+          break;
+        case '/more/password':
+          screen = <ChangePassword />;
           break;
         case '/more/privacy':
           screen = <PrivacyScreen />;

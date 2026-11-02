@@ -43,9 +43,11 @@ export const errorText = (e: unknown): string => (e instanceof Error ? e.message
 export interface Me {
   /** `photo`: your profile photo's version and framing (D23), when you have one. */
   user: { username: string; photo?: { version: string; crop: Crop } } | null;
-  needsPasskey?: boolean;
+  /** D80: your email (private, only ever sent to you). Null on an account from before D80. */
+  email?: string | null;
+  /** D80: an account from before email and password: it adds both before anything else. */
+  needsLogin?: boolean;
   passkeys?: number;
-  recoveryCodesLeft?: number;
   /** Incoming follow requests: the number on the Feed tab and its People button (D77). */
   pendingRequests?: number;
   /** D77: something new in the Feed since you last opened it (the dot on the Feed tab). */

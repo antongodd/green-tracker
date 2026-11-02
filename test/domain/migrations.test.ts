@@ -72,3 +72,30 @@ describe('several photos in a post (D78)', () => {
     expect(db.prepare('SELECT post_id, user_id, position, image_set, cutout FROM post_photos').all()).toEqual([{ post_id: 'p1', user_id: 'u1', position: 0, image_set: 'set1', cutout: 1 }]);
   });
 });
+
+describe('email and password (D80)', () => {
+  it('0019 keeps every account and its data, with no email yet; recovery codes go; recovery sessions just need the email now', () => {
+    const db = fresh();
+    migrate(db, (f) => f < '0019');
+    db.prepare("INSERT INTO users (id, username, username_lower, created_at) VALUES ('u1', 'Sam', 'sam', 1)").run();
+    db.prepare("INSERT INTO passkeys (id, user_id, public_key, created_at) VALUES ('pk1', 'u1', x'00', 1)").run();
+    db.prepare("INSERT INTO recovery_codes (id, user_id, code_hash) VALUES ('c1', 'u1', 'h')").run();
+    db.prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at, needs_passkey) VALUES ('t1', 'u1', 1, 2, 1)").run();
+    migrate(db, (f) => f.startsWith('0019'));
+    expect(db.prepare('SELECT username, email, email_lower, password_hash FROM users').all()).toEqual([{ username: 'Sam', email: null, email_lower: null, password_hash: null }]);
+    expect(db.prepare('SELECT id FROM passkeys').all()).toEqual([{ id: 'pk1' }]);
+    expect(db.prepare('SELECT user_id, needs_passkey FROM sessions').all()).toEqual([{ user_id: 'u1', needs_passkey: 0 }]);
+    expect(db.prepare("SELECT name FROM sqlite_master WHERE name = 'recovery_codes'").all()).toEqual([]);
+  });
+
+  it('after it, one account per email; any number still without one', () => {
+    const db = fresh();
+    migrate(db, () => true);
+    const add = (id: string, email: string | null) =>
+      db.prepare('INSERT INTO users (id, username, username_lower, created_at, email, email_lower) VALUES (?, ?, ?, 1, ?, ?)').run(id, id, id, email, email?.toLowerCase() ?? null);
+    add('a', null);
+    add('b', null);
+    add('c', 'sam@example.com');
+    expect(() => add('d', 'SAM@example.com')).toThrow(/UNIQUE/);
+  });
+});

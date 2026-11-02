@@ -56,7 +56,7 @@ export async function setup(project: TestProject) {
   // D66: exchange rates come from a stand-in (the real service is never asked by the tests).
   const fx = (await startFxStub()) as { server: Server; url: string };
   fxServer = fx.server;
-  const main = await start({ FX_URL: fx.url });
+  const main = await start({ FX_URL: fx.url, TEST_HOOKS: '1' });
   project.provide('apiBase', main.base);
   project.provide('persistDir', main.persist);
   project.provide('fxBase', fx.url);

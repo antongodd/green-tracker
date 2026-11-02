@@ -6,6 +6,9 @@ describe('production config', () => {
   it('never relaxes the sign-up rate limit (test servers only)', () => {
     expect(raw).not.toContain('SIGNUP_LIMIT_PER_HOUR');
   });
+  it('never opens the test servers’ hooks (D80, server/routes/testHooks.ts)', () => {
+    expect(raw).not.toContain('TEST_HOOKS');
+  });
   it('asks the real exchange-rate service (D66: the stand-in is for test servers only)', () => {
     expect(raw).not.toContain('FX_URL');
   });

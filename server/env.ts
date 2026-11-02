@@ -12,16 +12,19 @@ export interface Env {
   SIGNUP_LIMIT_PER_HOUR?: string;
   /** Test servers only: where exchange rates come from (a stand-in). Never set in production (D66: Frankfurter). */
   FX_URL?: string;
+  /** Test servers only: "1" opens /api/test (server/routes/testHooks.ts). Never set in production. */
+  TEST_HOOKS?: string;
 }
 
 export interface SessionUser {
   id: string;
   username: string;
+  /** D80: an account from before email and password, which must add both before anything else. */
+  needsLogin: boolean;
 }
 
 export interface Session {
   tokenHash: string;
-  needsPasskey: boolean;
 }
 
 export type AppEnv = {

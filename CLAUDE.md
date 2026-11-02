@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D79 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D80 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -132,7 +132,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D80) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D81) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -156,7 +156,10 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D79.
+- Reopen any decision D1–D80.
+- Loosen how passwords are kept or checked (D80, `server/lib/password.ts`): only a salted PBKDF2 hash, the same answer
+  for a wrong password and an unknown email, the per-email and per-account limits; the email is never shown to anyone
+  else.
 - Loosen the posts rule (D77, `visiblePostSql` / `actorShownSql` in `server/routes/posts.ts`): the owner and approved
   followers only, checked in SQL on every request.
 
@@ -266,6 +269,14 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   click (`tappedPhoto`), never a button inside the link (axe nested-interactive). Click the `.thumb` in a test; the
   hidden `Photos of …` button can't be clicked, so `focus()` it and press Enter (`rowphotos.spec.ts`). The product
   page's photo tools are `usePhotoEdits` (`components/ProductPhotos.tsx`), shared with the lists: change them there.
+- Email and password (D80): the browser tests' `signUp` fills Email and `Password` (`{ exact: true }`: the Show button
+  is next to it), picks the username, then **Use Face ID**, so every test account still has a passkey; `PASSWORD` and
+  `emailOf(username)` in `helpers.ts`. The API tests' `signUp(b, name, { passkey: false })` skips the passkey;
+  `signInWithPassword`. An account from before D80: `POST /api/test/old-account` `{ username }`, open only on the test
+  servers (`TEST_HOOKS`, set in `test/api/globalSetup.ts` and `test/e2e/server.mjs`; never in `wrangler.jsonc`:
+  `config.test.ts`). Never write to the test servers' database file from a test: the Worker then fails with "database
+  is locked". Wrong passwords are limited per email and per account (10 every 15 minutes): keep a file's wrong tries
+  per account under that.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -279,11 +290,18 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.68.0 (2026-11-02): everything up to a row's photo opening full screen (D79).
-- **Dev:** 0.68.0, the same as live.
+- **Dev:** 0.69.0: live plus email and password sign-in, no recovery codes (D80).
 
 ### To-do list (suggested order; Anton decides)
 
-Nothing waiting. Ask Anton what's next.
+1. **Email and password; no more recovery codes** — **on dev** (0.69.0, D80, 2026-11-02; Anton's idea). Create an
+   account with an email and password, then pick your @name; Face ID offered once and optional; existing accounts add
+   an email and password once; Settings changes either; Delete account asks for the password. Next: Anton tries it
+   on GT Dev (his dev account will ask for an email and password first), then says "go live". Not checked on a real
+   iPhone yet: the keyboard and iCloud Keychain offering to save the password.
+2. **Forgot password, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send email:
+   a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no Face
+   ID can't be recovered.
 
 ### Done (newest first)
 

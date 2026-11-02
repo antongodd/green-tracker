@@ -76,8 +76,6 @@ export const BackIcon = icon('M15 4.5 7.5 12l7.5 7.5', { stroke: 2.4 });
 export const ChevronRight = icon('M4.5 2.5 8 6l-3.5 3.5', { stroke: 1.8, viewBox: '0 0 12 12' });
 export const CheckIcon = icon('M2.5 6.5 5 9l4.5-6', { stroke: 1.8, viewBox: '0 0 12 12' });
 export const CrossIcon = icon('M2.5 2.5l7 7M9.5 2.5l-7 7', { stroke: 1.8, viewBox: '0 0 12 12' });
-export const CopyIcon = icon('M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3', { stroke: 1.6, viewBox: '0 0 16 16' });
-export const SaveIcon = icon('M8 2v8.5M4.5 7 8 10.5 11.5 7M2.5 13.5h11', { stroke: 1.6, viewBox: '0 0 16 16' });
 
 // Type marks (brief §7, Appendix A). Other / Not set have no mark.
 const CONCENTRATE = [
@@ -195,8 +193,6 @@ export const SourcesLineIcon = tabLine('M4 9.5 5.5 4h13L20 9.5 M4 9.5a2.67 2.67 
 export const SettingsLineIcon = tabLine('M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.6a7.5 7.5 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.6h4.2l.4-2.6a7.5 7.5 0 0 0 2.6-1.5l2.3 1 2-3.4Z');
 
 // More screen rows (D38, 0.31.0): outlines in the editors' heading style.
-export const KeyIcon = icon('M8 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z M12.5 12H21 M18 12v3 M21 12v2', { stroke: 2 });
-export const LifeRingIcon = icon('M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17Z M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z M6 6l3.5 3.5 M18 6l-3.5 3.5 M6 18l3.5-3.5 M18 18l-3.5-3.5', { stroke: 2 });
 export const BlockIcon = icon('M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17Z M6 18 18 6', { stroke: 2 });
 export const SignOutIcon = icon('M10 4.5H6A1.5 1.5 0 0 0 4.5 6v12A1.5 1.5 0 0 0 6 19.5h4 M15 16l4-4-4-4 M19 12H9.5', { stroke: 2 });
 export const DevicesIcon = icon('M4.5 5h10a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 3 13.5v-7A1.5 1.5 0 0 1 4.5 5Z M16.5 9h3A1.5 1.5 0 0 1 21 10.5v8a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 15 18.5 M7 19h6', { stroke: 2 });
@@ -212,6 +208,8 @@ export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5',
 // Data screens (D40, 0.33.0).
 export const FileIcon = icon('M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5Z M14 3.5V8h4', { stroke: 2 });
 export const FaceIdIcon = icon('M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8 M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8 M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16 M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16 M9 9v1.5 M15 9v1.5 M12 9v4h-1 M9.5 16c1.5 1 3.5 1 5 0', { stroke: 2 });
+/** D80: Settings › Email. */
+export const MailIcon = icon('M4.5 5h15A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11A1.5 1.5 0 0 1 4.5 5z M3.5 7l8.5 6 8.5-6', { stroke: 2 });
 export const DashIcon = icon('M3 6h6', { stroke: 1.8, viewBox: '0 0 12 12' });
 
 // Posts and the Feed (D77).

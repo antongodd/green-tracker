@@ -2,10 +2,9 @@ import { useEffect, useState } from 'preact/hooks';
 import { api, errorText, type Passkey } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
-import { RecoveryCodesBlock } from '../components/RecoveryCodes';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, KeyIcon, LayoutIcon, LeafGlass, LifeRingIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, FaceIdIcon, LayoutIcon, LeafGlass, LockIcon, MailIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
@@ -108,7 +107,6 @@ export function More() {
   }
 
   const passkeys = me.passkeys ?? 0;
-  const codes = me.recoveryCodesLeft ?? 0;
   return (
     <>
       {/* D61: the Settings tab (More before it). */}
@@ -128,8 +126,10 @@ export function More() {
         <div class="lh cap">Account</div>
         <div class="wrap">
           <div class="list">
-            <Row label="Passkeys" value={String(passkeys)} to="/more/passkeys" icon={KeyIcon} />
-            <Row label="Recovery codes" value={`${codes} left`} to="/more/recovery-codes" icon={LifeRingIcon} tint="amber" />
+            {/* D80: you sign in with your email and password; Face ID (a passkey) is optional. */}
+            <Row label="Email" sub={me.email ?? undefined} to="/more/email" icon={MailIcon} tint="teal" />
+            <Row label="Password" value="Change" to="/more/password" icon={LockIcon} tint="violet" />
+            <Row label="Face ID (passkeys)" value={String(passkeys)} to="/more/passkeys" icon={FaceIdIcon} />
             <Row label="Blocked people" to="/more/blocked" icon={BlockIcon} />
           </div>
         </div>
@@ -242,13 +242,12 @@ export function Passkeys() {
     }
   }
 
-  const only = list?.length === 1;
   return (
     <>
-      <Header title="Passkeys" left={<BackButton to="/more" />} />
+      <Header title="Face ID" left={<BackButton to="/more" />} />
       <main class="screen">
         <div class="wrap stack" style={{ paddingTop: '16px' }}>
-          <p class="lead">A passkey signs you in with Face ID, Touch ID or your screen lock. Add one on each device you use.</p>
+          <p class="lead">A passkey signs you in with Face ID, Touch ID or your screen lock instead of your password. Add one on each device you use; your email and password always work too.</p>
           {list && (
             <div class="list">
               {list.map((p) => (
@@ -257,16 +256,13 @@ export function Passkeys() {
                     {p.name}
                     <span class="sub">{when(p)}</span>
                   </span>
-                  {!only && (
-                    <button class="act" onClick={() => setRemoving(p)} aria-label={`Remove passkey ${p.name}`}>
-                      Remove
-                    </button>
-                  )}
+                  <button class="act" onClick={() => setRemoving(p)} aria-label={`Remove passkey ${p.name}`}>
+                    Remove
+                  </button>
                 </div>
               ))}
             </div>
           )}
-          {only && <p class="hint">You need at least one passkey, so your only one can’t be removed.</p>}
           {error && (
             <p class="error" role="alert">
               {error}
@@ -281,70 +277,9 @@ export function Passkeys() {
       {removing && (
         <Sheet
           title={`Remove “${removing.name}”?`}
-          message="You won’t be able to sign in with this passkey any more."
+          message="You won’t be able to sign in with this passkey any more. Your email and password still work."
           options={[{ label: 'Remove passkey', danger: true, onSelect: () => remove(removing) }]}
           onCancel={() => setRemoving(null)}
-        />
-      )}
-    </>
-  );
-}
-
-export function RecoveryCodes() {
-  const { me, refresh } = useSession();
-  const [confirm, setConfirm] = useState(false);
-  const [codes, setCodes] = useState<string[] | null>(null);
-  const [error, setError] = useState('');
-
-  async function regenerate() {
-    setConfirm(false);
-    setError('');
-    try {
-      setCodes((await api<{ recoveryCodes: string[] }>('POST', '/account/recovery-codes')).recoveryCodes);
-      await refresh();
-    } catch (e) {
-      setError(errorText(e));
-    }
-  }
-
-  const left = me.recoveryCodesLeft ?? 0;
-  return (
-    <>
-      <Header title="Recovery codes" left={<BackButton to="/more" />} />
-      <main class="screen">
-        <div class="wrap stack" style={{ paddingTop: '16px' }}>
-          {codes ? (
-            <>
-              <p class="lead">
-                Your new codes are below and your old ones no longer work. <strong>This is the only time you’ll see these.</strong>
-              </p>
-              <RecoveryCodesBlock username={me.user?.username ?? ''} codes={codes} />
-            </>
-          ) : (
-            <>
-              <p class="lead">
-                You have <strong>{left} of 10</strong> codes left. Each one signs you in once if you lose your passkeys.
-              </p>
-              <p class="lead">Making new codes cancels all the old ones, including any you haven’t used.</p>
-              {error && (
-                <p class="error" role="alert">
-                  {error}
-                </p>
-              )}
-              <button class="btn secondary" onClick={() => setConfirm(true)}>
-                Make new codes
-              </button>
-            </>
-          )}
-        </div>
-      </main>
-      <TabBar active="more" />
-      {confirm && (
-        <Sheet
-          title="Make new recovery codes?"
-          message="Your current codes will stop working straight away."
-          options={[{ label: 'Make new codes', danger: true, onSelect: regenerate }]}
-          onCancel={() => setConfirm(false)}
         />
       )}
     </>

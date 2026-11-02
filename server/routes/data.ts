@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server';
 import type { AppEnv } from '../env';
 import { usernameKey } from '../../shared/domain/account';
@@ -13,6 +13,7 @@ import { FxUnavailable, ratesFor } from '../lib/fx';
 import { DEFAULT_CURRENCY } from '../../shared/domain/currency';
 import { clearSessionCookie, requireUser } from '../lib/session';
 import { parseTransports, saveChallenge, takeChallenge } from '../lib/webauthn';
+import { confirmPassword } from './account';
 
 // Your data as a whole: restore from an export, and delete the account.
 // (Export itself runs in the browser from the ordinary read APIs: building a JSON
@@ -304,23 +305,14 @@ data.post('/delete/options', async (c) => {
   return c.json({ challengeId, options });
 });
 
-/**
- * Step 2: with the passkey check and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, privacy, appearance and money settings, photos, the profile photo,
- * posts and every comment and fire you gave (D77), uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
- * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
- */
-data.post('/delete', async (c) => {
-  const user = c.var.user!;
-  const db = c.env.DB;
-  const body = await jsonBody(c);
-  if (usernameKey(str(body, 'username').trim()) !== usernameKey(user.username)) fail(400, 'username_mismatch', 'Type your username exactly to confirm.');
+/** The passkey way of confirming a deletion: a fresh check, limited to this account's passkeys. */
+async function checkDeletePasskey(c: Context<AppEnv>, body: Record<string, unknown>, userId: string): Promise<void> {
   const challenge = await takeChallenge(c, str(body, 'challengeId'), 'authenticate');
-  if (challenge.user_id !== user.id) fail(400, 'challenge_expired', 'That took too long. Please try again.');
+  if (challenge.user_id !== userId) fail(400, 'challenge_expired', 'That took too long. Please try again.');
   const response = body.response as AuthenticationResponseJSON;
-  const passkey = await db
+  const passkey = await c.env.DB
     .prepare('SELECT id, public_key, counter, transports FROM passkeys WHERE id = ?1 AND user_id = ?2')
-    .bind(typeof response?.id === 'string' ? response.id : '', user.id)
+    .bind(typeof response?.id === 'string' ? response.id : '', userId)
     .first<{ id: string; public_key: ArrayBuffer | number[]; counter: number; transports: string | null }>();
   if (!passkey) fail(400, 'passkey_failed', 'Use a passkey for this account to confirm.');
   const verification = await verifyAuthenticationResponse({
@@ -331,6 +323,22 @@ data.post('/delete', async (c) => {
     credential: { id: passkey.id, publicKey: new Uint8Array(passkey.public_key), counter: passkey.counter, transports: parseTransports(passkey.transports) },
   }).catch(() => ({ verified: false as const }));
   if (!verification.verified) fail(400, 'passkey_failed', 'The passkey could not be checked. Please try again.');
+}
+
+/**
+ * Step 2: with your password (or the passkey check) and the typed username, delete everything:
+ * the user row cascades to products, ratings, purchases, log entries, privacy, appearance and money settings, photos, the profile photo,
+ * posts and every comment and fire you gave (D77), uploads, sessions, passkeys, follows both ways, pending requests
+ * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
+ */
+data.post('/delete', async (c) => {
+  const user = c.var.user!;
+  const db = c.env.DB;
+  const body = await jsonBody(c);
+  if (usernameKey(str(body, 'username').trim()) !== usernameKey(user.username)) fail(400, 'username_mismatch', 'Type your username exactly to confirm.');
+  // D80: your password confirms it; a fresh passkey check still does too.
+  if (typeof body.password === 'string') await confirmPassword(c, body.password);
+  else await checkDeletePasskey(c, body, user.id);
 
   await db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id).run();
 
