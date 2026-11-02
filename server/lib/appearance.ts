@@ -1,14 +1,25 @@
-import { DEFAULT_APPEARANCE, type Appearance, type BoardTop, type Look, type Preset } from '../../shared/domain/gems';
+import { BOARD_TOP_KEYS, DEFAULT_APPEARANCE, PRESET_KEYS, READY_LOOKS, type Appearance, type BoardTop, type Look, type Preset } from '../../shared/domain/gems';
 
 // Appearance (D48): one row per account that changed anything; none = the defaults.
 
-/** Your settings, or the defaults when you've never changed them. */
+/**
+ * Your settings, or the defaults when you've never changed them. Since D76 the database no longer lists the looks and
+ * colour sets, so a value this build doesn't know (one saved by a newer build, then put back) reads as the default:
+ * only that one setting, the rest stay yours.
+ */
 export async function loadAppearance(db: D1Database, userId: string): Promise<Appearance> {
   const r = await db
     .prepare('SELECT look, board_top, preset, mark_first FROM appearance_settings WHERE user_id = ?1')
     .bind(userId)
-    .first<{ look: Look; board_top: BoardTop; preset: Preset; mark_first: number }>();
-  return r ? { look: r.look, top: r.board_top, preset: r.preset, markFirst: r.mark_first === 1 } : { ...DEFAULT_APPEARANCE };
+    .first<{ look: string; board_top: string; preset: string; mark_first: number }>();
+  if (!r) return { ...DEFAULT_APPEARANCE };
+  const known = <T extends string>(list: readonly T[], v: string, fallback: T): T => (list.includes(v as T) ? (v as T) : fallback);
+  return {
+    look: known<Look>(READY_LOOKS, r.look, DEFAULT_APPEARANCE.look),
+    top: known<BoardTop>(BOARD_TOP_KEYS, r.board_top, DEFAULT_APPEARANCE.top),
+    preset: known<Preset>(PRESET_KEYS, r.preset, DEFAULT_APPEARANCE.preset),
+    markFirst: r.mark_first === 1,
+  };
 }
 
 /** The statement that stores `a` for `userId` (insert or replace), for a batch. */
