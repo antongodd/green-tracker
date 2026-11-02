@@ -13,7 +13,7 @@ give a **🔥**. A new **Feed** tab shows your friends' posts, newest first, and
 tab bar; People is still one tap away from the Feed. On a friend's page there are now two tabs, **Leaderboard |
 Posts**.
 
-## Anton's decisions (record as D76)
+## Anton's decisions (record as D77)
 
 | # | Question | Anton's answer |
 |---|---|---|
@@ -203,7 +203,7 @@ fixed above the keyboard ("Add a comment…", up to **300 characters**, **Send**
 - **Rate limits** (`server/lib/rateLimit.ts`): something generous like 30 posts, 200 comments and 600 🔥 per
   hour per account, so a script can't flood a Feed.
 
-## Data (new migration files only: `migrations/0016_posts.sql`)
+## Data (new migration files only: `migrations/0017_posts.sql`; 0016 is D76)
 
 Suggested tables (adjust if the code suggests better; never edit old migrations):
 
@@ -317,7 +317,7 @@ set (`test:e2e:core`), since they touch followers and privacy.
 
 ## Notes to update in the same pull request
 
-- `SPEC.md`: **D76** with Anton's answers above, a §4 section "Posts, comments and the Feed", the changelog entry;
+- `SPEC.md`: **D77** with Anton's answers above, a §4 section "Posts, comments and the Feed", the changelog entry;
   amend **D6** (tabs: Feed in People's place) and **D24** (People is reached from the Feed).
 - `CLAUDE.md`: the to-do item marked **on dev** (version, date); a testing note on posts (the access rule, how to
   make a second account and a post in a test).

@@ -97,12 +97,12 @@ describe('Leaderboard colours by score (D48)', () => {
     expect(new Set(LOOK_KEYS.map((l) => LOOKS[l].label)).size).toBe(LOOK_KEYS.length);
   });
 
-  it('the phone remembers every look (look.js knows each name and background), and the database allows each', () => {
+  it('the phone remembers every look (look.js knows each name and background); the database no longer lists them (D76)', () => {
     const js = readFileSync(new URL('../../client/public/look.js', import.meta.url), 'utf8');
     const bgs = Object.fromEntries([...js.matchAll(/(\w+): '(#[0-9a-f]{6})'/g)].map((m) => [m[1], m[2]]));
     expect(bgs).toEqual(LOOK_BG);
-    const sql = readFileSync(new URL('../../migrations/0015_daylight.sql', import.meta.url), 'utf8');
-    expect(sql.match(/look IN \(([^)]*)\)/)![1]!.match(/'(\w+)'/g)!.map((q) => q.slice(1, -1)).sort()).toEqual([...LOOK_KEYS].sort());
+    const sql = readFileSync(new URL('../../migrations/0016_open_looks.sql', import.meta.url), 'utf8');
+    expect(sql).not.toMatch(/look IN|preset IN/); // migrations.test.ts runs it
   });
 
   it('a backup or an open app from before 0.54.0 has no look or top: they take the defaults', () => {

@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D75 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D76 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -102,7 +102,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D76) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D77) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -126,7 +126,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D75.
+- Reopen any decision D1–D76.
 
 ## Testing notes
 
@@ -207,7 +207,9 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
   `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits for). Whatever drifts behind words
   must pass the readability tests at every moment, so keep it about as bright as Aurora's lights. A new look goes in
-  `LOOK_KEYS`, `LOOK_BG`, `look.js` and a migration (`gems.test.ts` checks they agree).
+  `LOOK_KEYS`, `LOOK_BG` and `look.js` (`gems.test.ts` checks they agree); a new look or colour set needs **no
+  migration** since D76 (the app checks them: `validateAppearance`; reading back, `loadAppearance` shows the default
+  for one it doesn't know).
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -230,11 +232,14 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.64.3 (2026-11-02): everything up to their look on their pages (D74), and the faster way of working (D75).
-- **Dev:** 0.64.3, the same as live.
+- **Dev:** 0.65.0: live plus looks and colour sets without a database change (D76).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D76). Post what you're
+1. **Looks and colour sets without a database change** — **on dev** (0.65.0, D76, 2026-11-02): a new Look or colour
+   set no longer needs a database change. Nothing changes on screen, so there's nothing to try on GT Dev.
+   Next: Anton says "go live".
+2. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D77). Post what you're
    smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
    comments and a 🔥; a **Feed** tab in People's place; a friend's page in two tabs, Leaderboard | Posts. Anton's
    answers and the full brief: `design/posts-feed-brief.md`. Next: the mockups.
