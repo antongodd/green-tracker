@@ -1672,6 +1672,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — posts, comments and a Feed are live
+- D77 and D78 (0.66.0–0.67.0, on dev 2026-11-02) went live on 2026-11-02 and move to Done. Notes only.
+
 ### 0.67.0 — several photos in a post; the product's photo in the card (owner request)
 - Decision D78. A post can have up to 10 photos (the bud, the joint, where you're smoking), swiped sideways like
   Instagram, with "2/3" and dots. In the composer, tap the product's other photos to add them or add new ones, and hold
