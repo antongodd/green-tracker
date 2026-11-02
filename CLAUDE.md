@@ -273,7 +273,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.65.0 (2026-11-02): everything up to looks and colour sets without a database change (D76).
-- **Dev:** 0.66.0: live plus posts, comments and a Feed (D77).
+- **Dev:** 0.66.1: live plus posts, comments and a Feed (D77).
 
 ### To-do list (suggested order; Anton decides)
 
