@@ -1686,6 +1686,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — a row's photo opening full screen is live
+- D79 (0.68.0, on dev 2026-11-02) went live on 2026-11-02 and moves to Done. Notes only.
+
 ### 0.68.0 — a row's photo opens it full screen (owner request)
 - Decision D79. Tap a product's photo on your Leaderboard, the Log, the Archive or a brand page and it opens full
   screen at once, without going into the product first: swipe through its other photos, and Set as cover, Crop and

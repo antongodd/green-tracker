@@ -278,21 +278,18 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.67.1 (2026-11-02): everything up to posts (D77, D78), with the composer's lists newest first.
-- **Dev:** 0.68.0: live plus a row's photo opening full screen (D79).
+- **Live:** 0.68.0 (2026-11-02): everything up to a row's photo opening full screen (D79).
+- **Dev:** 0.68.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Tap a row's photo to see it full screen** — **on dev** (0.68.0, D79, 2026-11-02; Anton's idea, with a
-   screenshot). On your Leaderboard, Log, Archive and brand pages the photo opens the viewer on the cover with the
-   product page's bar; a Log entry's photo on its own; a friend's board, their shared photos with no bar. The rest of
-   the row opens the page as before. Next: Anton tries it on GT Dev, then says "go live". Not checked on a real iPhone
-   yet: how easy the photo is to hit.
+Nothing waiting. Ask Anton what's next.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Tap a row's photo to see it full screen: the viewer with the product page's bar on your Leaderboard, Log, Archive and brand pages; a friend's shared photos with no bar | 0.68.0 | D79 | 2026-11-02 | 2026-11-02 |
 | Posting: Your Leaderboard and Your Log newest first when picking what a post is about | 0.67.1 | | 2026-11-02 | 2026-11-02 |
 | Posts, comments and a Feed: a Feed tab in People's place, comments and a 🔥, Leaderboard \| Posts pages; several photos a post, swiped, and the product's photo in the card (checked on Anton's iPhone on GT Dev) | 0.66.0–0.67.0 | D77, D78 | 2026-11-02 | 2026-11-02 |
 | Recipes for each kind of change (`.claude/skills/`), two conversations at once, and Anton's guide `WORKFLOW.md` | (notes) | | 2026-11-02 | notes only |
