@@ -85,11 +85,14 @@ only if what he wants is unclear.
 | What | Checks | About |
 |---|---|---|
 | Pull request into `dev` | typecheck, unit and API tests, the **core** browser tests | a few minutes |
-| Release pull request into `main` | the same, with **every** browser test | about 10 minutes |
+| Release pull request into `main` | the same, with **every** browser test | about 5 minutes |
 | Notes only (`*.md`, `design/`) | nothing | under a minute |
 | Push to `dev` or `main` | nothing again: its pull request tested that code | the deploy only |
 
-The browser tests are split across four machines at once (the repository is public, so it's free). The core set is
+The browser tests are shared between six machines at once, each with an equal share by time
+(`scripts/e2e-shard.mjs`, from the measured seconds in `test/e2e/timings.json`; the repository is public, so it's
+free). After adding or removing a spec file or a slow test, refresh the timings from a full local run (see
+`scripts/e2e-timings.mjs`); a test not in the file counts as 15 seconds, so nothing is ever left out. The core set is
 the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log, photos and the
 quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
 
@@ -140,8 +143,10 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
-- On CI each of the four browser machines may run 25 minutes. A run "cancelled" at the limit with no test failed means
-  that quarter outgrew it, not a flaky test: add a fifth machine (`ci.yml` `shard`).
+- On CI each browser machine may run 25 minutes (it takes about 4). A run "cancelled" at the limit with no test failed
+  means the timings are stale or a file outgrew it, not a flaky test: refresh `timings.json`, or add a machine (`ci.yml`
+  `shard`). Run one machine's share locally with `node scripts/e2e-shard.mjs <n> 6 [core|full]`
+  (`DRY=1` only shows the split). A file in `mode: 'parallel'` is shared test by test; any other stays whole.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
@@ -224,7 +229,7 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.64.2 (live 2026-11-01): everything up to their look on their pages (D74).
+- **Live:** 0.64.3 (2026-11-02): everything up to their look on their pages (D74), and the faster way of working (D75).
 - **Dev:** 0.64.3, the same as live.
 
 ### To-do list (suggested order; Anton decides)
@@ -235,6 +240,7 @@ Nothing waiting. Ask Anton what's next.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A faster way of working: Claude merges and releases small changes itself; a 2-minute quick check, a 5-minute full check on six machines shared by time | (0.64.3) | D75 | 2026-11-02 | 2026-11-02 |
 | Their look on their pages: a friend's board, product and brand pages in their Look, top and colours, fading in | 0.64.0 | D74 | 2026-10-31 | 2026-11-01 |
 | The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |
 | Three light looks: Daylight Mint, Daylight Pearl, Daylight Sky (light cards; everyone starts dark) | 0.62.0 | D72 | 2026-10-29 | 2026-10-30 |

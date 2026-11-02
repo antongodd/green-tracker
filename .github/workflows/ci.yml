@@ -2,7 +2,8 @@
 # - A pull request into dev runs the quick check: typecheck, the unit and API tests, and the core
 #   browser tests (npm run test:e2e:core).
 # - A pull request into main (going live) runs the full check: every browser test.
-# - The browser tests are split across four machines at once (the repository is public, so it's free).
+# - The browser tests are shared between six machines at once, balanced by time (the repository is public, so
+#   it's free).
 # - A change that only touches notes (*.md, design/) skips the tests: nothing in the app changed.
 # - A push to dev or main isn't tested again when its pull request already tested the same code;
 #   it goes straight to the deploy.
@@ -57,7 +58,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
-  # The browser tests, split across four machines that run at the same time.
+  # The browser tests, shared between six machines that run at the same time, each with an equal share by time
+  # (scripts/e2e-shard.mjs, from test/e2e/timings.json).
   browser:
     needs: plan
     if: needs.plan.outputs.mode != 'skip'
@@ -66,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -75,12 +77,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Core browser tests
-        if: needs.plan.outputs.mode == 'core'
-        run: npm run test:e2e:core -- --shard=${{ matrix.shard }}/4
-      - name: All browser tests
-        if: needs.plan.outputs.mode == 'full'
-        run: npm run test:e2e -- --shard=${{ matrix.shard }}/4
+      - run: npm run build
+      - name: This machine's share of the ${{ needs.plan.outputs.mode }} browser tests
+        run: node scripts/e2e-shard.mjs $(( ${{ strategy.job-index }} + 1 )) ${{ strategy.job-total }} ${{ needs.plan.outputs.mode }}
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
