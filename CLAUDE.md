@@ -275,7 +275,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.67.0 (2026-11-02): everything up to posts, comments and a Feed (D77) with several photos a post (D78).
-- **Dev:** 0.67.0, the same as live.
+- **Dev:** 0.67.1: live plus the composer's lists newest first.
 
 ### To-do list (suggested order; Anton decides)
 

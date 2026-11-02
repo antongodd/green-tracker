@@ -1672,6 +1672,10 @@ None.
 
 ## 6. Changelog
 
+### 0.67.1 — posting: your Leaderboard and Log newest first (owner request)
+- When you pick what a post is about, Your Leaderboard and Your Log list what you added most recently at the top, so
+  what you're smoking now is quickest to post (`newestFirst`, by when it was added).
+
 ### Notes — posts, comments and a Feed are live
 - D77 and D78 (0.66.0–0.67.0, on dev 2026-11-02) went live on 2026-11-02 and move to Done. Notes only.
 
