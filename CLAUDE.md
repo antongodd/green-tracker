@@ -7,7 +7,7 @@ rule from Anton, a new lesson, a new site or setting), update this file in the s
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D74 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D75 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -35,47 +35,84 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - The dev site can't be reached from the cloud environment (neither can the live site): check deploys through GitHub
   Actions, and ask Anton for screenshots when you need to see a screen.
 
-## How we work
+## How we work (D75)
 
-- **For each change:** ask questions if anything is unclear, give a plan, and wait for "go ahead" before building.
-- **Visual changes:** interactive iPhone mockups with your recommendation marked → a plan for the option he picks →
-  wait for "go ahead".
-- **Ask before adding scope.** Explain knock-on effects: other screens, data, export/restore, followers, privacy,
-  and live vs dev.
-- **After each item** is on dev or live: update the to-do list and Done in CLAUDE.md (see "Where things stand"), post it and suggest what's next.
+Anton wants changes to feel quick and automatic: he doesn't want to keep saying "merge". He is asked only for what
+only he can decide. Everything else (merging, release pull requests, notes) you do yourself and tell him afterwards.
+
+**Small or big?** Decide at the start and say which. Anton can overrule.
+- **Small:** a bug fix, wording, or a tweak to something that already exists, and nothing that changes the database,
+  privacy, or what followers see.
+- **Big:** a new feature, screen or Look; anything with a migration, or that changes privacy or what followers see;
+  anything he'd want to try on his iPhone first.
+
+**A small change:** build it, then merge it into `dev` yourself once its check is green, then straight on to live
+(release pull request, merge it once its full check is green). Then tell him it's live and how to see it. Ask first
+only if what he wants is unclear.
+
+**A big change:**
+1. Questions if anything is unclear, then a plan; for a visual change, interactive iPhone mockups with your
+   recommendation marked. Wait for **"go ahead"** (and his pick of the mockups).
+2. Build it and merge it into `dev` yourself once its check is green. Check **deploy-dev** finished green, then give
+   exact iPhone steps to try it on **GT Dev**.
+3. Wait for **"go live"**, then do the rest yourself (below) and say it's live with exact iPhone steps.
+
+- **Ask before adding scope.** Explain knock-on effects: other screens, data, export/restore, followers, privacy.
+- **After each item** is on dev or live: update the to-do list and Done (see "Where things stand"), tell him, and
+  suggest what's next.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
 
-### Branches, "merge" and "go live"
+### Branches and merging
 
 - Work on the branch the session gives you, started from the latest `dev`. **Open pull requests into `dev`**, never
   straight into `main`.
-- `main` and `dev` are both protected (GitHub ruleset "Protect main and dev"): the GitHub Actions **test** check must pass.
-- **"merge"** → squash-merge the pull request into `dev`: directly if the tests have passed; if they're still running,
-  enable auto-merge and tell him (and if it hasn't merged itself once they pass, merge directly). Then check the run on
-  `dev` finished green (job **deploy-dev**) and give exact iPhone steps to test it on **GT Dev**.
-- **"go live"** → open a release pull request from `dev` to `main` listing what's going live. When he says "merge",
-  merge it with a **merge commit (not squash)** so `dev` and `main` stay in step. Then check the run on `main`
-  finished green, including the **"Live site serves this build"** step, and say it's live with exact iPhone steps.
-- Only merge when Anton says so.
+- `main` and `dev` are both protected (GitHub ruleset "Protect main and dev"): the GitHub Actions **test** check must
+  pass. Merge as soon as it does (squash into `dev`); if it's still running, turn on auto-merge so it merges itself.
+- **Going live:** open a release pull request from `dev` to `main` listing what's going live, and merge it with a
+  **merge commit (not squash)** once its check is green, so `dev` and `main` stay in step. Then check the run on `main`
+  finished green, including **"Live site serves this build"**.
+- If something on live breaks: put the previous version back first (a pull request reverting the change, straight
+  through to live), then fix it properly.
 - After a merge, restart your working branch from the latest `dev` (same branch name; force-with-lease is fine).
 - If the session was started with dev as its branch, a push of any other branch may get a 403 (it has also worked
   after a session restart). Never push straight to dev: if a `claude/<topic>` branch can't be pushed, tell Anton and
   ask how to proceed.
 - Commit messages and pull requests: end them with the attribution lines your setup gives you; never name a model.
 
+### What CI checks (D75, `scripts/ci-plan.mjs`)
+
+| What | Checks | About |
+|---|---|---|
+| Pull request into `dev` | typecheck, unit and API tests, the **core** browser tests | a few minutes |
+| Release pull request into `main` | the same, with **every** browser test | about 10 minutes |
+| Notes only (`*.md`, `design/`) | nothing | under a minute |
+| Push to `dev` or `main` | nothing again: its pull request tested that code | the deploy only |
+
+The browser tests are split across four machines at once (the repository is public, so it's free). The core set is
+the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log, photos and the
+quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
+
 ## Every change
 
-- **SPEC.md:** the §4 section, a new decision number (next is D75), a changelog entry.
-- **Version:** bump `package.json`, then `npm install --package-lock-only`.
-- **Tests** added or updated. Grep **all** test files for anything you moved or renamed.
-- Before pushing, run `npm run typecheck`, `npm test`, and `npm run test:e2e`
-  (`PW_CHROMIUM=/opt/pw-browsers/chromium`):
-  - the browser tests **twice**: with 4 workers and with 2 (CI uses 2; never more than 4);
-  - new tests repeated with `--workers=3 --repeat-each=6`.
+- **Notes go in the same pull request** as the change (to-do list, Done, testing notes). After going live, the move to
+  Done is a notes-only pull request: it skips the tests, so merge it at once.
+- **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
+  tests-only changes keep the version.
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D76) and its §4
+  section; a small one only when it really decides something new.
+- **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
+  what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
+  files for anything you moved or renamed.
+- Before pushing, run `npm run typecheck`, `npm test`, and the browser specs you touched plus the core set
+  (`npm run test:e2e:core`), with `PW_CHROMIUM=/opt/pw-browsers/chromium` and 2 workers. Leave the rest to CI. A new
+  browser test that waits on an animation or timing: run it with `--repeat-each=3` too.
 - **Bug fixes:** check each new test fails on the old code.
-- **Flaky test:** find the real cause. Never re-run until green. **Save the full output to a file before re-running
-  anything** (a one-off failure was once lost by re-running first).
+- **Flaky test:** on CI a failed browser test gets one retry (`playwright.config.ts`); one that passes on the retry is
+  listed as **flaky** at the end of the browser tests' log. Look at the logs of each release's run: a flaky test is
+  fixed in the next change (find the real cause), not in a release of its own. Wait on
+  what the screen shows (an element, a class, `settled`), never a fixed time. If a test can't be made steady and checks
+  only how something moves, delete it and say so. **Save the full output to a file before re-running anything.**
 - **Readability and accessibility tests are never loosened.** Fix the design instead.
 - **Tell Anton what couldn't be checked on a real iPhone.**
 - **Screen recordings:** examine them frame by frame (opencv-python-headless).
@@ -86,7 +123,7 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D74.
+- Reopen any decision D1–D75.
 
 ## Testing notes
 
@@ -103,8 +140,8 @@ anywhere else (no tracking) and shows only made-up products. Its links to the ap
 - Wait for elements before reading lists: `allTextContents` / `evaluateAll` don't wait.
 - Downloads: `saveAs`. Long sweeps: `test.slow()`. Slow loads: `page.route` + `route.fallback`.
 - No `pgrep -f` in loops. Run long test runs in the background.
-- CI's test job may run 30 minutes (0.62.1): the browser tests take 15 to 20 on a GitHub runner. A run "cancelled" at the
-  limit with no test failed means the suite outgrew it, not a flaky test.
+- On CI each of the four browser machines may run 25 minutes. A run "cancelled" at the limit with no test failed means
+  that quarter outgrew it, not a flaky test: add a fifth machine (`ci.yml` `shard`).
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
