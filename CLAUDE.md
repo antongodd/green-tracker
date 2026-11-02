@@ -274,23 +274,18 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.65.0 (2026-11-02): everything up to looks and colour sets without a database change (D76).
-- **Dev:** 0.67.0: live plus posts, comments and a Feed (D77), with several photos a post (D78).
+- **Live:** 0.67.0 (2026-11-02): everything up to posts, comments and a Feed (D77) with several photos a post (D78).
+- **Dev:** 0.67.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Posts, comments and a Feed** — **on dev** (0.66.0, D77, 2026-11-02; Anton's friends' idea). Post what you're
-   smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
-   comments and a 🔥; a **Feed** tab in People's place; a friend's page and your own in two tabs, Leaderboard | Posts.
-   The brief: `design/posts-feed-brief.md`; mockups https://claude.ai/artifact/MSmw7yHV12a6SkSHmCqSfd (Anton's picks:
-   all five recommendations, the round + for New post). After trying it on GT Dev, Anton asked for several photos a
-   post and the product's photo in the card: **on dev** (0.67.0, D78, 2026-11-02). Next: Anton tries those on GT Dev,
-   then says "go live" (D77 and D78 go together). Not checked on a real iPhone yet: the camera and photo library, the keyboard over the comment box.
+Nothing waiting. Ask Anton what's next.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Posts, comments and a Feed: a Feed tab in People's place, comments and a 🔥, Leaderboard \| Posts pages; several photos a post, swiped, and the product's photo in the card (checked on Anton's iPhone on GT Dev) | 0.66.0–0.67.0 | D77, D78 | 2026-11-02 | 2026-11-02 |
 | Recipes for each kind of change (`.claude/skills/`), two conversations at once, and Anton's guide `WORKFLOW.md` | (notes) | | 2026-11-02 | notes only |
 | Looks and colour sets without a database change (nothing on screen changes) | 0.65.0 | D76 | 2026-11-02 | 2026-11-02 |
 | A faster way of working: Claude merges and releases small changes itself; a 2-minute quick check, a 5-minute full check on six machines shared by time | (0.64.3) | D75 | 2026-11-02 | 2026-11-02 |
