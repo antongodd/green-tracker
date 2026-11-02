@@ -13,13 +13,14 @@ import { EmptyCard } from '../components/EmptyCard';
 import { MeButton } from '../components/MeButton';
 import { brandPath } from '../components/NameLink';
 import { ProductRow } from '../components/ProductRow';
+import { RowPhotos } from '../components/ProductPhotos';
 import { Skeleton } from '../components/Skeleton';
 import { TypeMark } from '../icons';
 import { cachedProducts, fetchProducts } from '../products';
 import { cameFrom, linkTo } from '../router';
 
 /** Your products (not archived), from the cache at once and fresh from the server. */
-function useProducts(): { products: Product[] | null; error: string } {
+function useProducts(): { products: Product[] | null; error: string; setProducts: (f: (list: Product[] | null) => Product[] | null) => void } {
   const [products, setProducts] = useState<Product[] | null>(cachedProducts);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -27,7 +28,7 @@ function useProducts(): { products: Product[] | null; error: string } {
       .then(setProducts)
       .catch((e) => setError(errorText(e)));
   }, []);
-  return { products, error };
+  return { products, error, setProducts };
 }
 
 /** A Sources card's picture: its best product's first photo (a cut-out without its box), else the type's mark. */
@@ -146,7 +147,9 @@ export function BrandsList() {
 export function BrandPage(p: { name: string }) {
   const main = useCurrency();
   const key = nameKey(p.name);
-  const { products, error } = useProducts();
+  const { products, error, setProducts } = useProducts();
+  // D79: the product whose photos are open from its row.
+  const [photosOf, setPhotosOf] = useState<Product | null>(null);
   // Opened from the Sources tab it belongs to Sources; from a product page, to the Leaderboard.
   const [tab] = useState<Tab>(() => (cameFrom()?.startsWith('/sources') ? 'sources' : 'leaderboard'));
   const named = products ? productsNamed(products, key) : [];
@@ -203,13 +206,14 @@ export function BrandPage(p: { name: string }) {
             />
             <div class="rows">
               {rows.map((r) => (
-                <ProductRow key={r.product.id} product={r.product} rank={r.rank} band={r.band} first={r.first} meta={<RoleTags brand={roles.get(r.product.id)!.brand} shop={roles.get(r.product.id)!.shop} />} />
+                <ProductRow key={r.product.id} product={r.product} rank={r.rank} band={r.band} first={r.first} meta={<RoleTags brand={roles.get(r.product.id)!.brand} shop={roles.get(r.product.id)!.shop} />} onPhoto={() => setPhotosOf(r.product)} />
               ))}
             </div>
           </>
         )}
       </main>
       <TabBar active={tab} />
+      {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
     </>
   );
 }

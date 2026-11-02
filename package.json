@@ -1,6 +1,6 @@
 {
   "name": "green-tracker",
-  "version": "0.67.1",
+  "version": "0.68.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
     "deploy:site:dev": "wrangler deploy --config site/wrangler.jsonc --env dev",
     "deploy:embedded": "npm run build && wrangler d1 migrations apply green-tracker --remote && node scripts/deploy-embedded.mjs",
     "test:e2e": "npm run build && playwright test",
-    "test:e2e:core": "npm run test:e2e -- test/e2e/accounts.spec.ts test/e2e/data.spec.ts test/e2e/products.spec.ts test/e2e/people.spec.ts test/e2e/privacy.spec.ts test/e2e/photos.spec.ts test/e2e/log.spec.ts test/e2e/leaderboard.spec.ts test/e2e/returntolog.spec.ts test/e2e/staleload.spec.ts test/e2e/quality.spec.ts test/e2e/profile.spec.ts test/e2e/purchases.spec.ts test/e2e/posts.spec.ts"
+    "test:e2e:core": "npm run test:e2e -- test/e2e/accounts.spec.ts test/e2e/data.spec.ts test/e2e/products.spec.ts test/e2e/people.spec.ts test/e2e/privacy.spec.ts test/e2e/photos.spec.ts test/e2e/log.spec.ts test/e2e/leaderboard.spec.ts test/e2e/returntolog.spec.ts test/e2e/staleload.spec.ts test/e2e/quality.spec.ts test/e2e/profile.spec.ts test/e2e/purchases.spec.ts test/e2e/posts.spec.ts test/e2e/rowphotos.spec.ts"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^14.0.0",
