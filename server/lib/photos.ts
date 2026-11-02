@@ -171,3 +171,22 @@ export async function serveImage(bucket: R2Bucket, ifNoneMatch: string | undefin
   const type = obj.httpMetadata?.contentType === 'image/png' ? 'image/png' : 'image/jpeg';
   return new Response(obj.body, { headers: { ...headers, 'content-type': type, 'content-length': String(obj.size) } });
 }
+
+/**
+ * Copies a set's cropped image and thumbnail into a new set of the same account (D77: a post's own copy
+ * of its photo, so later crops or deletes never change the post). Never the original.
+ */
+export async function copyImageSet(bucket: R2Bucket, userId: string, fromSet: string): Promise<string> {
+  const to = newSetId();
+  try {
+    for (const v of ['cropped', 'thumb'] as const) {
+      const obj = await bucket.get(photoKey(userId, fromSet, v));
+      if (!obj) fail(400, 'photo_missing', 'That photo couldn’t be found. Please choose another.');
+      await bucket.put(photoKey(userId, to, v), obj.body, { httpMetadata: { contentType: obj.httpMetadata?.contentType === 'image/png' ? 'image/png' : 'image/jpeg' } });
+    }
+  } catch (e) {
+    await bucket.delete(imageKeys(userId, to)).catch(() => {});
+    throw e;
+  }
+  return to;
+}

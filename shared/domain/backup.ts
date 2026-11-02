@@ -10,6 +10,7 @@ import { validateProductInput, type ProductInput } from './product';
 import { validatePrivacy, type Privacy } from './privacy';
 import { validateAppearance, type Appearance } from './gems';
 import { isCurrencyCode } from './currency';
+import { validateCaption } from './posts';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -72,6 +73,31 @@ export interface ExportFile {
   appearance?: Appearance;
   /** D66: your main currency. Absent in files made before 0.56.0: restoring one leaves yours alone. */
   money?: Money;
+  /** D77: your posts (not comments or fires). Absent in files made before 0.66.0: restoring one leaves yours alone. */
+  posts?: ExportPost[];
+}
+
+/**
+ * What a post is about, by its place in the file: a product (`products`), a Log entry (`logEntries`), or the
+ * product a returned Log entry keeps (`keptBy`, D50).
+ */
+export type PostAboutRef = { product: number } | { logEntry: number } | { keptBy: number } | null;
+
+/** D77: a post in the file. Its photo is its own copy: the cropped image only (JPEG, or a cut-out's PNG). */
+export interface ExportPost {
+  caption: string;
+  createdAt: number;
+  editedAt: number | null;
+  about: PostAboutRef;
+  /** The name and type as posted, for a card whose product or entry has gone. */
+  aboutName: { name: string; productType: string | null; productTypeOther: string | null; strainType: string | null } | null;
+  image: string;
+  cutout?: boolean;
+}
+
+export interface RestorePost extends Omit<ExportPost, 'image' | 'cutout'> {
+  /** The post's photo, uploaded as a set (cropped + thumb). */
+  upload: string;
 }
 
 /** D66: your main currency. */
@@ -106,9 +132,29 @@ export interface RestorePayload {
    * before 0.56.0); one not in the main currency without a rate gets its day's rate.
    */
   money?: Money;
+  /** D77: absent → leave your posts alone; otherwise they replace yours. */
+  posts?: RestorePost[];
 }
 
-export const RESTORE_LIMITS = { products: 5000, logEntries: 5000 } as const;
+export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, posts: 5000 } as const;
+
+const isIndex = (v: unknown, length: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < length;
+const optText = (v: unknown, max = 200) => v === null || (typeof v === 'string' && v.length <= max);
+
+/** A post's `about` and `aboutName`, checked against the file's lists. */
+function postRefsOk(p: Record<string, unknown>, products: number, logEntries: number): boolean {
+  const a = p.about as Record<string, unknown> | null | undefined;
+  if (a !== null) {
+    if (!a || typeof a !== 'object') return false;
+    const keys = Object.keys(a);
+    if (keys.length !== 1) return false;
+    if (!(isIndex(a.product, products) || isIndex(a.logEntry, logEntries) || isIndex(a.keptBy, logEntries))) return false;
+  }
+  const n = p.aboutName as Record<string, unknown> | null | undefined;
+  if (n === null) return true;
+  return !!n && typeof n === 'object' && typeof n.name === 'string' && n.name.length <= 200 && optText(n.productType) && optText(n.productTypeOther) && optText(n.strainType);
+}
+const editedOk = (v: unknown) => v === null || isTime(v);
 
 type Result<T> = { ok: true; value: T } | { ok: false; message: string };
 
@@ -142,6 +188,15 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
   if (f.appearance !== undefined && !validateAppearance(f.appearance).ok) return bad('The appearance settings in the file couldn’t be read.');
   if (f.money !== undefined && !validMoney(f.money)) return bad('The main currency in the file couldn’t be read.');
   if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
+  if (f.posts !== undefined) {
+    if (!Array.isArray(f.posts) || f.posts.length > RESTORE_LIMITS.posts) return bad('The posts in the file couldn’t be read.');
+    for (const p of f.posts as Record<string, unknown>[]) {
+      const ok =
+        !!p && typeof p === 'object' && validateCaption(p.caption).ok && isTime(p.createdAt) && editedOk(p.editedAt) && isB64(p.image) &&
+        (p.cutout === undefined || typeof p.cutout === 'boolean') && postRefsOk(p, f.products.length, f.logEntries.length);
+      if (!ok) return bad('A post in the file couldn’t be read.');
+    }
+  }
   return { ok: true, value: raw as ExportFile };
 }
 
@@ -203,7 +258,24 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
   }
   if (r.money !== undefined && !validMoney(r.money)) return bad('The main currency could not be read.');
   const money = r.money as Money | undefined;
-  const extra = { ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}), ...(money ? { money: { currency: money.currency } } : {}) };
+  let posts: RestorePost[] | undefined;
+  if (r.posts !== undefined) {
+    if (!Array.isArray(r.posts) || r.posts.length > RESTORE_LIMITS.posts) return bad('The posts could not be read.');
+    posts = [];
+    for (const [i, raw] of (r.posts as Record<string, unknown>[]).entries()) {
+      const bad1 = () => bad(`Post ${i + 1} could not be read.`);
+      if (!raw || typeof raw !== 'object') return bad1();
+      const caption = validateCaption(raw.caption);
+      if (!caption.ok) return bad(`Post ${i + 1}: ${caption.message}`);
+      if (!isTime(raw.createdAt) || !editedOk(raw.editedAt) || !postRefsOk(raw, products.length, logEntries.length)) return bad1();
+      if (typeof raw.upload !== 'string' || !raw.upload || uploads.has(raw.upload)) return bad1();
+      uploads.add(raw.upload);
+      const a = raw.about as PostAboutRef;
+      if (a && 'keptBy' in a && !logEntries[a.keptBy]!.kept) return bad1();
+      posts.push({ caption: caption.value, createdAt: raw.createdAt, editedAt: (raw.editedAt as number | null) ?? null, about: a, aboutName: (raw.aboutName as ExportPost['aboutName']) ?? null, upload: raw.upload });
+    }
+  }
+  const extra = { ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}), ...(money ? { money: { currency: money.currency } } : {}), ...(posts ? { posts } : {}) };
   if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries, ...extra } };
   if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null, ...extra } };
   const pp = r.profilePhoto as Record<string, unknown>;

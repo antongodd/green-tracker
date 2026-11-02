@@ -16,6 +16,7 @@ import { hashRecoveryCode, newRecoveryCodes } from '../lib/recovery';
 import { clearSessionCookie, startSession } from '../lib/session';
 import { loadAppearance } from '../lib/appearance';
 import { loadMainCurrency } from '../lib/money';
+import { FEED_NEW_SQL } from './posts';
 import { RP_NAME, parseTransports, passkeyName, saveChallenge, takeChallenge } from '../lib/webauthn';
 
 export const auth = new Hono<AppEnv>();
@@ -39,10 +40,13 @@ auth.get('/me', async (c) => {
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?1 AND used_at IS NULL) AS codes,
-            (SELECT COUNT(*) FROM follows WHERE followed_id = ?1 AND status = 'pending') AS requests`,
+            (SELECT COUNT(*) FROM follows WHERE followed_id = ?1 AND status = 'pending') AS requests,
+            (SELECT feed_seen_at FROM users WHERE id = ?1) AS seen`,
   )
     .bind(user.id)
-    .first<{ passkeys: number; codes: number; requests: number }>();
+    .first<{ passkeys: number; codes: number; requests: number; seen: number | null }>();
+  // D77: the Feed's dot: something new since you last opened it.
+  const feed = await c.env.DB.prepare(FEED_NEW_SQL).bind(user.id, counts?.seen ?? 0).first<{ new: number }>();
   // Your profile photo (D23): its version and framing, for the People card and export.
   const photo = await c.env.DB.prepare('SELECT image_set, crop_x, crop_y, crop_w, crop_h FROM profile_photos WHERE user_id = ?1')
     .bind(user.id)
@@ -56,6 +60,7 @@ auth.get('/me', async (c) => {
     passkeys: counts?.passkeys ?? 0,
     recoveryCodesLeft: counts?.codes ?? 0,
     pendingRequests: counts?.requests ?? 0,
+    feedNew: feed?.new === 1,
     // D48: how the app looks for you, there from the first screen.
     appearance: await loadAppearance(c.env.DB, user.id),
     // D66: your main currency, which every price shown together is in.
