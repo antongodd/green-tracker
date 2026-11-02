@@ -46,8 +46,10 @@ export interface Me {
   needsPasskey?: boolean;
   passkeys?: number;
   recoveryCodesLeft?: number;
-  /** Incoming follow requests: the badge on the People tab. */
+  /** Incoming follow requests: the number on the Feed tab and its People button (D77). */
   pendingRequests?: number;
+  /** D77: something new in the Feed since you last opened it (the dot on the Feed tab). */
+  feedNew?: boolean;
   /** D48: your Leaderboard colours and #1 mark (signed in only). */
   appearance?: Appearance;
   /** D66: your main currency, which every price shown together is in (signed in only). */

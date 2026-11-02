@@ -67,7 +67,7 @@ test.afterAll(() => page.context().close());
 test('Return to Log sits in Actions between Private and Archive, and asks first', async () => {
   await page.goto(`/products/${ids.Zkittlez}`);
   await expect(page.getByRole('heading', { level: 1, name: 'Zkittlez' })).toBeVisible();
-  await expect(actions().locator('.btn')).toHaveText(['Edit', 'Return to Log', 'Archive']);
+  await expect(actions().locator('.btn')).toHaveText(['Edit', 'Post', 'Return to Log', 'Archive']);
   await expect(actions().getByRole('button', { name: 'Return to Log' }).locator('svg')).toHaveCount(1);
   await actions().getByRole('button', { name: 'Return to Log' }).click();
   const sheet = page.getByRole('dialog', { name: 'Return “Zkittlez” to your Log?' });
@@ -95,7 +95,7 @@ test('it becomes a Log entry: its page opens, with what it keeps; it’s off the
   expect(details.slice(0, 3)).toEqual([['Type', 'Flower'], ['Country', '🇪🇸 Spain'], ['Amount', '7g']]); // 3.5g + 3.5g
   await expect(kept()).toContainText('Hidden for now. Add to leaderboard brings it all back.');
   expect(await pairs(kept())).toEqual([['Ratings', '4 · Overall 8.8'], ['Purchases', '2 · £60.00'], ['Notes', 'Yes'], ['Other photos', '1']]);
-  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Edit', 'Delete entry']);
+  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Post', 'Edit', 'Delete entry']);
   await shot(page, '49-returned-entry');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await shot(page, '49-returned-entry-kept');

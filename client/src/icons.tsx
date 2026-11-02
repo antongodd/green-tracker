@@ -213,3 +213,34 @@ export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5',
 export const FileIcon = icon('M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5Z M14 3.5V8h4', { stroke: 2 });
 export const FaceIdIcon = icon('M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8 M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8 M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16 M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16 M9 9v1.5 M15 9v1.5 M12 9v4h-1 M9.5 16c1.5 1 3.5 1 5 0', { stroke: 2 });
 export const DashIcon = icon('M3 6h6', { stroke: 1.8, viewBox: '0 0 12 12' });
+
+// Posts and the Feed (D77).
+/** The Feed tab: a stack of photo cards, solid when you're on it (the front card's sun and hills cut out). */
+export function FeedIcon(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
+      <path fill="currentColor" d="M7 3.5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-.3V9.6A3.6 3.6 0 0 0 15.1 6H5.2A2 2 0 0 1 7 3.5Z" />
+      <path fill="currentColor" fill-rule="evenodd" d="M5 7.5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2Z M7.3 12a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0Z M4.8 19.6l3.8-4.4 2.4 2.4 2-1.9 3.2 3.9Z" />
+    </svg>
+  );
+}
+export const FeedLineIcon = tabLine('M7 5.5A2 2 0 0 1 8.9 3.5H19a2 2 0 0 1 2 2v10.1a2 2 0 0 1-2 1.9 M5 7.5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2Z M3.5 18.5l4.5-4.5 3 3 2-2 4.5 4.5 M8.6 10.6a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4Z');
+const FLAME = 'M12 2.8c.5 3.2-1.4 4.9-3 6.6C7.4 11.1 6 13 6 15.6c0 3.3 2.7 5.9 6 5.9s6-2.6 6-5.9c0-2.4-1.1-4.3-2.5-5.6.1 1.5-.4 2.7-1.5 3.4.2-3.8-.9-8-2-10.6Z';
+/** A fire (D77): an outline until you give one. */
+export const FireLineIcon = icon(FLAME, { stroke: 1.8 });
+export function FireIcon(p: P) {
+  const id = `fg${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  return (
+    <svg viewBox="0 0 24 24" class={p.class} {...a11y(p.label)}>
+      <defs>
+        <linearGradient id={id} x1="12" y1="3" x2="12" y2="21.5" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffe08a" />
+          <stop offset="1" stop-color="#ff6a2b" />
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${id})`} d={FLAME} />
+    </svg>
+  );
+}
+export const CommentIcon = icon('M4 5h16a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 17h-10l-4.5 3.5V17H4a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 4 5Z', { stroke: 1.8 });
+export const PostIcon = icon('M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z M4.5 17l4.5-4.5 3 3 2-2 5.5 5.5 M9 3.5h6', { stroke: 2 });

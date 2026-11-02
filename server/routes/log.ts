@@ -161,6 +161,8 @@ log.post('/:id/promote', async (c) => {
     : await createProductWrites(db, userId, input, { adoptFromLogEntry: entryId });
   await db.batch([
     ...saved.statements,
+    // D77: the entry's posts move to the product, so their cards start showing its score.
+    db.prepare('UPDATE posts SET product_id = ?1, log_entry_id = NULL WHERE log_entry_id = ?2 AND user_id = ?3').bind(saved.id, entryId, userId),
     db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(entryId, userId),
   ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, saved.unusedKeys);

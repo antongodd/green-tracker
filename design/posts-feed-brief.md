@@ -1,5 +1,9 @@
 # Brief: Posts, comments and a Feed
 
+**Built** as D77 (0.66.0, on dev 2026-11-02). Anton's picks at the mockup stage: open points 1–3 and 5 as recommended;
+for 4, the round + button (like the Leaderboard and Log) rather than a button in the header. SPEC.md D77 and §4 are
+what was built; this brief is kept as the record of the request.
+
 Written 2026-11-02 with Anton, from his friends' feedback. Hand this to a new conversation to build it.
 Read `CLAUDE.md`, `README.md` and `SPEC.md` first, as always. This brief adds to them and doesn't replace any of
 their rules.
