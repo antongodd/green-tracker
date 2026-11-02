@@ -79,7 +79,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: This machine's share of the ${{ needs.plan.outputs.mode }} browser tests
-        run: node scripts/e2e-shard.mjs ${{ matrix.shard }} 6 ${{ needs.plan.outputs.mode }}
+        run: node scripts/e2e-shard.mjs $(( ${{ strategy.job-index }} + 1 )) ${{ strategy.job-total }} ${{ needs.plan.outputs.mode }}
       - uses: actions/upload-artifact@v5
         if: failure()
         with:

@@ -4,6 +4,7 @@
 //   full: a pull request into main (going live), a run by hand, or anything unexpected
 // test/domain/ci.test.ts checks the decisions.
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 
 /** Files that never reach the app: notes, the spec, design notes. */
 export const isNotes = (file) => file.endsWith('.md') || file.startsWith('design/');
@@ -28,7 +29,7 @@ export function plan({ event, baseRef, ref }, facts) {
   return ['full', `${event}: every browser test`];
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
   const [mode, why] = plan(
     { event: process.env.EVENT, baseRef: process.env.BASE_REF, ref: process.env.REF },

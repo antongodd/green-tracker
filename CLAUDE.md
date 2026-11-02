@@ -145,7 +145,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - No `pgrep -f` in loops. Run long test runs in the background.
 - On CI each browser machine may run 25 minutes (it takes about 4). A run "cancelled" at the limit with no test failed
   means the timings are stale or a file outgrew it, not a flaky test: refresh `timings.json`, or add a machine (`ci.yml`
-  `shard` and the `6` after it). Run one machine's share locally with `node scripts/e2e-shard.mjs <n> 6 [core|full]`
+  `shard`). Run one machine's share locally with `node scripts/e2e-shard.mjs <n> 6 [core|full]`
   (`DRY=1` only shows the split). A file in `mode: 'parallel'` is shared test by test; any other stays whole.
 - `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies

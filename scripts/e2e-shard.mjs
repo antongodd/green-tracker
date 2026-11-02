@@ -1,4 +1,4 @@
-// Runs one CI machine's share of the browser tests (D75): node scripts/e2e-shard.mjs <n> <of> [core|full]
+// Runs one CI machine's share of the browser tests (D75): node scripts/e2e-shard.mjs <n> <of> [core|full] (n from 1)
 // The shares are balanced by time, from test/e2e/timings.json (seconds per test, measured), instead of Playwright's
 // --shard, which splits by count and put every slow Look check on one machine. A file whose tests share state (most
 // sign up once in beforeAll and build on each other) stays whole on one machine; a file in `mode: 'parallel'` is
@@ -7,8 +7,9 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const testDir = join(root, 'test/e2e');
 const DEFAULT = 15;
 
@@ -18,7 +19,8 @@ export function coreFiles() {
   return [...script.matchAll(/test\/e2e\/(\S+\.spec\.ts)/g)].map((m) => m[1]);
 }
 
-/** Every test Playwright would run, as { file, title } (file relative to test/e2e). */
+/** Every test Playwright would run, as { file, title }: file relative to test/e2e, title with any describe names
+ * before it, joined by ' › ' as --test-list and timings.json expect. */
 function listTests(files) {
   const out = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', ...files.map((f) => `test/e2e/${f}`)], {
     cwd: root,
@@ -27,11 +29,11 @@ function listTests(files) {
     stdio: ['ignore', 'pipe', 'inherit'],
   });
   const tests = [];
-  const walk = (suite) => {
-    for (const spec of suite.specs ?? []) tests.push({ file: spec.file, title: spec.title });
-    for (const child of suite.suites ?? []) walk(child);
+  const walk = (suite, path) => {
+    for (const spec of suite.specs ?? []) tests.push({ file: spec.file, title: [...path, spec.title].join(' › ') });
+    for (const child of suite.suites ?? []) walk(child, [...path, child.title]);
   };
-  for (const suite of JSON.parse(out).suites) walk(suite);
+  for (const file of JSON.parse(out).suites) walk(file, []);
   return tests;
 }
 
@@ -58,16 +60,21 @@ export function split(gs, of) {
   return shares;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+/** A file that runs its tests separately, each on its own: `test.describe.configure({ mode: 'parallel' })` at its top. */
+export const isParallelSource = (source) => /^test\.describe\.configure\(\{\s*mode:\s*['"]parallel['"]/m.test(source);
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [n, of, mode = 'full'] = process.argv.slice(2);
   const files = mode === 'core' ? coreFiles() : [];
   const timings = JSON.parse(readFileSync(join(testDir, 'timings.json'), 'utf8'));
   const parallel = new Map();
   const isParallel = (file) => {
-    if (!parallel.has(file)) parallel.set(file, /mode: 'parallel'/.test(readFileSync(join(testDir, file), 'utf8')));
+    if (!parallel.has(file)) parallel.set(file, isParallelSource(readFileSync(join(testDir, file), 'utf8')));
     return parallel.get(file);
   };
-  const shares = split(groups(listTests(files), timings, isParallel), Number(of));
+  const tests = listTests(files);
+  if (!tests.length) throw new Error('No browser tests found: nothing would be checked.');
+  const shares = split(groups(tests, timings, isParallel), Number(of));
   shares.forEach((s, i) => console.log(`machine ${i + 1}: about ${Math.round(s.seconds)}s, ${s.keys.length} groups`));
   const mine = shares[Number(n) - 1];
   if (!mine.keys.length) {

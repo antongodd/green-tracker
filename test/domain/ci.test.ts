@@ -60,6 +60,13 @@ describe('sharing the browser tests between machines (D75)', () => {
     expect(shard.split([...gs].reverse(), 3)).toEqual(shares);
   });
 
+  it("a file is split test by test only when its top says mode: 'parallel'", () => {
+    expect(shard.isParallelSource("import x from 'y';\ntest.describe.configure({ mode: 'parallel' });")).toBe(true);
+    expect(shard.isParallelSource('test.describe.configure({ mode: "parallel" });')).toBe(true);
+    expect(shard.isParallelSource("// one account per worker, mode: 'parallel'\ntest('a', () => {});")).toBe(false);
+    expect(shard.isParallelSource("test.describe('x', () => {\n  test.describe.configure({ mode: 'parallel' });\n});")).toBe(false);
+  });
+
   it('the core set names spec files that exist', () => {
     const core: string[] = shard.coreFiles();
     expect(core.length).toBeGreaterThan(5);
