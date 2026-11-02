@@ -1,7 +1,8 @@
 # Working on Green Tracker
 
-Read this whole file before doing anything else. **Keep it up to date:** when the way we work changes (a new
-rule from Anton, a new lesson, a new site or setting), update this file in the same pull request.
+Read this whole file before doing anything else, then follow the `start` recipe (see "The recipes"). **Keep it up
+to date:** when the way we work changes (a new rule from Anton, a new lesson, a new site or setting), update this
+file (and the recipes it touches) in the same pull request.
 
 ## Who and what
 
@@ -62,6 +63,34 @@ only if what he wants is unclear.
   suggest what's next.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
+
+### The recipes (skills, `.claude/skills/`)
+
+Step-by-step routines for the jobs above, so nothing is forgotten. Anton doesn't type commands: **choose the recipe
+yourself** from what he says (he can type `/go-live` and so on if he likes). This file stays the rule book; a recipe
+is the order to do things in. When a rule changes, update the recipes it touches in the same pull request. Anton's
+own one-page guide is `WORKFLOW.md`: keep it in step too.
+
+| Recipe | When |
+|---|---|
+| `start` | The start of every conversation, before anything else |
+| `small-change` | A small change (and notes-only or tests-only ones), all the way to live |
+| `big-change` | A big change: questions, plan, mockups, "go ahead", GT Dev, "go live" |
+| `go-live` | Anton says "go live", and the end of every small change |
+| `undo-live` | Something on live is broken |
+| `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
+
+### Two conversations at once
+
+Anton may run more than one conversation at a time. Each works on its own branch; GitHub is the only place you can
+see the others' work (open pull requests, recently pushed `claude/*` branches, CI runs).
+- **At the start** (`start`) and **again before opening a pull request**, fetch `dev` and look for the others' work.
+  Tell Anton if it overlaps with his request (the same screen or files); suggest doing one after the other if so.
+- **Whoever merges second sorts out clashes:** rebase on the latest `dev`; take the next free version number and
+  decision number; keep both sets of notes (to-do list, Done, changelog: theirs stays, yours goes on top).
+- **Going live takes everything on `dev`.** Never open a release while a big change on `dev` is still waiting for
+  Anton's "go live": tell him your change is on dev and waiting with it, and ask. One release pull request at a time.
+- Never close, merge or push to another conversation's branch or pull request.
 
 ### Branches and merging
 
@@ -245,6 +274,7 @@ section, so it must always be current.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Recipes for each kind of change (`.claude/skills/`), two conversations at once, and Anton's guide `WORKFLOW.md` | (notes) | | 2026-11-02 | notes only |
 | Looks and colour sets without a database change (nothing on screen changes) | 0.65.0 | D76 | 2026-11-02 | 2026-11-02 |
 | A faster way of working: Claude merges and releases small changes itself; a 2-minute quick check, a 5-minute full check on six machines shared by time | (0.64.3) | D75 | 2026-11-02 | 2026-11-02 |
 | Their look on their pages: a friend's board, product and brand pages in their Look, top and colours, fading in | 0.64.0 | D74 | 2026-10-31 | 2026-11-01 |
