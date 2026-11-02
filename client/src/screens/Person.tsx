@@ -24,7 +24,10 @@ import { MoreIcon } from '../icons';
 import { fetchPreview } from '../privacy';
 import { EmptyCard } from '../components/EmptyCard';
 import * as api from '../people';
-import { cameFrom, linkTo, openRow } from '../router';
+import { cameFrom, linkTo, openRow, replaceHistory } from '../router';
+import { useSession } from '../session';
+import { postsBy } from '../posts';
+import { PostList, usePostList } from './Feed';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadOthersView, saveOthersView } from '../viewState';
 import { useTheirLook } from '../theirLook';
@@ -134,7 +137,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
               <button class="btn primary" style={{ width: 'auto', minWidth: '160px' }} disabled={busy} onClick={() => run(() => api.follow(u))}>
                 Follow
               </button>
-              <p class="lead">Follow to see their leaderboard.</p>
+              <p class="lead">Follow to see their leaderboard and posts.</p>
             </>
           )}
           {error && (
@@ -144,7 +147,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
           )}
         </div>
       </main>
-      <TabBar active="people" />
+      <TabBar active="feed" />
       {menu === 'menu' && <Sheet title={`@${u}`} options={[{ label: 'Block', danger: true, onSelect: () => setMenu('confirm') }]} onCancel={() => setMenu(null)} />}
       {menu === 'confirm' && (
         <Sheet
@@ -158,11 +161,59 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
   );
 }
 
+/** D77: their posts, newest first, 20 at a time, in the same card as the Feed (in their look on their page). */
+function TheirPosts(p: { username: string; mine: boolean }) {
+  const list = usePostList((before) => postsBy(p.username, before), { key: p.username });
+  if (list.error && !list.page)
+    return (
+      <div class="empty">
+        <h2>Couldn’t load the posts</h2>
+        <p>{list.error}</p>
+      </div>
+    );
+  if (!list.page) return <Skeleton kind="posts" />;
+  if (!list.page.posts.length)
+    return (
+      <EmptyCard art="posts" title="No posts yet">
+        <p>{p.mine ? 'Your posts show here, for you and your followers.' : `@${p.username} hasn’t posted anything yet.`}</p>
+      </EmptyCard>
+    );
+  return <PostList list={list} returnKey={`posts:${p.username}`} />;
+}
+
+/** D77: Leaderboard | Posts, at the top of a friend's page and your own. */
+function PageTabs(p: { tab: 'board' | 'posts'; onTab: (t: 'board' | 'posts') => void }) {
+  return (
+    <div class="seg two page-tabs" role="tablist" aria-label="Their page">
+      {(
+        [
+          ['board', 'Leaderboard'],
+          ['posts', 'Posts'],
+        ] as const
+      ).map(([key, label]) => (
+        <button key={key} type="button" role="tab" aria-selected={p.tab === key} class={p.tab === key ? 'on' : ''} onClick={() => p.onTab(key)}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Someone else's page: their read-only Leaderboard if you follow them; otherwise just a Follow card.
  * `preview` (D45): your own board exactly as your followers get it now, from the same server code.
+ * D77: with Leaderboard | Posts at the top; your own page (/u/<you>) shows both too, the board as
+ * your followers see it.
  */
-export function Person(p: { username: string; preview?: boolean }) {
+export function Person(p: { username: string; preview?: boolean; tab?: 'board' | 'posts' }) {
+  const { me } = useSession();
+  const mine = !p.preview && me.user?.username.toLowerCase() === p.username.toLowerCase();
+  const own = p.preview || mine;
+  const [tab, setTab] = useState<'board' | 'posts'>(p.tab ?? 'board');
+  const switchTab = (t: 'board' | 'posts') => {
+    setTab(t);
+    replaceHistory(`/u/${enc(p.username)}${t === 'posts' ? '/posts' : ''}`);
+  };
   const [person, setPerson] = useState<PersonCard | null>(null);
   const [products, setProducts] = useState<SharedProduct[] | null>(null);
   const [view, setView] = useState<ViewState>(() => loadOthersView());
@@ -177,8 +228,8 @@ export function Person(p: { username: string; preview?: boolean }) {
       setView(loadOthersView());
       setProducts(board.products);
     };
-    if (p.preview) {
-      setPerson({ username: p.username, relation: 'following' });
+    if (own) {
+      setPerson({ username: me.user?.username ?? p.username, relation: 'following', ...(me.user?.photo ? { photo: me.user.photo.version } : {}) });
       fetchPreview()
         .then(show)
         .catch((e) => setError({ missing: false, text: errorText(e) }));
@@ -210,11 +261,11 @@ export function Person(p: { username: string; preview?: boolean }) {
             <p>{error.missing ? `There’s no one called @${p.username}.` : error.text}</p>
           </div>
         </main>
-        <TabBar active="people" />
+        <TabBar active="feed" />
       </>
     );
   }
-  if (!person) return <Theirs username={p.username} preview={p.preview}><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="people" /></Theirs>;
+  if (!person) return <Theirs username={p.username} preview={own}><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="feed" /></Theirs>;
   if (person.relation !== 'following') return <Stranger person={person} onChange={setPerson} />;
 
   const rows = products ? rankProducts(products, view) : [];
@@ -224,16 +275,21 @@ export function Person(p: { username: string; preview?: boolean }) {
     setView(saveOthersView(next));
     window.scrollTo(0, 0);
   };
-  const back = p.preview ? '/more/privacy' : '/people';
-  const tab = p.preview ? 'more' : 'people';
+  const back = p.preview ? '/more/privacy' : mine ? '/people' : '/feed';
+  const tabBar = p.preview ? 'more' : 'feed';
+  const showBoard = p.preview || tab === 'board';
   const typeLabel = view.filter === 'all' ? null : productType(view.filter).label;
 
   // "@username" in the header is the signal you're viewing someone else's tracker (design §8).
   return (
-    <Theirs username={p.username} preview={p.preview}>
+    <Theirs username={p.username} preview={own}>
       <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to={back} />} />
       <main class="screen">
-        {p.preview && <PreviewNote />}
+        {!p.preview && <PageTabs tab={tab} onTab={switchTab} />}
+        {!showBoard && <TheirPosts username={person.username} mine={mine} />}
+        {showBoard && (
+          <>
+        {own && <PreviewNote />}
         {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
@@ -273,12 +329,14 @@ export function Person(p: { username: string; preview?: boolean }) {
         {rows.length > 0 && (
           <div class="rows">
             {rows.map((r) => (
-              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy={view.rankBy} preview={p.preview} />
+              <SharedRow key={r.product.id} username={person.username} product={r.product} rank={r.rank} band={r.band} first={r.first} value={r.value} rankBy={view.rankBy} preview={own} />
             ))}
           </div>
         )}
+          </>
+        )}
       </main>
-      <TabBar active={tab} />
+      <TabBar active={tabBar} />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} owner={p.preview ? undefined : person.username} />}
     </Theirs>
   );
@@ -323,7 +381,7 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   }, [p.username, p.id, p.preview]);
 
   const backTo = boardPath(p.username, p.preview);
-  const tab = p.preview ? 'more' : 'people';
+  const tab = p.preview ? 'more' : 'feed';
   if (!product) {
     return (
       <Theirs username={p.username} preview={p.preview}>
@@ -409,7 +467,7 @@ export function TheirBrandPage(p: { username: string; name: string; preview?: bo
   const rows = rankProducts(named, { filter: 'all', rankBy: 'overall' });
   const tiles = leaderboardTiles(named);
   const backTo = boardPath(p.username, p.preview);
-  const tab = p.preview ? 'more' : 'people';
+  const tab = p.preview ? 'more' : 'feed';
   return (
     <Theirs username={p.username} preview={p.preview}>
       <Header title={name} leaf={false} left={<BackButton to={backTo} />} />

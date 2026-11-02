@@ -19,7 +19,7 @@ import { draftsFromRecords } from '../components/EditorPhotos';
 import { shownFromRecord } from '../components/PhotoGrid';
 import { PhotoViewer } from '../components/PhotoViewer';
 import { Skeleton } from '../components/Skeleton';
-import { BoardLineIcon, PencilIcon, ReturnIcon, TrashIcon, TypeMark } from '../icons';
+import { BoardLineIcon, PencilIcon, PostIcon, ReturnIcon, TrashIcon, TypeMark } from '../icons';
 import { cachedEntry, deleteEntry, fetchEntry } from '../logEntries';
 import { useOnline } from '../online';
 import { play } from '../sounds';
@@ -194,6 +194,11 @@ export function LogEntryPage(p: { id: string }) {
             <BoardLineIcon />
             Add to leaderboard
           </button>
+          {/* D77: post it to your followers: they see its name and type only. */}
+          <a class="btn secondary" href={`/feed/new/log/${encodeURIComponent(entry.id)}`} onClick={linkTo(`/feed/new/log/${encodeURIComponent(entry.id)}`)}>
+            <PostIcon />
+            Post
+          </a>
           <a class="btn secondary" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>
             <PencilIcon />
             Edit

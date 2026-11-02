@@ -54,7 +54,7 @@ data.post('/restore', async (c) => {
   const db = c.env.DB;
   const v = validateRestore(await jsonBody(c));
   if (!v.ok) fail(400, 'invalid_restore', v.message);
-  const { products, logEntries, profilePhoto, privacy, appearance, money } = v.value;
+  const { products, logEntries, profilePhoto, privacy, appearance, money, posts } = v.value;
 
   // Every photo must be a fresh upload of yours that includes its original. Which are
   // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
@@ -68,6 +68,16 @@ data.post('/restore', async (c) => {
     if (results.length !== uploadIds.length) fail(400, 'photo_upload_missing', 'Some photos didn’t finish uploading. Please try the restore again.');
     for (const r of results) if (r.cutout === 1) cutouts.add(r.id);
     if (profilePhoto && cutouts.has(profilePhoto.upload!)) fail(400, 'invalid_restore', 'The profile photo in the file couldn’t be read.');
+  }
+  // D77: a post's photo is a cropped image and thumbnail (no original), uploaded like any other.
+  const postUploads = (posts ?? []).flatMap((p) => p.uploads);
+  if (postUploads.length) {
+    const { results } = await db
+      .prepare('SELECT id, cutout FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))')
+      .bind(userId, JSON.stringify(postUploads))
+      .all<{ id: string; cutout: number }>();
+    if (results.length !== postUploads.length) fail(400, 'photo_upload_missing', 'Some photos didn’t finish uploading. Please try the restore again.');
+    for (const r of results) if (r.cutout === 1) cutouts.add(r.id);
   }
 
   const now = Date.now();
@@ -109,9 +119,12 @@ data.post('/restore', async (c) => {
     return id;
   };
 
-  for (const p of products) addProduct(p, p.archived, 0);
+  const productIds = products.map((p) => addProduct(p, p.archived, 0));
+  const entryIds: string[] = [];
+  const keptIds: (string | null)[] = [];
   for (const e of logEntries) {
     const id = randomId();
+    entryIds.push(id);
     entryRows.push({
       id,
       name: e.name,
@@ -126,6 +139,7 @@ data.post('/restore', async (c) => {
       // D50: the product a returned entry keeps; its photos come after the entry's.
       kept: e.kept ? addProduct(e.kept, false, 1) : null,
     });
+    keptIds.push((entryRows[entryRows.length - 1] as { kept: string | null }).kept);
     for (const ph of e.photos) photoRows.push({ id: randomId(), p: null, e: id, pos: 0, set: ph.upload, ...crop(ph), cut: cutouts.has(ph.upload!) ? 1 : 0 });
   }
 
@@ -153,6 +167,34 @@ data.post('/restore', async (c) => {
     const oldProfile = await db.prepare('SELECT original_set, image_set FROM profile_photos WHERE user_id = ?1').bind(userId).first<{ original_set: string; image_set: string }>();
     if (oldProfile) old.push(oldProfile);
   }
+
+  // D77: the posts being replaced, and their photo files.
+  if (posts) {
+    const { results: oldPosts } = await db
+      .prepare('SELECT image_set FROM posts WHERE user_id = ?1 UNION SELECT image_set FROM post_photos WHERE user_id = ?1')
+      .bind(userId)
+      .all<{ image_set: string }>();
+    for (const o of oldPosts) old.push({ original_set: o.image_set, image_set: o.image_set });
+  }
+  const postRows = (posts ?? []).map((p) => {
+    const a = p.about;
+    return {
+      id: randomId(),
+      p: a && 'product' in a ? productIds[a.product] : a && 'keptBy' in a ? keptIds[a.keptBy] : null,
+      e: a && 'logEntry' in a ? entryIds[a.logEntry] : null,
+      name: p.aboutName?.name ?? null,
+      type: p.aboutName?.productType ?? null,
+      typeOther: p.aboutName?.productTypeOther ?? null,
+      strain: p.aboutName?.strainType ?? null,
+      caption: p.caption,
+      set: p.uploads[0]!,
+      cut: cutouts.has(p.uploads[0]!) ? 1 : 0,
+      // D78: every photo, in order.
+      photos: p.uploads.map((u) => ({ set: u, cut: cutouts.has(u) ? 1 : 0 })),
+      created: p.createdAt,
+      edited: p.editedAt,
+    };
+  });
 
   const statements: D1PreparedStatement[] = [
     db.prepare('DELETE FROM photos WHERE user_id = ?1').bind(userId),
@@ -205,6 +247,25 @@ data.post('/restore', async (c) => {
         .bind(userId, chunk, now),
     );
   }
+  if (posts) statements.push(db.prepare('DELETE FROM posts WHERE user_id = ?1').bind(userId)); // their comments and fires cascade
+  for (const chunk of chunks(postRows)) {
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO posts (id, user_id, product_id, log_entry_id, about_name, about_type, about_type_other, about_strain, caption, image_set, cutout, created_at, edited_at)
+           SELECT ${j('id')}, ?1, ${j('p')}, ${j('e')}, ${j('name')}, ${j('type')}, ${j('typeOther')}, ${j('strain')}, ${j('caption')}, ${j('set')}, ${j('cut')}, ${j('created')}, ${j('edited')} FROM json_each(?2)`,
+        )
+        .bind(userId, chunk),
+    );
+  }
+  const postPhotoRows = postRows.flatMap((r) => r.photos.map((ph, position) => ({ post: r.id, pos: position, set: ph.set, cut: ph.cut })));
+  for (const chunk of chunks(postPhotoRows)) {
+    statements.push(
+      db
+        .prepare(`INSERT INTO post_photos (post_id, user_id, position, image_set, cutout) SELECT ${j('post')}, ?1, ${j('pos')}, ${j('set')}, ${j('cut')} FROM json_each(?2)`)
+        .bind(userId, chunk),
+    );
+  }
   if (profilePhoto !== undefined) statements.push(db.prepare('DELETE FROM profile_photos WHERE user_id = ?1').bind(userId));
   if (profilePhoto) {
     const pc = profilePhoto.crop;
@@ -220,11 +281,12 @@ data.post('/restore', async (c) => {
   if (appearance) statements.push(saveAppearanceStatement(db, userId, appearance));
   // D66: and your main currency (a file from before 0.56.0 has none).
   if (money) statements.push(saveMainCurrencyStatement(db, userId, money.currency));
-  if (uploadIds.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(uploadIds)));
+  const allUploads = [...uploadIds, ...postUploads];
+  if (allUploads.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(allUploads)));
 
   await db.batch(statements);
   deleteLater(c.executionCtx, c.env.PHOTOS, old.flatMap((o) => [...setKeys(userId, o.original_set), ...(o.image_set !== o.original_set ? imageKeys(userId, o.image_set) : [])]));
-  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed' });
+  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed', posts: posts ? postRows.length : 'kept' });
 });
 
 // Delete account --------------------------------------------------------------
@@ -245,7 +307,7 @@ data.post('/delete/options', async (c) => {
 /**
  * Step 2: with the passkey check and the typed username, delete everything:
  * the user row cascades to products, ratings, purchases, log entries, privacy, appearance and money settings, photos, the profile photo,
- * uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
+ * posts and every comment and fire you gave (D77), uploads, sessions, passkeys, recovery codes, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */
 data.post('/delete', async (c) => {

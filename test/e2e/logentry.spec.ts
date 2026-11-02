@@ -79,8 +79,8 @@ test('tapping an entry opens its page: its photo on top, the tag and name, Detai
   expect(rows.slice(0, 3)).toEqual([['Type', 'Flower'], ['Country', '🇺🇸 United States'], ['Amount', '3.5g']]);
   expect(rows[3]![0]).toBe('Logged');
   expect(rows[3]![1]).toMatch(LOGGED);
-  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Edit', 'Delete entry']);
-  await expect(actions().locator('.btn svg')).toHaveCount(3);
+  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Post', 'Edit', 'Delete entry']);
+  await expect(actions().locator('.btn svg')).toHaveCount(4);
   await expect(page.getByText(/Rate it/)).toHaveCount(0); // no line under Add to leaderboard
   await expect(page.locator('.hdr').getByRole('link', { name: 'Edit' })).toBeVisible();
   await expect(page.locator('nav').getByRole('link', { name: 'Log', exact: true })).toHaveAttribute('aria-current', 'page');

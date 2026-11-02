@@ -1879,3 +1879,135 @@ html[data-tone="light"] :is(.li-ic.violet, .pv-cap, .pv-cap a, .pv-note a) { col
 html[data-tone="light"] .li-ic.gem { color: #7a3fc0; }
 /* No drifting extras on the light looks: their lights alone. */
 html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::after { content: none; }
+
+/* ---------- Posts, comments and the Feed (D77, 0.66.0) ----------
+   A post is a glass card: who and when, its own photo edge to edge, the card for what it's about (a
+   Leaderboard row in the poster's colours, a Log entry, or a plain one), the fire and comment counts,
+   the caption and the first two comments. The Feed shows in your look; a friend's Posts in theirs. */
+.hdr .people-btn { position: relative; }
+.hdr .people-btn svg { width: 24px; height: 24px; }
+.hdr .people-btn .badge { top: 4px; left: auto; right: 2px; }
+/* The Feed tab's dot: something new (only when there are no requests to show a number for). */
+.badge.dot { min-width: 0; width: 12px; height: 12px; padding: 0; top: 5px; left: calc(50% + 7px); background: var(--accent-bright); }
+.posts { display: grid; gap: 14px; max-width: 720px; margin: 0 auto; padding: 12px 12px 0; }
+.posts-end { min-height: 1px; }
+.post { background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 18px; overflow: hidden; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.post-who { display: flex; align-items: center; gap: 4px; padding: 8px 4px 8px 12px; }
+.post-who .who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; min-height: 44px; }
+.post-who .u { min-width: 0; display: grid; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-who time { font-weight: 500; }
+.post-photo { position: relative; display: block; background: var(--surface-1); }
+/* D78: the photos side by side, one at a time, snapping; each the first one's shape (--ratio, 4:5 to 1.91:1). */
+.post-photo .track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+.post-photo .track::-webkit-scrollbar { display: none; }
+.post-photo .track .slide { display: block; flex: 0 0 100%; width: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.post-photo .track img { display: block; width: 100%; aspect-ratio: var(--ratio, 1); object-fit: cover; }
+/* A cut-out (D26) shows whole, without a background, on a soft glow like a product's photo. */
+.post-photo.cut, .post-photo .track img.cut { background: radial-gradient(70% 60% at 50% 45%, var(--accent-soft), transparent 70%); }
+.post-photo .track img.cut { object-fit: contain; }
+.photo-count { position: absolute; top: 10px; right: 10px; padding: 3px 9px; border-radius: 999px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; pointer-events: none; }
+.photo-dots { display: flex; justify-content: center; gap: 6px; padding: 10px 0 0; }
+.photo-dots span { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--text) 30%, transparent); }
+.photo-dots span.on { background: var(--accent-bright); }
+.row.about .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.row.about .thumb.cut img { object-fit: contain; }
+.compose-photos { display: grid; gap: 8px; }
+.compose-photos .add-cell { font: inherit; }
+.row.about { grid-template-columns: 54px minmax(0, 1fr) minmax(56px, max-content); margin: 12px 12px 0; min-height: 72px; padding: 8px 12px 8px 8px; }
+.row.about.log, .row.about.plain { grid-template-columns: 54px minmax(0, 1fr) max-content; }
+.row.about.log { border-style: dashed; border-color: var(--hairline-strong); }
+.row.about .thumb svg { width: 50%; height: 50%; }
+.row.about .ptype { color: var(--text-2); font-size: 13px; }
+.in-log { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal-bright); border: 1px solid color-mix(in srgb, var(--teal-bright) 45%, transparent); border-radius: 999px; padding: 0 8px; line-height: 20px; white-space: nowrap; }
+.post-acts { display: flex; align-items: center; gap: 2px; padding: 6px 8px 0; }
+.post-acts .act { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 8px; border: 0; border-radius: 12px; background: none; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; justify-content: center; }
+.post-acts .act svg { width: 24px; height: 24px; }
+.post-acts .act.count { min-width: 32px; padding: 0 10px 0 2px; margin-left: -6px; justify-content: flex-start; font-variant-numeric: tabular-nums; }
+.post-acts .act.count:disabled { opacity: 1; cursor: default; }
+.post-acts .fire.on { color: var(--star); }
+.post-acts .fire.on svg { filter: drop-shadow(0 0 6px rgba(255, 154, 61, 0.55)); }
+@media (prefers-reduced-motion: no-preference) {
+  .post-acts .fire.pop svg { animation: fire-pop 0.35s ease-out; }
+}
+@keyframes fire-pop { 40% { transform: scale(1.35); } }
+.post-caption { margin: 2px 14px 0; font-size: 15px; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
+.post-caption.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.post .more-text { margin: 0 14px; min-height: 36px; color: var(--text-2); font-weight: 700; }
+.post-cmts { display: grid; gap: 2px; padding: 6px 14px 14px; font-size: 14px; }
+.post-cmts p { margin: 0; overflow-wrap: anywhere; }
+.post-cmts b { font-weight: 700; }
+.post-cmts .all { color: var(--text-2); font-weight: 600; padding-top: 4px; min-height: 32px; display: inline-flex; align-items: center; text-decoration: none; }
+.post > :last-child:not(.post-cmts):not(.error) { margin-bottom: 14px; }
+.post-error { margin: 0 14px 14px; }
+/* A post's page: every comment, and the box above the keyboard. */
+.post-page .posts, .post-page > .post { margin: 12px; }
+.post-page .cmts { max-width: 720px; margin: 0 auto; padding: 4px 16px calc(var(--nav-h) + 72px); }
+.post-page .cmts .cap { margin: 10px 0 4px; }
+.post-page .cmts .none { margin: 6px 0; }
+.cmt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--divider); }
+.cmt:first-of-type { border-top: 0; }
+.cmt-av { flex: none; text-decoration: none; }
+.cmt-body { flex: 1; min-width: 0; }
+.cmt-body .u { color: var(--text); font-weight: 700; text-decoration: none; margin-right: 6px; }
+.cmt-body p { margin: 2px 0 0; font-size: 15px; overflow-wrap: anywhere; white-space: pre-line; }
+.cmt .more-btn { margin: -8px -8px 0 0; }
+.comment-box { position: fixed; z-index: 14; left: 0; right: 0; bottom: var(--nav-h); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-top: 1px solid var(--bar-line); }
+.comment-box input { flex: 1; min-width: 0; height: 42px; border-radius: 21px; border: 1px solid var(--hairline-strong); background: var(--surface-2); color: var(--text); padding: 0 14px; font-size: 16px; }
+.comment-box input::placeholder { color: var(--text-3); }
+.comment-box .send { width: auto; height: 42px; border-radius: 21px; padding: 0 16px; }
+.comment-box .count, .count { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.count.over { color: var(--danger); }
+.comment-box .error { flex-basis: 100%; margin: 0; }
+.firers { max-height: 50vh; overflow-y: auto; }
+.firers .who { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 16px; color: var(--text); text-decoration: none; border-top: 1px solid var(--hairline); }
+.firers .who:first-child { border-top: 0; }
+.firers p { margin: 12px 16px; }
+.caption-sheet { bottom: auto; top: calc(var(--safe-top) + 72px); }
+.caption-sheet .pad { padding: 14px; display: grid; gap: 10px; }
+.caption-sheet .lbl { font-weight: 700; }
+.caption-input { width: 100%; min-height: 110px; border-radius: 14px; border: 1px solid var(--hairline-strong); background: var(--surface-2); color: var(--text); padding: 12px 14px; font-size: 16px; line-height: 1.4; resize: vertical; }
+.caption-input::placeholder { color: var(--text-3); }
+/* Leaderboard | Posts (a friend's page and yours). */
+.seg.two { grid-template-columns: 1fr 1fr; }
+.page-tabs { max-width: 688px; margin: 12px auto 0; margin-inline: max(16px, calc(50% - 344px)); }
+.page-tabs + .posts, .page-tabs + .empty { margin-top: 0; }
+.stack-btns { display: grid; gap: 10px; width: 100%; max-width: 320px; }
+.me-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.me-name { color: var(--text); text-decoration: none; }
+.sk-post { display: grid; gap: 10px; padding: 0 0 14px; margin-bottom: 14px; }
+.sk-post .sk-row { background: none; border: 0; padding: 0; min-height: 52px; }
+.sk-photo { display: block; aspect-ratio: 1 / 1; border-radius: 16px; }
+.skel-posts { padding: 12px; }
+/* Writing a post. */
+.composer { padding-bottom: calc(var(--safe-bottom) + 120px); }
+.compose-photo { position: relative; border-radius: 16px; overflow: hidden; background: var(--surface-1); box-shadow: var(--photo-edge); }
+.compose-photo img { display: block; width: 100%; height: auto; max-height: 60vh; object-fit: contain; }
+.compose-photo.cut { background: radial-gradient(70% 60% at 50% 45%, var(--accent-soft), transparent 70%), var(--surface-1); }
+.compose-photo.pick-photo { display: grid; place-items: center; gap: 8px; width: 100%; aspect-ratio: 1 / 1; border: 1.5px dashed var(--hairline-strong); background: var(--btn-bg); color: var(--text-2); font-size: 15px; font-weight: 600; box-shadow: none; }
+.compose-photo.pick-photo svg { width: 36px; height: 36px; color: var(--accent-bright); }
+.compose-photo .up-note { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 13px; font-weight: 600; }
+.photo-pick { display: flex; gap: 8px; overflow-x: auto; padding: 2px; }
+.photo-pick button { flex: none; width: 56px; height: 56px; padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
+.photo-pick button.on { border-color: var(--accent-bright); }
+.photo-pick img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--btn-bg); border: 1px solid var(--hairline); color: var(--text); font-size: 14px; font-weight: 700; }
+.chip svg { width: 16px; height: 16px; color: var(--accent-bright); }
+.chip.dng { color: var(--danger); }
+.composer .row.about { margin: 0; }
+.compose-bar { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(var(--safe-bottom) + 12px); background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-top: 1px solid var(--bar-line); }
+.compose-bar .btn { max-width: 688px; margin: 0 auto; }
+.compose-bar .why { margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--text-2); }
+.pick-list .pick { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 12px; border: 0; border-top: 1px solid var(--divider); background: none; color: var(--text); text-align: left; }
+.pick-list .pick:first-child { border-top: 0; }
+.pick-list .pick .thumb { width: 44px; height: 44px; }
+.pick-list .pick img { width: 100%; height: 100%; object-fit: cover; }
+.pick-list .mid b { font-weight: 700; }
+.pick-list .sc { font-size: 15px; font-weight: 700; color: var(--text-2); }
+.lock-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--warning); }
+.lock-tag svg { width: 13px; height: 13px; }
+/* The light looks (D72). */
+html[data-tone="light"] .in-log { color: #0b6d6d; border-color: rgba(11, 109, 109, 0.4); }
+html[data-tone="light"] .post-acts .fire.on { color: #b5540a; }
+html[data-tone="light"] .lock-tag { color: #8a5600; }
+html[data-tone="light"] .post-photo, html[data-tone="light"] .compose-photo { background: color-mix(in srgb, var(--text) 6%, transparent); }

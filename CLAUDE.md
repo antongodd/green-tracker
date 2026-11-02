@@ -1,13 +1,14 @@
 # Working on Green Tracker
 
-Read this whole file before doing anything else. **Keep it up to date:** when the way we work changes (a new
-rule from Anton, a new lesson, a new site or setting), update this file in the same pull request.
+Read this whole file before doing anything else, then follow the `start` recipe (see "The recipes"). **Keep it up
+to date:** when the way we work changes (a new rule from Anton, a new lesson, a new site or setting), update this
+file (and the recipes it touches) in the same pull request.
 
 ## Who and what
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D76 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D78 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -63,6 +64,35 @@ only if what he wants is unclear.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
 
+### The recipes (skills, `.claude/skills/`)
+
+Step-by-step routines for the jobs above, so nothing is forgotten. Anton doesn't type commands: **choose the recipe
+yourself** from what he says (he can type `/go-live` and so on if he likes). This file stays the rule book; a recipe
+is the order to do things in. When a rule changes, update the recipes it touches in the same pull request. Anton's
+own one-page guide is `WORKFLOW.md`: keep it in step too.
+
+| Recipe | When |
+|---|---|
+| `start` | The start of every conversation, before anything else |
+| `small-change` | A small change (and notes-only or tests-only ones), all the way to live |
+| `big-change` | A big change: questions, plan, mockups, "go ahead", GT Dev, "go live" |
+| `go-live` | Anton says "go live", and the end of every small change |
+| `undo-live` | Something on live is broken |
+| `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
+
+### Two conversations at once
+
+Anton may run more than one conversation at a time. Each works on its own branch; GitHub is the only place you can
+see the others' work (open pull requests, recently pushed `claude/*` branches, CI runs).
+- **At the start** (`start`) and **again before opening a pull request**, fetch `dev` and look for the others' work.
+  Tell Anton if it overlaps with his request (the same screen or files); suggest doing one after the other if so.
+- **Whoever merges second sorts out clashes:** rebase on the latest `dev`; take the next free version number and
+  decision number; keep both sets of notes (to-do list, Done, changelog: theirs stays, yours goes on top).
+- **Going live takes everything on `dev`.** Never open a release while a big change on `dev` is still waiting for
+  Anton's "go live": tell him your change is on dev and waiting with it, and ask. One release pull request at a time.
+- Never close, merge or push to another conversation's branch or pull request. Old open pull requests (#88, #93, #96)
+  aren't yours to handle either (Anton): leave them, and don't ask about them.
+
 ### Branches and merging
 
 - Work on the branch the session gives you, started from the latest `dev`. **Open pull requests into `dev`**, never
@@ -102,7 +132,7 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D77) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D79) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -126,7 +156,9 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D76.
+- Reopen any decision D1–D78.
+- Loosen the posts rule (D77, `visiblePostSql` / `actorShownSql` in `server/routes/posts.ts`): the owner and approved
+  followers only, checked in SQL on every request.
 
 ## Testing notes
 
@@ -219,6 +251,17 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   (`setOwnLook`, `borrowLook`), never straight to `html[data-look]`. Record the looks a page shows with a
   MutationObserver (`theirlook.spec.ts` `recordLooks`); a fade shows as `+fade` (`html.vt-look`). To change screen
   without a reload, wait for `.tabs` first (`theirlook.spec.ts` `go`): the router listens only after the first render.
+- Posts (D77): the rule is `visiblePostSql` (the owner, or `canView`) and, for comments and fires, `actorShownSql` (the
+  author can still see the post; no block with the viewer); any new query listing posts, comments or fires uses them in
+  SQL. A post in a test: upload a set (`cropped` + `thumb`, an original is optional) and `POST /api/posts` with
+  `{ caption, about: { product } | { logEntry } | null, photo: { upload } | { fromPhotoId } }`; a second account follows
+  with `POST /api/people/u/<them>/follow` and `POST /api/people/requests/<you>/approve` (`posts.spec.ts` `call`,
+  `upload`). The Feed's first page marks it seen (`feedNew` on `/api/auth/me`). People has no tab since D77: reach it
+  with the Feed tab, then the **People** button (its name carries the requests: "People, 1 follow request"); the
+  requests number is on the Feed tab, and a `.badge.dot` when there are none and something's new. Posting is limited
+  to 30 an hour per account, so keep a file's posts per account under that. D78: `photos: [...]` (1–10) in place of
+  `photo`; a post's `n`th photo is `postPhotoUrl(post, variant, n)`; in a list each photo is its own "Open the post
+  (photo i of n)" link.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -231,23 +274,25 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.64.3 (2026-11-02): everything up to their look on their pages (D74), and the faster way of working (D75).
-- **Dev:** 0.65.0: live plus looks and colour sets without a database change (D76).
+- **Live:** 0.65.0 (2026-11-02): everything up to looks and colour sets without a database change (D76).
+- **Dev:** 0.67.0: live plus posts, comments and a Feed (D77), with several photos a post (D78).
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Looks and colour sets without a database change** — **on dev** (0.65.0, D76, 2026-11-02): a new Look or colour
-   set no longer needs a database change. Nothing changes on screen, so there's nothing to try on GT Dev.
-   Next: Anton says "go live".
-2. **Posts, comments and a Feed** (Anton's friends' idea, 2026-11-02; a big change, will be D77). Post what you're
+1. **Posts, comments and a Feed** — **on dev** (0.66.0, D77, 2026-11-02; Anton's friends' idea). Post what you're
    smoking: a photo and caption, usually with one of your products or Log entries as a card; followers only;
-   comments and a 🔥; a **Feed** tab in People's place; a friend's page in two tabs, Leaderboard | Posts. Anton's
-   answers and the full brief: `design/posts-feed-brief.md`. Next: the mockups.
+   comments and a 🔥; a **Feed** tab in People's place; a friend's page and your own in two tabs, Leaderboard | Posts.
+   The brief: `design/posts-feed-brief.md`; mockups https://claude.ai/artifact/MSmw7yHV12a6SkSHmCqSfd (Anton's picks:
+   all five recommendations, the round + for New post). After trying it on GT Dev, Anton asked for several photos a
+   post and the product's photo in the card: **on dev** (0.67.0, D78, 2026-11-02). Next: Anton tries those on GT Dev,
+   then says "go live" (D77 and D78 go together). Not checked on a real iPhone yet: the camera and photo library, the keyboard over the comment box.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Recipes for each kind of change (`.claude/skills/`), two conversations at once, and Anton's guide `WORKFLOW.md` | (notes) | | 2026-11-02 | notes only |
+| Looks and colour sets without a database change (nothing on screen changes) | 0.65.0 | D76 | 2026-11-02 | 2026-11-02 |
 | A faster way of working: Claude merges and releases small changes itself; a 2-minute quick check, a 5-minute full check on six machines shared by time | (0.64.3) | D75 | 2026-11-02 | 2026-11-02 |
 | Their look on their pages: a friend's board, product and brand pages in their Look, top and colours, fading in | 0.64.0 | D74 | 2026-10-31 | 2026-11-01 |
 | The Look page in two sections: Dark mode (moon) and Light mode (sun) | 0.63.0 | D73 | 2026-10-29 | 2026-10-30 |

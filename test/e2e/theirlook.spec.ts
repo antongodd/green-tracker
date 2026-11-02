@@ -145,7 +145,7 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   const seen = await looks(fan);
   expect(seen.filter((l) => !l.startsWith('outrun')), seen.join(' ')).toEqual([]);
   expect(seen.filter((l) => l.endsWith('+fade')), seen.join(' ')).toEqual([]);
-  await fan.locator('.tabs a', { hasText: 'People' }).click();
+  await fan.locator('.tabs a', { hasText: 'Feed' }).click();
   await expect(html(fan)).toHaveAttribute('data-look', 'aurora');
 });
 
@@ -179,7 +179,7 @@ test('a light look: the iPhone’s own controls follow theirs, then yours come b
   await expect(fan.locator('.row.first')).toHaveCount(1);
   await settled(fan);
   await shot(fan, '97-their-look-light');
-  await fan.locator('.tabs a', { hasText: 'People' }).click();
+  await fan.locator('.tabs a', { hasText: 'Feed' }).click();
   await expect(html(fan)).toHaveAttribute('data-look', 'aurora');
   await expect(html(fan)).not.toHaveAttribute('data-tone', /./);
   expect(await fan.locator('meta[name="color-scheme"]').getAttribute('content')).toBe('dark');

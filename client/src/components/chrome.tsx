@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { BackIcon, BoardIcon, BoardLineIcon, LeafGlass, LogIcon, LogLineIcon, PeopleIcon, PeopleLineIcon, SettingsIcon, SettingsLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
+import { BackIcon, BoardIcon, BoardLineIcon, FeedIcon, FeedLineIcon, LeafGlass, LogIcon, LogLineIcon, SettingsIcon, SettingsLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
 import { back, linkTo } from '../router';
 import { useSession } from '../session';
 import { Tick } from './Tick';
@@ -47,21 +47,27 @@ export function BackButton(p: { to: string; label?: string }) {
   );
 }
 
-/** `more` is the Settings tab (D61); its screens keep their /more addresses. */
-export type Tab = 'leaderboard' | 'log' | 'sources' | 'people' | 'more';
+/** `more` is the Settings tab (D61); its screens keep their /more addresses. `feed` took People's place (D77). */
+export type Tab = 'leaderboard' | 'log' | 'sources' | 'feed' | 'more';
 
 /** Each tab: its solid icon (the tab you're on) and its outline (the others), D35. */
 const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Line: typeof BoardIcon }[] = [
   { key: 'leaderboard', label: 'Leaderboard', path: '/', Icon: BoardIcon, Line: BoardLineIcon },
   { key: 'log', label: 'Log', path: '/log', Icon: LogIcon, Line: LogLineIcon },
   { key: 'sources', label: 'Sources', path: '/sources', Icon: SourcesIcon, Line: SourcesLineIcon },
-  { key: 'people', label: 'People', path: '/people', Icon: PeopleIcon, Line: PeopleLineIcon },
+  { key: 'feed', label: 'Feed', path: '/feed', Icon: FeedIcon, Line: FeedLineIcon },
   { key: 'more', label: 'Settings', path: '/more', Icon: SettingsIcon, Line: SettingsLineIcon },
 ];
 
-/** Tab bar (D6, P1; Smokes went in D60; Sources and Settings since D61). The active tab is the only indicator of the main screen. */
+/**
+ * Tab bar (D6, P1; Smokes went in D60; Sources and Settings since D61; Feed in People's place since D77). The
+ * active tab is the only indicator of the main screen. The Feed carries one mark at a time (D77): the follow
+ * requests number, which needs you to act; otherwise a dot when there's something new.
+ */
 export function TabBar(p: { active: Tab | null }) {
-  const requests = useSession().me.pendingRequests ?? 0;
+  const { me } = useSession();
+  const requests = me.pendingRequests ?? 0;
+  const fresh = !requests && !!me.feedNew && p.active !== 'feed';
   return (
     <nav class="nav" aria-label="Main">
       <div class="tabs">
@@ -69,11 +75,12 @@ export function TabBar(p: { active: Tab | null }) {
           <a key={key} class="tab" href={path} onClick={linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
             {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
             <span class="tab-l">{label}</span>
-            {key === 'people' && requests > 0 && (
+            {key === 'feed' && requests > 0 && (
               <span class="badge" aria-label={`${requests} follow ${requests === 1 ? 'request' : 'requests'}`}>
                 {requests}
               </span>
             )}
+            {key === 'feed' && fresh && <span class="badge dot" aria-label="Something new" />}
           </a>
         ))}
       </div>

@@ -5,7 +5,7 @@ import { FLOWER } from '../icons';
  * The empty states' line drawings (D33, 0.26.0): one small green drawing per kind of empty
  * screen, in place of the faint leaf. Strokes and fills come from `.empty-art` in styles.css.
  */
-export type EmptyArtKind = 'podium' | 'filter' | 'unrated' | 'log' | 'archive' | 'shared' | 'requests' | 'followers' | 'following' | 'blocked';
+export type EmptyArtKind = 'podium' | 'filter' | 'unrated' | 'log' | 'archive' | 'shared' | 'requests' | 'followers' | 'following' | 'blocked' | 'feed' | 'posts';
 
 const Leaf = (p: { x: number; y: number; s: number }) => <path class="soft" d={FLOWER} transform={`translate(${p.x} ${p.y}) scale(${p.s})`} vector-effect="non-scaling-stroke" />;
 const Person = (p: { x: number; y: number; r: number; class?: string }) => (
@@ -16,6 +16,22 @@ const Person = (p: { x: number; y: number; r: number; class?: string }) => (
 );
 
 const ART: Record<EmptyArtKind, () => JSX.Element> = {
+  // D77: two photo cards, a bud on the front one.
+  feed: () => (
+    <>
+      <rect class="dim dash" x="62" y="8" width="66" height="66" rx="8" />
+      <rect class="soft" x="42" y="24" width="66" height="66" rx="8" />
+      <Leaf x={63} y={38} s={1.05} />
+      <path class="dim" d="M24 98h120" />
+    </>
+  ),
+  posts: () => (
+    <>
+      <rect class="soft" x="51" y="14" width="66" height="66" rx="8" />
+      <Leaf x={72} y={28} s={1.05} />
+      <path class="dim" d="M51 92h66" />
+    </>
+  ),
   podium: () => (
     <>
       <rect class="soft" x="30" y="58" width="36" height="40" rx="4" />

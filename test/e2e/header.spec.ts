@@ -9,7 +9,7 @@ test.describe.configure({ mode: 'serial' });
 let page: Page;
 let username: string;
 let productId: string;
-const MAIN = ['/', '/log', '/sources', '/people', '/more'];
+const MAIN = ['/', '/log', '/sources', '/feed', '/more'];
 
 const me = () => page.locator('.hdr .me-btn');
 const tabBar = () => page.getByRole('navigation', { name: 'Main' });
@@ -39,7 +39,7 @@ test.beforeAll(async ({ browser }) => {
   );
 });
 
-test('your letter sits top right on the five main tabs, with the title still centred, and nowhere else', async () => {
+test('your letter sits top right on the five main tabs (the Feed in People’s place, D77), with the title still centred, and nowhere else', async () => {
   for (const path of MAIN) {
     await page.goto(path);
     await expect(me(), path).toHaveCount(1);
@@ -88,7 +88,7 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
         });
     }).observe(document.body, { childList: true, subtree: true });
   });
-  for (const tab of ['Log', 'Sources', 'People', 'Settings', 'Leaderboard', 'Log', 'Leaderboard']) {
+  for (const tab of ['Log', 'Sources', 'Feed', 'Settings', 'Leaderboard', 'Log', 'Leaderboard']) {
     await tabBar().getByRole('link', { name: new RegExp(tab) }).click();
     await expect(tabBar().getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page');
     await expect(me().locator('.av img')).toHaveCount(1);
@@ -125,7 +125,8 @@ test('tapping it opens People at your card; on People it goes back to the top an
   await page.goto('/log');
   await me().click();
   await expect(page).toHaveURL(/\/people$/);
-  await expect(tabBar().getByRole('link', { name: /People/ })).toHaveAttribute('aria-current', 'page');
+  // D77: People lives under the Feed, so the Feed tab stays lit.
+  await expect(tabBar().getByRole('link', { name: /Feed/ })).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.me-card')).toBeInViewport();
 
   await page.getByPlaceholder('Search usernames').fill('zz');

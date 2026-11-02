@@ -61,3 +61,14 @@ describe('looks and colour sets without a database change (D76)', () => {
     expect(await loadAppearance(d1(null), 'u')).toEqual(DEFAULT_APPEARANCE);
   });
 });
+
+describe('several photos in a post (D78)', () => {
+  it('0018 copies every existing post’s photo in as its first', () => {
+    const db = new DatabaseSync(':memory:');
+    for (const f of files.filter((f) => f < '0018')) db.exec(readFileSync(new URL(f, dir), 'utf8'));
+    db.prepare("INSERT INTO users (id, username, username_lower, created_at) VALUES ('u1', 'u1', 'u1', 1)").run();
+    db.prepare("INSERT INTO posts (id, user_id, caption, image_set, cutout, created_at) VALUES ('p1', 'u1', 'hi', 'set1', 1, 5)").run();
+    for (const f of files.filter((f) => f.startsWith('0018'))) db.exec(readFileSync(new URL(f, dir), 'utf8'));
+    expect(db.prepare('SELECT post_id, user_id, position, image_set, cutout FROM post_photos').all()).toEqual([{ post_id: 'p1', user_id: 'u1', position: 0, image_set: 'set1', cutout: 1 }]);
+  });
+});

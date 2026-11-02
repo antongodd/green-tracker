@@ -72,7 +72,8 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test('People opens on Following, with your card at the top inviting a photo (D23, D24)', async () => {
-  await owner.getByRole('link', { name: 'People' }).click();
+  await owner.getByRole('link', { name: /^Feed/ }).click();
+  await owner.getByRole('link', { name: /^People/ }).click();
   await expect(owner.getByRole('tab')).toHaveText([/^Following/, /^Followers/, /^Requests/]);
   await expect(owner.getByRole('tab', { name: /Following/ })).toHaveAttribute('aria-selected', 'true');
   const card = owner.locator('.me-card');
@@ -147,7 +148,7 @@ test('a follower sees it in their lists and on your Leaderboard; a stranger sees
   await expect(row).toBeVisible();
   await expectLetter(row, 'O');
   await row.getByRole('link').click();
-  await expect(stranger.getByText('Follow to see their leaderboard.')).toBeVisible();
+  await expect(stranger.getByText('Follow to see their leaderboard and posts.')).toBeVisible();
   await expectLetter(stranger.locator('.stranger'), 'O');
   // Asking to follow reveals nothing until approved.
   await stranger.getByRole('button', { name: 'Follow' }).click();
@@ -207,7 +208,8 @@ test('within a visit People remembers your last list; a relaunch opens on Follow
   await owner.getByRole('tab', { name: /Requests/ }).click();
   await expect(owner.locator('.prow', { hasText: 'sid' })).toBeVisible(); // the stranger's request, with their letter
   await owner.getByRole('link', { name: 'Settings', exact: true }).click();
-  await owner.getByRole('link', { name: /People/ }).click();
+  await owner.getByRole('link', { name: /^Feed/ }).click();
+  await owner.getByRole('link', { name: /^People/ }).click();
   await expect(owner.getByRole('tab', { name: /Requests/ })).toHaveAttribute('aria-selected', 'true');
   await owner.reload();
   await expect(owner.getByRole('tab', { name: /Following/ })).toHaveAttribute('aria-selected', 'true');
