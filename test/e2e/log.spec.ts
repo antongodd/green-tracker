@@ -99,7 +99,7 @@ test('the Type filter is shared with the Leaderboard; empty groups are not drawn
   await page.getByLabel('Type', { exact: true }).selectOption('edibles');
   await expect(page.locator('.group-h')).toHaveCount(1);
   await expect(group('Canada').locator('.lrow')).toHaveCount(1);
-  await expect(tile('Products')).toHaveText('1');
+  await expect(tile('Product')).toHaveText('1');
   await expect(tile('Total')).toHaveText('0g');
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page.getByLabel('Type', { exact: true })).toHaveValue('edibles');
