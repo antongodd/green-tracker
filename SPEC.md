@@ -1820,6 +1820,10 @@ None.
 
 ## 6. Changelog
 
+### 0.73.1 — the contact address (owner request)
+- The privacy page, house rules, Settings › About › Contact and the website show greentracker.help@gmail.com
+  (Anton's new address) in place of the placeholder.
+
 ### 0.73.0 — trust basics for strangers (review panel job 7, D84)
 - "I'm 18 or over" at sign-up; accounts from before are asked once.
 - A privacy page and house rules (Settings › About), linked from sign-up, with a contact address.
