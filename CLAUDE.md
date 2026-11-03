@@ -299,7 +299,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.2 (2026-11-03): everything up to don't lose my work (to-do item 2).
-- **Dev:** 0.69.3 (2026-11-03): privacy and data words (to-do item 3), on its way to live.
+- **Dev:** 0.69.4 (2026-11-03): privacy and data words (to-do item 3, 0.69.3) and the website catch-up (item 6),
+  on their way to live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -317,10 +318,9 @@ Each is a job for its own conversation; the summary lists what each covers.
    Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
 5. **Wording fixes across the app** (small). The proof-reader's table ("More" → "Settings", plurals, capitals,
    colour names in the badge, type names, archive messages, Current password).
-6. **Website catch-up** (small; the hero picture is some work). Say what sign-up asks for (never "no email"); the
-   Feed in the friends card; one time throughout; the video's last caption; the real address; the price chip and
-   share picture; WhatsApp line, laptop layout, button sizes, slider name, 404. Anton decides "Know your plug",
-   "Roll one up", "Made by Anton".
+6. **Website catch-up** (small): **on dev** in 0.69.4 (2026-11-03). What sign-up asks for, the Feed in the friends
+   card, one time throughout, the video's last caption, the real address, the price chip and share picture, WhatsApp
+   line, laptop layout, button sizes, slider name, 404. Anton kept "Know your plug", "Roll one up" and "Made by Anton".
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
