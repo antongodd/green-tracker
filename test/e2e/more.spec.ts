@@ -92,7 +92,7 @@ test('back on Settings, the What followers see line is there at once, so the scr
   // (the swipe-back test caught it on a busy machine). Hold its answer back to see.
   await page.goto('/more');
   const line = page.locator('.li', { hasText: 'What followers see' });
-  await expect(line).toContainText('Followers see:');
+  await expect(line).toContainText('Leaderboard, ');
   await page.getByRole('link', { name: 'Export' }).click();
   await expect(page).toHaveURL(/\/more\/export$/);
   await page.route('**/api/privacy', async (route) => {
@@ -101,6 +101,6 @@ test('back on Settings, the What followers see line is there at once, so the scr
   });
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/more$/);
-  await expect(line).toContainText('Followers see:', { timeout: 1000 });
+  await expect(line).toContainText('Leaderboard, ', { timeout: 1000 });
   await page.unroute('**/api/privacy');
 });
