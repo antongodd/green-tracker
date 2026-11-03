@@ -1724,6 +1724,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the small fixes on the Leaderboard, Log and Feed are live
+- 0.69.9 (on dev 2026-11-03) went live on 2026-11-03 (release 0.69.9) and moves to Done. Notes only.
+
 ### 0.69.9 — small fixes on the Leaderboard, Log and Feed (review panel, 2026-11-03)
 - Value for money: the score's caption says **VALUE** (it said VFM), and the short form of Rank by, when the row is
   too narrow, is "Value". An edible's row says "per 20mg" under Value for money too, as it already did under Price
