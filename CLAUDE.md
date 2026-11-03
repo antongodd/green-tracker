@@ -334,8 +334,15 @@ Each is a job for its own conversation; the summary lists what each covers.
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
-8. **Friends: you against them, and inviting someone** (big). "You rated this 9.1" on a friend's product and on post
-   cards; an "Invite a friend / share my @name" button.
+8. **Friends: you against them, and inviting someone** (big; reworked with Anton 2026-11-03, not started).
+   (A) "You've had this too: you 9.1 · them 8.0" on a friend's product page and post card **only for the same
+   product**: same strain name **and** same brand (Source; `nameKey` matching) and type. Never a name-only match
+   (Anton: same name ≠ same product); never uses Supplier (never shared); nothing when their Source isn't shared.
+   (C) **Compare boards**: a Compare button on a friend's Leaderboard: your #1 against theirs, averages, favourite
+   type and brand, brands you've both tried with both averages, their top picks you haven't tried. Only what they
+   already share (no prices or suppliers). Not (B) "same strain, different brand" (Anton: confusing).
+   Plus an "Invite a friend / share my @name" button (Anton loves it) on the empty Feed and People: the iPhone share
+   sheet with "Follow me on Green Tracker: @name" and a link; Anton picks app or website link.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
