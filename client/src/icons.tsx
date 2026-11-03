@@ -208,6 +208,9 @@ export const BoxIcon = icon('M4.5 4h15a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-15a1 1 0 0
 export const EyeIcon = icon('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z', { stroke: 2 });
 /** Return to Log (D50): an arrow curling back. */
 export const ReturnIcon = icon('M9 5 4 10l5 5 M4.5 10H14a5 5 0 0 1 0 10h-2', { stroke: 2 });
+// D84: the About rows: a shield for Privacy, a ticked list for House rules.
+export const ShieldIcon = icon('M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6Z M8.8 12l2.3 2.3 4.3-4.6', { stroke: 2 });
+export const RulesIcon = icon('M4 6.5l1.5 1.5L8 5.5 M4 12.5l1.5 1.5L8 11.5 M4 18.5l1.5 1.5L8 17.5 M11 7h9 M11 13h9 M11 19h9', { stroke: 2 });
 export const TrashIcon = icon('M4.5 7h15 M9.5 7V4.5h5V7 M6.5 7l1 12.5h9l1-12.5', { stroke: 2 });
 
 // Data screens (D40, 0.33.0).

@@ -46,13 +46,13 @@ export const loadSession: MiddlewareHandler<AppEnv> = async (c, next) => {
     const tokenHash = await sha256Hex(token);
     const now = Date.now();
     const row = await c.env.DB.prepare(
-      `SELECT s.expires_at, s.created_at, u.id, u.username, u.email IS NULL AS needs_login
+      `SELECT s.expires_at, s.created_at, u.id, u.username, u.email IS NULL AS needs_login, u.adult_at IS NULL AS needs_adult
        FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?1`,
     )
       .bind(tokenHash)
-      .first<{ expires_at: number; created_at: number; id: string; username: string; needs_login: number }>();
+      .first<{ expires_at: number; created_at: number; id: string; username: string; needs_login: number; needs_adult: number }>();
     if (row && row.expires_at > now) {
-      c.set('user', { id: row.id, username: row.username, needsLogin: row.needs_login === 1 });
+      c.set('user', { id: row.id, username: row.username, needsLogin: row.needs_login === 1, needsAdult: row.needs_adult === 1 });
       c.set('session', { tokenHash, createdAt: row.created_at });
       if (row.expires_at - now < SESSION_TTL - DAY) {
         await c.env.DB.prepare('UPDATE sessions SET expires_at = ?1 WHERE token_hash = ?2').bind(now + SESSION_TTL, tokenHash).run();
@@ -68,13 +68,16 @@ export const loadSession: MiddlewareHandler<AppEnv> = async (c, next) => {
 
 /**
  * Requires a signed-in user. An account from before D80 (no email yet) may only add its email and
- * password (or sign out) until it has them.
+ * password (or sign out) until it has them; then one from before D84 may only tick "I'm 18 or over".
  */
-export function requireUser(opts: { allowNeedsLogin?: boolean } = {}): MiddlewareHandler<AppEnv> {
+export function requireUser(opts: { allowNeedsLogin?: boolean; allowNeedsAdult?: boolean } = {}): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
     if (!c.var.user) fail(401, 'signed_out', 'Please sign in.');
     if (c.var.user.needsLogin && !opts.allowNeedsLogin) {
       fail(403, 'needs_login', 'Add an email and password to carry on.');
+    }
+    if (c.var.user.needsAdult && !opts.allowNeedsAdult && !opts.allowNeedsLogin) {
+      fail(403, 'needs_adult', 'Confirm you’re 18 or over to carry on.');
     }
     await next();
   };

@@ -61,10 +61,11 @@ auth.get('/me', async (c) => {
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT email FROM users WHERE id = ?1) AS email,
             (SELECT COUNT(*) FROM follows WHERE followed_id = ?1 AND status = 'pending') AS requests,
-            (SELECT feed_seen_at FROM users WHERE id = ?1) AS seen`,
+            (SELECT feed_seen_at FROM users WHERE id = ?1) AS seen,
+            (SELECT COUNT(*) FROM photos WHERE user_id = ?1) + (SELECT COUNT(*) FROM post_photos WHERE user_id = ?1) AS photos`,
   )
     .bind(user.id)
-    .first<{ passkeys: number; email: string | null; requests: number; seen: number | null }>();
+    .first<{ passkeys: number; email: string | null; requests: number; seen: number | null; photos: number }>();
   // D77: the Feed's dot: something new since you last opened it.
   const feed = await c.env.DB.prepare(FEED_NEW_SQL).bind(user.id, counts?.seen ?? 0).first<{ new: number }>();
   // Your profile photo (D23): its version and framing, for the People card and export.
@@ -79,6 +80,10 @@ auth.get('/me', async (c) => {
     // D80: private, only ever sent to you. An account from before D80 has none yet and must add one.
     email: counts?.email ?? null,
     needsLogin: user.needsLogin,
+    // D84: an account from before the 18+ tick is asked once.
+    needsAdult: user.needsAdult,
+    // D84: how many photos you have, against the limit (the editors warn near it).
+    photoCount: counts?.photos ?? 0,
     passkeys: counts?.passkeys ?? 0,
     pendingRequests: counts?.requests ?? 0,
     feedNew: feed?.new === 1,
@@ -112,13 +117,15 @@ auth.post('/signup', async (c) => {
   checkEmail(email);
   checkPassword(password);
   checkUsername(username);
+  // D84: the "I'm 18 or over" tick, required.
+  if (body.adult !== true) fail(400, 'needs_adult', 'Tick “I’m 18 or over” to create an account.');
   const db = c.env.DB;
   if (await emailTaken(db, email)) fail(409, 'email_taken', EMAIL_TAKEN);
   if (await usernameTaken(db, username)) fail(409, 'username_taken', TAKEN);
   const userId = randomId();
   try {
     await db
-      .prepare('INSERT INTO users (id, username, username_lower, created_at, email, email_lower, password_hash) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)')
+      .prepare('INSERT INTO users (id, username, username_lower, created_at, email, email_lower, password_hash, adult_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?4)')
       .bind(userId, username, usernameKey(username), Date.now(), email, emailKey(email), await hashPassword(password))
       .run();
   } catch (e) {

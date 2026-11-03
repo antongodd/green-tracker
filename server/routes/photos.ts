@@ -4,6 +4,7 @@ import { MAX_IMAGE_BYTES, MAX_THUMB_BYTES, parseCrop, PHOTO_VARIANTS, type Photo
 import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, isJpeg, isPng, newSetId, PHOTO_COLUMNS, photoKey, serveImage, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
+import { PHOTO_LIMIT, PHOTO_LIMIT_TEXT, UPLOADS_PENDING_LIMIT } from '../../shared/domain/trust';
 import { canView } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
 import { loadOne, NOT_KEPT } from './products';
@@ -48,6 +49,19 @@ uploads.post('/', async (c) => {
     if (png ? !(await isPng(file)) : !(await isJpeg(file))) fail(400, 'bad_upload', png ? 'A cut-out must be a PNG image.' : 'Photos must be JPEG images.');
   }
 
+  // D84: at most PHOTO_LIMIT photos an account. A new photo (one with its original) is refused here, before its
+  // files are stored; the database checks every Save too (migration 0021). Restore replaces everything, so its
+  // uploads skip this (its Save is checked); any account may hold only so many uploads waiting for a Save.
+  const counts = await c.env.DB.prepare(
+    `SELECT (SELECT COUNT(*) FROM photos WHERE user_id = ?1) + (SELECT COUNT(*) FROM post_photos WHERE user_id = ?1) AS saved,
+            (SELECT COUNT(*) FROM uploads WHERE user_id = ?1 AND created_at >= ?2) AS pending`,
+  )
+    .bind(userId, Date.now() - DAY)
+    .first<{ saved: number; pending: number }>();
+  const saved = counts?.saved ?? 0;
+  if ((counts?.pending ?? 0) >= UPLOADS_PENDING_LIMIT) fail(429, 'rate_limited', 'Too many photos waiting to be saved. Save or cancel what you’re working on, then try again.');
+  if (original && c.req.query('restore') !== '1' && saved >= PHOTO_LIMIT) fail(409, 'photo_limit', PHOTO_LIMIT_TEXT);
+
   const set = newSetId();
   const jpeg = { httpMetadata: { contentType: 'image/jpeg' } };
   const image = cutout ? { httpMetadata: { contentType: 'image/png' } } : jpeg;
@@ -64,7 +78,7 @@ uploads.post('/', async (c) => {
   const { results: stale } = await c.env.DB.prepare('DELETE FROM uploads WHERE user_id = ?1 AND created_at < ?2 RETURNING id').bind(userId, Date.now() - DAY).all<{ id: string }>();
   deleteLater(c.executionCtx, c.env.PHOTOS, stale.flatMap((s) => setKeys(userId, s.id)));
 
-  return c.json({ upload: set }, 201);
+  return c.json({ upload: set, photoCount: saved }, 201);
 });
 
 /** Cancel: discards a set that was never saved. */

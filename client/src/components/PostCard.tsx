@@ -15,6 +15,7 @@ import { play } from '../sounds';
 import { Avatar } from './Avatar';
 import { YourChip } from './Duel';
 import { Sheet } from './chrome';
+import { Reported, ReportSheet } from './Report';
 import { Effects, rowClass, useAppearance } from './Gems';
 
 // A post (D77): who and when, its own photo, the card for what it's about, the fire and comment
@@ -251,7 +252,8 @@ export function PostCard(p: { post: Post; full?: boolean; eager?: boolean; onCha
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
   const [open, setOpen] = useState(false);
-  const [sheet, setSheet] = useState<'menu' | 'confirm' | 'caption' | 'fires' | null>(null);
+  const [sheet, setSheet] = useState<'menu' | 'confirm' | 'caption' | 'fires' | 'theirs' | 'report' | null>(null);
+  const [reported, setReported] = useState(false);
   const [error, setError] = useState('');
   const href = `/posts/${enc(post.id)}`;
   const who = `/u/${enc(post.username)}`;
@@ -283,6 +285,32 @@ export function PostCard(p: { post: Post; full?: boolean; eager?: boolean; onCha
     }
   };
 
+  // D84: a post you reported shows only this, until you tap Show it.
+  if (post.hiddenByYou)
+    return (
+      <article class="post" aria-label={`Post by @${post.username}, hidden`} data-post={post.id}>
+        <Reported
+          what="post"
+          onShow={() =>
+            posts.showPost(post.id).then(
+              (next) => p.onChange(next),
+              (e) => setError(errorText(e)),
+            )
+          }
+        />
+        {reported && (
+          <p class="toast" role="status">
+            Thanks. Reported, and hidden for you.
+          </p>
+        )}
+        {error && (
+          <p class="error post-error" role="alert">
+            {error}
+          </p>
+        )}
+      </article>
+    );
+
   return (
     <article class="post" aria-label={`Post by @${post.username}`} data-post={post.id}>
       <div class="post-who">
@@ -296,8 +324,12 @@ export function PostCard(p: { post: Post; full?: boolean; eager?: boolean; onCha
             </time>
           </span>
         </a>
-        {post.mine && (
+        {post.mine ? (
           <button type="button" class="more-btn" aria-label="Your post’s actions" onClick={() => setSheet('menu')}>
+            <MoreIcon />
+          </button>
+        ) : (
+          <button type="button" class="more-btn" aria-label={`Actions for @${post.username}’s post`} onClick={() => setSheet('theirs')}>
             <MoreIcon />
           </button>
         )}
@@ -372,6 +404,20 @@ export function PostCard(p: { post: Post; full?: boolean; eager?: boolean; onCha
         />
       )}
       {sheet === 'fires' && <FirersSheet post={post} onClose={() => setSheet(null)} />}
+      {sheet === 'theirs' && <Sheet title={`@${post.username}’s post`} options={[{ label: 'Report post', danger: true, onSelect: () => setSheet('report') }]} onCancel={() => setSheet(null)} />}
+      {sheet === 'report' && (
+        <ReportSheet
+          what="post"
+          username={post.username}
+          onCancel={() => setSheet(null)}
+          onReport={async (reason) => {
+            await posts.reportPost(post.id, reason);
+            setSheet(null);
+            setReported(true);
+            p.onChange({ ...post, hiddenByYou: true });
+          }}
+        />
+      )}
     </article>
   );
 }

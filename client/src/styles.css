@@ -1853,6 +1853,43 @@ html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-
 /* Settings → Money → Main currency: each currency's sign in its own tile. */
 .cur-row .cur-sign { flex: none; display: grid; place-items: center; width: 44px; height: 30px; border-radius: 8px; background: rgba(240, 196, 106, 0.14); color: #f0c46a; font-size: 12px; font-weight: 800; white-space: nowrap; }
 
+/* Trust basics for strangers (D84): the 18+ tick, the privacy page and house rules, Report, the photo limit. */
+.adult { display: grid; gap: 6px; }
+.adult-tick { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--card-edge); cursor: pointer; }
+.adult-tick input { width: 24px; height: 24px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
+.adult-tick b { display: block; font-size: 16px; font-weight: 700; }
+.adult-tick small { display: block; color: var(--text-2); font-size: 13px; margin-top: 2px; }
+.adult-links { display: flex; align-items: center; gap: 4px; margin: 0; padding-left: 6px; color: var(--text-3); font-size: 14px; }
+.linkish { min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--accent-bright); font: inherit; font-weight: 600; cursor: pointer; }
+.hint.center { justify-content: center; text-align: center; }
+.about-over { position: fixed; inset: 0; z-index: 45; overflow-y: auto; background-color: var(--bg); }
+.about-over .screen { padding-bottom: calc(var(--safe-bottom) + 24px); }
+.about { max-width: 640px; padding-top: 12px; padding-bottom: 24px; display: grid; gap: 10px; }
+.about h2 { font-family: var(--display); font-weight: 600; font-size: 16px; margin: 14px 0 0; }
+.about p, .about li { color: var(--text-2); font-size: 15px; line-height: 1.5; margin: 0; }
+.about b { color: var(--text); font-weight: 700; }
+.about ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.about .intro { color: var(--text); font-size: 16px; }
+.about .hint { color: var(--text-2); }
+.about .mail { color: var(--accent-bright); font-weight: 600; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+.about .who { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; margin: 0; padding: 14px; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--card-edge); }
+.about .who dt { color: var(--text); font-weight: 700; font-size: 15px; }
+.about .who dd { margin: 0; color: var(--text-2); font-size: 15px; }
+.about .rules { list-style: none; padding: 0; gap: 0; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--card-edge); }
+.about .rules li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--divider); }
+.about .rules li:first-child { border-top: 0; }
+.about .rules .e { font-size: 20px; line-height: 1.3; }
+.about .rules b { display: block; }
+.reported { display: grid; justify-items: center; gap: 2px; padding: 14px 16px; border-radius: 18px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text-2); font-size: 14px; text-align: center; }
+.reported.small { justify-items: start; text-align: left; padding: 8px 12px; border-radius: 14px; }
+.sheet .opt.tickopt { display: flex; align-items: center; gap: 12px; justify-content: flex-start; }
+.sheet .opt.tickopt .box { width: 22px; height: 22px; flex: none; border-radius: 6px; border: 2px solid var(--text-3); display: grid; place-items: center; color: var(--on-accent); }
+.sheet .opt.tickopt[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); }
+.sheet .opt.tickopt .box svg { width: 13px; height: 13px; }
+.room { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; font-size: 14px; color: var(--text); background: color-mix(in srgb, var(--warning) 12%, transparent); border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent); }
+.room.full { background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+
+
 /* ---------- the light tone (D72): the three Daylights ----------
    Everything that had a dark colour of its own (made for the dark looks) takes a light one here.
    The photo viewer, cropper and cut-out tools stay black, as photos look best on black. */

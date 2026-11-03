@@ -28,3 +28,31 @@ testHooks.post('/age-sessions', async (c) => {
     .run();
   return c.json({ ok: true });
 });
+
+/** D84: turns an account back into one from before the 18+ tick, as every account was when 0021 ran. */
+testHooks.post('/not-adult', async (c) => {
+  const username = str(await jsonBody(c), 'username');
+  await c.env.DB.prepare('UPDATE users SET adult_at = NULL WHERE username_lower = ?1').bind(usernameKey(username)).run();
+  return c.json({ ok: true });
+});
+
+/**
+ * D84: gives one of the account's products `count` more photo rows (no files), to reach the photo limit without
+ * thousands of uploads. Stops where the database's limit stops it, like a real Save.
+ */
+testHooks.post('/fill-photos', async (c) => {
+  const body = await jsonBody(c);
+  const count = typeof body.count === 'number' ? body.count : 0;
+  const product = await c.env.DB.prepare('SELECT p.id, p.user_id FROM products p JOIN users u ON u.id = p.user_id WHERE u.username_lower = ?1 AND p.id = ?2')
+    .bind(usernameKey(str(body, 'username')), str(body, 'product'))
+    .first<{ id: string; user_id: string }>();
+  if (!product) fail(404, 'not_found', 'Not found.');
+  await c.env.DB.prepare(
+    `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ?3)
+     INSERT INTO photos (id, user_id, product_id, position, original_set, image_set, created_at, updated_at)
+     SELECT 'fill' || ?4 || '-' || i, ?1, ?2, 1000 + i, 'fill', 'fill', 1, 1 FROM n`,
+  )
+    .bind(product.user_id, product.id, count, Date.now())
+    .run();
+  return c.json({ ok: true });
+});

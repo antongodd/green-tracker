@@ -4,7 +4,7 @@ import { Browser, PASSWORD, addPasskey, emailFor, makeOldAccount, signIn, signIn
 import { d1 } from './store';
 
 describe('sign-up (D80): email, password and a username', () => {
-  const signup = (b: Browser, body: Record<string, string>) => b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName(), ...body });
+  const signup = (b: Browser, body: Record<string, unknown>) => b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName(), adult: true, ...body });
 
   it('creates an account and a session; no passkey needed, and no recovery codes', async () => {
     const b = new Browser();
@@ -331,7 +331,7 @@ describe('rate limits', () => {
     // A refused sign-up counts too, so ten bad tries cost nothing in accounts.
     for (let i = 0; i < 10; i++) statuses.push((await b.post('/api/auth/signup', { email: 'x', password: 'x', username: 'x' })).status);
     expect(statuses.every((s) => s === 400)).toBe(true);
-    const last = await b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName() });
+    const last = await b.post('/api/auth/signup', { email: emailFor(uniqueName()), password: PASSWORD, username: uniqueName(), adult: true });
     expect(last.status).toBe(429);
     expect(Number(last.headers.get('retry-after'))).toBeGreaterThan(0);
   });

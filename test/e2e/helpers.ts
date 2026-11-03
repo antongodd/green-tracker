@@ -23,6 +23,7 @@ export async function signUp(page: Page, username = `u${Date.now().toString(36)}
   await page.goto('/signup');
   await page.getByLabel('Email').fill(emailOf(username));
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('checkbox', { name: /I’m 18 or over/ }).check(); // D84
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Username').fill(username);
   await page.getByText('Available').waitFor();

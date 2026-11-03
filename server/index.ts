@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import type { AppEnv } from './env';
 import { loadSession } from './lib/session';
+import { PHOTO_LIMIT_TEXT } from '../shared/domain/trust';
 import { auth } from './routes/auth';
 import { account } from './routes/account';
 import { products } from './routes/products';
@@ -68,6 +69,9 @@ app.notFound((c) => c.json({ error: 'not_found', message: 'That isn’t here any
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) return err.getResponse();
+  // D84: the database refused a photo past the limit (migration 0021's triggers).
+  if (String(err).includes('GT_PHOTO_LIMIT') || String((err as { cause?: unknown }).cause).includes('GT_PHOTO_LIMIT'))
+    return c.json({ error: 'photo_limit', message: PHOTO_LIMIT_TEXT }, 409);
   // Log the error type and route only: never request bodies or personal content.
   console.error(`${c.req.method} ${c.req.routePath}: ${err.name}`);
   return c.json({ error: 'server_error', message: 'Something went wrong. Please try again.' }, 500);

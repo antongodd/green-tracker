@@ -9,6 +9,8 @@ import { MoreIcon } from '../icons';
 import * as posts from '../posts';
 import { back, linkTo } from '../router';
 import { photoOf } from './People';
+import { Reported, ReportSheet } from '../components/Report';
+import { useSession } from '../session';
 
 // A post's own page (D77): the post in full, every comment oldest first, and a comment box above
 // the keyboard. In your own look. Anything you can't see (deleted, unfollowed, blocked, made up) is
@@ -16,8 +18,10 @@ import { photoOf } from './People';
 
 const enc = encodeURIComponent;
 
-function Comment(p: { c: PostComment; onMenu: () => void }) {
+function Comment(p: { c: PostComment; mine: boolean; onMenu: () => void; onShow: () => void }) {
   const who = `/u/${enc(p.c.username)}`;
+  // D84: a comment you reported shows only this, until you tap Show it.
+  if (p.c.hiddenByYou) return <Reported what="comment" small onShow={p.onShow} />;
   return (
     <div class="cmt">
       <a class="cmt-av" href={who} onClick={linkTo(who)} aria-label={`@${p.c.username}`}>
@@ -32,7 +36,7 @@ function Comment(p: { c: PostComment; onMenu: () => void }) {
         </time>
         <p>{p.c.body}</p>
       </div>
-      {p.c.canDelete && (
+      {(p.c.canDelete || !p.mine) && (
         <button type="button" class="more-btn" aria-label={`Actions for @${p.c.username}’s comment`} onClick={p.onMenu}>
           <MoreIcon />
         </button>
@@ -48,6 +52,10 @@ export function PostPage(p: { id: string }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [menu, setMenu] = useState<PostComment | null>(null);
+  const [reporting, setReporting] = useState<PostComment | null>(null);
+  const [reported, setReported] = useState(false);
+  const me = useSession().me.user?.username;
+  const isMine = (c: PostComment) => c.username === me;
 
   const show = (next: Post) => {
     setPost(next);
@@ -122,7 +130,18 @@ export function PostPage(p: { id: string }) {
               <h2 class="cap">Comments</h2>
               {post.comments.length === 0 && <p class="small none">No comments yet.</p>}
               {post.comments.map((c) => (
-                <Comment key={c.id} c={c} onMenu={() => setMenu(c)} />
+                <Comment
+                  key={c.id}
+                  c={c}
+                  mine={isMine(c)}
+                  onMenu={() => setMenu(c)}
+                  onShow={() =>
+                    posts.showComment(p.id, c.id).then(
+                      (next) => show(next),
+                      (e) => setError(errorText(e)),
+                    )
+                  }
+                />
               ))}
             </section>
           </>
@@ -151,10 +170,31 @@ export function PostPage(p: { id: string }) {
       )}
       {menu && (
         <Sheet
-          title={menu.username === post?.username && post?.mine ? 'Your comment' : `@${menu.username}’s comment`}
-          options={[{ label: 'Delete comment', danger: true, onSelect: () => removeComment(menu) }]}
+          title={isMine(menu) ? 'Your comment' : `@${menu.username}’s comment`}
+          options={[
+            ...(isMine(menu) ? [] : [{ label: 'Report comment', danger: true, onSelect: () => (setMenu(null), setReporting(menu)) }]),
+            ...(menu.canDelete ? [{ label: 'Delete comment', danger: true, onSelect: () => removeComment(menu) }] : []),
+          ]}
           onCancel={() => setMenu(null)}
         />
+      )}
+      {reporting && (
+        <ReportSheet
+          what="comment"
+          username={reporting.username}
+          onCancel={() => setReporting(null)}
+          onReport={async (reason) => {
+            await posts.reportComment(p.id, reporting.id, reason);
+            setReporting(null);
+            setReported(true);
+            if (post) show({ ...post, comments: post.comments.map((x) => (x.id === reporting.id ? { ...x, hiddenByYou: true } : x)) });
+          }}
+        />
+      )}
+      {reported && (
+        <p class="toast" role="status" onAnimationEnd={() => setReported(false)}>
+          Thanks. Reported, and hidden for you.
+        </p>
       )}
       <TabBar active="feed" />
     </>

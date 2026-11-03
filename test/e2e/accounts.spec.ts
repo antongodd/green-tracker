@@ -39,6 +39,10 @@ test('create an account with email and password, Face ID once, sign out and in b
   // 0.69.1: a line saying there's no email reset; the email is the iPhone's "username" for its password store.
   await expect(page.locator('.hint', { hasText: 'Pick one you’ll remember: we can’t reset it by email yet.' })).toBeVisible();
   await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'username');
+  // D84: Continue waits for the 18+ tick too.
+  await expect(cont).toBeDisabled();
+  await page.getByRole('checkbox', { name: /I’m 18 or over/ }).check();
+  await expect(cont).toBeEnabled();
   await cont.click();
   await expect(page.getByRole('alert')).toHaveText(/That doesn’t look like an email address\./);
   await page.getByLabel('Email').fill(email);
@@ -149,12 +153,13 @@ test('a taken email sends you back to step 1 with the reason', async ({ page, br
   const first = await (await browser.newContext()).newPage();
   const taken = `t${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
   await first.goto('/');
-  expect((await first.evaluate(async (b) => (await fetch('/api/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).status, { email: emailOf(taken), password: PASSWORD, username: taken }))).toBe(200);
+  expect((await first.evaluate(async (b) => (await fetch('/api/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).status, { email: emailOf(taken), password: PASSWORD, username: taken, adult: true }))).toBe(200);
   await first.context().close();
 
   await page.goto('/signup');
   await page.getByLabel('Email').fill(emailOf(taken));
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('checkbox', { name: /I’m 18 or over/ }).check(); // D84
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Username').fill(`n${taken}`.slice(0, 20));
   await expect(page.getByText('Available')).toBeVisible();
@@ -169,6 +174,7 @@ test('Not now: no passkey, and the password signs you in', async ({ page }) => {
   await page.goto('/signup');
   await page.getByLabel('Email').fill(emailOf(username));
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('checkbox', { name: /I’m 18 or over/ }).check(); // D84
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Username').fill(username);
   await expect(page.getByText('Available')).toBeVisible();
@@ -183,7 +189,7 @@ test('Settings: change your email and your password', async ({ page }) => {
   await addAuthenticator(page);
   const username = `cp${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
   await page.goto('/');
-  await page.evaluate(async (b) => fetch('/api/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) }), { email: emailOf(username), password: PASSWORD, username });
+  await page.evaluate(async (b) => fetch('/api/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) }), { email: emailOf(username), password: PASSWORD, username, adult: true });
   await page.goto('/more');
   await page.getByRole('link', { name: /^Email/ }).click();
   await expect(page).toHaveURL(/\/more\/email$/);
@@ -213,7 +219,7 @@ test('an account from before email and password: one screen asks for both, then 
   await page.goto('/');
   const call = (path: string, body: unknown) =>
     page.evaluate(async ([p, b]) => (await fetch(p as string, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).status, [path, body] as const);
-  expect(await call('/api/auth/signup', { email: emailOf(username), password: PASSWORD, username })).toBe(200);
+  expect(await call('/api/auth/signup', { email: emailOf(username), password: PASSWORD, username, adult: true })).toBe(200);
   await call('/api/products', { ...emptyProductInput(), name: 'Kept Through It' });
   expect(await call('/api/test/old-account', { username })).toBe(200); // as every account was when 0019 ran
 
@@ -242,6 +248,7 @@ test('D83: adding Face ID later asks for your password; a forgotten password is 
   await page.goto('/signup');
   await page.getByLabel('Email').fill(emailOf(username));
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('checkbox', { name: /I’m 18 or over/ }).check(); // D84
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Username').fill(username);
   await expect(page.getByText('Available')).toBeVisible();

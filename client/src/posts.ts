@@ -1,5 +1,6 @@
 // Client calls for posts, comments and fires (D77).
 import type { Post, PostInput } from '../../shared/domain/posts';
+import type { ReportReason } from '../../shared/domain/trust';
 import { api, SAVE_TIMEOUT_MS } from './api';
 
 export type Page = { posts: Post[]; next: string | null };
@@ -17,6 +18,11 @@ export const deletePost = (id: string) => api('DELETE', one(id));
 export const addComment = (id: string, body: string) => api<{ post: Post }>('POST', `${one(id)}/comments`, { body }).then((r) => r.post);
 export const deleteComment = (id: string, cid: string) => api<{ post: Post }>('DELETE', `${one(id)}/comments/${encodeURIComponent(cid)}`).then((r) => r.post);
 export const setFire = (id: string, on: boolean) => api<{ fires: number; youFired: boolean }>(on ? 'PUT' : 'DELETE', `${one(id)}/fire`);
+// D84: reports. Reporting hides it for you; Show it brings it back for you (the report stays).
+export const reportPost = (id: string, reason: ReportReason) => api('POST', `${one(id)}/report`, { reason });
+export const showPost = (id: string) => api<{ post: Post }>('DELETE', `${one(id)}/report`).then((r) => r.post);
+export const reportComment = (id: string, cid: string, reason: ReportReason) => api('POST', `${one(id)}/comments/${encodeURIComponent(cid)}/report`, { reason });
+export const showComment = (id: string, cid: string) => api<{ post: Post }>('DELETE', `${one(id)}/comments/${encodeURIComponent(cid)}/report`).then((r) => r.post);
 export const firers = (id: string) => api<{ people: { username: string; photo?: string }[] }>('GET', `${one(id)}/fires`).then((r) => r.people);
 
 /** Your own posts with what they're about by id, for Export. */

@@ -22,6 +22,7 @@ import { randomId } from '../lib/crypto';
 import { fail, jsonBody } from '../lib/http';
 import { copyImageSet, deleteLater, imageKeys, photoKey, serveImage } from '../lib/photos';
 import { hit } from '../lib/rateLimit';
+import { hiddenCommentSql, hiddenPostSql, reasonOf, saveReport, showReported } from '../lib/reports';
 import { requireUser } from '../lib/session';
 import { canView, findUser, photoColumnSql } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
@@ -79,13 +80,15 @@ interface PostRow {
   fires: number;
   you_fired: number;
   comment_count: number;
+  hidden_by_you: number;
 }
 
 const POST_SELECT = `SELECT p.id, p.user_id, u.username, p.product_id, p.log_entry_id, p.about_name, p.about_type, p.about_type_other, p.about_strain,
     p.caption, p.image_set, p.cutout, p.created_at, p.edited_at, ${photoColumnSql('?1', 'p.user_id')},
     (SELECT COUNT(*) FROM post_fires x WHERE x.post_id = p.id AND ${actorShownSql('x', 'p.user_id')}) AS fires,
     EXISTS (SELECT 1 FROM post_fires y WHERE y.post_id = p.id AND y.user_id = ?1) AS you_fired,
-    (SELECT COUNT(*) FROM post_comments x WHERE x.post_id = p.id AND ${actorShownSql('x', 'p.user_id')}) AS comment_count
+    (SELECT COUNT(*) FROM post_comments x WHERE x.post_id = p.id AND ${actorShownSql('x', 'p.user_id')}) AS comment_count,
+    ${hiddenPostSql('p')} AS hidden_by_you
   FROM posts p JOIN users u ON u.id = p.user_id`;
 
 interface CommentRow {
@@ -97,6 +100,7 @@ interface CommentRow {
   body: string;
   created_at: number;
   photo: string | null;
+  hidden_by_you: number;
 }
 
 /** The comments shown to the viewer on these posts, oldest first, at most `perPost` each. */
@@ -107,7 +111,7 @@ async function commentsFor(db: D1Database, viewer: string, postIds: string[], pe
     .prepare(
       `SELECT * FROM (
          SELECT c.id, c.post_id, c.user_id, p.user_id AS owner_id, u.username, c.body, c.created_at, ${photoColumnSql('?1', 'c.user_id')},
-                ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.created_at, c.id) AS rn
+                ${hiddenCommentSql('c')} AS hidden_by_you, ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.created_at, c.id) AS rn
          FROM post_comments c JOIN posts p ON p.id = c.post_id JOIN users u ON u.id = c.user_id
          WHERE c.post_id IN (SELECT value FROM json_each(?2)) AND ${actorShownSql('c', 'p.user_id')}
        ) WHERE rn <= ?3 ORDER BY post_id, rn`,
@@ -125,6 +129,7 @@ const toComment = (viewer: string, r: CommentRow): PostComment => ({
   body: r.body,
   createdAt: r.created_at,
   canDelete: r.user_id === viewer || r.owner_id === viewer,
+  ...(r.hidden_by_you === 1 ? { hiddenByYou: true } : {}),
 });
 
 interface AboutProductRow {
@@ -283,6 +288,7 @@ async function build(db: D1Database, viewer: string, rows: PostRow[], perPost: n
     youFired: r.you_fired === 1,
     commentCount: r.comment_count,
     comments: (comments.get(r.id) ?? []).map((c) => toComment(viewer, c)),
+    ...(r.hidden_by_you === 1 ? { hiddenByYou: true } : {}),
   }));
 }
 
@@ -549,6 +555,48 @@ posts.delete('/:id/comments/:cid', async (c) => {
   const res = await c.env.DB.prepare('DELETE FROM post_comments WHERE id = ?1 AND post_id = ?2 AND (user_id = ?3 OR ?4 = ?3)').bind(c.req.param('cid'), post.id, me, post.user_id).run();
   if (res.meta.changes !== 1) fail(404, 'not_found', 'That comment isn’t there any more.');
   return c.json({ post: await one(c, post.id) });
+});
+
+// Reports (D84) -------------------------------------------------------------------
+
+/** Report a post you can see (not your own): hidden for you at once; Anton reads it (the reports recipe). */
+posts.post('/:id/report', async (c) => {
+  const post = await visibleRow(c, c.req.param('id'));
+  if (post.user_id === c.var.user!.id) fail(400, 'own_post', 'That’s your own post.');
+  const { reason } = await reasonOf(c);
+  await saveReport(c, { kind: 'post', ownerId: post.user_id, postId: post.id, reason });
+  return c.json({ ok: true });
+});
+
+/** Show it: the post you reported, shown to you again (the report stays). */
+posts.delete('/:id/report', async (c) => {
+  const post = await visibleRow(c, c.req.param('id'));
+  await showReported(c, 'post', post.id);
+  return c.json({ post: await one(c, post.id) });
+});
+
+/** A comment shown to you (not your own) on a post you can see. */
+async function shownComment(c: Context<AppEnv>): Promise<{ id: string; user_id: string; post_id: string }> {
+  const post = await visibleRow(c, c.req.param('id') ?? '');
+  const row = await c.env.DB.prepare(`SELECT c.id, c.user_id, c.post_id FROM post_comments c WHERE c.id = ?2 AND c.post_id = ?3 AND ${actorShownSql('c', '?4')}`)
+    .bind(c.var.user!.id, c.req.param('cid'), post.id, post.user_id)
+    .first<{ id: string; user_id: string; post_id: string }>();
+  if (!row) fail(404, 'not_found', 'That comment isn’t there any more.');
+  return row;
+}
+
+posts.post('/:id/comments/:cid/report', async (c) => {
+  const cm = await shownComment(c);
+  if (cm.user_id === c.var.user!.id) fail(400, 'own_comment', 'That’s your own comment.');
+  const { reason } = await reasonOf(c);
+  await saveReport(c, { kind: 'comment', ownerId: cm.user_id, postId: cm.post_id, commentId: cm.id, reason });
+  return c.json({ ok: true });
+});
+
+posts.delete('/:id/comments/:cid/report', async (c) => {
+  const cm = await shownComment(c);
+  await showReported(c, 'comment', cm.id);
+  return c.json({ post: await one(c, cm.post_id) });
 });
 
 const fireState = async (c: Context<AppEnv>, id: string) => {

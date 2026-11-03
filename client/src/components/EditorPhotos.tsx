@@ -3,6 +3,7 @@ import type { Crop, PhotoInput, PhotoRecord } from '../../../shared/domain/photo
 import { errorText } from '../api';
 import { CameraIcon, CameraLineIcon } from '../icons';
 import { GroupHead } from './inputs';
+import { PhotoRoom } from './PhotoRoom';
 import { discardUpload, loadImage, prepareNewPhoto, renderCrop, uploadSet } from '../images';
 import { PhotoGrid, shownFromRecord } from './PhotoGrid';
 import { Cropper, PhotoViewer, type ShownPhoto } from './PhotoViewer';
@@ -158,6 +159,7 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
           </label>
         )}
       </PhotoGrid>
+      <PhotoRoom />
       {p.drafts.some((d) => d.status === 'error') && (
         <p class="error" role="alert">
           {p.drafts.find((d) => d.status === 'error')!.error}

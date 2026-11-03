@@ -17,6 +17,7 @@ import { useAppearance } from '../components/Gems';
 import { CameraIcon, CameraLineIcon, LockIcon, SearchIcon, TypeMark } from '../icons';
 import { PhotoGrid } from '../components/PhotoGrid';
 import type { ShownPhoto } from '../components/PhotoViewer';
+import { PhotoRoom } from '../components/PhotoRoom';
 import { discardUpload, loadImage, prepareNewPhoto, renderCrop, uploadSet } from '../images';
 import { fetchEntries, fetchEntry } from '../logEntries';
 import { changing, fetchProduct, fetchProducts, forgetProduct } from '../products';
@@ -392,6 +393,7 @@ export function Composer(p: { product?: string; entry?: string }) {
                     </button>
                   )}
                 </PhotoGrid>
+                <PhotoRoom />
               </section>
             )}
             {photos.length > 1 && (

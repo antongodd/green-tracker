@@ -5,7 +5,8 @@ import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, FaceIdIcon, LayoutIcon, LeafGlass, LockIcon, MailIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon } from '../icons';
+import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, FaceIdIcon, LayoutIcon, LeafGlass, LockIcon, MailIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon, ShieldIcon, RulesIcon } from '../icons';
+import { CONTACT_EMAIL } from '../../../shared/domain/trust';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
 import { cachedProducts, fetchArchived, fetchProducts } from '../products';
@@ -107,6 +108,14 @@ export function More() {
     }
   }
 
+  const [copied, setCopied] = useState(false);
+  function copyContact() {
+    navigator.clipboard?.writeText(CONTACT_EMAIL).then(
+      () => setCopied(true),
+      () => {},
+    );
+  }
+
   const passkeys = me.passkeys ?? 0;
   return (
     <>
@@ -165,6 +174,15 @@ export function More() {
             <Row label="Export" to="/more/export" icon={UploadIcon} tint="teal" />
             <Row label="Restore" to="/more/restore" icon={DownloadIcon} tint="teal" />
             <Row label="Archive" value={archived === null ? undefined : String(archived)} to="/more/archive" icon={BoxIcon} />
+          </div>
+        </div>
+        {/* D84: what's kept and the house rules, and how to reach Anton. */}
+        <div class="lh cap">About</div>
+        <div class="wrap">
+          <div class="list">
+            <Row label="Privacy" sub="What’s kept, where, and who sees it" to="/more/about/privacy" icon={ShieldIcon} tint="violet" />
+            <Row label="House rules" to="/more/about/rules" icon={RulesIcon} tint="green" />
+            <Row label="Contact" sub={CONTACT_EMAIL} value={copied ? 'Copied' : 'Copy'} onClick={copyContact} icon={MailIcon} tint="amber" />
           </div>
         </div>
         <div class="wrap more-gap">

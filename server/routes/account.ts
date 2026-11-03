@@ -124,6 +124,13 @@ account.post('/login', requireUser({ allowNeedsLogin: true }), async (c) => {
   return c.json({ email });
 });
 
+/** D84: an account from before the 18+ tick says it's 18 or over, once; then the app opens as normal. */
+account.post('/adult', requireUser({ allowNeedsAdult: true }), async (c) => {
+  if ((await jsonBody(c)).adult !== true) fail(400, 'needs_adult', 'Tick “I’m 18 or over” to carry on.');
+  await c.env.DB.prepare('UPDATE users SET adult_at = ?2 WHERE id = ?1 AND adult_at IS NULL').bind(c.var.user!.id, Date.now()).run();
+  return c.json({ ok: true });
+});
+
 /** A new email, after your password. */
 account.put('/email', requireUser(), async (c) => {
   const user = c.var.user!;

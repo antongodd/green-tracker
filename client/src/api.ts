@@ -68,6 +68,10 @@ export interface Me {
   email?: string | null;
   /** D80: an account from before email and password: it adds both before anything else. */
   needsLogin?: boolean;
+  /** D84: an account from before the 18+ tick: it ticks it, once, before anything else. */
+  needsAdult?: boolean;
+  /** D84: your photos (product, Log and post), against PHOTO_LIMIT. */
+  photoCount?: number;
   passkeys?: number;
   /** Incoming follow requests: the number on the Feed tab and its People button (D77). */
   pendingRequests?: number;
