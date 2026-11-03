@@ -17,7 +17,7 @@ import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { ChoiceChips, GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { formatIsoDate, todayIso } from '../components/ProductRow';
-import { ChevronDown, ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
+import { ChevronDown, ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
 import { scoreHeat } from '../../../shared/domain/heat';
 import { cachedProduct, cachedProducts, fetchProduct, fetchProducts, saveProduct } from '../products';
 import { intoSuggestions, NameSuggestions } from '../components/NameSuggestions';
@@ -383,8 +383,20 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           }}
         >
           {/* D81: the owner's order: Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private. */}
+          {/* A section of its own, its heading the box's label (0.70.2, the owner: "like the photos section"). */}
           <section class="fgroup">
-            <TextField id="name" label="Name" placeholder={examples.name} value={form.name} onInput={(v) => set('name', v)} onBlur={() => set('name', autoCapitalise(form.name))} autoCapitalize="words" />
+            <GroupHead icon={PencilIcon} label="Name" htmlFor="name" />
+            <input
+              id="name"
+              class="input"
+              type="text"
+              placeholder={examples.name}
+              value={form.name}
+              autoCapitalize="words"
+              autoComplete="off"
+              onInput={(e) => set('name', e.currentTarget.value)}
+              onBlur={() => set('name', autoCapitalise(form.name))}
+            />
           </section>
 
           <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} name={form.name || undefined} wide />
