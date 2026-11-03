@@ -110,7 +110,7 @@ export function Log() {
   return (
     <>
       <Header right={<MeButton />} />
-      <main class="screen">
+      <main class="screen has-fab">
         {!ready && !error && <Skeleton kind="log" />}
         {error && !ready && (
           <div class="empty">
@@ -120,9 +120,9 @@ export function Log() {
         )}
         {ready && (
           <>
-            <ControlRow filter={view.filter} onFilter={setFilter} />
-            {/* Log tiles show even when empty: 0 / 0 / 0g. */}
-            <Tiles
+            {/* An empty Log shows only its card: no Type pill and no 0 / 0 / 0g (0.69.9), as on the Leaderboard. */}
+            {rows.length > 0 && <ControlRow filter={view.filter} onFilter={setFilter} />}
+            {rows.length > 0 && <Tiles
               tiles={[
                 { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
                 { value: String(tiles.countries), label: tiles.countries === 1 ? 'Country' : 'Countries' },
@@ -136,7 +136,7 @@ export function Log() {
                   <b class="n">{mostFrom.rows.length}</b>
                 </>
               )}
-            />
+            />}
             {rows.length === 0 ? (
               <EmptyCard art="log" title="Your Log is empty">
                 <p>Everything you try goes here. Add a quick entry, or add a product to your Leaderboard.</p>

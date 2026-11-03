@@ -94,7 +94,7 @@ export function AboutCard(p: { about: PostAbout }) {
  * photo takes the first one's shape (between 4:5 and 1.91:1, as Instagram), so the post doesn't change height as you
  * swipe; a cut-out is shown whole on its glow.
  */
-function PostPhotos(p: { post: Post; href?: string }) {
+function PostPhotos(p: { post: Post; href?: string; eager?: boolean }) {
   const post = p.post;
   const photos = post.photos?.length ? post.photos : [post.image];
   const [at, setAt] = useState(0);
@@ -115,7 +115,7 @@ function PostPhotos(p: { post: Post; href?: string }) {
       class={ph.cutout ? 'cut' : undefined}
       src={postPhotoUrl(post, 'cropped', i)}
       alt={alt(i)}
-      loading={i === 0 ? undefined : 'lazy'}
+      loading={i === 0 && p.eager ? undefined : 'lazy'}
       decoding="async"
       draggable={false}
       onLoad={i === 0 ? (e) => setRatio(e.currentTarget.naturalWidth / Math.max(1, e.currentTarget.naturalHeight)) : undefined}
@@ -238,9 +238,11 @@ export function CaptionSheet(p: { post: Post; onSaved: (post: Post) => void; onC
 
 /**
  * A post. `full`: on its own page (the whole caption, no comments here: the page lists them).
+ * `eager`: the first post in a list, whose first photo loads at once; every other photo waits until it's
+ * about to scroll into view (0.69.9: the Feed fetched every post's photo straight away).
  * `onChange` gets the post back after a fire or an edit; `onDeleted` after Delete post.
  */
-export function PostCard(p: { post: Post; full?: boolean; onChange: (post: Post) => void; onDeleted: () => void }) {
+export function PostCard(p: { post: Post; full?: boolean; eager?: boolean; onChange: (post: Post) => void; onDeleted: () => void }) {
   const post = p.post;
   const [busy, setBusy] = useState(false);
   const [popped, setPopped] = useState(false);
@@ -296,7 +298,7 @@ export function PostCard(p: { post: Post; full?: boolean; onChange: (post: Post)
           </button>
         )}
       </div>
-      <PostPhotos post={post} href={p.full ? undefined : href} />
+      <PostPhotos post={post} href={p.full ? undefined : href} eager={p.full || p.eager} />
       {post.about && <AboutCard about={post.about} />}
       <div class="post-acts">
         <button type="button" class={`act fire${post.youFired ? ' on' : ''}${popped ? ' pop' : ''}`} aria-pressed={post.youFired} aria-label="Give a fire" onClick={fire} onAnimationEnd={() => setPopped(false)}>

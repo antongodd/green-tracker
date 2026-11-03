@@ -69,6 +69,11 @@ function App() {
 
   useEffect(() => {
     refresh();
+    // Back on screen (iOS keeps a Home Screen app open for days): the Feed dot and the follow requests
+    // number catch up (0.69.9).
+    const back = () => document.visibilityState === 'visible' && refresh();
+    document.addEventListener('visibilitychange', back);
+    return () => document.removeEventListener('visibilitychange', back);
   }, [refresh]);
 
   // The whole app's look (D64, D65, D72): screenLook.ts puts it on (someone you follow's instead on their

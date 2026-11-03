@@ -64,11 +64,11 @@ export function rankByOptions(filter: TypeFilter, { money }: { money: boolean })
   return options;
 }
 
-/** Caption under a row's score: OVERALL, TASTE, PRICE, VFM… */
+/** Caption under a row's score: OVERALL, TASTE, PRICE, VALUE (value for money)… */
 export function rankByCaption(rankBy: RankBy): string {
   if (rankBy === 'overall') return 'OVERALL';
   if (rankBy === 'price') return 'PRICE';
-  if (rankBy === 'vfm') return 'VFM';
+  if (rankBy === 'vfm') return 'VALUE';
   return RATING_LABELS[rankBy].toUpperCase();
 }
 

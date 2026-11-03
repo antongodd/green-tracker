@@ -78,6 +78,12 @@ test('All types ranks by value for money and price, edibles as 20mg for 1g of fl
   ]);
   await expect(rows().nth(0)).toHaveClass(/\bfirst\b/);
   await expect(page.locator('.row[class*="band"]')).toHaveCount(0);
+  // Each score says "Value", not "VFM"; the three edibles say they're worked out on 20mg (0.69.9), the rest don't.
+  await expect(rows().nth(0).locator('.score .cap')).toHaveText(/^value$/i);
+  await expect(page.locator('.score .cap', { hasText: /vfm/i })).toHaveCount(0);
+  await expect(rows().nth(0).locator('.meta')).toHaveText('per 20mg·£0.05/mg');
+  await expect(rows().nth(3).locator('.meta .per')).toHaveCount(0);
+  await expect(page.locator('.meta .per')).toHaveCount(3);
   // Price: highest first; an edible's is the price of 20mg, said so before its real price per mg.
   await pill('Rank by').selectOption('price');
   await expect(pillBox('Rank by')).toContainText('Price');
@@ -205,7 +211,7 @@ test('labels fit at 375px for every filter × Rank by combination; short forms o
       };
       expect(got.map((g) => g.band), `${t} × ${r}`).toEqual(got.map(want));
       expect(got.map((g) => g.first), `${t} × ${r}`).toEqual(got.map((g, i) => i === 0 && !g.unrated));
-      if (/VFM|Consis\.|Price\/|Conc\./.test(m.text ?? '')) compacted.push(`${t} × ${r}: ${m.text}`);
+      if (/Value(?! for money)|Consis\.|Price\/|Conc\./.test(m.text ?? '')) compacted.push(`${t} × ${r}: ${m.text}`);
     }
   }
   console.log(`Abbreviated at 375px (${compacted.length}):\n${compacted.join('\n')}`);
@@ -326,3 +332,26 @@ async function rerate(place: number, look: string, slow: boolean) {
 test('§17: re-rate a product from 8th to 2nd, come back → it is on screen at its new position', () => rerate(8, '8.7', false));
 // The first one's Filler is now 2nd, so the 9th is the next Filler; 8.8 puts it 2nd in turn.
 test('§17, slowly: the same with a slow Back flight (a busy phone)', () => rerate(9, '8.8', true));
+
+test('the + never sits on the last row’s score: room under the list on every top (0.69.9)', async () => {
+  const put = (a: object) => page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const top of ['hero', 'tiles', 'strip']) {
+    expect(await put({ look: 'daymint', top, preset: 'gems', markFirst: true })).toBe(200);
+    for (const path of ['/', '/log']) {
+      await page.goto(path);
+      await expect(page.locator(path === '/' ? '.row' : '.lrow').first()).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await expect.poll(() => page.evaluate(() => Math.ceil(window.scrollY + innerHeight) >= document.documentElement.scrollHeight - 1)).toBe(true);
+      const clash = await page.evaluate((sel) => {
+        const fab = document.querySelector('.fab')!.getBoundingClientRect();
+        const last = [...document.querySelectorAll(sel)].pop()!.getBoundingClientRect();
+        return last.bottom > fab.top - 8 ? `${last.bottom} > ${fab.top}` : null;
+      }, path === '/' ? '.row' : '.lrow');
+      expect(clash, `${top} ${path}`).toBeNull();
+    }
+  }
+  expect(await put({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true })).toBe(200);
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('gt.look', 'aurora'));
+});
