@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { api, errorText } from '../api';
+import { ApiError, api, errorText } from '../api';
 import { AuthMark } from '../components/chrome';
 import { PasswordField } from '../components/inputs';
 import { DEFAULT_APPEARANCE, scoreBand } from '../../../shared/domain/gems';
@@ -114,6 +114,12 @@ export function SignIn() {
   );
 }
 
+/** Too many wrong tries (D80's limits, unchanged): the server's words, plus the way in that still works. */
+const TOO_MANY_TEXT = 'Too many tries. Wait a few minutes and try again, or sign in with Face ID if you set it up.';
+
+/** Forgot password? Honest words (0.69.1): there's no email reset yet, so Face ID is the way back in. */
+const FORGOT_TEXT = 'We can’t reset passwords by email yet. If you set up Face ID, sign in with that instead.';
+
 /** Sign in with email and password (D80); Face ID underneath for anyone with a passkey. */
 export function EmailSignIn() {
   const { refresh } = useSession();
@@ -121,6 +127,7 @@ export function EmailSignIn() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState<'' | 'password' | 'faceid'>('');
   const [error, setError] = useState('');
+  const [forgot, setForgot] = useState(false);
 
   async function submit(e: Event) {
     e.preventDefault();
@@ -130,7 +137,7 @@ export function EmailSignIn() {
       await api('POST', '/auth/signin', { email: email.trim(), password });
       await refresh();
     } catch (err) {
-      setError(errorText(err));
+      setError(err instanceof ApiError && err.code === 'rate_limited' ? TOO_MANY_TEXT : errorText(err));
       setBusy('');
     }
   }
@@ -172,6 +179,12 @@ export function EmailSignIn() {
         <button class="btn primary" type="submit" disabled={!!busy || !email.trim() || !password}>
           {busy === 'password' ? 'Signing in…' : 'Sign in'}
         </button>
+        <button class="btn text" type="button" aria-expanded={forgot} aria-controls="forgot-help" onClick={() => setForgot(!forgot)}>
+          Forgot password?
+        </button>
+        <p id="forgot-help" class="lead small" hidden={!forgot}>
+          {FORGOT_TEXT}
+        </p>
         {passkeysSupported() && (
           <>
             <div class="or" aria-hidden="true">
