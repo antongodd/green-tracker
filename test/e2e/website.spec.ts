@@ -216,7 +216,7 @@ test('the words match today’s app: an email and password, posts for approved f
 });
 
 test('the floating chips never cover a score, on a phone or a laptop', async ({ page }) => {
-  for (const [width, height] of [[320, 700], [390, 844], [1280, 800]]) {
+  for (const [width, height] of [[320, 700], [390, 844], [1280, 800]] as const) {
     await page.setViewportSize({ width, height });
     await open(page);
     // Held still (the chips and the phone float), so the boxes are where they rest.
