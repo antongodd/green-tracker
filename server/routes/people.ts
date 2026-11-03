@@ -186,7 +186,7 @@ people.delete('/u/:username/block', async (c) => {
 async function sharedFor(c: Context<AppEnv>) {
   const them = await other(c);
   const db = c.env.DB;
-  if (!(await canView(db, c.var.user!.id, them.id))) fail(403, 'not_following', 'Follow to see their leaderboard.');
+  if (!(await canView(db, c.var.user!.id, them.id))) fail(403, 'not_following', 'Follow to see their Leaderboard.');
   // D45: their own privacy settings decide what is shared, on every request.
   const privacy = await loadEffectivePrivacy(db, them.id);
   const products = privacy.shareBoard ? shareProducts(await load(db, them.id, { archived: false }), privacy) : [];

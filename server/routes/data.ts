@@ -322,7 +322,7 @@ async function checkDeletePasskey(c: Context<AppEnv>, body: Record<string, unkno
     expectedRPID: c.env.RP_ID,
     credential: { id: passkey.id, publicKey: new Uint8Array(passkey.public_key), counter: passkey.counter, transports: parseTransports(passkey.transports) },
   }).catch(() => ({ verified: false as const }));
-  if (!verification.verified) fail(400, 'passkey_failed', 'The passkey could not be checked. Please try again.');
+  if (!verification.verified) fail(400, 'passkey_failed', 'The passkey couldn’t be checked. Please try again.');
 }
 
 /**

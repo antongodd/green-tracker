@@ -1724,6 +1724,34 @@ None.
 
 ## 6. Changelog
 
+### 0.69.8 — wording fixes across the app (review panel, 2026-11-03, to-do item 5)
+- Words only; nothing stored changes. Type names on screen: Pre-roll, Edible, Live rosin, Live resin (the saved keys
+  `pre_roll`, `edibles`, `live_rosin`, `live_resin` stay, so exports and restores are unchanged); empty states built
+  from them now read "No Pre-roll products yet" / "…, but none in Pre-roll.", "@sam has no Edible products." and "No
+  Edible rows in your Log". Rank by's price under Flower and Concentrate is "Price" (edibles keep "Price per mg").
+- Settings, not More: "Settings → Blocked people", "bring it back from Settings → Archive"; Un-archive is **Bring
+  back**; the archived-product message (server, Log and posts) is "This product is archived. Bring it back from
+  Settings → Archive first."; the post picker's note: "Archived products aren’t listed. For one you’ve returned to
+  the Log, post its Log entry instead." Archive: "totals" for "tiles", "product page" for "profile".
+- Plurals: the stat strip says "1 product" and the Log's "1 country"; a post's own page reads "1 comment" to
+  VoiceOver. Capital L for Leaderboard and Log everywhere (Add to Leaderboard, Save to Log, New Log entry, View
+  Leaderboard, Follow to see their Leaderboard, That Log entry doesn’t exist).
+- The product badge shows only the place ("#1 on your Leaderboard", still in the band's colours), not the colour's
+  name (D48's badge otherwise unchanged). The value-for-money line on a product page: "Overall score divided by the
+  latest price per gram. Higher is better." (edibles: "per 20mg (counted as 1g of flower)"). Hit time is **Time to
+  kick in**. The Overall line has a curly "doesn’t" (and "don’t" for more than one). "Rated 5 of 5 categories" in
+  the editor too. One dash (–) for a missing score or price.
+- Settings: "Face ID" for both the row and its page ("Face ID and passkeys" didn’t fit the title bar); "Current password" on Email and Delete account too; a lead
+  line on Password ("After a change, any other phone or computer is signed out."); What followers see reads
+  "Leaderboard, Source, Country, Photos, Posts" or "Only your name and your posts". The Sources tab's title is "Sources", like the tab
+  ("Brands & suppliers" was cut off), with "Best:" and the empty state in lower case. Main currency: "Common", and "Totals and comparisons use this currency."
+  The Leafly box: "Paste a link, or leave blank". The People empty state, "Change this in Privacy.", "the leaf or
+  other icon" for "type mark", and Deep Forest's line "Deep greens, calm and simple".
+- Server messages: "couldn’t" for "could not"; "That isn’t here any more." for "Not found."; "Something’s missing.
+  Please try again." Error codes are unchanged.
+- Left for Anton: the New tags (D69, D70), the two names used twice (Deep Sea; Aurora, Neon) and the Brand tag on a
+  brand's own page.
+
 ### Notes — privacy and data words are live
 - 0.69.3 and its fix 0.69.5 (on dev 2026-11-03) went live on 2026-11-03 in release 0.69.6 and move to Done. Notes only.
 

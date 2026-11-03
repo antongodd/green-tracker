@@ -79,7 +79,7 @@ test('tapping an entry opens its page: its photo on top, the tag and name, Detai
   expect(rows.slice(0, 3)).toEqual([['Type', 'Flower'], ['Country', '🇺🇸 United States'], ['Amount', '3.5g']]);
   expect(rows[3]![0]).toBe('Logged');
   expect(rows[3]![1]).toMatch(LOGGED);
-  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Post', 'Edit', 'Delete entry']);
+  await expect(actions().locator('.btn')).toHaveText(['Add to Leaderboard', 'Post', 'Edit', 'Delete entry']);
   await expect(actions().locator('.btn svg')).toHaveCount(4);
   await expect(page.getByText(/Rate it/)).toHaveCount(0); // no line under Add to leaderboard
   await expect(page.locator('.hdr').getByRole('link', { name: 'Edit' })).toBeVisible();
@@ -96,13 +96,13 @@ test('without a photo the type’s mark glows in its place; a cut-out floats; em
   await expect(page.locator('.hero-photo svg')).toBeVisible();
   const rows = await details();
   expect(rows.map(([k]) => k)).toEqual(['Type', 'Amount', 'Logged']); // no country set
-  expect(rows.slice(0, 2)).toEqual([['Type', 'Edibles'], ['Amount', '50mg']]);
+  expect(rows.slice(0, 2)).toEqual([['Type', 'Edible'], ['Amount', '50mg']]);
   await shot(page, '44-log-entry-plain');
 
   await open('Cut Out');
   await expect(page.locator('.poster')).toHaveClass(/\bcut\b/);
   await expect(page.locator('.hero-photo.cut img')).toBeVisible();
-  expect((await details()).slice(0, 3)).toEqual([['Type', 'Concentrate'], ['Concentrate type', 'Live Rosin'], ['Country', '🇨🇦 Canada']]);
+  expect((await details()).slice(0, 3)).toEqual([['Type', 'Concentrate'], ['Concentrate type', 'Live rosin'], ['Country', '🇨🇦 Canada']]);
 });
 
 test('Edit, top right or in Actions, opens the form; Cancel and Save to log come back to the page', async () => {
@@ -115,7 +115,7 @@ test('Edit, top right or in Actions, opens the form; Cancel and Save to log come
   await expect(page).toHaveURL(new RegExp(`${form}$`));
   await expect(page.getByLabel('Name')).toHaveValue('Lemon Haze');
   // The form only edits: Add to leaderboard and Delete entry are on the page.
-  await expect(page.getByRole('button', { name: 'Add to leaderboard' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Add to Leaderboard' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Delete entry' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page).toHaveURL(new RegExp(`/log/${ids['Lemon Haze']}$`));
@@ -123,7 +123,7 @@ test('Edit, top right or in Actions, opens the form; Cancel and Save to log come
   await actions().getByRole('link', { name: 'Edit' }).click();
   await page.getByLabel('Name').fill('Lemon Haze Reserve');
   await page.getByLabel('Amount (g)').fill('7');
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(new RegExp(`/log/${ids['Lemon Haze']}$`));
   await expect(page.getByRole('heading', { level: 1, name: 'Lemon Haze Reserve' })).toBeVisible();
   expect((await details())[2]).toEqual(['Amount', '7g']);
@@ -151,7 +151,7 @@ test('its photo can be swapped for a new one in a single edit', async () => {
   await page.getByLabel('Add photo').setInputFiles([{ name: 'new.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') }]);
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(new RegExp(`/log/${ids['Swap Shot']}$`));
   await expect(page.getByRole('alert')).toHaveCount(0);
   await expect(page.locator('.hero-photo img')).toBeVisible();
@@ -189,11 +189,11 @@ test('Delete entry asks first, then the entry is gone from the Log', async () =>
 test('offline, Add to leaderboard and Delete entry wait for the connection; Edit still opens', async () => {
   await open('Plain Jane');
   await page.context().setOffline(true);
-  await expect(actions().getByRole('button', { name: 'Add to leaderboard' })).toBeDisabled();
+  await expect(actions().getByRole('button', { name: 'Add to Leaderboard' })).toBeDisabled();
   await expect(actions().getByRole('button', { name: 'Delete entry' })).toBeDisabled();
   await expect(actions().getByRole('link', { name: 'Edit' })).toBeVisible();
   await page.context().setOffline(false);
-  await expect(actions().getByRole('button', { name: 'Add to leaderboard' })).toBeEnabled();
+  await expect(actions().getByRole('button', { name: 'Add to Leaderboard' })).toBeEnabled();
 });
 
 test('readable and accessible, with and without a photo', async () => {

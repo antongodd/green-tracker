@@ -152,7 +152,7 @@ test('Delete account: red throughout, what goes, Export first, and the username 
   await input.fill(username.toUpperCase());
   await expect(input).toHaveClass(/armed/);
   await expect(button).toBeDisabled(); // D80: and your password
-  await page.getByLabel('Your password').fill('anything');
+  await page.getByLabel('Current password').fill('anything');
   await expect(button).toBeEnabled();
   await shot(page, '66-delete');
 

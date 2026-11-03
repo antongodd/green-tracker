@@ -100,7 +100,7 @@ test('editing a product: a swipe back asks; after Save, leaving doesn’t', asyn
 
 test('a Log entry: Cancel asks once changed, new or saved', async () => {
   await page.goto('/log');
-  await page.getByRole('button', { name: 'Add a log entry' }).click();
+  await page.getByRole('button', { name: 'Add a Log entry' }).click();
   await page.getByLabel('Name').fill('Mystery');
   await page.getByRole('button', { name: 'Cancel' }).click();
   await sheet('Discard this entry?').getByRole('button', { name: 'Discard' }).click();

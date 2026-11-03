@@ -178,7 +178,7 @@ export function LogEntryPage(p: { id: string }) {
               </span>
               <span>
                 <strong id="kept-h">Kept from your Leaderboard</strong>
-                <span class="small">Hidden for now. Add to leaderboard brings it all back.</span>
+                <span class="small">Hidden for now. Add to Leaderboard brings it all back.</span>
               </span>
             </div>
             {keptRows(entry.kept, entry, main).length > 0 && (
@@ -192,7 +192,7 @@ export function LogEntryPage(p: { id: string }) {
         <section class="sect" aria-label="Actions">
           <button class="btn primary" onClick={addToLeaderboard} disabled={busy || !online}>
             <BoardLineIcon />
-            Add to leaderboard
+            Add to Leaderboard
           </button>
           {/* D77: post it to your followers: they see its name and type only. */}
           <a class="btn secondary" href={`/feed/new/log/${encodeURIComponent(entry.id)}`} onClick={linkTo(`/feed/new/log/${encodeURIComponent(entry.id)}`)}>

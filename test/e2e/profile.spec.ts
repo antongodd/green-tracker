@@ -148,7 +148,7 @@ test('a follower sees it in their lists and on your Leaderboard; a stranger sees
   await expect(row).toBeVisible();
   await expectLetter(row, 'O');
   await row.getByRole('link').click();
-  await expect(stranger.getByText('Follow to see their leaderboard and posts.')).toBeVisible();
+  await expect(stranger.getByText('Follow to see their Leaderboard and posts.')).toBeVisible();
   await expectLetter(stranger.locator('.stranger'), 'O');
   // Asking to follow reveals nothing until approved.
   await stranger.getByRole('button', { name: 'Follow' }).click();

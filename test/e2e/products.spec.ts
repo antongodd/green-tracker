@@ -3,7 +3,7 @@ import { shot, signUp } from './helpers';
 
 // The editor's count line, and Overall live in the Ratings heading (D34, 0.27.0).
 async function expectRated(page: Page, count: string, overall: string) {
-  await expect(page.getByText(`Rated ${count}`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`Rated ${count} categories`, { exact: true })).toBeVisible();
   await expect(page.locator('.gh-ov b')).toHaveText(overall);
 }
 
@@ -49,7 +49,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await rate(page, 'Burn', '8.6');
   await rate(page, 'High', '9.4');
   await expectRated(page, '5 of 5', '8.9');
-  await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn\'t count. Blank categories are left out.')).toBeVisible();
+  await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn’t count. Blank categories are left out.')).toBeVisible();
 
   // Purchases: date defaults to today; the per-unit price is derived live.
   await page.getByRole('button', { name: 'Add purchase' }).click();
@@ -77,7 +77,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByLabel('Product type').selectOption('edibles');
   await expect(page.getByText('Look', { exact: true })).toHaveCount(0);
   await expectRated(page, '2 of 2', '9.2');
-  await expect(page.getByText('Hit time', { exact: true })).toBeVisible();
+  await expect(page.getByText('Time to kick in', { exact: true })).toBeVisible();
   // The old figure is relabelled in mg, never converted: on its folded row and in its fields (D42).
   const bought = page.getByRole('group', { name: 'Purchase 1' });
   await expect(bought.locator('.psum .l > span')).toHaveText('3.5mg · £9.50');
@@ -165,7 +165,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('link', { name: /Archive/ }).click();
   await expect(page.locator('.row')).toContainText('Gelato 41 OG');
   await shot(page, '14-archive');
-  await page.getByRole('button', { name: 'Un-archive' }).click();
+  await page.getByRole('button', { name: 'Bring back' }).click();
   await expect(page.getByRole('heading', { name: 'Nothing archived' })).toBeVisible();
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page.locator('.row')).toHaveCount(2);

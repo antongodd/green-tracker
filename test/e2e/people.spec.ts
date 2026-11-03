@@ -82,7 +82,7 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   // Rank by never offers Price or Value for money.
   await fan.getByLabel('Type', { exact: true }).selectOption('flower');
   const options = await fan.getByLabel('Rank by').locator('option').allTextContents();
-  expect(options).not.toContain('Price per gram');
+  expect(options).not.toContain('Price');
   expect(options).not.toContain('Value for money');
   await fan.getByLabel('Type', { exact: true }).selectOption('all');
   // Nor under All, where your own board now has them (D67).
@@ -112,7 +112,7 @@ test('removing a follower ends access at once', async () => {
   await owner.getByRole('dialog').getByRole('button', { name: 'Remove follower' }).click();
   await expect(owner.getByText('No followers yet.')).toBeVisible();
   await fan.reload();
-  await expect(fan.getByText('Follow to see their leaderboard and posts.')).toBeVisible();
+  await expect(fan.getByText('Follow to see their Leaderboard and posts.')).toBeVisible();
   await expect(fan.locator('.row')).toHaveCount(0);
   await shot(fan, '54-stranger');
 });

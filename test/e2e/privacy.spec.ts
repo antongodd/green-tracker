@@ -50,7 +50,7 @@ test.beforeAll(async ({ browser }) => {
 test('More has a Privacy group; the screen starts as before, with the preview on top', async () => {
   await owner.goto('/more');
   const row = owner.getByRole('link', { name: /What followers see/ });
-  await expect(row).toContainText('Followers see: Leaderboard, Source, Country, Photos');
+  await expect(row).toContainText('Leaderboard, Source, Country, Photos, Posts');
   await row.click();
   await expect(owner).toHaveURL(/\/more\/privacy$/);
   await expect(preview()).toContainText('Shared Kush');
@@ -93,7 +93,7 @@ test('Share my Leaderboard off: followers see nothing shared; the other switches
   for (const name of ['Source', 'Country', 'Product photos']) await expect(toSwitch(name), name).toBeDisabled();
   await expect(toSwitch('My profile photo')).toBeEnabled();
   await owner.goto('/more');
-  await expect(owner.getByRole('link', { name: /What followers see/ })).toContainText('Followers see only your name');
+  await expect(owner.getByRole('link', { name: /What followers see/ })).toContainText('Only your name and your posts');
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.empty')).toContainText('hasn’t shared any products');
   await expect(fan.locator('.row')).toHaveCount(0);

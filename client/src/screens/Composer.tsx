@@ -192,7 +192,7 @@ export function Composer(p: { product?: string; entry?: string }) {
           title="Your Leaderboard"
           items={products ? newestFirst(products.filter((x) => !x.archived)) : null}
           error={error}
-          note="Archived products and ones returned to the Log aren’t listed: post their Log entry instead."
+          note="Archived products aren’t listed. For one you’ve returned to the Log, post its Log entry instead."
           onBack={() => setStep('choose')}
           onPick={(product) => start({ kind: 'product', product })}
           row={(x) => {

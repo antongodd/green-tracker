@@ -120,24 +120,17 @@ export function pageClass(place: Look | null, a: Appearance): string {
   return `${place.band ? ` tiered band${place.band} pal-${a.preset}` : ''}${marked(place, a) ? ' first' : ''}`;
 }
 
-/** "Amethyst · #3 on your Leaderboard", or "#1 by Price" for an uncoloured #1. The crown goes on #1. */
+/** "#3 on your Leaderboard" in the band's colours, or "#1 by Price" for an uncoloured #1. The crown goes on #1. */
 export function PlaceBadge(p: { place: Pick<RankedRow<RankableProduct>, 'rank' | 'band' | 'first'> | null; view: ViewState; whose: 'your' | 'their'; appearance: Appearance }) {
   if (!p.place) return null;
   const text = placeBadge(p.place, p.view, p.whose, p.appearance);
   if (!text) return null;
-  // The colour's name and the place number flow through the colours; the rest stays plain.
-  const [gem, where] = text.includes(' · ') ? text.split(' · ') : [null, text];
-  const [n, ...rest] = where!.split(' ');
+  // The place number flows through the colours; the rest stays plain.
+  const [n, ...rest] = text.split(' ');
   return (
     <span class={`gem-badge${p.place.band ? '' : ' plain'}`}>
       {marked(p.place, p.appearance) && <CrownIcon />}
       <span>
-        {gem && (
-          <>
-            <span class="gem">{gem}</span>
-            {' · '}
-          </>
-        )}
         <span class="n">{n}</span> {rest.join(' ')}
       </span>
     </span>

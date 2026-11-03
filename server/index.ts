@@ -64,7 +64,7 @@ app.route('/money', money);
 app.route('/posts', posts);
 app.route('/test', testHooks);
 
-app.notFound((c) => c.json({ error: 'not_found', message: 'Not found.' }, 404));
+app.notFound((c) => c.json({ error: 'not_found', message: 'That isn’t here any more.' }, 404));
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) return err.getResponse();

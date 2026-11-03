@@ -1,6 +1,6 @@
 {
   "name": "green-tracker",
-  "version": "0.69.6",
+  "version": "0.69.8",
   "private": true,
   "type": "module",
   "scripts": {

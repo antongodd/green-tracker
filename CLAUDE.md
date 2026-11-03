@@ -300,7 +300,7 @@ section, so it must always be current.
 
 - **Live:** 0.69.6 (2026-11-03): everything up to the website catch-up (to-do item 6) and the privacy and data words
   (item 3).
-- **Dev:** 0.69.6, the same as live.
+- **Dev:** 0.69.8: the wording fixes (item 5), on their way to live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -314,8 +314,10 @@ Each is a job for its own conversation; the summary lists what each covers.
 4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
    under the +; no zeros on an empty Log; the first comment hidden under the comment box; 44-point post buttons;
    Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
-5. **Wording fixes across the app** (small). The proof-reader's table ("More" → "Settings", plurals, capitals,
-   colour names in the badge, type names, archive messages, Current password).
+5. **Wording fixes across the app** (small): **on dev** in 0.69.8 (2026-11-03). The proof-reader's table ("More" →
+   "Settings", plurals, capitals, colour names in the badge, type names, archive messages, Current password). Left
+   for Anton: the New tags on Looks and colours (D69, D70), the names used twice (Deep Sea; Aurora, Neon), the Brand
+   tag on a brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first

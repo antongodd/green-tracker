@@ -108,7 +108,7 @@ describe('Return to Log', () => {
     await me.post(`/api/products/${p.id}/archived`, { value: true });
     const r = await returnToLog(me, p.id);
     expect(r.status).toBe(409);
-    expect(r.json.message).toBe('Un-archive it first.');
+    expect(r.json.message).toBe('This product is archived. Bring it back from Settings → Archive first.');
     expect((await returnToLog(other, p.id)).status).toBe(404);
     expect((await me.get(`/api/products/${p.id}`)).json.product.archived).toBe(true);
   });

@@ -342,7 +342,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
 
   return (
     <>
-      <Header title={p.promoteFrom ? 'Add to leaderboard' : p.id ? form.name || 'Edit product' : 'New product'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
+      <Header title={p.promoteFrom ? 'Add to Leaderboard' : p.id ? form.name || 'Edit product' : 'New product'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
       <main class="screen has-savebar">
         <form
           class="editor"
@@ -394,7 +394,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               <span class="gh-ov">
                 <span>Overall</span>
                 <b class={o === null ? 'none' : undefined} style={o === null ? undefined : { color: scoreHeat('overall', o) ?? undefined }}>
-                  {o === null ? '—' : formatScore(o)}
+                  {o === null ? '–' : formatScore(o)}
                 </b>
               </span>
             </GroupHead>
@@ -413,7 +413,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             </div>
             {form.productType === 'edibles' && <HitTimeInput value={form.hitTimeMinutes} onChange={(v) => set('hitTimeMinutes', v)} />}
             <p class="small">
-              Rated {count.rated} of {count.of}
+              Rated {count.rated} of {count.of} categories
             </p>
             <p class="small">{overallExplanation(form.productType)}</p>
           </section>
@@ -445,7 +445,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                       {total === null ? <span class="warn">Needs a total paid to be kept</span> : <span>{sub}</span>}
                     </span>
                     <span class="r">
-                      {upText ?? '—'}
+                      {upText ?? '–'}
                       {up !== null && paidUp !== null && <small>{formatUnitPrice(form.productType, paidUp, d.currency)}</small>}
                     </span>
                     <ChevronRight class="chev" />
@@ -510,7 +510,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
 
           <section class="fgroup" aria-label="Leafly">
             <GroupHead icon={LinkIcon} label="Leafly" />
-            <TextField id="leafly" label="Leafly link" inputMode="url" autoCapitalize="none" placeholder="Paste a link, or leave empty to search by name" value={form.leaflyLink ?? ''} onInput={(v) => set('leaflyLink', v)} />
+            <TextField id="leafly" label="Leafly link" inputMode="url" autoCapitalize="none" placeholder="Paste a link, or leave blank" value={form.leaflyLink ?? ''} onInput={(v) => set('leaflyLink', v)} />
           </section>
 
           <section class="fgroup" aria-label="Private">
@@ -542,7 +542,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
         </div>
       </div>
       {p.promoteFrom ? (
-        <DiscardSheet keeper={keeper} title="Leave without adding it?" message="Nothing has been added to your Leaderboard yet. Your log entry stays as it was." />
+        <DiscardSheet keeper={keeper} title="Leave without adding it?" message="Nothing has been added to your Leaderboard yet. Your Log entry stays as it was." />
       ) : p.id ? (
         <DiscardSheet keeper={keeper} title="Discard your changes?" message="The product stays as it was before you started editing." />
       ) : (

@@ -80,7 +80,7 @@ export interface UnitDef {
 
 export const GRAMS: UnitDef = {
   amount: 'g',
-  priceLabel: 'Price per gram',
+  priceLabel: 'Price',
   perGram: 1,
   countsTowardsWeightTotal: true,
 };
@@ -117,9 +117,9 @@ export interface ProductTypeDef {
 export const CONCENTRATE_SUBTYPES: readonly SubtypeDef[] = [
   { key: 'hash', label: 'Hash' },
   { key: 'rosin', label: 'Rosin' },
-  { key: 'live_rosin', label: 'Live Rosin' },
+  { key: 'live_rosin', label: 'Live rosin' },
   { key: 'wax', label: 'Wax' },
-  { key: 'live_resin', label: 'Live Resin' },
+  { key: 'live_resin', label: 'Live resin' },
   { key: 'diamonds', label: 'Diamonds' },
   { key: 'thc_distillate', label: 'THC distillate' },
   { key: 'other', label: 'Other' },
@@ -149,7 +149,7 @@ export const PRODUCT_TYPES = [
   },
   {
     key: 'edibles',
-    label: 'Edibles',
+    label: 'Edible',
     ratingSet: EDIBLES_SET,
     unit: MG_THC,
     icon: 'edibles',
@@ -159,7 +159,7 @@ export const PRODUCT_TYPES = [
   },
   {
     key: 'pre_roll',
-    label: 'Pre roll',
+    label: 'Pre-roll',
     ratingSet: PRE_ROLL_SET,
     unit: GRAMS,
     icon: 'pre_roll',

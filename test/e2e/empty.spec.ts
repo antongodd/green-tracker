@@ -63,7 +63,7 @@ test('a new Leaderboard: the podium drawing and a green Add a product', async ()
 test('an empty Log: the notebook and a green Add a log entry', async () => {
   await me.goto('/log');
   const c = await card(me, 'log', 'Your Log is empty');
-  await greenAdd(c, 'Add a log entry');
+  await greenAdd(c, 'Add a Log entry');
   await shot(me, '81-empty-log');
 });
 
@@ -77,7 +77,7 @@ test('a filter with nothing in it: the funnel; a rating nothing has: the bars; b
   await call(me, 'POST', '/products', { ...emptyProductInput(), name: 'Only Flower', ratings: { look: 7 } });
   await me.goto('/');
   await me.getByLabel('Type', { exact: true }).selectOption('edibles');
-  let c = await card(me, 'filter', 'No Edibles yet');
+  let c = await card(me, 'filter', 'No Edible products yet');
   await expect(c.getByRole('button', { name: 'Show all types' })).toHaveClass(/\bsecondary\b/);
   await shot(me, '82-empty-filter');
   await me.getByLabel('Type', { exact: true }).selectOption('all');
@@ -94,7 +94,7 @@ test('the Log filtered to nothing: the funnel', async () => {
   await call(me, 'POST', '/log', { ...emptyLogEntryInput(), name: 'Loose Leaf', country: 'US' });
   await me.goto('/log');
   await me.getByLabel('Type', { exact: true }).selectOption('edibles');
-  await card(me, 'filter', 'No Edibles in your Log');
+  await card(me, 'filter', 'No Edible rows in your Log');
   await me.getByLabel('Type', { exact: true }).selectOption('all');
 });
 
@@ -103,7 +103,7 @@ test('People: Following, Followers and Requests each get their own small card', 
   await me.getByRole('tab', { name: /Following/ }).click();
   const c = await card(me, 'following', 'Not following anyone');
   await expect(c).toHaveClass(/\bcompact\b/);
-  await expect(c.getByText('You’re not following anyone yet. Search for a username above.')).toBeVisible();
+  await expect(c.getByText('Search for a username above to follow a friend.')).toBeVisible();
   await shot(me, '83-empty-following');
   await readable(me);
   await me.goto('/people');
@@ -137,7 +137,7 @@ test('a friend’s board filtered to nothing or ranked by a rating they lack', a
   await me.goto(`/u/${samName}`);
   await expect(me.locator('.row', { hasText: 'Sam Flower' })).toBeVisible();
   await me.getByLabel('Type', { exact: true }).selectOption('edibles');
-  await card(me, 'filter', 'No Edibles');
+  await card(me, 'filter', 'No Edible products');
   await me.getByLabel('Type', { exact: true }).selectOption('all');
   await me.getByLabel('Rank by', { exact: true }).selectOption('burn');
   await card(me, 'unrated', 'Nothing rated on that');

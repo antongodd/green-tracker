@@ -261,7 +261,7 @@ products.put('/:id', async (c) => {
 for (const flag of ['private', 'archived'] as const) {
   products.post(`/:id/${flag}`, async (c) => {
     const body = await jsonBody(c);
-    if (typeof body.value !== 'boolean') fail(400, 'bad_request', 'The request could not be read.');
+    if (typeof body.value !== 'boolean') fail(400, 'bad_request', 'The request couldn’t be read.');
     const userId = c.var.user!.id;
     const id = c.req.param('id');
     const res = await c.env.DB.prepare(`UPDATE products SET ${flag} = ?1, updated_at = ?2 WHERE id = ?3 AND user_id = ?4 AND ${NOT_KEPT('products')}`)
