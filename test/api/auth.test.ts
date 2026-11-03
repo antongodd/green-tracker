@@ -109,7 +109,7 @@ describe('sign-in with email and password (D80)', () => {
     const statuses: number[] = [];
     for (let i = 0; i < 11; i++) statuses.push((await signInWithPassword(new Browser(), email, `guess ${i}`)).status);
     expect(statuses).toEqual([...Array(10).fill(400), 429]);
-    // Even the right password waits now.
+    // Even the right password waits now, from a device the account hasn't signed in on (D83).
     expect((await signInWithPassword(new Browser(), email)).status).toBe(429);
   });
 });

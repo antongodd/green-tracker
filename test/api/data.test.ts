@@ -203,7 +203,7 @@ describe('delete account (brief §4, §17)', () => {
 
     // Signed out, and the passkey leads nowhere.
     expect((await b.get('/api/auth/me')).json.user).toBeNull();
-    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'profile_photos WHERE user_id']) {
+    for (const table of ['users WHERE id', 'products WHERE user_id', 'ratings WHERE user_id', 'purchases WHERE user_id', 'log_entries WHERE user_id', 'photos WHERE user_id', 'uploads WHERE user_id', 'sessions WHERE user_id', 'passkeys WHERE user_id', 'known_devices WHERE user_id', 'profile_photos WHERE user_id']) {
       expect(d1(`SELECT COUNT(*) AS n FROM ${table} = ?`, id), table).toEqual([{ n: 0 }]);
     }
     expect(d1('SELECT COUNT(*) AS n FROM follows WHERE follower_id = ? OR followed_id = ?', id, id)).toEqual([{ n: 0 }]);

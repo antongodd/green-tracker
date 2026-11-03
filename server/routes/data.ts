@@ -1,5 +1,4 @@
-import { Hono, type Context } from 'hono';
-import { generateAuthenticationOptions, verifyAuthenticationResponse, type AuthenticationResponseJSON } from '@simplewebauthn/server';
+import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { usernameKey } from '../../shared/domain/account';
 import { validateRestore } from '../../shared/domain/backup';
@@ -12,7 +11,7 @@ import { loadMainCurrency, saveMainCurrencyStatement } from '../lib/money';
 import { FxUnavailable, ratesFor } from '../lib/fx';
 import { DEFAULT_CURRENCY } from '../../shared/domain/currency';
 import { clearSessionCookie, requireUser } from '../lib/session';
-import { parseTransports, saveChallenge, takeChallenge } from '../lib/webauthn';
+import { checkOwnPasskey, ownPasskeyOptions } from '../lib/webauthn';
 import { confirmPassword } from './account';
 
 // Your data as a whole: restore from an export, and delete the account.
@@ -293,37 +292,7 @@ data.post('/restore', async (c) => {
 // Delete account --------------------------------------------------------------
 
 /** Step 1: a fresh passkey check, limited to this account's passkeys. */
-data.post('/delete/options', async (c) => {
-  const userId = c.var.user!.id;
-  const { results } = await c.env.DB.prepare('SELECT id, transports FROM passkeys WHERE user_id = ?1').bind(userId).all<{ id: string; transports: string | null }>();
-  const options = await generateAuthenticationOptions({
-    rpID: c.env.RP_ID,
-    userVerification: 'required',
-    allowCredentials: results.map((p) => ({ id: p.id, transports: parseTransports(p.transports) })),
-  });
-  const challengeId = await saveChallenge(c, 'authenticate', options.challenge, { userId });
-  return c.json({ challengeId, options });
-});
-
-/** The passkey way of confirming a deletion: a fresh check, limited to this account's passkeys. */
-async function checkDeletePasskey(c: Context<AppEnv>, body: Record<string, unknown>, userId: string): Promise<void> {
-  const challenge = await takeChallenge(c, str(body, 'challengeId'), 'authenticate');
-  if (challenge.user_id !== userId) fail(400, 'challenge_expired', 'That took too long. Please try again.');
-  const response = body.response as AuthenticationResponseJSON;
-  const passkey = await c.env.DB
-    .prepare('SELECT id, public_key, counter, transports FROM passkeys WHERE id = ?1 AND user_id = ?2')
-    .bind(typeof response?.id === 'string' ? response.id : '', userId)
-    .first<{ id: string; public_key: ArrayBuffer | number[]; counter: number; transports: string | null }>();
-  if (!passkey) fail(400, 'passkey_failed', 'Use a passkey for this account to confirm.');
-  const verification = await verifyAuthenticationResponse({
-    response,
-    expectedChallenge: challenge.challenge,
-    expectedOrigin: c.env.ORIGIN,
-    expectedRPID: c.env.RP_ID,
-    credential: { id: passkey.id, publicKey: new Uint8Array(passkey.public_key), counter: passkey.counter, transports: parseTransports(passkey.transports) },
-  }).catch(() => ({ verified: false as const }));
-  if (!verification.verified) fail(400, 'passkey_failed', 'The passkey couldn’t be checked. Please try again.');
-}
+data.post('/delete/options', async (c) => c.json(await ownPasskeyOptions(c, c.var.user!.id)));
 
 /**
  * Step 2: with your password (or the passkey check) and the typed username, delete everything:
@@ -338,7 +307,7 @@ data.post('/delete', async (c) => {
   if (usernameKey(str(body, 'username').trim()) !== usernameKey(user.username)) fail(400, 'username_mismatch', 'Type your username exactly to confirm.');
   // D80: your password confirms it; a fresh passkey check still does too.
   if (typeof body.password === 'string') await confirmPassword(c, body.password);
-  else await checkDeletePasskey(c, body, user.id);
+  else await checkOwnPasskey(c, body, user.id);
 
   await db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id).run();
 

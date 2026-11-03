@@ -1,8 +1,12 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { PASSWORD, addAuthenticator, emailOf } from './helpers';
+import { PASSWORD, addAuthenticator, emailOf, settled } from './helpers';
 
 // D80: accounts sign in with an email and a password; Face ID (a passkey) is optional; recovery codes are gone.
+
+const axe = async (page: Page) =>
+  (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' ')}`);
 
 const shot = (page: Page, name: string) => page.screenshot({ path: `.playwright/screens/${name}.png`, animations: 'disabled' });
 
@@ -230,4 +234,60 @@ test('an account from before email and password: one screen asks for both, then 
   await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
   await page.goto('/');
   await expect(page.locator('.row', { hasText: 'Kept Through It' })).toBeVisible();
+});
+
+test('D83: adding Face ID later asks for your password; a forgotten password is changed with Face ID, then the passkeys that can still sign in', async ({ page }) => {
+  const { cdp, authenticatorId } = await addAuthenticator(page);
+  const username = `fi${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+  await page.goto('/signup');
+  await page.getByLabel('Email').fill(emailOf(username));
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByLabel('Username').fill(username);
+  await expect(page.getByText('Available')).toBeVisible();
+  await page.getByRole('button', { name: 'Create account' }).click();
+  // Face ID straight after sign-up: no password asked.
+  await page.getByRole('button', { name: 'Use Face ID' }).click();
+  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+  await cdp.send('WebAuthn.clearCredentials', { authenticatorId }); // as if on a new phone
+  const age = () => page.evaluate(async (u) => (await fetch('/api/test/age-sessions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: u }) })).status, username);
+  expect(await age()).toBe(200);
+
+  // A while later, adding another passkey asks for the password first.
+  await page.goto('/more/passkeys');
+  await expect(page.getByRole('button', { name: /^Remove passkey/ })).toHaveCount(1);
+  await page.getByRole('button', { name: 'Add a passkey on this device' }).click();
+  await expect(page.getByLabel('Your password')).toBeVisible();
+  await settled(page);
+  expect(await axe(page)).toEqual([]);
+  await page.getByLabel('Your password').fill('wrong password');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('alert')).toHaveText('That password isn’t right.');
+  await page.getByLabel('Your password').fill(PASSWORD);
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('button', { name: /^Remove passkey/ })).toHaveCount(2);
+  await expect(page.getByLabel('Your password')).toHaveCount(0);
+  await expect(page.locator('.li .sub').first()).toContainText('Added');
+
+  // Forgot the password: Face ID instead of the current one.
+  await page.goto('/more/password');
+  await page.getByRole('button', { name: 'Forgot it? Use Face ID instead' }).click();
+  await expect(page.getByLabel('Current password')).toHaveCount(0);
+  await page.getByLabel('New password').fill('remembered nothing');
+  await page.getByRole('button', { name: 'Change password' }).click();
+  await expect(page.getByRole('status')).toContainText('Password changed.');
+  await expect(page.getByRole('heading', { name: 'These can still sign in with Face ID' })).toBeVisible();
+  const removes = page.getByRole('button', { name: /^Remove passkey/ });
+  await expect(removes).toHaveCount(2);
+  await expect(page.getByText(/Last used/)).toHaveCount(1); // the one Face ID just used
+  await settled(page);
+  expect(await axe(page)).toEqual([]);
+  await shot(page, '09-still-faceid');
+  await removes.first().click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Remove passkey' }).click();
+  await expect(removes).toHaveCount(1);
+  await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page).toHaveURL(/\/more$/);
+  const ok = await page.evaluate(async (b) => (await fetch('/api/auth/signin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b), credentials: 'omit' })).status, { email: emailOf(username), password: 'remembered nothing' });
+  expect(ok).toBe(200);
 });

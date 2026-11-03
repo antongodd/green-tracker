@@ -13,7 +13,8 @@ import {
 } from '../../shared/domain/account';
 import { randomId, sha256Hex } from '../lib/crypto';
 import { fail, jsonBody, str } from '../lib/http';
-import { LIMITS, clientKey, hit } from '../lib/rateLimit';
+import { LIMITS, check, clientKey, hit, miss } from '../lib/rateLimit';
+import { knownDevice, noDeviceCookie, rememberDevice } from '../lib/knownDevice';
 import { checkPassword as checkPasswordHash, hashPassword } from '../lib/password';
 import { clearSessionCookie, startSession } from '../lib/session';
 import { loadAppearance } from '../lib/appearance';
@@ -54,6 +55,8 @@ auth.get('/me', async (c) => {
   const user = c.var.user;
   const site = c.env.SITE === 'dev' ? 'dev' : 'live'; // D47
   if (!user) return c.json({ user: null, site });
+  // D83: a device signed in before D83 is remembered the first time the app opens on it.
+  if (noDeviceCookie(c)) await rememberDevice(c, user.id);
   const counts = await c.env.DB.prepare(
     `SELECT (SELECT COUNT(*) FROM passkeys WHERE user_id = ?1) AS passkeys,
             (SELECT email FROM users WHERE id = ?1) AS email,
@@ -130,17 +133,30 @@ auth.post('/signup', async (c) => {
   return c.json({ user: { username } });
 });
 
-/** Sign in with email and password (D80). The same answer for an unknown email and a wrong password. */
+/**
+ * Sign in with email and password (D80). The same answer for an unknown email and a wrong password.
+ *
+ * D83: only wrong passwords count against the email, so strangers can't keep the owner out. On a device
+ * the account has signed in on before, its wrong tries count on their own instead, so the owner's correct
+ * password still gets through while strangers have the email waiting.
+ */
 auth.post('/signin', async (c) => {
   await hit(c, LIMITS.signin, await clientKey(c));
   const body = await jsonBody(c);
   const email = str(body, 'email');
   const password = str(body, 'password');
-  await hit(c, LIMITS.signinEmail, await sha256Hex(`email:${emailKey(email)}`));
   const user = await c.env.DB.prepare('SELECT id, username, password_hash FROM users WHERE email_lower = ?1')
     .bind(emailKey(email))
     .first<{ id: string; username: string; password_hash: string | null }>();
-  if (!(await checkPasswordHash(password, user?.password_hash)) || !user) fail(400, 'signin_failed', 'That email and password don’t match.');
+  const device = user ? await knownDevice(c, user.id) : null;
+  const [limit, key] = device
+    ? [LIMITS.signinDevice, await sha256Hex(`device:${device}:${user!.id}`)]
+    : [LIMITS.signinEmail, await sha256Hex(`email:${emailKey(email)}`)];
+  await check(c, limit, key);
+  if (!(await checkPasswordHash(password, user?.password_hash)) || !user) {
+    await miss(c, limit, key);
+    fail(400, 'signin_failed', 'That email and password don’t match.');
+  }
   await startSession(c, user.id);
   return c.json({ user: { username: user.username } });
 });
