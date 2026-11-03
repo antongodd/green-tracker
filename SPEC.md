@@ -1716,6 +1716,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the forgot-password safety net is live
+- 0.69.1 (on dev 2026-11-03) went live on 2026-11-03 and moves to Done. Notes only.
+
 ### 0.69.1 — a forgotten password: honest words and a safety net (review panel, 3 Nov)
 - Words and form hints only; D80's password rules and limits are unchanged. Sign in has a **Forgot password?** button
   that says plainly there's no email reset yet and Face ID is the way back in. Sign-up's password says "Pick one you'll
