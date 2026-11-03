@@ -115,7 +115,8 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
                 type="email"
                 value={email}
                 onInput={(e) => (setEmail(e.currentTarget.value), setEmailError(''))}
-                autoComplete="email"
+                name="email"
+                autoComplete="username"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellcheck={false}
@@ -127,7 +128,19 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
                 </p>
               )}
             </div>
-            <PasswordField id="password" label="Password" value={password} onInput={setPassword} autoComplete="new-password" hint={<PasswordHint password={password} />} />
+            <PasswordField
+              id="password"
+              label="Password"
+              value={password}
+              onInput={setPassword}
+              autoComplete="new-password"
+              hint={
+                <>
+                  <PasswordHint password={password} />
+                  <p class="hint">Pick one you’ll remember: we can’t reset it by email yet.</p>
+                </>
+              }
+            />
           </div>
           <button class="btn primary" type="submit" disabled={!email.trim() || !!passwordProblem(password)}>
             Continue
@@ -138,6 +151,10 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
         </form>
       ) : (
         <form class="form-page" onSubmit={create}>
+          {/* For the iPhone's password store (iCloud Keychain): step 1's email and password ride along, hidden, so
+              Create account saves them under the email, not the @name. Never shown, never focusable. */}
+          <input type="email" name="email" autoComplete="username" value={email} readOnly hidden tabIndex={-1} aria-hidden="true" />
+          <input type="password" name="password" autoComplete="new-password" value={password} readOnly hidden tabIndex={-1} aria-hidden="true" />
           <AuthMark />
           <h1>Pick your @name</h1>
           <p class="lead">Friends find you by this name. It’s the only thing others see until you approve them.</p>

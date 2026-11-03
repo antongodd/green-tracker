@@ -37,7 +37,7 @@ export function FaceIdOffer(p: { onDone: () => void }) {
           <FaceIdIcon />
         </div>
         <h1>Use Face ID next time?</h1>
-        <p class="lead">Sign in with a glance instead of typing your password. You can change this any time in Settings.</p>
+        <p class="lead">Sign in with a glance instead of typing your password. It’s also your way back in if you forget your password. You can change this any time in Settings.</p>
       </div>
       <div class="actions">
         {error && (

@@ -32,6 +32,12 @@ Claude says which at the start. You can always overrule it.
 4. You try it and send screenshots of anything odd. Claude fixes things until you're happy.
 5. You say **"go live"**. Claude puts it live and tells you how to see it.
 
+## A review
+
+Ask for "the review panel" any time. Five reviewers (Sam, the everyday user, counts most; a proof-reader, a
+developer, a marketing pro and a sceptic) look at the app and the website, and you get one page to read on your
+phone, with a to-do list split into jobs, each for its own conversation.
+
 ## If something on live breaks
 
 Tell Claude what you see (a screenshot helps). It **puts the previous version back first**, so the app works again

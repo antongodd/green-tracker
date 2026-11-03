@@ -79,6 +79,7 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `go-live` | Anton says "go live", and the end of every small change |
 | `undo-live` | Something on live is broken |
 | `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
+| `review-panel` | Anton asks for a review: five reviewers (Sam the everyday user counts most) and a judge; reports in `reviews/` |
 
 ### Two conversations at once
 
@@ -90,6 +91,8 @@ see the others' work (open pull requests, recently pushed `claude/*` branches, C
   decision number; keep both sets of notes (to-do list, Done, changelog: theirs stays, yours goes on top).
 - **Going live takes everything on `dev`.** Never open a release while a big change on `dev` is still waiting for
   Anton's "go live": tell him your change is on dev and waiting with it, and ask. One release pull request at a time.
+- **Naming a conversation you open for a job** (Anton, 2026-11-03): start with "Job #" and the to-do list number,
+  then a short description, with no "Green Tracker" in front: for example "Job 3: Privacy and data wording".
 - Never close, merge or push to another conversation's branch or pull request. Old open pull requests (#88, #93, #96)
   aren't yours to handle either (Anton): leave them, and don't ask about them.
 
@@ -289,24 +292,50 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.68.0 (2026-11-02): everything up to a row's photo opening full screen (D79).
-- **Dev:** 0.69.0: live plus email and password sign-in, no recovery codes (D80).
+- **Live:** 0.69.0 (2026-11-03): everything up to email and password sign-in, no recovery codes (D80).
+- **Dev:** 0.69.1: the forgot-password safety net (to-do item 1), on its way to live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Email and password; no more recovery codes** — **on dev** (0.69.0, D80, 2026-11-02; Anton's idea). Create an
-   account with an email and password, then pick your @name; Face ID offered once and optional; existing accounts add
-   an email and password once; Settings changes either; Delete account asks for the password. Next: Anton tries it
-   on GT Dev (his dev account will ask for an email and password first), then says "go live". Not checked on a real
-   iPhone yet: the keyboard and iCloud Keychain offering to save the password.
-2. **Forgot password, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send email:
-   a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no Face
-   ID can't be recovered.
+From the review panel of 2026-11-03 (`reviews/2026-11-03/summary.md`; Anton wants all ten, order left to Claude).
+Each is a job for its own conversation; the summary lists what each covers.
+
+1. **Forgot-password safety net** (small; **on dev** 0.69.1, 2026-11-03). Honest "Forgot password?" words on Sign in; the Face ID offer says it's
+   your way back in; help iCloud Keychain save the password at sign-up (try on the iPhone); "too many tries" mentions
+   Face ID. (Sign-in computing time checked 2026-11-03: no errors, slowest about 31ms, nothing refused.)
+2. **Don't lose my work** (small). "Keep editing / Discard" on Cancel and swipe-back in the product form and the post
+   composer; a time limit on Save and Post, and no duplicate on a second tap.
+3. **Privacy and data words that are out of date** (small, words only). Privacy page (posts), Source ("the brand or
+   grower"), "Followers can see this" under Source; Export, Restore and Delete lists and the Export warning; the Look
+   pages' footnote (D74); lines under the comment box and in the composer; the sign-up email line.
+4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
+   under the +; no zeros on an empty Log; the first comment hidden under the comment box; 44-point post buttons;
+   Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
+5. **Wording fixes across the app** (small). The proof-reader's table ("More" → "Settings", plurals, capitals,
+   colour names in the badge, type names, archive messages, Current password).
+6. **Website catch-up** (small; the hero picture is some work). Say what sign-up asks for (never "no email"); the
+   Feed in the friends card; one time throughout; the video's last caption; the real address; the price chip and
+   share picture; WhatsApp line, laptop layout, button sizes, slider name, 404. Anton decides "Know your plug",
+   "Roll one up", "Made by Anton".
+7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
+   on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
+   (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
+8. **Friends: you against them, and inviting someone** (big). "You rated this 9.1" on a friend's product and on post
+   cards; an "Invite a friend / share my @name" button.
+9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
+   password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
+   set a new password without the old one (changes D80).
+10. **A quicker add-a-product form** (big, mockups first). Photos first, extra details folded away, − / + by scores.
+11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
+   email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
+   Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Review panel run again on 0.69.0 (app and website in one round); ten jobs on the to-do list | (notes) | | 2026-11-03 | notes only |
+| Email and password: create an account with an email and password, then your @name; Face ID optional; existing accounts add both once; no more recovery codes (tried by Anton on GT Dev) | 0.69.0 | D80 | 2026-11-02 | 2026-11-03 |
 | Tap a row's photo to see it full screen: the viewer with the product page's bar on your Leaderboard, Log, Archive and brand pages; a friend's shared photos with no bar | 0.68.0 | D79 | 2026-11-02 | 2026-11-02 |
 | Posting: Your Leaderboard and Your Log newest first when picking what a post is about | 0.67.1 | | 2026-11-02 | 2026-11-02 |
 | Posts, comments and a Feed: a Feed tab in People's place, comments and a 🔥, Leaderboard \| Posts pages; several photos a post, swiped, and the product's photo in the card (checked on Anton's iPhone on GT Dev) | 0.66.0–0.67.0 | D77, D78 | 2026-11-02 | 2026-11-02 |

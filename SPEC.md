@@ -1716,6 +1716,18 @@ None.
 
 ## 6. Changelog
 
+### 0.69.1 — a forgotten password: honest words and a safety net (review panel, 3 Nov)
+- Words and form hints only; D80's password rules and limits are unchanged. Sign in has a **Forgot password?** button
+  that says plainly there's no email reset yet and Face ID is the way back in. Sign-up's password says "Pick one you'll
+  remember: we can't reset it by email yet". The Face ID offer after sign-up says it's also your way back in if you
+  forget your password. Too many wrong tries now says "…or sign in with Face ID if you set it up" (on Sign in only;
+  the server's message is unchanged). For the iPhone's password store (iCloud Keychain): the sign-up email box is
+  marked as the username, and step 2's form carries step 1's email and password in hidden boxes, so Create account
+  can be saved under the email rather than the @name.
+
+### Notes — email and password sign-in is live
+- D80 (0.69.0, on dev 2026-11-02) went live on 2026-11-03 and moves to Done. Notes only.
+
 ### 0.69.0 — email and password; no more recovery codes (owner request)
 - Decision D80. You create an account with an email and a password, then pick your @name: two screens. Face ID
   (passkeys) stays, offered once after sign-up and always optional. Recovery codes are gone. Accounts made before this
