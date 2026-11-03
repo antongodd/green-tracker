@@ -91,6 +91,8 @@ see the others' work (open pull requests, recently pushed `claude/*` branches, C
   decision number; keep both sets of notes (to-do list, Done, changelog: theirs stays, yours goes on top).
 - **Going live takes everything on `dev`.** Never open a release while a big change on `dev` is still waiting for
   Anton's "go live": tell him your change is on dev and waiting with it, and ask. One release pull request at a time.
+- **Naming a conversation you open for a job** (Anton, 2026-11-03): start with "Job #" and the to-do list number,
+  then a short description, with no "Green Tracker" in front: for example "Job 3: Privacy and data wording".
 - Never close, merge or push to another conversation's branch or pull request. Old open pull requests (#88, #93, #96)
   aren't yours to handle either (Anton): leave them, and don't ask about them.
 
