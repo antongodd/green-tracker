@@ -212,9 +212,7 @@ test('the words match today’s app: an email and password, posts for approved f
   // The picture of the app: the app's own words, a price called a price, no name cut short.
   await expect(page.locator('.mini-h span')).toHaveText('All · Overall');
   await expect(page.locator('.chip.c2')).toHaveText('£9.50/gprice');
-  // Measured in the site's own font (on CI a wide stand-in font can still be showing a moment after load).
-  await page.evaluate(() => document.fonts.load('700 10px Manrope'));
-  await expect.poll(() => page.evaluate(() => document.fonts.check('700 10px Manrope'))).toBe(true);
+  // Linux draws these names wider than an iPhone does: the names are kept short enough for both.
   for (const name of await page.locator('.mini .nm b').all()) expect(await name.evaluate((b) => b.scrollWidth <= b.clientWidth), await name.innerText()).toBe(true);
 });
 
