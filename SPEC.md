@@ -1716,6 +1716,18 @@ None.
 
 ## 6. Changelog
 
+### 0.69.2 — don't lose my work (review panel, 2026-11-03)
+- Adding or editing a product, a Log entry or a post now asks "Keep editing / Discard" before throwing anything away,
+  on Cancel and on a swipe back from the edge, whenever anything has changed since it opened (before, only moving a
+  Log entry onto the Leaderboard asked). With nothing changed they just leave, as before. Moving a Log entry over
+  still always asks. How: `useKeepEditing` and `DiscardSheet` (`client/src/components/KeepEditing.tsx`); the swipe is
+  caught by `holdPlace` in `router.ts`, which puts the editor's page straight back and opens the sheet.
+- Save (products, Log entries, Add to leaderboard) and Post give up after 20 seconds instead of hanging on a weak
+  signal (`api(…, { timeoutMs })`, `SAVE_TIMEOUT_MS`). A new one that timed out says it may have saved anyway and
+  where to look before trying again. A second tap on Save or Post while the first is on its way does nothing.
+- Not in this change: keeping a half-filled product if iOS closes the app (a later big job), and the server knowing a
+  repeated save is the same one (the rare case: a save that reached the server but timed out, then tried again).
+
 ### Notes — the forgot-password safety net is live
 - 0.69.1 (on dev 2026-11-03) went live on 2026-11-03 and moves to Done. Notes only.
 

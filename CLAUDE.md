@@ -126,8 +126,8 @@ The browser tests are shared between six machines at once, each with an equal sh
 (`scripts/e2e-shard.mjs`, from the measured seconds in `test/e2e/timings.json`; the repository is public, so it's
 free). After adding or removing a spec file or a slow test, refresh the timings from a full local run (see
 `scripts/e2e-timings.mjs`); a test not in the file counts as 15 seconds, so nothing is ever left out. The core set is
-the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log, photos and the
-quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
+the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log, photos, the
+editors asking before discarding (`keepediting`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
 
 ## Every change
 
@@ -280,6 +280,11 @@ quality checks. A spec joins it when a break there would hurt Anton's data, priv
   `config.test.ts`). Never write to the test servers' database file from a test: the Worker then fails with "database
   is locked". Wrong passwords are limited per email and per account (10 every 15 minutes): keep a file's wrong tries
   per account under that.
+- Don't lose my work (0.69.2): the product, Log entry and post editors use `useKeepEditing` (`components/KeepEditing.tsx`):
+  Cancel and a swipe back (`page.goBack()`) open the Keep editing / Discard sheet while anything has changed. The swipe
+  is caught by `holdPlace` in `router.ts`; call `done()` once saved, before leaving, or the leaving is asked about. A
+  test that changes an editor and then Cancels or goes back now meets the sheet. Save and Post have a 20-second limit
+  (`SAVE_TIMEOUT_MS`): test it with `page.clock.install()` and a `page.route` that never answers (`keepediting.spec.ts`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -293,7 +298,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.1 (2026-11-03): everything up to the forgot-password safety net (to-do item 1).
-- **Dev:** 0.69.1, the same as live.
+- **Dev:** 0.69.2: don't lose my work (item 2), going live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -302,8 +307,9 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
    keep naming the same job.
-2. **Don't lose my work** (small). "Keep editing / Discard" on Cancel and swipe-back in the product form and the post
-   composer; a time limit on Save and Post, and no duplicate on a second tap.
+2. **Don't lose my work** (small). **On dev** (0.69.2, 2026-11-03): "Keep editing / Discard" on Cancel and
+   swipe-back in the product form, the Log entry form and the post composer; a 20-second limit on Save and Post, and
+   no duplicate on a second tap.
 3. **Privacy and data words that are out of date** (small, words only). Privacy page (posts), Source ("the brand or
    grower"), "Followers can see this" under Source; Export, Restore and Delete lists and the Export warning; the Look
    pages' footnote (D74); lines under the comment box and in the composer; the sign-up email line.

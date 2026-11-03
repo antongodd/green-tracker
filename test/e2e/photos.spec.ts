@@ -109,6 +109,8 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   // Regression: overlay buttons inside the editor's form must not submit it.
   await expect(page).toHaveURL(/\/edit$/);
   await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('dialog', { name: 'Discard your changes?' }).getByRole('button', { name: 'Discard' }).click(); // 0.69.2
+  await expect(page).not.toHaveURL(/\/edit$/);
   expect(await photoUrls(page, 'cropped')).toEqual(before);
   expect(await naturalSize(page, before[0]!)).toEqual({ w: 1600, h: 960 });
 

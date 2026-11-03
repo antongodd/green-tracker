@@ -1,7 +1,10 @@
 // Client access to your products, with a small in-memory cache so going back
 // to a list or profile draws instantly while the fresh copy loads.
 import type { Product, ProductInput } from '../../shared/domain/product';
-import { api } from './api';
+import { api, SAVE_TIMEOUT_MS } from './api';
+
+/** Save gives up after 20 seconds (0.69.2). */
+const LIMIT = { timeoutMs: SAVE_TIMEOUT_MS };
 
 const byId = new Map<string, Product>();
 let list: Product[] | null = null;
@@ -63,7 +66,7 @@ export async function fetchProduct(id: string): Promise<Product> {
 
 export async function saveProduct(id: string | null, input: ProductInput): Promise<Product> {
   if (id) changing(id);
-  const r = id ? await api<{ product: Product }>('PUT', `/products/${encodeURIComponent(id)}`, input) : await api<{ product: Product }>('POST', '/products', input);
+  const r = id ? await api<{ product: Product }>('PUT', `/products/${encodeURIComponent(id)}`, input, LIMIT) : await api<{ product: Product }>('POST', '/products', input, LIMIT);
   return remember(r.product);
 }
 
