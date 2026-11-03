@@ -108,7 +108,8 @@ export function MetaLine(p: { product: Product; perGram?: boolean }) {
   const priceText = price === null ? null : formatUnitPrice(p.product.productType, price, main);
   const source = p.product.source;
   if (!priceText && !source) return p.product.dateTried ? <div class="meta">{formatIsoDate(p.product.dateTried)}</div> : null;
-  // D67: ranked by Price across all types, an edible's score is the price of 20mg; this says so.
+  // D67: ranked by Price across all types, an edible's score is the price of 20mg; this says so. Value for
+  // money always works an edible out on 20mg (any Type), so its rows say so too (0.69.9).
   const per = p.perGram && priceText ? productType(p.product.productType).unit : null;
   return (
     <div class="meta">
@@ -129,7 +130,7 @@ export function MetaLine(p: { product: Product; perGram?: boolean }) {
   );
 }
 
-/** A ranked value as shown in the score block: scores 1dp, price 2dp in your main currency, VFM 2dp. */
+/** A ranked value as shown in the score block: scores 1dp, price 2dp in your main currency, value for money 2dp. */
 export function formatRankValue(rankBy: RankBy, value: number, currency: string): string {
   if (rankBy === 'price') return formatPerUnit(value, currency);
   if (rankBy === 'vfm') return formatVFM(value);
@@ -181,7 +182,7 @@ export function ProductRow(p: { product: Product; rank: number; band: Band | nul
         <div class="mid">
           <div class="name">{p.product.name}</div>
           <Cluster product={p.product} showLock />
-          {p.meta ?? <MetaLine product={p.product} perGram={rankBy === 'price' && p.filter === 'all'} />}
+          {p.meta ?? <MetaLine product={p.product} perGram={(rankBy === 'price' && p.filter === 'all') || rankBy === 'vfm'} />}
         </div>
         <Score value={value} label={rankByCaption(rankBy)} text={value === null ? undefined : formatRankValue(rankBy, value, currency)} />
       </a>

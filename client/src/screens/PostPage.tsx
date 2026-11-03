@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMMENT_MAX, timeLabel, type Post, type PostComment } from '../../../shared/domain/posts';
 import { ApiError, errorText } from '../api';
 import { Avatar } from '../components/Avatar';
@@ -85,6 +85,17 @@ export function PostPage(p: { id: string }) {
   };
 
   const left = COMMENT_MAX - [...draft].length;
+  // The comments leave room for the comment box, however tall it is (the line under it can wrap, an error
+  // adds one): its height goes in --cbox-h for .post-page .cmts (0.69.9).
+  const box = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    const main = el?.parentElement?.querySelector<HTMLElement>('.post-page');
+    if (!el || !main || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => main.style.setProperty('--cbox-h', `${Math.ceil(el.getBoundingClientRect().height)}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [!!post]);
   return (
     <>
       <Header title="Post" leaf={false} left={<BackButton to="/feed" />} />
@@ -118,7 +129,7 @@ export function PostPage(p: { id: string }) {
         )}
       </main>
       {post && (
-        <form class="comment-box" onSubmit={send} aria-label="Add a comment">
+        <form ref={box} class="comment-box" onSubmit={send} aria-label="Add a comment">
           <label for="comment-input" class="visually-hidden">
             Add a comment
           </label>

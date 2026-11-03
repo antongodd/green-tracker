@@ -286,6 +286,11 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   is caught by `holdPlace` in `router.ts`; call `done()` once saved, before leaving, or the leaving is asked about. A
   test that changes an editor and then Cancels or goes back now meets the sheet. Save and Post have a 20-second limit
   (`SAVE_TIMEOUT_MS`): test it with `page.clock.install()` and a `page.route` that never answers (`keepediting.spec.ts`).
+- The Feed (0.69.9): tapping the tab you're on, on its own page, sends `gt-tab-again` (`detail`: the tab) instead of
+  navigating; the Feed answers with the top and a reload (`usePostList().reload`, merged by `mergeFirstPage`). Coming
+  back to the app is `visibilitychange`: pretend it with `Object.defineProperty(document, 'visibilityState', …)` and
+  dispatch the event (`feed.spec.ts` `backToFront`). Only a list's first post loads its photo at once (`eager`).
+  A screen with the + has `has-fab` (room under the list for it).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -299,7 +304,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.8 (2026-11-03): everything up to the wording fixes (to-do item 5).
-- **Dev:** 0.69.8, the same as live.
+- **Dev:** 0.69.9 (2026-11-03): live plus the small fixes on the Leaderboard, Log and Feed (item 4).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -310,9 +315,10 @@ Each is a job for its own conversation; the summary lists what each covers.
    keep naming the same job.
 2. ~~Don't lose my work~~: live in 0.69.2 (see Done).
 3. ~~Privacy and data words that are out of date~~: live in 0.69.3 and 0.69.5 (see Done).
-4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
-   under the +; no zeros on an empty Log; the first comment hidden under the comment box; 44-point post buttons;
-   Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
+4. **Small fixes on the Leaderboard, Log and Feed** (small): **on dev** in 0.69.9 (2026-11-03). Value for money
+   ("per 20mg", "Value" not "VFM"); room under the +; no zeros on an empty Log; the first comment hidden under the
+   comment box; 44-point post buttons; Feed photos load as you scroll, tapping the tab again refreshes, reload on
+   coming back. Still to try on Anton's iPhone: typing a comment with the keyboard up; Feed scrolling.
 5. ~~Wording fixes across the app~~: live in 0.69.8 (see Done). Anton keeps the New tags on Looks and colours
    (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
    brand's own page.
