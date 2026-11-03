@@ -306,7 +306,7 @@ export function DeleteAccount() {
       <main class="screen">
         <div class="wrap stack data" style={{ paddingTop: '16px' }}>
           <DataHero tint="red" icon={<TrashIcon />} title={`Delete @${username}`}>
-            This permanently deletes your account and everything in it. <strong>It can’t be undone.</strong>
+            This permanently deletes your account and everything in it. <strong>It can’t be undone.</strong> A copy stays in the app’s backups for up to 30 days, then it’s gone for good.
           </DataHero>
           <section class="data-card red" aria-label="What goes">
             <span class="cap">What goes</span>

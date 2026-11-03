@@ -58,6 +58,7 @@ export class Browser {
   get = (path: string) => this.req('GET', path);
   post = (path: string, body: unknown = {}) => this.req('POST', path, body);
   del = (path: string) => this.req('DELETE', path);
+  put = (path: string, body: unknown = {}) => this.req('PUT', path, body);
 }
 
 let nameCounter = 0;
@@ -78,7 +79,7 @@ export const PASSWORD = 'correct horse battery';
  */
 export async function signUp(browser: Browser, username = uniqueName(), opts: { passkey?: boolean } = {}) {
   const email = emailFor(username);
-  const res = await browser.post('/api/auth/signup', { email, password: PASSWORD, username });
+  const res = await browser.post('/api/auth/signup', { email, password: PASSWORD, username, adult: true });
   if (res.status !== 200) throw new Error(`signup ${res.status} ${JSON.stringify(res.json)}`);
   if (opts.passkey === false) return { username, email, password: PASSWORD, passkey: null as unknown as SoftPasskey };
   const { passkey, res: added } = await addPasskey(browser);

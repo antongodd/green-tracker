@@ -335,5 +335,12 @@
  "zoom.spec.ts › drag looks around while zoomed, and the photo stops at its edges": 5.4,
  "zoom.spec.ts › one tap while zoomed brings the buttons back; Set as cover still works": 8.1,
  "zoom.spec.ts › pinch zooms in around the fingers, up to 4×; the buttons slide away and the scale shows": 8.7,
- "zoom.spec.ts › swiping changes photo only when zoomed out; each photo starts at 1×": 4.7
+ "zoom.spec.ts › swiping changes photo only when zoomed out; each photo starts at 1×": 4.7,
+ "trust.spec.ts › sign-up: Continue waits for the 18+ tick; the house rules and privacy open over it and keep what you typed": 4.1,
+ "trust.spec.ts › an older account is asked once, before anything else, and never again": 4.2,
+ "trust.spec.ts › Settings → About: Privacy, House rules and Contact; readable, clean for axe": 9.5,
+ "trust.spec.ts › Report a post: why, in one tap; hidden for you only; Show it brings it back": 2.7,
+ "trust.spec.ts › Report a comment: on someone else’s comment only; hidden for you": 2.1,
+ "trust.spec.ts › Report a person: Also block starts ticked; untick it to report without blocking": 1.8,
+ "trust.spec.ts › the photo limit: near it the editors say how many are left; at it, that it’s full": 5.2
 }

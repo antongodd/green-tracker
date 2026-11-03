@@ -2,6 +2,7 @@
 import type { PersonCard, SharedProduct } from '../../shared/domain/social';
 import type { Appearance } from '../../shared/domain/gems';
 import type { Comparison, YourScore } from '../../shared/domain/compare';
+import type { ReportReason } from '../../shared/domain/trust';
 import { api } from './api';
 import { rememberTheirLook } from './theirLook';
 
@@ -20,6 +21,8 @@ export const follow = (username: string) => api<{ person: PersonCard }>('POST', 
 /** Cancels a request or unfollows. */
 export const unfollow = (username: string) => api<{ person: PersonCard }>('DELETE', `${u(username)}/follow`).then((r) => r.person);
 export const block = (username: string) => api('POST', `${u(username)}/block`);
+/** D84: report a person; `block` blocks them too. Neither is ever told. */
+export const report = (username: string, reason: ReportReason, block: boolean) => api<{ person: PersonCard }>('POST', `${u(username)}/report`, { reason, block }).then((r) => r.person);
 export const unblock = (username: string) => api('DELETE', `${u(username)}/block`);
 export const approve = (username: string) => api('POST', `/people/requests/${encodeURIComponent(username)}/approve`);
 export const decline = (username: string) => api('POST', `/people/requests/${encodeURIComponent(username)}/decline`);

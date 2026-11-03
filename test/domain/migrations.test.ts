@@ -3,6 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { loadAppearance } from '../../server/lib/appearance';
 import { DEFAULT_APPEARANCE } from '../../shared/domain/gems';
+import { PHOTO_LIMIT } from '../../shared/domain/trust';
 
 // D76: the looks and colour sets are no longer listed in the database. These run the real migrations, in order, on a
 // scratch SQLite database (D1 is SQLite), and check what reading the settings back does with a value the app doesn't know.
@@ -112,5 +113,61 @@ describe('known devices (D83)', () => {
     expect(() => db.prepare("INSERT INTO known_devices (token_hash, user_id, created_at) VALUES ('d1', 'u1', 2)").run()).toThrow(/UNIQUE|PRIMARY/);
     db.prepare("DELETE FROM users WHERE id = 'u1'").run();
     expect(db.prepare('SELECT * FROM known_devices').all()).toEqual([]);
+  });
+});
+
+describe('trust basics (D84)', () => {
+  const user = (db: DatabaseSync, id: string) => db.prepare('INSERT INTO users (id, username, username_lower, created_at) VALUES (?, ?, ?, 1)').run(id, id, id);
+  const product = (db: DatabaseSync, id: string, owner: string) =>
+    db.prepare("INSERT INTO products (id, user_id, name, product_type, created_at, updated_at) VALUES (?, ?, 'P', 'flower', 1, 1)").run(id, owner);
+
+  it('0021: everyone already here is asked once (no 18+ yet); nothing else changes', () => {
+    const db = fresh();
+    migrate(db, (f) => f < '0021');
+    user(db, 'u1');
+    migrate(db, (f) => f.startsWith('0021'));
+    expect(db.prepare('SELECT id, adult_at FROM users').all()).toEqual([{ id: 'u1', adult_at: null }]);
+  });
+
+  it('a report goes with its reporter, the reported account, and the post or comment; one per thing per reporter', () => {
+    const db = fresh();
+    migrate(db, () => true);
+    for (const u of ['a', 'b', 'c']) user(db, u);
+    db.prepare("INSERT INTO posts (id, user_id, image_set, created_at) VALUES ('p1', 'a', 's', 1)").run();
+    db.prepare("INSERT INTO post_comments (id, post_id, user_id, body, created_at) VALUES ('c1', 'p1', 'b', 'hi', 1)").run();
+    const report = (id: string, by: string, kind: string, owner: string, post: string | null, comment: string | null) =>
+      db.prepare("INSERT INTO reports (id, reporter_id, kind, owner_id, post_id, comment_id, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, 'other', 1)").run(id, by, kind, owner, post, comment);
+    report('r1', 'c', 'post', 'a', 'p1', null);
+    report('r2', 'c', 'comment', 'b', 'p1', 'c1');
+    report('r3', 'c', 'person', 'a', null, null);
+    expect(() => report('r4', 'c', 'post', 'a', 'p1', null)).toThrow(/UNIQUE/);
+    expect(() => report('r5', 'b', 'person', 'a', 'p1', null)).toThrow(/CHECK/);
+    expect(() => db.prepare("INSERT INTO reports (id, reporter_id, kind, owner_id, reason, created_at) VALUES ('r6', 'b', 'person', 'a', 'made-up', 1)").run()).toThrow(/CHECK/);
+    db.prepare("DELETE FROM post_comments WHERE id = 'c1'").run();
+    expect(db.prepare('SELECT id FROM reports ORDER BY id').all()).toEqual([{ id: 'r1' }, { id: 'r3' }]);
+    db.prepare("DELETE FROM posts WHERE id = 'p1'").run();
+    expect(db.prepare('SELECT id FROM reports').all()).toEqual([{ id: 'r3' }]);
+    db.prepare("DELETE FROM users WHERE id = 'a'").run();
+    expect(db.prepare('SELECT id FROM reports').all()).toEqual([]);
+  });
+
+  it(`the database stops a photo past PHOTO_LIMIT (${PHOTO_LIMIT}), product, Log and post photos together, per account`, () => {
+    expect(readFileSync(new URL('0021_trust.sql', dir), 'utf8').match(/>= (\d+)/g)).toEqual([`>= ${PHOTO_LIMIT}`, `>= ${PHOTO_LIMIT}`]);
+    const db = fresh();
+    migrate(db, () => true);
+    user(db, 'a');
+    user(db, 'b');
+    product(db, 'pa', 'a');
+    product(db, 'pb', 'b');
+    db.prepare("INSERT INTO posts (id, user_id, image_set, created_at) VALUES ('p1', 'a', 's', 1)").run();
+    const photo = db.prepare("INSERT INTO photos (id, user_id, product_id, position, original_set, image_set, created_at, updated_at) VALUES (?, ?, ?, ?, 's', 's', 1, 1)");
+    for (let i = 0; i < PHOTO_LIMIT - 1; i++) photo.run(`a${i}`, 'a', 'pa', i);
+    db.prepare("INSERT INTO post_photos (post_id, user_id, position, image_set) VALUES ('p1', 'a', 0, 's')").run();
+    expect(() => photo.run('over', 'a', 'pa', 99999)).toThrow(/GT_PHOTO_LIMIT/);
+    expect(() => db.prepare("INSERT INTO post_photos (post_id, user_id, position, image_set) VALUES ('p1', 'a', 1, 's')").run()).toThrow(/GT_PHOTO_LIMIT/);
+    // Someone else isn't affected; deleting one frees room.
+    expect(() => photo.run('b1', 'b', 'pb', 0)).not.toThrow();
+    db.prepare("DELETE FROM photos WHERE id = 'a0'").run();
+    expect(() => photo.run('again', 'a', 'pa', 99999)).not.toThrow();
   });
 });

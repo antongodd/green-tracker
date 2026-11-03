@@ -13,6 +13,7 @@ import { installSounds, ticksSupported } from './sounds';
 import { TickSwitch } from './components/Tick';
 import { SessionContext } from './session';
 import { CreateAccount } from './screens/CreateAccount';
+import { AdultOnce, HouseRules, PrivacyNotice } from './screens/About';
 import { AddLogin, ChangeEmail, ChangePassword, FaceIdOffer } from './screens/LoginDetails';
 import { DeleteAccount, ExportScreen, RestoreScreen } from './screens/Data';
 import { Editor } from './screens/Editor';
@@ -139,6 +140,8 @@ function App() {
       );
   } else if (me.needsLogin) {
     screen = <AddLogin />;
+  } else if (me.needsAdult) {
+    screen = <AdultOnce />; // D84
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
@@ -220,6 +223,12 @@ function App() {
         case '/sources': // D61: the Sources tab
         case '/more/brands': // where it lived before (D59)
           screen = <BrandsList />;
+          break;
+        case '/more/about/privacy': // D84
+          screen = <PrivacyNotice />;
+          break;
+        case '/more/about/rules':
+          screen = <HouseRules />;
           break;
         case '/more/archive':
           screen = <Archive />;
