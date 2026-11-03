@@ -80,6 +80,7 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `undo-live` | Something on live is broken |
 | `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
 | `review-panel` | Anton asks for a review: five reviewers (Sam the everyday user counts most) and a judge; reports in `reviews/` |
+| `green-tracker-account-audit` | Anton asks to audit all accounts: a read-only table of everyone on live, shown only in the conversation (never saved, no emails) |
 
 ### Two conversations at once
 
