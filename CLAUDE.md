@@ -84,6 +84,12 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `green-tracker-account-audit` | Anton asks to audit all accounts: a read-only table of everyone on live, shown only in the conversation (never saved, no emails) |
 | `green-tracker-reports` | Anton asks to see the reports (D84): a read-only table in the conversation; removes a post or comment only on his "yes" |
 
+**Outside skills** (not recipes): `apple-design` (Emil Kowalski's, from `github.com/emilkowalski/skills`, MIT; added
+2026-11-03 at Anton's request) is design advice on Apple-style motion, materials and type, for building or reviewing
+screens. Where it disagrees with this file, this file wins: a Look changes only colours and the background (D70), the
+looks' moving lights stay, readability and accessibility tests are never loosened, and anything it suggests that
+changes how the app looks is still a big change.
+
 ### Two conversations at once
 
 Anton may run more than one conversation at a time. Each works on its own branch; GitHub is the only place you can
@@ -374,6 +380,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |
 | Sign-in hardening: only wrong passwords count against an email, and a phone you've signed in on has its own tries (strangers can't lock you out); adding Face ID asks for your password (not straight after signing in); "Forgot it? Use Face ID instead" on Password; after a password change, the passkeys that can still sign in with Last used and Remove (Face ID prompts and the new screens not yet confirmed on Anton's iPhone) | 0.72.0 | D83 | 2026-11-03 | 2026-11-03 |
 | You against them, and Invite a friend: "You've had this too" with both photos, @names and scores on a friend's product page and post (same name, brand and type only), Compare with my board (a card for each subject, empty ones hidden), Invite a friend on the empty Feed and People (the share sheet with your @name and the website) (the real share sheet, profile photos in the cards and VoiceOver not yet checked on Anton's iPhone) | 0.71.0 | D82 | 2026-11-03 | 2026-11-03 |
 | A quicker add-a-product form: Name, Photos, The product (Type and Strain type as one tap, Source, Country, Date tried from today), Ratings with − / +, Purchases (none opened by itself; Save asks for a missing total paid), Notes, Leafly, Private; examples from Anton's lists; Country as a list under the box (also in the Log); Name with its own heading (tried by Anton on GT Dev; holding − / + and VoiceOver not yet checked on his iPhone) | 0.70.0–0.70.2 | D81 | 2026-11-03 | 2026-11-03 |
