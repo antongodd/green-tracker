@@ -292,17 +292,16 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.69.0 (2026-11-03): everything up to email and password sign-in, no recovery codes (D80).
-- **Dev:** 0.69.1: the forgot-password safety net (to-do item 1), on its way to live.
+- **Live:** 0.69.1 (2026-11-03): everything up to the forgot-password safety net (to-do item 1).
+- **Dev:** 0.69.1, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
 From the review panel of 2026-11-03 (`reviews/2026-11-03/summary.md`; Anton wants all ten, order left to Claude).
 Each is a job for its own conversation; the summary lists what each covers.
 
-1. **Forgot-password safety net** (small; **on dev** 0.69.1, 2026-11-03). Honest "Forgot password?" words on Sign in; the Face ID offer says it's
-   your way back in; help iCloud Keychain save the password at sign-up (try on the iPhone); "too many tries" mentions
-   Face ID. (Sign-in computing time checked 2026-11-03: no errors, slowest about 31ms, nothing refused.)
+1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
+   keep naming the same job.
 2. **Don't lose my work** (small). "Keep editing / Discard" on Cancel and swipe-back in the product form and the post
    composer; a time limit on Save and Post, and no duplicate on a second tap.
 3. **Privacy and data words that are out of date** (small, words only). Privacy page (posts), Source ("the brand or
@@ -334,6 +333,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Forgot-password safety net: "Forgot password?" on Sign in, honest words at sign-up and on the Face ID offer, "too many tries" mentions Face ID, iCloud Keychain hints at sign-up (Keychain still to try on Anton's iPhone) | 0.69.1 | | 2026-11-03 | 2026-11-03 |
 | Review panel run again on 0.69.0 (app and website in one round); ten jobs on the to-do list | (notes) | | 2026-11-03 | notes only |
 | Email and password: create an account with an email and password, then your @name; Face ID optional; existing accounts add both once; no more recovery codes (tried by Anton on GT Dev) | 0.69.0 | D80 | 2026-11-02 | 2026-11-03 |
 | Tap a row's photo to see it full screen: the viewer with the product page's bar on your Leaderboard, Log, Archive and brand pages; a friend's shared photos with no bar | 0.68.0 | D79 | 2026-11-02 | 2026-11-02 |
