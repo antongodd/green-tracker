@@ -313,8 +313,9 @@ Each is a job for its own conversation; the summary lists what each covers.
 4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
    under the +; no zeros on an empty Log; the first comment hidden under the comment box; 44-point post buttons;
    Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
-5. ~~Wording fixes across the app~~: live in 0.69.8 (see Done). Left for Anton: the New tags on Looks and colours
-   (D69, D70), the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a brand's own page.
+5. ~~Wording fixes across the app~~: live in 0.69.8 (see Done). Anton keeps the New tags on Looks and colours
+   (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
+   brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
