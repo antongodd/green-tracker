@@ -1794,6 +1794,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — sign-in hardening is live
+- 0.72.0 (on dev 2026-11-03) went live on 2026-11-03 (release 0.72.0) and moves to Done. Notes only.
+
 ### 0.72.0 — sign-in hardening (review panel job 9, D83)
 - Strangers' wrong passwords can't lock you out: only wrong passwords count against an email, and a phone you've
   signed in on before has its own tries, so your right password still works on it.
