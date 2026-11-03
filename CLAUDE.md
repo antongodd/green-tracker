@@ -314,8 +314,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.69.9 (2026-11-03): everything up to the small fixes on the Leaderboard, Log and Feed (to-do item 4).
-- **Dev:** 0.70.2 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
+- **Live:** 0.70.2 (2026-11-03): everything up to the quicker add-a-product form (to-do item 10).
+- **Dev:** 0.70.2, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -346,9 +346,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
-10. **A quicker add-a-product form** (big): **on dev** in 0.70.0–0.70.2 (2026-11-03, D81), waiting for Anton's
-   "go live". Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores; Country as
-   a list under the box (both editors); Name with its own heading.
+10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
@@ -357,6 +355,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A quicker add-a-product form: Name, Photos, The product (Type and Strain type as one tap, Source, Country, Date tried from today), Ratings with − / +, Purchases (none opened by itself; Save asks for a missing total paid), Notes, Leafly, Private; examples from Anton's lists; Country as a list under the box (also in the Log); Name with its own heading (tried by Anton on GT Dev; holding − / + and VoiceOver not yet checked on his iPhone) | 0.70.0–0.70.2 | D81 | 2026-11-03 | 2026-11-03 |
 | Small fixes on the Leaderboard, Log and Feed: "Value" and "per 20mg" in value for money, room under the +, no zeros on an empty Log, a solid comment box, 44-point post buttons, Feed photos as you scroll, tap the Feed tab again for the top and new posts, catching up when the app comes back (keyboard and Feed scrolling not yet tried on Anton's iPhone) | 0.69.9 | | 2026-11-03 | 2026-11-03 |
 | Wording fixes across the app: Settings for More, Bring back, 1 product / 1 country / 1 comment, capital L for Leaderboard and Log, the badge without its colour name, Time to kick in, Pre-roll / Edible / Live rosin on screen, Current password, the Sources title, couldn’t, one dash (not yet seen on Anton's iPhone) | 0.69.8 | | 2026-11-03 | 2026-11-03 |
 | Privacy and data words brought up to date: Privacy (posts), Source (brand or grower, "Followers can see this" under the box), Export / Restore / Delete lists and the Export warning, the Look pages' footnote, lines under the comment box and in the post composer, the email line (not yet seen on Anton's iPhone) | 0.69.3, 0.69.5 | | 2026-11-03 | 2026-11-03 |
