@@ -24,11 +24,11 @@ interface Switch {
 }
 
 const GROUPS: { title: string; switches: Switch[] }[] = [
-  { title: 'Your Leaderboard', switches: [{ key: 'shareBoard', label: 'Share my Leaderboard', note: 'Off: followers see nothing but your name.' }] },
+  { title: 'Your Leaderboard', switches: [{ key: 'shareBoard', label: 'Share my Leaderboard', note: 'Off: followers see only your name and your posts.' }] },
   {
     title: 'On your products',
     switches: [
-      { key: 'shareSource', label: 'Source', note: 'Where you got it, e.g. Cookies.' },
+      { key: 'shareSource', label: 'Source', note: 'The brand or grower, e.g. Cookies. Shops and dealers go in Supplier, which is never shared.' },
       { key: 'shareCountry', label: 'Country', note: 'The flag and country name.' },
       { key: 'sharePhotos', label: 'Product photos', note: 'Without them, followers see the type’s mark.' },
     ],
@@ -168,7 +168,7 @@ export function PrivacyScreen() {
             <p class="footnote priv-foot">
               These apply to all your followers; they aren’t told when you change them. Someone who doesn’t follow you never sees any of it. A product
               you’ve made Private stays hidden whatever these say. Prices, purchases, suppliers, notes, date tried, Leafly links and your Log are never
-              shared.
+              shared, except what you choose to post.
             </p>
             <p class="footnote priv-foot">Posts are always shared with your followers.</p>
           </div>

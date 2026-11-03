@@ -61,6 +61,13 @@ test('More has a Privacy group; the screen starts as before, with the preview on
   // Smokes are gone (D60): no Smokes switches or group.
   await expect(owner.locator('.priv-row')).toHaveCount(5);
   await expect(owner.locator('main')).not.toContainText(/smoke|Most used/i);
+  // The words match what's shared since posts (D77): posts go to followers whatever the switches say.
+  await expect(owner.locator('.priv-row', { hasText: 'Share my Leaderboard' }).locator('.sub')).toHaveText('Off: followers see only your name and your posts.');
+  await expect(owner.locator('.priv-row', { hasText: 'Source' }).locator('.sub')).toHaveText(
+    'The brand or grower, e.g. Cookies. Shops and dealers go in Supplier, which is never shared.',
+  );
+  await expect(owner.locator('.priv-foot').first()).toContainText('your Log are never shared, except what you choose to post.');
+  await expect(owner.locator('.priv-foot').last()).toHaveText('Posts are always shared with your followers.');
   // The preview sits above the switches.
   const [pv, first] = [(await preview().boundingBox())!, (await toSwitch('Share my Leaderboard').boundingBox())!];
   expect(pv.y).toBeLessThan(first.y);

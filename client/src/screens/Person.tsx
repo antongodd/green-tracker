@@ -125,7 +125,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
           <h1>@{u}</h1>
           {p.person.relation === 'blocked' ? (
             <>
-              <p class="lead">You’ve blocked @{u}. They can’t find you or see your leaderboard.</p>
+              <p class="lead">You’ve blocked @{u}. They can’t find you or see your Leaderboard and posts.</p>
               <button class="btn secondary" style={{ width: 'auto' }} disabled={busy} onClick={() => run(() => api.unblock(u), { username: u, relation: 'none' })}>
                 Unblock
               </button>
@@ -157,7 +157,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
       {menu === 'confirm' && (
         <Sheet
           title={`Block @${u}?`}
-          message="They won’t be able to find you, request to follow you or see your leaderboard. They aren’t told."
+          message="They won’t be able to find you, request to follow you or see your Leaderboard and posts. They aren’t told."
           options={[{ label: 'Block', danger: true, onSelect: () => run(() => api.block(u), { username: u, relation: 'blocked' }) }]}
           onCancel={() => setMenu(null)}
         />

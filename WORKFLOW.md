@@ -32,6 +32,12 @@ Claude says which at the start. You can always overrule it.
 4. You try it and send screenshots of anything odd. Claude fixes things until you're happy.
 5. You say **"go live"**. Claude puts it live and tells you how to see it.
 
+## Who's on the app
+
+Ask Claude to "audit all accounts" any time. You get a table in the conversation of everyone on the live
+app: when they joined, when they were last on, what they've added, and who follows whom. It only looks; nothing is
+saved or sent anywhere, and nobody's email is shown.
+
 ## A review
 
 Ask for "the review panel" any time. Five reviewers (Sam, the everyday user, counts most; a proof-reader, a

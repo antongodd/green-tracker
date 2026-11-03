@@ -80,6 +80,7 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `undo-live` | Something on live is broken |
 | `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
 | `review-panel` | Anton asks for a review: five reviewers (Sam the everyday user counts most) and a judge; reports in `reviews/` |
+| `green-tracker-account-audit` | Anton asks to audit all accounts: a read-only table of everyone on live, shown only in the conversation (never saved, no emails) |
 
 ### Two conversations at once
 
@@ -297,8 +298,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.69.1 (2026-11-03): everything up to the forgot-password safety net (to-do item 1).
-- **Dev:** 0.69.2: don't lose my work (item 2), going live.
+- **Live:** 0.69.2 (2026-11-03): everything up to don't lose my work (to-do item 2).
+- **Dev:** 0.69.6 (2026-11-03): privacy and data words (to-do item 3, 0.69.3, with a fix in 0.69.5) and the website catch-up (item 6, 0.69.4, with a fix in 0.69.6),
+  on their way to live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -307,10 +309,8 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
    keep naming the same job.
-2. **Don't lose my work** (small). **On dev** (0.69.2, 2026-11-03): "Keep editing / Discard" on Cancel and
-   swipe-back in the product form, the Log entry form and the post composer; a 20-second limit on Save and Post, and
-   no duplicate on a second tap.
-3. **Privacy and data words that are out of date** (small, words only). Privacy page (posts), Source ("the brand or
+2. ~~Don't lose my work~~: live in 0.69.2 (see Done).
+3. **Privacy and data words that are out of date** (small, words only): **on dev** in 0.69.3 (2026-11-03). Privacy page (posts), Source ("the brand or
    grower"), "Followers can see this" under Source; Export, Restore and Delete lists and the Export warning; the Look
    pages' footnote (D74); lines under the comment box and in the composer; the sign-up email line.
 4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
@@ -318,10 +318,9 @@ Each is a job for its own conversation; the summary lists what each covers.
    Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
 5. **Wording fixes across the app** (small). The proof-reader's table ("More" → "Settings", plurals, capitals,
    colour names in the badge, type names, archive messages, Current password).
-6. **Website catch-up** (small; the hero picture is some work). Say what sign-up asks for (never "no email"); the
-   Feed in the friends card; one time throughout; the video's last caption; the real address; the price chip and
-   share picture; WhatsApp line, laptop layout, button sizes, slider name, 404. Anton decides "Know your plug",
-   "Roll one up", "Made by Anton".
+6. **Website catch-up** (small): **on dev** in 0.69.4 (2026-11-03). What sign-up asks for, the Feed in the friends
+   card, one time throughout, the video's last caption, the real address, the price chip and share picture, WhatsApp
+   line, laptop layout, button sizes, slider name, 404. Anton kept "Know your plug", "Roll one up" and "Made by Anton".
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
@@ -339,6 +338,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Don't lose my work: Keep editing / Discard on Cancel and swipe-back in the product, Log entry and post editors; a 20-second limit on Save and Post; no double send (checked on Anton's iPhone) | 0.69.2 | | 2026-11-03 | 2026-11-03 |
 | Forgot-password safety net: "Forgot password?" on Sign in, honest words at sign-up and on the Face ID offer, "too many tries" mentions Face ID, iCloud Keychain hints at sign-up (Keychain still to try on Anton's iPhone) | 0.69.1 | | 2026-11-03 | 2026-11-03 |
 | Review panel run again on 0.69.0 (app and website in one round); ten jobs on the to-do list | (notes) | | 2026-11-03 | notes only |
 | Email and password: create an account with an email and password, then your @name; Face ID optional; existing accounts add both once; no more recovery codes (tried by Anton on GT Dev) | 0.69.0 | D80 | 2026-11-02 | 2026-11-03 |

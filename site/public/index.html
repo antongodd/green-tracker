@@ -40,22 +40,23 @@
         <a class="btn go" href="https://green-tracker.green-tracker.workers.dev/signup">Sign up free</a>
         <a class="btn ghost" href="#install">Put it on my iPhone</a>
       </div>
+      <p class="asks">Just an email and password. Your email stays private; Face ID is optional.</p>
 
       <!-- A picture of the app, drawn here. Every product in it is made up. -->
       <div class="stage" role="img" aria-label="The Green Tracker Leaderboard on an iPhone, with made-up products ranked by score">
-        <div class="chip c1" aria-hidden="true"><span class="nug"></span><span><b class="big">9.6</b><small>Lemon Cherry Gelato</small></span></div>
+        <div class="chip c1" aria-hidden="true"><span class="nug"></span><span><b class="big">9.6</b><small>Lemon Gelato</small></span></div>
         <div class="mini" aria-hidden="true"><div class="mini-in">
-          <div class="mini-h"><b>Leaderboard</b><span>All · Score</span></div>
+          <div class="mini-h"><b>Leaderboard</b><span>All · Overall</span></div>
           <div class="tiles"><div><small>Products</small><b>42</b></div><div><small>Average</small><b>8.1</b></div><div><small>Spent</small><b>£612</b></div></div>
           <div class="lb">
-            <div class="lr holo b4"><span class="rk">1</span><span class="nug"></span><span class="nm"><b>Lemon Cherry Gelato</b><small>Flower · Highland Greens</small></span><span class="sc">9.6</span></div>
+            <div class="lr holo b4"><span class="rk">1</span><span class="nug"></span><span class="nm"><b>Lemon Gelato</b><small>Flower · Highland Greens</small></span><span class="sc">9.6</span></div>
             <div class="lr holo b3"><span class="rk">2</span><span class="nug n2"></span><span class="nm"><b>Blue Zushi</b><small>Flower · The Green Room</small></span><span class="sc">9.2</span></div>
             <div class="lr holo b2"><span class="rk">3</span><span class="nug n3"></span><span class="nm"><b>Gushers Rosin</b><small>Concentrate · Frosty Co.</small></span><span class="sc">8.8</span></div>
-            <div class="lr holo b1"><span class="rk">4</span><span class="nug n4"></span><span class="nm"><b>Watermelon Gummies</b><small>Edible · Sweet Leaf</small></span><span class="sc">8.3</span></div>
+            <div class="lr holo b1"><span class="rk">4</span><span class="nug n4"></span><span class="nm"><b>Melon Gummies</b><small>Edible · Sweet Leaf</small></span><span class="sc">8.3</span></div>
             <div class="lr heat"><span class="rk">5</span><span class="nug n5"></span><span class="nm"><b>Purple Punch</b><small>Flower · Highland Greens</small></span><span class="sc">7.4</span></div>
           </div>
         </div></div>
-        <div class="chip c2" aria-hidden="true"><span class="nug n3"></span><span>£9.50/g<small>value for money</small></span></div>
+        <div class="chip c2" aria-hidden="true"><span class="nug n3"></span><span>£9.50/g<small>price</small></span></div>
         <div class="chip c3" aria-hidden="true"><span class="nug n2"></span><span>Logged<small>Blue Zushi · 3.5g</small></span></div>
       </div>
     </section>
@@ -81,8 +82,8 @@
         </article>
         <article class="feat reveal">
           <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" /></svg></span>
-          <h3>Peep your mates’ picks</h3>
-          <p>Follow friends and see their top shelf. Only if they say yes. Your stuff stays yours until you let someone in.</p>
+          <h3>See your mates’ picks and posts</h3>
+          <p>Follow friends to see their top shelf and their posts in your Feed. Post what you’re smoking: only friends you approve see it.</p>
         </article>
       </div>
     </section>
@@ -92,8 +93,8 @@
       <h2 id="try" class="reveal">Go on, rate it.</h2>
       <div class="rate reveal">
         <div class="lr holo b3" id="rate-row"><span class="nug n2"></span><span class="nm"><b>Blue Zushi</b><small>Flower · The Green Room</small></span><span class="sc" id="rate-score">9.2</span></div>
-        <label class="verdict" for="rate" id="rate-verdict">Fire.</label>
-        <input type="range" id="rate" min="1" max="10" step="0.1" value="9.2" />
+        <p class="verdict" id="rate-verdict">Fire.</p>
+        <input type="range" id="rate" min="1" max="10" step="0.1" value="9.2" aria-label="Score for Blue Zushi" />
         <div class="scale" aria-hidden="true"><span>1 · bin it</span><span>10 · top shelf</span></div>
       </div>
     </section>
@@ -101,17 +102,17 @@
     <section class="sec" id="install" aria-labelledby="get">
       <p class="label reveal">Get it</p>
       <h2 id="get" class="reveal">On your iPhone in 20 seconds.</h2>
-      <!-- D68: the steps as a 24-second video. Nothing downloads until it's played; sound only when tapped. -->
+      <!-- D68: the steps as a video (24 seconds long). Nothing downloads until it's played; sound only when tapped. -->
       <figure class="video reveal">
         <video controls playsinline preload="none" poster="/media/home-screen.jpg" width="1280" height="720" aria-describedby="video-about">
           <source src="/media/home-screen.mp4" type="video/mp4" />
-          <track kind="captions" src="/media/home-screen.vtt" srclang="en" label="English" />
+          <track kind="captions" src="/media/home-screen.vtt" srclang="en-GB" label="English (UK)" />
         </video>
-        <figcaption id="video-about">Watch it done: Safari, Share, View More, Add to Home Screen, Add. 24 seconds.</figcaption>
+        <figcaption id="video-about">Watch it done: Safari, Share, View More, Add to Home Screen, Add.</figcaption>
       </figure>
       <ol class="steps">
-        <li class="step reveal"><span class="n" aria-hidden="true">1</span><b>Open it in Safari</b><p>Tap Sign up free on this page, in Safari.</p>
-          <div class="pic" aria-hidden="true"><div class="safari"><span class="back">‹</span><span class="url">green-tracker.workers.dev</span><span class="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" /></svg></span></div></div></li>
+        <li class="step reveal"><span class="n" aria-hidden="true">1</span><b>Open it in Safari</b><p>Tap Sign up free above, in Safari.</p><p class="inapp">Opened this inside WhatsApp or Instagram? Open it in Safari first: tap ⋯ or the compass, then Open in Safari.</p>
+          <div class="pic" aria-hidden="true"><div class="safari"><span class="back">‹</span><span class="url">green-tracker.green-tracker.workers.dev</span><span class="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" /></svg></span></div></div></li>
         <li class="step reveal"><span class="n" aria-hidden="true">2</span><b>Tap Share, then View More, then Add to Home Screen</b><p>On newer iPhones, tap ⋯ at the bottom first to find Share. View More is the last round button.</p>
           <div class="pic menu" aria-hidden="true"><div>Copy <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V4h12" /></svg></div><div class="hit">Add to Home Screen <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /><path d="M12 8v8M8 12h8" /></svg></div><div>Add Bookmark <svg viewBox="0 0 24 24"><path d="M5 4h14v17l-7-5-7 5z" /></svg></div></div></li>
         <li class="step reveal"><span class="n" aria-hidden="true">3</span><b>Tap Add. Done.</b><p>It sits on your Home Screen and opens full screen, like a proper app.</p>
@@ -122,7 +123,7 @@
 
     <section class="final reveal" aria-labelledby="go">
       <h2 id="go">Roll one up and sign up.</h2>
-      <p class="lede">Free. No ads. Takes a minute.</p>
+      <p class="lede">Free. No ads. On your Home Screen in 20 seconds.</p>
       <a class="btn go" href="https://green-tracker.green-tracker.workers.dev/signup">Sign up free</a>
     </section>
   </main>

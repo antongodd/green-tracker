@@ -371,6 +371,8 @@ export function Composer(p: { product?: string; entry?: string }) {
                 Take or choose a photo
               </button>
             )}
+            {/* Posts always go to your followers (D77), whatever Privacy says about product photos. */}
+            <p class="small compose-safe">Your followers see these photos. Leave out faces, places and anything with a name or number.</p>
             {chosen.some((c) => c.kind === 'new' && c.status === 'error') && (
               <p class="error" role="alert">
                 {(chosen.find((c) => c.kind === 'new' && c.status === 'error') as NewPhoto).error}

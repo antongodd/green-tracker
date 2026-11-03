@@ -376,7 +376,12 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
             <div class="two-col">
-              <TextField id="source" label="Source" placeholder="Source/Brand" value={form.source ?? ''} onInput={(v) => set('source', v)} onFocus={() => setSuggesting('source')} onBlur={leaveSource} autoCapitalize="words" />
+              <TextField id="source" label="Source" placeholder="e.g. Cookies" value={form.source ?? ''} onInput={(v) => set('source', v)} onFocus={() => setSuggesting('source')} onBlur={leaveSource} autoCapitalize="words">
+                {/* The brand or grower, shown to followers unless Privacy says no (shops and dealers go in Supplier). */}
+                <p class="hint" id="source-hint">
+                  Followers can see this, unless you turn it off in Privacy.
+                </p>
+              </TextField>
               {/* Next after Source for Tab, drawn across the card under both boxes (.suggest in a .two-col). */}
               {suggesting === 'source' && <NameSuggestions for="source" label="Source" typed={form.source ?? ''} used={used} onPick={(name) => set('source', name)} onLeave={leaveSource} />}
               <TextField id="date-tried" label="Date tried" type="date" value={form.dateTried ?? ''} onInput={(v) => set('dateTried', v || null)} />

@@ -1263,14 +1263,22 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   check. All links to the app are absolute (`https://green-tracker.green-tracker.workers.dev/`, `/signup` for Sign up
   free). Look: the app's dark green and Aurora, with drifting green, teal and violet lights (`.l1`–`.l5`; not `.b1`…,
   which are the Leaderboard's band classes), frosted glass cards, a gradient headline in lighter tints (readable over
-  the lights). Wider than 900px: the phone beside the words, cards two across.
+  the lights). Wider than 900px: the phone beside the words, every section lined up with the words' left edge, cards
+  two across, the three install steps side by side. *Since 0.69.4:* under the hero buttons, what sign-up asks for ("Just
+  an email and password. Your email stays private; Face ID is optional." Never "no email" or "no password": false since
+  D80); the friends card is about posts and the Feed; one time throughout ("20 seconds", as the video itself says); the
+  real address in step 1's drawing and a line for links opened inside WhatsApp or Instagram; the hero's price chip
+  says "price" and sits below the scores (on the share picture too); the slider is named "Score for Blue Zushi" (its
+  verdict is read with its value); the top buttons are 44 points tall; the lost page offers the app too.
   - *Tests* (`test/e2e/website.spec.ts`; the site is served from the folder under a made-up address with its own
     `_headers`, every other address noted and refused): nothing loads from anywhere else and nothing breaks its security
     rules; the stored fonts are used; both Sign up free buttons and Open app go to the live app; the link-preview
     picture is 1200 × 630; axe at the top and the bottom; **every word readable over the moving lights**, judged at six
     moments every 600px down the page (proved to catch dimmed text); nothing spills sideways at 320, 390 and 430px; the
     slider's colours and words; "Put it on my iPhone" reaches the steps; Reduce Motion stops every animation; the lost
-    page.
+    page. Since 0.69.4: the words match the app (what sign-up asks, never "no email", posts, one time, the video's last
+    caption, the address, the chip's words, no name cut short); the chips never cover a score at 320, 390 and 1280px;
+    the top buttons are at least 44 points; on a laptop every section lines up with the hero and the steps sit in a row.
   - *Couldn't check here*: how it looks and moves on a real iPhone (the glass blur and the drifting lights), and the
     link preview in WhatsApp and iMessage (it needs the public address).
 - **Website video (D68, 0.58.0).** A `<figure class="video">` under the "Get it" heading: `<video controls playsinline
@@ -1715,6 +1723,55 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.69.6 — the website's top product has a shorter name
+- In the website's picture of the app (and the share picture), "Lemon Cherry Gelato" is now "Lemon Gelato": on Linux
+  the long name was cut off in its row (0.69.4's new test caught it in the release check; an iPhone drew it just
+  inside). Website only.
+
+### 0.69.5 — the date box beside Source stays its own height
+- 0.69.3's line under the Source box made that row taller, and the Date tried box beside it stretched to match, so
+  its calendar icon sat a fraction below the box (`editor.spec.ts` caught it in the release check). Boxes side by
+  side in the product form (`.two-col`) now keep their own height (`align-items: start`).
+
+### 0.69.4 — the website catches up with the app (review panel, 2026-11-03)
+- Website only (`site/`); the app is unchanged. Under the hero buttons, what sign-up asks for: "Just an email and
+  password. Your email stays private; Face ID is optional." The friends card is now "See your mates’ picks and posts":
+  their top shelf and their posts in your Feed, "only friends you approve see it" (no more "Peep").
+- One time throughout: "On your iPhone in 20 seconds" (as the video itself says); the video's own length is no longer
+  given under it, and the closing banner says "On your Home Screen in 20 seconds" in place of "Takes a minute". The
+  video's last caption includes View More. Captions marked British English.
+- Step 1: "Tap Sign up free above, in Safari", a line for people who opened the link inside WhatsApp or Instagram,
+  and the app's real address in the drawing. The picture of the app: "All · Overall" (was "All · Score"), "Melon
+  Gummies" (no longer cut off), and the chip "£9.50/g · price" (it said value for money) moved below the scores; the
+  share picture `og.png` redrawn to match.
+- Accessibility and layout: the top buttons are 44 points tall; the rate-it slider has a fixed name, "Score for Blue
+  Zushi"; on a laptop every section lines up with the hero, the steps sit three across without gaps under their
+  titles. The lost page: "This page doesn’t exist. Head back to the start.", with an Open the app button.
+- The owner kept "Know your plug", "Roll one up and sign up" and "Made by Anton" (asked 2026-11-03).
+
+### 0.69.3 — privacy and data words brought up to date (review panel, 2026-11-03)
+- Words only: nothing anyone can see, and no rule, changes. Sentences written before posts (D77), their look (D74)
+  and email sign-in (D80) now say what the app really does.
+- Privacy: Share my Leaderboard off says "followers see only your name and your posts" (a post about a product then
+  shows only its name and type); Source is "The brand or grower, e.g. Cookies. Shops and dealers go in Supplier,
+  which is never shared."; the footnote ends "…never shared, except what you choose to post". People and a person's
+  page (remove a follower, no followers yet, unfollow, block, blocked) say "Leaderboard and posts".
+- The product form's Source box: "e.g. Cookies" in place of "Source/Brand", and "Followers can see this, unless you
+  turn it off in Privacy." under it.
+- Export lists your posts ("not the comments or 🔥 on them") and warns "This file isn't locked. Anyone who opens it
+  can read everything in it."; Restore says posts are replaced too (if the file has them) and that your email,
+  password, passkeys and followers stay; Delete account lists "Your posts, and your comments and 🔥 on others'".
+- Look, Leaderboard top and Leaderboard colours: "Your followers see your board in it too" (since D74 a friend's
+  board shows in *their* look, not yours); Leaderboard top: "The Log and brand pages use it too."
+- A line under the comment box ("Everyone who follows @them sees your comment and your @name", or "Your followers…"
+  on your own post) and one in the post composer ("Your followers see these photos. Leave out faces, places and
+  anything with a name or number.").
+- Sign-up, adding an email to an older account and Change email: "Your email is private: only you see it. We use it
+  only to sign you in." in place of "Nobody else ever sees it" (Anton and Cloudflare can).
+
+### Notes — don't lose my work is live
+- 0.69.2 (on dev 2026-11-03) went live on 2026-11-03 and moves to Done. Notes only.
 
 ### 0.69.2 — don't lose my work (review panel, 2026-11-03)
 - Adding or editing a product, a Log entry or a post now asks "Keep editing / Discard" before throwing anything away,

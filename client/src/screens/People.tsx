@@ -377,7 +377,7 @@ export function People() {
                                 label: 'Remove follower',
                                 danger: true,
                                 onSelect: () =>
-                                  ask({ title: `Remove @${f.username}?`, message: 'They stop seeing your leaderboard straight away. They aren’t told.', label: 'Remove follower', run: () => api.removeFollower(f.username) }),
+                                  ask({ title: `Remove @${f.username}?`, message: 'They stop seeing your Leaderboard and posts straight away. They aren’t told.', label: 'Remove follower', run: () => api.removeFollower(f.username) }),
                               },
                               blockOption(f.username),
                             ],
@@ -391,7 +391,7 @@ export function People() {
                 </div>
               ) : (
                 <EmptyCard art="followers" title="No followers yet" compact>
-                  <p>No followers yet. People who follow you see your leaderboard, never your Log, prices or notes.</p>
+                  <p>No followers yet. People who follow you see your Leaderboard and posts, never your prices or notes.</p>
                 </EmptyCard>
               ))}
 
@@ -415,7 +415,7 @@ export function People() {
                                     {
                                       label: 'Unfollow',
                                       danger: true,
-                                      onSelect: () => ask({ title: `Unfollow @${f.username}?`, message: 'You’ll need to request again to see their leaderboard.', label: 'Unfollow', run: () => api.unfollow(f.username) }),
+                                      onSelect: () => ask({ title: `Unfollow @${f.username}?`, message: 'You’ll need to request again to see their Leaderboard and posts.', label: 'Unfollow', run: () => api.unfollow(f.username) }),
                                     },
                                   ]
                                 : [{ label: 'Cancel request', danger: true, onSelect: () => act(() => api.unfollow(f.username)) }]),
@@ -461,7 +461,7 @@ export function BlockedPeople() {
       <Header title="Blocked people" left={<BackButton to="/more" />} />
       <main class="screen">
         <div class="wrap stack" style={{ paddingTop: '16px' }}>
-          <p class="lead">Blocked people can’t find you, request to follow you or see your leaderboard. They aren’t told.</p>
+          <p class="lead">Blocked people can’t find you, request to follow you or see your Leaderboard and posts. They aren’t told.</p>
           {error && (
             <p class="error" role="alert">
               {error}

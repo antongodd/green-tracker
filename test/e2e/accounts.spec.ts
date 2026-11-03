@@ -22,6 +22,7 @@ test('create an account with email and password, Face ID once, sign out and in b
   await page.getByRole('link', { name: 'Create account' }).click();
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Step 1 of 2' })).toBeVisible();
+  await expect(page.locator('.lead')).toHaveText('Your email is private: only you see it. We use it only to sign you in.');
   const cont = page.getByRole('button', { name: 'Continue' });
   await expect(cont).toBeDisabled();
   await page.getByLabel('Email').fill('not-an-email');
