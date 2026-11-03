@@ -14,7 +14,7 @@ import { Avatar } from './Avatar';
  */
 const kept = new Map<string, { url: string; img: HTMLImageElement }>();
 
-function useOwnThumb(version: string | undefined): string | undefined {
+export function useOwnThumb(version: string | undefined): string | undefined {
   const [src, setSrc] = useState(() => (version ? kept.get(version)?.url : undefined));
   useEffect(() => {
     if (!version) return setSrc(undefined);

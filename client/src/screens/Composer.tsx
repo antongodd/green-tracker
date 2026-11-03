@@ -57,9 +57,9 @@ const searchText = (s: string) => s.toLocaleLowerCase().normalize('NFKD');
 function previewAbout(a: About, preset: PostAbout['preset']): PostAbout | null {
   if (a.kind === 'none') return null;
   if (a.kind === 'log')
-    return { kind: 'log', name: a.entry.name, productType: a.entry.productType, productTypeOther: a.entry.productTypeOther, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null, photo: null };
+    return { kind: 'log', name: a.entry.name, productType: a.entry.productType, productTypeOther: a.entry.productTypeOther, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null, photo: null, yours: null };
   const p = a.product;
-  return { kind: 'product', name: p.name, productType: p.productType, productTypeOther: p.productTypeOther, strainType: p.strainType, score: overall(p.productType, p.ratings), preset, source: p.source, country: p.country, countryOther: p.countryOther, href: null, photo: p.photos[0] ?? null };
+  return { kind: 'product', name: p.name, productType: p.productType, productTypeOther: p.productTypeOther, strainType: p.strainType, score: overall(p.productType, p.ratings), preset, source: p.source, country: p.country, countryOther: p.countryOther, href: null, photo: p.photos[0] ?? null, yours: null };
 }
 
 function Picker<T extends { id: string; name: string }>(p: { title: string; items: T[] | null; error: string; note: string; row: (item: T) => preact.JSX.Element; onPick: (item: T) => void; onBack: () => void }) {

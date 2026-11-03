@@ -14,6 +14,7 @@ import { linkTo, navigate } from '../router';
 import { useSession } from '../session';
 import { play } from '../sounds';
 import { EmptyCard } from '../components/EmptyCard';
+import { InviteButton } from '../components/InviteButton';
 import { Skeleton } from '../components/Skeleton';
 
 type Segment = 'following' | 'followers' | 'requests';
@@ -295,6 +296,8 @@ export function People() {
             <span class="visually-hidden">Search usernames</span>
             <input type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} placeholder="Search usernames" autoCapitalize="none" autoCorrect="off" spellcheck={false} enterKeyHint="search" />
           </label>
+          {/* D82: invite someone who isn't on Green Tracker yet. */}
+          {results === null && <InviteButton />}
         </div>
         {error && (
           <p class="error wrap" role="alert">

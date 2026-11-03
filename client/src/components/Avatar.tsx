@@ -5,7 +5,7 @@ import { useState } from 'preact/hooks';
  * see it, otherwise the first letter of their username on --surface-3. The letter
  * stays underneath, so a photo that can't load (access just ended) falls back to it.
  */
-export function Avatar(p: { username: string; src?: string; size?: 'hd' | 'lg' | 'xl' }) {
+export function Avatar(p: { username: string; src?: string; size?: 'xs' | 'hd' | 'md' | 'lg' | 'xl' }) {
   const [failed, setFailed] = useState<string | null>(null);
   const photo = p.src && failed !== p.src ? p.src : undefined;
   return (

@@ -27,6 +27,7 @@ import { clearPrivacyCache } from './privacy';
 import { clearEntryCache } from './logEntries';
 import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
+import { Compare } from './screens/Compare';
 import { EmailSignIn, SignIn } from './screens/SignIn';
 import { passkeysSupported } from './passkey';
 import { PrivacyScreen } from './screens/Privacy';
@@ -141,7 +142,7 @@ function App() {
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
-    const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+)|\/brands\/([^/]+)|\/(posts))?$/);
+    const them = path.match(/^\/u\/([^/]+)(?:\/p\/([^/]+)|\/brands\/([^/]+)|\/(posts)|\/(compare))?$/);
     const postPage = path.match(/^\/posts\/([^/]+)$/); // D77
     const compose = path.match(/^\/feed\/new(?:\/(p|log)\/([^/]+))?$/);
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
@@ -159,6 +160,7 @@ function App() {
     else if (entry) screen = <LogEntryPage key={entry[1]} id={decodeURIComponent(entry[1]!)} />;
     else if (them?.[2]) screen = <SharedProfile key={path} username={decodeURIComponent(them[1]!)} id={decodeURIComponent(them[2])} />;
     else if (them?.[3]) screen = <TheirBrandPage key={path} username={decodeURIComponent(them[1]!)} name={decodeURIComponent(them[3])} />;
+    else if (them?.[5]) screen = <Compare key={path} username={decodeURIComponent(them[1]!)} />;
     else if (them) screen = <Person key={them[1]} username={decodeURIComponent(them[1]!)} tab={them[4] ? 'posts' : 'board'} />;
     else if (product?.[2]) screen = <Editor key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;

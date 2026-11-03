@@ -2038,3 +2038,35 @@ html[data-tone="light"] .in-log { color: #0b6d6d; border-color: rgba(11, 109, 10
 html[data-tone="light"] .post-acts .fire.on { color: #b5540a; }
 html[data-tone="light"] .lock-tag { color: #8a5600; }
 html[data-tone="light"] .post-photo, html[data-tone="light"] .compose-photo { background: color-mix(in srgb, var(--text) 6%, transparent); }
+
+/* You against them (D82): each person's photo and @name with their score (Anton's pick C), on a
+   friend's product page ("You've had this too"), in Compare and, small, in a post's product card. */
+.av.xs { width: 20px; height: 20px; font-size: 11px; }
+.av.md { width: 44px; height: 44px; font-size: 18px; }
+.too-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.too-head a { color: var(--accent-bright); font-weight: 600; font-size: 15px; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+.sect.too { border-color: color-mix(in srgb, var(--accent) 40%, var(--card-edge)); }
+.duel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.duel-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; text-align: center; }
+.duel-name { font-size: 13px; font-weight: 600; color: var(--text-2); max-width: 100%; overflow-wrap: anywhere; }
+.duel-score { font-family: var(--num-font); font-size: 26px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.duel-side.mine .duel-score, .your-chip.mine b, .about .your-chip b { color: var(--accent-bright); }
+.duel-text { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.duel-sub { font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }
+.your-chip { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; }
+.your-chip b { font-family: var(--num-font); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.compare-btn { margin: 8px 16px 0; width: auto; }
+.compare-btn svg { width: 20px; height: 20px; }
+.invite-btn svg { width: 20px; height: 20px; }
+.wrap > .invite-btn { margin-top: 12px; }
+.cmp-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.cmp-list li + li { border-top: 1px solid var(--divider); }
+.cmp-list li > a, .cmp-list li > div { display: flex; align-items: center; gap: 12px; padding: 10px 0; min-height: 44px; color: inherit; text-decoration: none; }
+.cmp-name { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.cmp-name b { font-weight: 600; overflow-wrap: anywhere; }
+.cmp-name span { font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }
+.cmp-chips { display: flex; gap: 12px; flex: none; }
+.cmp-chips .your-chip { margin-top: 0; }
+.cmp-note { font-size: 13px; color: var(--text-2); }
+.cmp-note.out { margin: 12px 16px 0; }
+html[data-tone="light"] :is(.duel-side.mine .duel-score, .your-chip.mine b, .about .your-chip b, .too-head a) { color: color-mix(in srgb, var(--accent) 55%, var(--text)); }

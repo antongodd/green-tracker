@@ -1,6 +1,7 @@
 // Client calls for People (brief §5). Usernames go into URLs encoded.
 import type { PersonCard, SharedProduct } from '../../shared/domain/social';
 import type { Appearance } from '../../shared/domain/gems';
+import type { Comparison, YourScore } from '../../shared/domain/compare';
 import { api } from './api';
 import { rememberTheirLook } from './theirLook';
 
@@ -30,8 +31,15 @@ export const theirBoard = (username: string) =>
     rememberTheirLook(username, r.appearance);
     return { products: r.products };
   });
+/** One of their products, with `yours` (D82): your own score when you've had the same product. */
 export const theirProduct = (username: string, id: string) =>
-  api<{ product: SharedProduct; appearance?: Appearance }>('GET', `${u(username)}/products/${encodeURIComponent(id)}`).then((r) => {
+  api<{ person: PersonCard; product: SharedProduct; appearance?: Appearance; yours: YourScore | null }>('GET', `${u(username)}/products/${encodeURIComponent(id)}`).then((r) => {
     rememberTheirLook(username, r.appearance);
-    return r.product;
+    return { person: r.person, product: r.product, yours: r.yours ?? null };
+  });
+/** Compare boards (D82): your board against what they share with you. */
+export const compareWith = (username: string) =>
+  api<{ person: PersonCard; appearance?: Appearance; comparison: Comparison }>('GET', `${u(username)}/compare`).then((r) => {
+    rememberTheirLook(username, r.appearance);
+    return { person: r.person, comparison: r.comparison };
   });
