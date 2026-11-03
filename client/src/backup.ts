@@ -214,7 +214,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     const cutout = ph.cutout === true;
     const cropped = fromBase64(ph.cropped, cutout ? 'image/png' : 'image/jpeg');
     const thumb = await renderThumb(await loadImage(cropped), cutout);
-    const id = await uploadSet({ original: fromBase64(ph.original), cropped, thumb, cutout });
+    const id = await uploadSet({ original: fromBase64(ph.original), cropped, thumb, cutout }, { restore: true });
     uploads.push(id);
     progress(++done, total);
     return { upload: id, crop: ph.crop };
@@ -252,7 +252,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
         for (const ph of photos ?? [{ image, cutout }]) {
           const cropped = fromBase64(ph.image, ph.cutout ? 'image/png' : 'image/jpeg');
           const thumb = await renderThumb(await loadImage(cropped), !!ph.cutout);
-          const id = await uploadSet({ cropped, thumb, cutout: !!ph.cutout });
+          const id = await uploadSet({ cropped, thumb, cutout: !!ph.cutout }, { restore: true });
           uploads.push(id);
           ids.push(id);
           progress(++done, total);

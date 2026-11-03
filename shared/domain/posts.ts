@@ -59,6 +59,8 @@ export interface PostComment {
   createdAt: number;
   /** You may delete it: it's yours, or it's on your post. */
   canDelete: boolean;
+  /** D84: you reported it and haven't asked to see it again (only ever about you). */
+  hiddenByYou?: boolean;
 }
 
 export interface Post {
@@ -79,10 +81,12 @@ export interface Post {
   commentCount: number;
   /** In a list: the first two; on the post's page: every one, oldest first. */
   comments: PostComment[];
+  /** D84: you reported it and haven't asked to see it again (only ever about you). */
+  hiddenByYou?: boolean;
 }
 
 /** Every key a Post may have — the allow-list the tests check raw replies against. */
-export const POST_KEYS: readonly (keyof Post)[] = ['id', 'username', 'photo', 'mine', 'caption', 'createdAt', 'editedAt', 'image', 'photos', 'about', 'fires', 'youFired', 'commentCount', 'comments'];
+export const POST_KEYS: readonly (keyof Post)[] = ['id', 'username', 'photo', 'mine', 'caption', 'createdAt', 'editedAt', 'image', 'photos', 'about', 'fires', 'youFired', 'commentCount', 'comments', 'hiddenByYou'];
 export const POST_ABOUT_KEYS: readonly (keyof PostAbout)[] = ['kind', 'name', 'productType', 'productTypeOther', 'strainType', 'score', 'preset', 'source', 'country', 'countryOther', 'href', 'photo', 'yours'];
 
 export type PostPhotoInput = { fromPhotoId: string } | { upload: string };

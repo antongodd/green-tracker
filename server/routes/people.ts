@@ -4,6 +4,7 @@ import type { PersonCard } from '../../shared/domain/social';
 import { fail } from '../lib/http';
 import { hit } from '../lib/rateLimit';
 import { requireUser } from '../lib/session';
+import { reasonOf, saveReport } from '../lib/reports';
 import { blockedEitherWay, canView, findUser, photoColumnSql, relationTo, shareProducts, toCards, visiblePhoto, type UserRef } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
 import { loadAppearance } from '../lib/appearance';
@@ -173,6 +174,25 @@ people.post('/u/:username/block', async (c) => {
     db.prepare('INSERT INTO blocks (blocker_id, blocked_id, created_at) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING').bind(me, them.id, Date.now()),
   ]);
   return c.json({ person: { username: them.username, relation: 'blocked' } satisfies PersonCard });
+});
+
+/**
+ * D84: report a person (anyone you can find: someone who blocked you doesn't exist for you). With `block`, they're
+ * blocked too, as Block above. Neither is ever told.
+ */
+people.post('/u/:username/report', async (c) => {
+  const me = c.var.user!.id;
+  const them = await other(c);
+  const { reason, block } = await reasonOf(c);
+  await saveReport(c, { kind: 'person', ownerId: them.id, reason });
+  if (block) {
+    const db = c.env.DB;
+    await db.batch([
+      db.prepare('DELETE FROM follows WHERE (follower_id = ?1 AND followed_id = ?2) OR (follower_id = ?2 AND followed_id = ?1)').bind(me, them.id),
+      db.prepare('INSERT INTO blocks (blocker_id, blocked_id, created_at) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING').bind(me, them.id, Date.now()),
+    ]);
+  }
+  return c.json({ person: await card(c, them, block ? 'blocked' : await relationTo(c.env.DB, me, them.id)) });
 });
 
 people.delete('/u/:username/block', async (c) => {

@@ -21,6 +21,8 @@ export interface SessionUser {
   username: string;
   /** D80: an account from before email and password, which must add both before anything else. */
   needsLogin: boolean;
+  /** D84: an account from before the 18+ tick, which must tick it before anything else (after any email and password). */
+  needsAdult: boolean;
 }
 
 export interface Session {

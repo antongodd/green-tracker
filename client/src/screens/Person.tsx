@@ -14,6 +14,7 @@ import { overall } from '../../../shared/domain/ratings';
 import type { PersonCard, SharedProduct } from '../../../shared/domain/social';
 import { ApiError, errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
+import { ReportSheet } from '../components/Report';
 import { ControlRow, Tiles } from '../components/Controls';
 import { PhotoGrid } from '../components/PhotoGrid';
 import { Cluster, formatRankValue, PhotoButton, photoTap, Score, Thumb } from '../components/ProductRow';
@@ -100,11 +101,68 @@ function PreviewNote() {
   );
 }
 
+/**
+ * The ⋯ on someone's page: Report (D84; "Also block" ticked to start) and Block. `onChange` gets them back as they
+ * now are (blocked, or as before).
+ */
+function PersonMenu(p: { person: PersonCard; onChange: (next: PersonCard) => void; onClose: () => void; onError: (text: string) => void; onThanks: (text: string) => void }) {
+  const [step, setStep] = useState<'menu' | 'confirm' | 'report'>('menu');
+  const u = p.person.username;
+  const done = (next: PersonCard) => {
+    p.onClose();
+    p.onChange(next);
+  };
+  return (
+    <>
+      {step === 'menu' && (
+        <Sheet
+          title={`@${u}`}
+          options={[
+            { label: 'Report', danger: true, onSelect: () => setStep('report') },
+            { label: 'Block', danger: true, onSelect: () => setStep('confirm') },
+          ]}
+          onCancel={p.onClose}
+        />
+      )}
+      {step === 'confirm' && (
+        <Sheet
+          title={`Block @${u}?`}
+          message="They won’t be able to find you, request to follow you or see your Leaderboard and posts. They aren’t told."
+          options={[
+            {
+              label: 'Block',
+              danger: true,
+              onSelect: () =>
+                api.block(u).then(
+                  () => done({ username: u, relation: 'blocked' }),
+                  (e) => (p.onClose(), p.onError(errorText(e))),
+                ),
+            },
+          ]}
+          onCancel={p.onClose}
+        />
+      )}
+      {step === 'report' && (
+        <ReportSheet
+          what="person"
+          username={u}
+          onCancel={p.onClose}
+          onReport={async (reason, block) => {
+            const next = await api.report(u, reason, block);
+            p.onThanks(block ? `Thanks. Reported, and @${u} is blocked.` : 'Thanks. Reported.');
+            done(next);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
 /** Not following: their username and a Follow button — nothing else (brief §5). */
-function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void }) {
+function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void; onThanks: (text: string) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [menu, setMenu] = useState<'menu' | 'confirm' | null>(null);
+  const [menu, setMenu] = useState<'menu' | null>(null);
   const run = async (f: () => Promise<PersonCard | unknown>, next?: PersonCard) => {
     setBusy(true);
     setError('');
@@ -155,15 +213,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
         </div>
       </main>
       <TabBar active="feed" />
-      {menu === 'menu' && <Sheet title={`@${u}`} options={[{ label: 'Block', danger: true, onSelect: () => setMenu('confirm') }]} onCancel={() => setMenu(null)} />}
-      {menu === 'confirm' && (
-        <Sheet
-          title={`Block @${u}?`}
-          message="They won’t be able to find you, request to follow you or see your Leaderboard and posts. They aren’t told."
-          options={[{ label: 'Block', danger: true, onSelect: () => run(() => api.block(u), { username: u, relation: 'blocked' }) }]}
-          onCancel={() => setMenu(null)}
-        />
-      )}
+      {menu === 'menu' && <PersonMenu person={p.person} onChange={p.onChange} onClose={() => setMenu(null)} onError={setError} onThanks={p.onThanks} />}
     </>
   );
 }
@@ -231,6 +281,8 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
   const [showKey, setShowKey] = useState(false);
   // D79: the product whose photos are open from its row.
   const [photosOf, setPhotosOf] = useState<SharedProduct | null>(null);
+  const [personMenu, setPersonMenu] = useState(false); // D84
+  const [thanks, setThanks] = useState('');
 
   useEffect(() => {
     const show = (board: { products: SharedProduct[] }) => {
@@ -275,7 +327,17 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
     );
   }
   if (!person) return <Theirs username={p.username} preview={own}><Header title={`@${p.username}`} leaf={false} left={<BackButton to="/people" />} /><main class="screen"><Skeleton kind="board" /></main><TabBar active="feed" /></Theirs>;
-  if (person.relation !== 'following') return <Stranger person={person} onChange={setPerson} />;
+  if (person.relation !== 'following')
+    return (
+      <>
+        <Stranger person={person} onChange={setPerson} onThanks={setThanks} />
+        {thanks && (
+          <p class="toast" role="status">
+            {thanks}
+          </p>
+        )}
+      </>
+    );
 
   const rows = products ? rankProducts(products, view) : [];
   const empty = products ? leaderboardEmptyState(products.length, rows.length, view) : null;
@@ -292,7 +354,25 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
   // "@username" in the header is the signal you're viewing someone else's tracker (design §8).
   return (
     <Theirs username={p.username} preview={own}>
-      <Header title={`@${person.username}`} leaf={false} icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />} left={<BackButton to={back} />} />
+      <Header
+        title={`@${person.username}`}
+        leaf={false}
+        icon={person.photo && <Avatar username={person.username} src={photoOf(person)} size="hd" />}
+        left={<BackButton to={back} />}
+        right={
+          !mine && (
+            <button class="hbtn" onClick={() => setPersonMenu(true)} aria-label={`Actions for @${person.username}`}>
+              <MoreIcon />
+            </button>
+          )
+        }
+      />
+      {personMenu && <PersonMenu person={person} onChange={setPerson} onClose={() => setPersonMenu(false)} onError={(text) => setError({ missing: false, text })} onThanks={setThanks} />}
+      {thanks && (
+        <p class="toast" role="status">
+          {thanks}
+        </p>
+      )}
       <main class="screen">
         {!p.preview && <PageTabs tab={tab} onTab={switchTab} />}
         {!showBoard && <TheirPosts username={person.username} mine={mine} />}

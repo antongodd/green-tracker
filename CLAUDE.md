@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D83 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D84 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -82,6 +82,13 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `new-look` | A new or changed Look or Leaderboard colour set (with `big-change`) |
 | `review-panel` | Anton asks for a review: five reviewers (Sam the everyday user counts most) and a judge; reports in `reviews/` |
 | `green-tracker-account-audit` | Anton asks to audit all accounts: a read-only table of everyone on live, shown only in the conversation (never saved, no emails) |
+| `green-tracker-reports` | Anton asks to see the reports (D84): a read-only table in the conversation; removes a post or comment only on his "yes" |
+
+**Outside skills** (not recipes): `apple-design` (Emil Kowalski's, from `github.com/emilkowalski/skills`, MIT; added
+2026-11-03 at Anton's request) is design advice on Apple-style motion, materials and type, for building or reviewing
+screens. Where it disagrees with this file, this file wins: a Look changes only colours and the background (D70), the
+looks' moving lights stay, readability and accessibility tests are never loosened, and anything it suggests that
+changes how the app looks is still a big change.
 
 ### Two conversations at once
 
@@ -137,7 +144,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D84) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D85) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -161,10 +168,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D83.
+- Reopen any decision D1–D84.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
+- Loosen the reports rule (D84, `server/lib/reports.ts`): only what you can see can be reported, never your own;
+  nobody is told; reports never reach followers, Export or Restore. Or change the privacy page (`screens/About.tsx`)
+  in a way that makes a sentence untrue: when what's kept, where, or who sees it changes, update the page with it.
 - Loosen the posts rule (D77, `visiblePostSql` / `actorShownSql` in `server/routes/posts.ts`): the owner and approved
   followers only, checked in SQL on every request.
 
@@ -317,6 +327,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   in `test/api/client.ts`). A new password with Face ID: `POST /api/account/password/options`, then `PUT
   /api/account/password` with `challengeId` and `response` instead of `current`. Chromium allows one virtual Face ID
   per page: to add a second passkey in a browser test, `WebAuthn.clearCredentials` first (`accounts.spec.ts`).
+- Trust basics (D84): sign-up needs the tick (`signUp` checks **I'm 18 or over**; an API sign-up sends `adult: true`).
+  An account from before it: `POST /api/test/not-adult` `{ username }`, then the app shows **One quick thing** and
+  the API answers 403 `needs_adult` until `POST /api/account/adult`. Near the photo limit without thousands of
+  uploads: `POST /api/test/fill-photos` `{ username, product, count }` (rows only, no files; use a product the test
+  never saves again, as saving it drops them). Report: a friend's post now has a ⋯ (`Actions for @x’s post`), and
+  a person's page has a ⋯ even when followed (`Actions for @x`), so a test that counts ⋯ buttons or reads the header
+  meets them. The pages over sign-up are dialogs, not a `<main>` (axe `landmark-no-duplicate-main`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -329,8 +346,10 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.71.0 (2026-11-03): everything up to you against them and Invite a friend (to-do item 8).
-- **Dev:** 0.72.0: sign-in hardening (to-do item 9), waiting for Anton's "go live".
+- **Live:** 0.72.0 (2026-11-03): everything up to sign-in hardening (to-do item 9).
+- **Dev:** 0.73.1 (2026-11-03): trust basics for strangers (to-do item 7), waiting for Anton's "go live". The
+  contact address is greentracker.help@gmail.com (Anton's, made 2026-11-03; `CONTACT_EMAIL` and
+  `site/public/index.html`, kept in step by `test/domain/trust.test.ts`).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -346,23 +365,31 @@ Each is a job for its own conversation; the summary lists what each covers.
    (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
    brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
-7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
-   on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
-   (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
+7. **Trust basics for strangers** (big): **on dev** in 0.73.0–0.73.1 (2026-11-03), D84. 18+ tick, privacy page, house
+   rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton made the contact email
+   (greentracker.help@gmail.com) and ran both checkers (2026-11-03): **Ofcom: yes**, the Online Safety Act applies (a
+   user-to-user service: an illegal content risk assessment, a children's access assessment, a children's risk
+   assessment if that finds children likely); **ICO: the fee applies** (tier one, £52, £47 by direct debit; paying is
+   Anton's to do). The Cloudflare billing alert is set ("Billing budget alert - Green Tracker spend", by email;
+   in the dashboard under Observability › Alerts › Platform Notifications, 2026-11-03). Later if he wants it: move the photos (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
-9. **Sign-in hardening** (big): **on dev** in 0.72.0 (2026-11-03), D83. Only wrong passwords count per email, and a
-   phone you've signed in on keeps its own tries; adding Face ID asks for the password; "Forgot it? Use Face ID
-   instead" on Password (Anton: yes to both); the passkeys that can still sign in after a change. Next: Anton tries
-   it on GT Dev, then "go live".
+9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
+12. **Ofcom paperwork** (notes only; Anton, 2026-11-03). Ofcom's checker says the Online Safety Act applies. Draft,
+   in plain English and from Ofcom's own guidance and what the app really does: the illegal content risk assessment
+   (with its records) and the children's access assessment (the 18+ tick, house rules, Report, Block, the website's
+   18+); a children's risk assessment only if that finds children are likely to use it. Kept in `design/`; Anton reads
+   and keeps them. Not legal advice: say so in them.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |
+| Sign-in hardening: only wrong passwords count against an email, and a phone you've signed in on has its own tries (strangers can't lock you out); adding Face ID asks for your password (not straight after signing in); "Forgot it? Use Face ID instead" on Password; after a password change, the passkeys that can still sign in with Last used and Remove (Face ID prompts and the new screens not yet confirmed on Anton's iPhone) | 0.72.0 | D83 | 2026-11-03 | 2026-11-03 |
 | You against them, and Invite a friend: "You've had this too" with both photos, @names and scores on a friend's product page and post (same name, brand and type only), Compare with my board (a card for each subject, empty ones hidden), Invite a friend on the empty Feed and People (the share sheet with your @name and the website) (the real share sheet, profile photos in the cards and VoiceOver not yet checked on Anton's iPhone) | 0.71.0 | D82 | 2026-11-03 | 2026-11-03 |
 | A quicker add-a-product form: Name, Photos, The product (Type and Strain type as one tap, Source, Country, Date tried from today), Ratings with − / +, Purchases (none opened by itself; Save asks for a missing total paid), Notes, Leafly, Private; examples from Anton's lists; Country as a list under the box (also in the Log); Name with its own heading (tried by Anton on GT Dev; holding − / + and VoiceOver not yet checked on his iPhone) | 0.70.0–0.70.2 | D81 | 2026-11-03 | 2026-11-03 |
 | Small fixes on the Leaderboard, Log and Feed: "Value" and "per 20mg" in value for money, room under the +, no zeros on an empty Log, a solid comment box, 44-point post buttons, Feed photos as you scroll, tap the Feed tab again for the top and new posts, catching up when the app comes back (keyboard and Feed scrolling not yet tried on Anton's iPhone) | 0.69.9 | | 2026-11-03 | 2026-11-03 |

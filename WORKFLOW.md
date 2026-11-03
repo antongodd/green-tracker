@@ -38,6 +38,12 @@ Ask Claude to "audit all accounts" any time. You get a table in the conversation
 app: when they joined, when they were last on, what they've added, and who follows whom. It only looks; nothing is
 saved or sent anywhere, and nobody's email is shown.
 
+## Reports
+
+When someone taps Report on a post, comment or profile, it's saved for you. Ask Claude to "show me the reports" any
+time: you get a table in the conversation of what was reported, why, and by whom. To take something down, say
+"remove that comment" (or post): Claude shows you exactly what will go and waits for your yes. Nobody is told.
+
 ## A review
 
 Ask for "the review panel" any time. Five reviewers (Sam, the everyday user, counts most; a proof-reader, a

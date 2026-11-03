@@ -84,7 +84,16 @@ export async function prepareNewPhoto(file: Blob): Promise<{ original: Blob; cro
  * Uploads a set; returns its id. Attached to a record only by a later Save (or a profile crop).
  * A cut-out's set (D26) has PNG `cropped` and `thumb`.
  */
-export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: Blob; cutout?: boolean }): Promise<string> {
+// D84: how many photos you have, from the last upload (before any, the count /api/auth/me gave).
+let photoCount: number | null = null;
+const roomListeners = new Set<(n: number) => void>();
+export const lastPhotoCount = (): number | null => photoCount;
+export function onPhotoCount(f: (n: number) => void): () => void {
+  roomListeners.add(f);
+  return () => roomListeners.delete(f);
+}
+
+export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: Blob; cutout?: boolean }, opts: { restore?: boolean } = {}): Promise<string> {
   const form = new FormData();
   const ext = parts.cutout ? 'png' : 'jpg';
   if (parts.original) form.append('original', parts.original, 'original.jpg');
@@ -93,13 +102,18 @@ export async function uploadSet(parts: { original?: Blob; cropped: Blob; thumb: 
   if (parts.cutout) form.append('cutout', '1');
   let res: Response;
   try {
-    res = await fetch('/api/uploads', { method: 'POST', body: form, credentials: 'same-origin' });
+    res = await fetch(opts.restore ? '/api/uploads?restore=1' : '/api/uploads', { method: 'POST', body: form, credentials: 'same-origin' });
   } catch {
     reportNetwork(false);
     throw new ApiError(0, 'offline', 'You’re offline. Check your connection and try again.');
   }
   reportNetwork(true);
-  const data = (await res.json().catch(() => null)) as { upload?: string; error?: string; message?: string } | null;
+  const data = (await res.json().catch(() => null)) as { upload?: string; photoCount?: number; error?: string; message?: string } | null;
+  if (typeof data?.photoCount === 'number' && parts.original) {
+    // Counted before this one was added.
+    photoCount = data.photoCount + 1;
+    for (const f of roomListeners) f(photoCount);
+  }
   if (!res.ok || !data?.upload) throw new ApiError(res.status, data?.error ?? 'upload_failed', data?.message ?? 'The photo couldn’t be uploaded. Please try again.');
   return data.upload;
 }

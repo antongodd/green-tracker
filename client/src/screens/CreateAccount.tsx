@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { EMAIL_PROBLEM_TEXT, PASSWORD_MIN, USERNAME_MAX, USERNAME_PROBLEM_TEXT, emailProblem, passwordProblem, usernameProblem } from '../../../shared/domain/account';
 import { ApiError, api, errorText } from '../api';
 import { PasswordField } from '../components/inputs';
+import { AdultTick } from './About';
 import { BackIcon, CheckIcon, CrossIcon } from '../icons';
 import { AuthMark } from '../components/chrome';
 import { linkTo, navigate } from '../router';
@@ -37,6 +38,7 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [adult, setAdult] = useState(false); // D84
   const [emailError, setEmailError] = useState('');
   const [username, setUsername] = useState('');
   const [avail, setAvail] = useState<Availability>({ state: 'idle' });
@@ -66,7 +68,7 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
     e.preventDefault();
     const problem = emailProblem(email);
     if (problem) return setEmailError(EMAIL_PROBLEM_TEXT[problem]);
-    if (passwordProblem(password)) return;
+    if (passwordProblem(password) || !adult) return;
     setEmailError('');
     setStep(2);
   }
@@ -77,7 +79,7 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
     setBusy(true);
     setError('');
     try {
-      await api('POST', '/auth/signup', { email: email.trim(), password, username });
+      await api('POST', '/auth/signup', { email: email.trim(), password, username, adult });
       await p.onCreated();
     } catch (err) {
       setBusy(false);
@@ -142,7 +144,8 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
               }
             />
           </div>
-          <button class="btn primary" type="submit" disabled={!email.trim() || !!passwordProblem(password)}>
+          <AdultTick checked={adult} onChange={setAdult} />
+          <button class="btn primary" type="submit" disabled={!email.trim() || !!passwordProblem(password) || !adult}>
             Continue
           </button>
           <a class="btn text" href="/login" onClick={linkTo('/login')}>
