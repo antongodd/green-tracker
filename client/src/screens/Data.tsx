@@ -93,6 +93,12 @@ export function ExportScreen() {
               </li>
               <li class="yes">
                 <CheckIcon />
+                <span>
+                  Your posts<small>not the comments or 🔥 on them</small>
+                </span>
+              </li>
+              <li class="yes">
+                <CheckIcon />
                 <span>Your privacy and appearance settings</span>
               </li>
               <li class="not">
@@ -121,6 +127,8 @@ export function ExportScreen() {
               On iPhone, choose <strong>Save to Files</strong> to keep it in Files or iCloud Drive.
             </p>
           )}
+          {/* The export is plain JSON with photos inside: nothing protects it once it leaves the app. */}
+          <p class="hint data-warn">This file isn’t locked. Anyone who opens it can read everything in it.</p>
         </div>
       </main>
       <TabBar active="more" />
@@ -189,7 +197,7 @@ export function RestoreScreen() {
       <main class="screen">
         <div class="wrap stack data" style={{ paddingTop: '16px' }}>
           <DataHero tint="teal" icon={<DownloadIcon />} title="Restore from a file">
-            Replaces your products, Log and photos with an export file. Followers and passkeys stay as they are.
+            Replaces your products, Log, photos and posts (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.
           </DataHero>
           {!summary && picker}
           {summary && f && (
@@ -316,6 +324,10 @@ export function DeleteAccount() {
               <li class="gone">
                 <CrossIcon />
                 <span>Every photo</span>
+              </li>
+              <li class="gone">
+                <CrossIcon />
+                <span>Your posts, and your comments and 🔥 on others’</span>
               </li>
               <li class="gone">
                 <CrossIcon />

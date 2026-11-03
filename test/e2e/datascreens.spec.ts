@@ -69,10 +69,11 @@ test('Export: a glowing icon, what’s in the file, and a progress bar while pho
   await expect(page.getByRole('heading', { level: 1, name: 'Your data, in one file' })).toBeVisible();
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   const card = page.getByRole('region', { name: 'In the file' });
-  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/, 'Your privacy and appearance settings']);
+  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/, /^Your posts\s*not the comments or 🔥 on them$/, 'Your privacy and appearance settings']);
   await expect(card).not.toContainText(/smoke/i);
   await expect(card.locator('li.not')).toContainText('Not included: who you follow');
   await expect(page.locator('.data-note')).toContainText('Save to Files');
+  await expect(page.locator('.data-warn')).toHaveText('This file isn’t locked. Anyone who opens it can read everything in it.');
 
   // The product's photo comes through; the Log entry's waits, so the bar stops halfway.
   const release = await hold('**/api/photos/**', 'GET', (u) => u.includes(firstPhoto));
@@ -98,6 +99,9 @@ test('Export: a glowing icon, what’s in the file, and a progress bar while pho
 test('Restore: the file as tiles, a different file, and a progress bar while photos upload', async () => {
   await page.goto('/more/restore');
   await expect(page.getByRole('heading', { level: 1, name: 'Restore from a file' })).toBeVisible();
+  await expect(page.locator('.data-hero p')).toHaveText(
+    'Replaces your products, Log, photos and posts (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.',
+  );
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   await expect(page.getByRole('region', { name: 'File contents' })).toHaveCount(0);
   await page.getByLabel('Choose an export file').setInputFiles(exportPath);
@@ -135,7 +139,8 @@ test('Delete account: red throughout, what goes, Export first, and the username 
   await expect(page.getByRole('heading', { level: 1, name: `Delete @${username}` })).toBeVisible();
   await expect(page.locator('.data-mark.red svg')).toBeVisible();
   await expect(page.locator('.data-hero p')).toContainText('It can’t be undone.');
-  await expect(page.getByRole('region', { name: 'What goes' }).locator('li.gone')).toHaveCount(5);
+  await expect(page.getByRole('region', { name: 'What goes' }).locator('li.gone')).toHaveCount(6);
+  await expect(page.getByRole('region', { name: 'What goes' })).toContainText('Your posts, and your comments and 🔥 on others’');
   await expect(page.getByRole('region', { name: 'What goes' })).not.toContainText(/smoke/i);
 
   const input = page.getByLabel('Type your username to confirm');

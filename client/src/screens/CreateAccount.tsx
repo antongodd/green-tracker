@@ -105,7 +105,7 @@ export function CreateAccount(p: { onCreated: () => void | Promise<void> }) {
         <form class="form-page" onSubmit={next} noValidate>
           <AuthMark />
           <h1>Create your account</h1>
-          <p class="lead">Your email is private. Nobody else ever sees it.</p>
+          <p class="lead">Your email is private: only you see it. We use it only to sign you in.</p>
           <div class="fgroup">
             <div class="field">
               <label for="email">Email</label>

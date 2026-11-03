@@ -100,7 +100,7 @@ export function AddLogin() {
             <input id="login-email" class="input" type="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellcheck={false} />
           </div>
           <PasswordField id="login-password" label="New password" value={password} onInput={setPassword} autoComplete="new-password" hint={<PasswordHint password={password} />} />
-          <p class="hint">Your email is private. Nobody else ever sees it.</p>
+          <p class="hint">Your email is private: only you see it. We use it only to sign you in.</p>
         </div>
         {error && (
           <p class="error" role="alert">
@@ -148,7 +148,7 @@ export function ChangeEmail() {
       <Header title="Email" left={<BackButton to="/more" />} />
       <main class="screen">
         <form class="wrap stack" style={{ paddingTop: '16px' }} onSubmit={save} noValidate>
-          <p class="lead">You sign in with this email. It’s private: nobody else ever sees it.</p>
+          <p class="lead">You sign in with this email. Only you see it, and we use it only to sign you in.</p>
           <div class="fgroup">
             <div class="field">
               <label for="new-email">Email</label>
