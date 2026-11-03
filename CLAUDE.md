@@ -291,14 +291,14 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.0 (2026-11-03): everything up to email and password sign-in, no recovery codes (D80).
-- **Dev:** 0.69.0, the same as live.
+- **Dev:** 0.69.1: the forgot-password safety net (to-do item 1), on its way to live.
 
 ### To-do list (suggested order; Anton decides)
 
 From the review panel of 2026-11-03 (`reviews/2026-11-03/summary.md`; Anton wants all ten, order left to Claude).
 Each is a job for its own conversation; the summary lists what each covers.
 
-1. **Forgot-password safety net** (small). Honest "Forgot password?" words on Sign in; the Face ID offer says it's
+1. **Forgot-password safety net** (small; **on dev** 0.69.1, 2026-11-03). Honest "Forgot password?" words on Sign in; the Face ID offer says it's
    your way back in; help iCloud Keychain save the password at sign-up (try on the iPhone); "too many tries" mentions
    Face ID. (Sign-in computing time checked 2026-11-03: no errors, slowest about 31ms, nothing refused.)
 2. **Don't lose my work** (small). "Keep editing / Discard" on Cancel and swipe-back in the product form and the post

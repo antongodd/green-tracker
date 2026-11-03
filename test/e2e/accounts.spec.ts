@@ -31,6 +31,9 @@ test('create an account with email and password, Face ID once, sign out and in b
   await expect(cont).toBeDisabled();
   await password.fill(PASSWORD);
   await expect(page.locator('.hint', { hasText: 'At least 8 characters' })).toHaveClass(/\bok\b/);
+  // 0.69.1: a line saying there's no email reset; the email is the iPhone's "username" for its password store.
+  await expect(page.locator('.hint', { hasText: 'Pick one you’ll remember: we can’t reset it by email yet.' })).toBeVisible();
+  await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'username');
   await cont.click();
   await expect(page.getByRole('alert')).toHaveText(/That doesn’t look like an email address\./);
   await page.getByLabel('Email').fill(email);
@@ -49,6 +52,12 @@ test('create an account with email and password, Face ID once, sign out and in b
   await expect(page.getByText('Use at least 3 characters.')).toBeVisible();
   await input.fill('bad name!');
   await expect(page.getByText('Use only letters, numbers and _.')).toBeVisible();
+  // Step 1's email and password ride along, hidden, so iCloud Keychain saves them under the email (0.69.1).
+  const form = page.locator('form.form-page');
+  await expect(form.locator('input[autocomplete="username"]')).toHaveValue(email);
+  await expect(form.locator('input[autocomplete="username"]')).toBeHidden();
+  await expect(form.locator('input[autocomplete="new-password"]')).toHaveValue(PASSWORD);
+  await expect(form.locator('input[autocomplete="new-password"]')).toBeHidden();
   await input.fill(username);
   await expect(page.getByText('Available')).toBeVisible();
   await shot(page, '03-username');
@@ -56,6 +65,7 @@ test('create an account with email and password, Face ID once, sign out and in b
 
   // Then, once: Face ID next time?
   await expect(page.getByRole('heading', { name: 'Use Face ID next time?' })).toBeVisible();
+  await expect(page.getByText('It’s also your way back in if you forget your password.')).toBeVisible();
   await shot(page, '04-faceid');
   await page.getByRole('button', { name: 'Use Face ID' }).click();
 
@@ -82,6 +92,12 @@ test('create an account with email and password, Face ID once, sign out and in b
   await page.getByRole('link', { name: 'Sign in' }).click();
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+  // Forgot password? Honest words, shown on a tap (0.69.1).
+  const help = page.getByText('We can’t reset passwords by email yet. If you set up Face ID, sign in with that instead.');
+  await expect(help).toBeHidden();
+  await page.getByRole('button', { name: 'Forgot password?' }).click();
+  await expect(help).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Forgot password?' })).toHaveAttribute('aria-expanded', 'true');
   await page.getByLabel('Email').fill(email.toUpperCase());
   await page.getByLabel('Password', { exact: true }).fill('wrong password');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -110,6 +126,18 @@ test('create an account with email and password, Face ID once, sign out and in b
   await page.getByRole('button', { name: 'Sign out everywhere' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Sign out everywhere' }).click();
   await expect(page).toHaveURL(/\/signin$/);
+});
+
+test('too many tries: the message points to Face ID', async ({ page }) => {
+  // The limits themselves (D80) are tested in the API tests; here the server's answer is pretended.
+  await page.route('**/api/auth/signin', (route) =>
+    route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'rate_limited', message: 'Too many attempts. Please wait a few minutes and try again.' }) }),
+  );
+  await page.goto('/login');
+  await page.getByLabel('Email').fill('someone@example.com');
+  await page.getByLabel('Password', { exact: true }).fill('wrong password');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveText('Too many tries. Wait a few minutes and try again, or sign in with Face ID if you set it up.');
 });
 
 test('a taken email sends you back to step 1 with the reason', async ({ page, browser }) => {
