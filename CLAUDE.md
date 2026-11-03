@@ -367,14 +367,21 @@ Each is a job for its own conversation; the summary lists what each covers.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
 7. **Trust basics for strangers** (big): **on dev** in 0.73.0–0.73.1 (2026-11-03), D84. 18+ tick, privacy page, house
    rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton made the contact email
-   (greentracker.help@gmail.com). Still for Anton: run Ofcom's and the ICO's checkers (keep the answers), set the
-   Cloudflare billing alert. Later if he wants it: move the photos (now in North America) to Europe.
+   (greentracker.help@gmail.com) and ran both checkers (2026-11-03): **Ofcom: yes**, the Online Safety Act applies (a
+   user-to-user service: an illegal content risk assessment, a children's access assessment, a children's risk
+   assessment if that finds children likely); **ICO: the fee applies** (tier one, £52, £47 by direct debit; paying is
+   Anton's to do). Still for Anton: the Cloudflare billing alert. Later if he wants it: move the photos (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
+12. **Ofcom paperwork** (notes only; Anton, 2026-11-03). Ofcom's checker says the Online Safety Act applies. Draft,
+   in plain English and from Ofcom's own guidance and what the app really does: the illegal content risk assessment
+   (with its records) and the children's access assessment (the 18+ tick, house rules, Report, Block, the website's
+   18+); a children's risk assessment only if that finds children are likely to use it. Kept in `design/`; Anton reads
+   and keeps them. Not legal advice: say so in them.
 
 ### Done (newest first)
 
