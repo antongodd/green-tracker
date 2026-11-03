@@ -1716,6 +1716,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — don't lose my work is live
+- 0.69.2 (on dev 2026-11-03) went live on 2026-11-03 and moves to Done. Notes only.
+
 ### 0.69.2 — don't lose my work (review panel, 2026-11-03)
 - Adding or editing a product, a Log entry or a post now asks "Keep editing / Discard" before throwing anything away,
   on Cancel and on a swipe back from the edge, whenever anything has changed since it opened (before, only moving a
