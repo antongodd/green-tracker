@@ -1724,6 +1724,11 @@ None.
 
 ## 6. Changelog
 
+### 0.69.5 — the date box beside Source stays its own height
+- 0.69.3's line under the Source box made that row taller, and the Date tried box beside it stretched to match, so
+  its calendar icon sat a fraction below the box (`editor.spec.ts` caught it in the release check). Boxes side by
+  side in the product form (`.two-col`) now keep their own height (`align-items: start`).
+
 ### 0.69.4 — the website catches up with the app (review panel, 2026-11-03)
 - Website only (`site/`); the app is unchanged. Under the hero buttons, what sign-up asks for: "Just an email and
   password. Your email stays private; Face ID is optional." The friends card is now "See your mates’ picks and posts":
