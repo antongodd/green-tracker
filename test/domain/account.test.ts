@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RECOVERY_CODE_ALPHABET, formatRecoveryCode, normaliseRecoveryCode, usernameKey, usernameProblem } from '../../shared/domain/account';
+import { emailKey, emailProblem, passwordProblem, usernameKey, usernameProblem } from '../../shared/domain/account';
 
 describe('usernames (D7)', () => {
   it.each([
@@ -18,19 +18,25 @@ describe('usernames (D7)', () => {
   it('is unique case-insensitively', () => expect(usernameKey('Anton_G')).toBe(usernameKey('anton_g')));
 });
 
-describe('recovery codes', () => {
-  it('uses no look-alike characters', () => {
-    for (const ch of '01OIL') expect(RECOVERY_CODE_ALPHABET).not.toContain(ch);
-  });
-  it('formats as XXXX-XXXX', () => expect(formatRecoveryCode('ABCDEFGH')).toBe('ABCD-EFGH'));
+describe('emails and passwords (D80)', () => {
   it.each([
-    ['ABCD-EFGH', 'ABCDEFGH'],
-    ['abcd-efgh', 'ABCDEFGH'],
-    [' abcd efgh ', 'ABCDEFGH'],
-    ['ABCDEFGH', 'ABCDEFGH'],
-    ['ABCD-EFG', null],
-    ['ABCD-EFGHJ', null],
-    ['ABCD-EFG0', null],
-    ['ABCD-EFGO', null],
-  ])('reads %j as %j', (input, out) => expect(normaliseRecoveryCode(input)).toBe(out));
+    ['sam@example.com', null],
+    ['  Sam.Grows+gt@example.co.uk ', null],
+    ['', 'empty'],
+    ['   ', 'empty'],
+    ['sam', 'invalid'],
+    ['sam@example', 'invalid'],
+    ['sam @example.com', 'invalid'],
+    ['@example.com', 'invalid'],
+    [`${'a'.repeat(250)}@x.co`, 'too_long'],
+  ])('email %j → %j', (e, problem) => expect(emailProblem(e)).toBe(problem));
+
+  it('emails are unique whatever the case, ignoring spaces at the ends', () => expect(emailKey(' Sam@Example.COM ')).toBe('sam@example.com'));
+
+  it.each([
+    ['1234567', 'too_short'],
+    ['12345678', null],
+    ['a'.repeat(200), null],
+    ['a'.repeat(201), 'too_long'],
+  ])('password of %j → %j', (pw, problem) => expect(passwordProblem(pw)).toBe(problem));
 });

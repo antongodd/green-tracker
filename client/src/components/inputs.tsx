@@ -1,6 +1,7 @@
 import type { ComponentChildren, FunctionComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import { formatScore } from '../../../shared/domain/format';
+import { PASSWORD_MAX } from '../../../shared/domain/account';
 import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
 import { scoreHeat } from '../../../shared/domain/heat';
 import type { RatingKey } from '../../../shared/domain/productTypes';
@@ -200,6 +201,42 @@ export function HitTimeInput(p: { value: number | null; onChange: (v: number | n
         <span>2h</span>
         <span>3h</span>
       </div>
+    </div>
+  );
+}
+
+/** D80: a password box with Show / Hide, so you can check what you typed on a phone keyboard. */
+export function PasswordField(p: {
+  id: string;
+  label: string;
+  value: string;
+  onInput: (v: string) => void;
+  autoComplete: 'current-password' | 'new-password';
+  bad?: boolean;
+  hint?: ComponentChildren;
+}) {
+  const [shown, setShown] = useState(false);
+  return (
+    <div class="field">
+      <label for={p.id}>{p.label}</label>
+      <div class="pw">
+        <input
+          id={p.id}
+          class={`input${p.bad ? ' bad' : ''}`}
+          type={shown ? 'text' : 'password'}
+          value={p.value}
+          onInput={(e) => p.onInput(e.currentTarget.value)}
+          autoComplete={p.autoComplete}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellcheck={false}
+          maxLength={PASSWORD_MAX}
+        />
+        <button type="button" class="show" aria-controls={p.id} aria-pressed={shown} onClick={() => setShown(!shown)}>
+          {shown ? 'Hide' : 'Show'}
+        </button>
+      </div>
+      {p.hint}
     </div>
   );
 }

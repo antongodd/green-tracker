@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
+import { contrastFailures, emailOf, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // D38 (0.31.0): the More screen opens with you (photo or letter, @username, products, followers
 // and following; tap → People), then settings rows with small tinted icon tiles (Account · Privacy
@@ -37,7 +37,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(15);
+  await expect(page.locator('main .list .li')).toHaveCount(16);
   // D61: the Settings tab, titled so; Brands & suppliers moved to its own tab.
   await expect(page.locator('.hdr .title')).toHaveText('Settings');
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
@@ -45,8 +45,10 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     els.map((e) => ({ label: e.querySelector('.main')!.textContent, icon: !!e.querySelector('.li-ic svg'), tint: e.querySelector('.li-ic')?.classList[1] ?? null, href: e.getAttribute('href') })),
   );
   expect(rows).toEqual([
-    { label: 'Passkeys', icon: true, tint: 'green', href: '/more/passkeys' },
-    { label: 'Recovery codes', icon: true, tint: 'amber', href: '/more/recovery-codes' },
+    // D80: your email and password; Face ID optional; recovery codes gone.
+    { label: `Email${emailOf(name)}`, icon: true, tint: 'teal', href: '/more/email' },
+    { label: 'Password', icon: true, tint: 'violet', href: '/more/password' },
+    { label: 'Face ID (passkeys)', icon: true, tint: 'green', href: '/more/passkeys' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
     { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
     { label: 'Look', icon: true, tint: 'violet', href: '/more/look' }, // D64; its own page since D71
@@ -63,8 +65,8 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
   ]);
   expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Appearance', 'Money', 'Data', 'Danger zone']);
   expect(await page.locator('.li.dng .main').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(255, 107, 107)');
-  await page.getByRole('link', { name: /Recovery codes/ }).click();
-  await expect(page).toHaveURL(/\/more\/recovery-codes$/);
+  await page.getByRole('link', { name: /Face ID/ }).click();
+  await expect(page).toHaveURL(/\/more\/passkeys$/);
   await page.goto('/more');
   await page.getByRole('button', { name: 'Sign out everywhere' }).click();
   await expect(page.getByRole('dialog', { name: 'Sign out everywhere?' })).toBeVisible();

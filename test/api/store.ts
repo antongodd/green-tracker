@@ -29,3 +29,4 @@ export function r2Keys(prefix: string): string[] {
 }
 
 export const userId = (username: string) => d1<{ id: string }>('SELECT id FROM users WHERE username_lower = ?', username.toLowerCase())[0]?.id;
+

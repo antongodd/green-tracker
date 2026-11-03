@@ -90,7 +90,7 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
   // busy (0.30.0's first full run). Same checks, more time.
   test.slow();
   const found: string[] = [];
-  for (const path of ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', `/log/${entryId}`, '/log/new', '/more/passkeys', '/more/recovery-codes', '/more/archive', '/more/export', '/more/restore', '/more/delete', '/more/blocked']) {
+  for (const path of ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', `/log/${entryId}`, '/log/new', '/more/passkeys', '/more/email', '/more/password', '/more/archive', '/more/export', '/more/restore', '/more/delete', '/more/blocked']) {
     found.push(...(await axe(path)));
   }
   found.push(...(await axe(`/products/${productId}`, async () => void (await page.locator('.hero-photo').click()))));

@@ -25,25 +25,43 @@ export function usernameKey(username: string): string {
   return username.toLowerCase();
 }
 
-// Recovery codes -------------------------------------------------------------
+// Email and password (D80) -------------------------------------------------------
 
-export const RECOVERY_CODE_COUNT = 10;
-/** No 0/O, 1/I/L, so a code copied by hand can't be misread. 31 symbols × 8 ≈ 39.6 bits. */
-export const RECOVERY_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-const CODE_LENGTH = 8;
+export const EMAIL_MAX = 254;
+export const PASSWORD_MIN = 8;
+export const PASSWORD_MAX = 200;
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Formats 8 alphabet characters as `XXXX-XXXX`. */
-export function formatRecoveryCode(raw: string): string {
-  return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+export type EmailProblem = 'empty' | 'invalid' | 'too_long';
+export type PasswordProblem = 'too_short' | 'too_long';
+
+/** Not checked by sending a message yet (D80): only that it looks like an email. */
+export function emailProblem(email: string): EmailProblem | null {
+  const e = email.trim();
+  if (!e) return 'empty';
+  if (e.length > EMAIL_MAX) return 'too_long';
+  if (!EMAIL_SHAPE.test(e)) return 'invalid';
+  return null;
 }
 
-/**
- * Normalises typed input to the 8 stored characters: case-insensitive, spaces
- * and dashes ignored. Returns null when it can't be a code.
- */
-export function normaliseRecoveryCode(input: string): string | null {
-  const s = input.toUpperCase().replace(/[\s-]/g, '');
-  if (s.length !== CODE_LENGTH) return null;
-  for (const ch of s) if (!RECOVERY_CODE_ALPHABET.includes(ch)) return null;
-  return s;
+export const EMAIL_PROBLEM_TEXT: Record<EmailProblem, string> = {
+  empty: 'Enter your email.',
+  invalid: 'That doesn’t look like an email address.',
+  too_long: 'That email is too long.',
+};
+
+export function passwordProblem(password: string): PasswordProblem | null {
+  if (password.length < PASSWORD_MIN) return 'too_short';
+  if (password.length > PASSWORD_MAX) return 'too_long';
+  return null;
+}
+
+export const PASSWORD_PROBLEM_TEXT: Record<PasswordProblem, string> = {
+  too_short: `Use at least ${PASSWORD_MIN} characters.`,
+  too_long: `Use ${PASSWORD_MAX} characters or fewer.`,
+};
+
+/** The key emails are unique on (case doesn't matter, spaces at either end are ignored). */
+export function emailKey(email: string): string {
+  return email.trim().toLowerCase();
 }

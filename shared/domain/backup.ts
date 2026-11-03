@@ -1,7 +1,7 @@
 // Export and restore (brief §13). The export is one JSON file with all of the
 // user's data and photos embedded (cropped and originals). It excludes view state
 // and social data (follows, requests, blocks), and also account security (passkeys,
-// recovery codes). Derived figures are never stored, so a restored export always
+// email and password). Derived figures are never stored, so a restored export always
 // displays under the current rules.
 
 import { parseCrop, type Crop } from './photo';

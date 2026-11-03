@@ -17,8 +17,10 @@ const HOUR = 60 * MIN;
 export const LIMITS = {
   signup: { name: 'signup', max: 10, windowMs: HOUR },
   signin: { name: 'signin', max: 60, windowMs: 10 * MIN },
-  recoverIp: { name: 'recover-ip', max: 10, windowMs: HOUR },
-  recoverUser: { name: 'recover-user', max: 5, windowMs: HOUR },
+  /** D80: wrong passwords for one email, from anywhere: 10 tries every 15 minutes. */
+  signinEmail: { name: 'signin-email', max: 10, windowMs: 15 * MIN },
+  /** D80: checks of your own password (changing your email or password, deleting the account), per account. */
+  passwordCheck: { name: 'password', max: 10, windowMs: 15 * MIN },
   usernameCheck: { name: 'username', max: 120, windowMs: 10 * MIN },
   /** D66: rate look-ups from the purchase form, per account. */
   fx: { name: 'fx', max: 300, windowMs: 10 * MIN },

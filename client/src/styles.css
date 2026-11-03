@@ -632,7 +632,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .steps { display: flex; gap: 6px; justify-content: center; padding: 4px 0 20px; }
 .steps i { width: 24px; height: 4px; border-radius: 2px; background: var(--surface-3); }
 .steps i.on { background: var(--accent-bright); box-shadow: 0 0 8px rgba(88, 224, 140, 0.8); }
-/* Sign-up and recovery screens (D36, 0.29.0): a glowing leaf tile above each heading. */
+/* Sign-in and sign-up screens (D36, 0.29.0): a glowing leaf tile above each heading. */
 .auth-mark { width: 56px; height: 56px; border-radius: 16px; background: rgba(88, 224, 140, 0.12); display: grid; place-items: center; box-shadow: 0 0 30px rgba(88, 224, 140, 0.2); }
 .auth-mark svg { width: 38px; height: 38px; filter: drop-shadow(0 0 8px rgba(88, 224, 140, 0.55)); }
 .fullscreen .grow .auth-mark { margin-bottom: 4px; }
@@ -664,10 +664,20 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .form-page { display: grid; gap: 16px; align-content: start; flex: 1; }
 .form-page h1 { font-size: 24px; }
 
-/* ---------- recovery codes ---------- */
-.codes { margin: 0; padding: 16px; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; background: var(--surface-2); border: 1px solid var(--hairline-strong); border-radius: 12px; font-family: var(--mono); font-size: 16px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; counter-reset: code; user-select: all; -webkit-user-select: all; }
-.codes li { counter-increment: code; white-space: nowrap; }
-.codes li::before { content: counter(code); display: inline-block; width: 2.2ch; margin-right: 0.8ch; text-align: right; color: var(--text-3); font-size: 12px; }
+/* ---------- email and password (D80) ---------- */
+.pw { position: relative; }
+.pw .input { padding-right: 72px; }
+.pw .show { position: absolute; right: 4px; top: 4px; height: 40px; min-width: 56px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--accent-bright); font-size: 14px; font-weight: 600; }
+.input.bad { border-color: var(--danger); }
+.or { display: flex; align-items: center; gap: 10px; color: var(--text-2); font-size: 13px; }
+.or span { flex: 1; height: 1px; background: var(--hairline-strong); }
+.at-input { position: relative; }
+.at-input span { position: absolute; left: 14px; top: 0; line-height: 48px; color: var(--text-2); font-size: 16px; pointer-events: none; }
+.at-input .input { padding-left: 32px; }
+.auth-mark.big { width: 104px; height: 104px; border-radius: 28px; }
+.auth-mark.big svg { width: 60px; height: 60px; color: var(--accent-bright); }
+.login-who { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); border: 1px solid rgba(88, 224, 140, 0.3); font-weight: 700; color: var(--text); }
+.lead.small { font-size: 13px; text-align: center; }
 
 /* ---------- empty state (brief §6.10) ---------- */
 .empty { margin: 24px 16px; padding: 28px 20px; display: grid; justify-items: center; gap: 8px; text-align: center; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 16px; }
