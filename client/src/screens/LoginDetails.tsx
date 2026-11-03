@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks';
 import { EMAIL_PROBLEM_TEXT, emailProblem, passwordProblem } from '../../../shared/domain/account';
-import { api, errorText } from '../api';
+import { ApiError, api, errorText, type Passkey } from '../api';
 import { AuthMark, BackButton, Header, TabBar } from '../components/chrome';
 import { PasswordField } from '../components/inputs';
 import { FaceIdIcon } from '../icons';
-import { addPasskey } from '../passkey';
+import { addPasskey, checkFaceId, passkeysSupported } from '../passkey';
+import { PasskeyList } from './More';
 import { navigate } from '../router';
 import { useSession } from '../session';
 import { PasswordHint } from './CreateAccount';
@@ -16,16 +17,20 @@ export function FaceIdOffer(p: { onDone: () => void }) {
   const { refresh } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // D83: only if this screen was left open for more than a few minutes after sign-up.
+  const [asking, setAsking] = useState(false);
+  const [password, setPassword] = useState('');
 
   async function yes() {
     setBusy(true);
     setError('');
     try {
-      await addPasskey();
+      await addPasskey(password || undefined);
       await refresh(); // Settings counts it straight away
       p.onDone();
     } catch (e) {
-      setError(errorText(e));
+      if (e instanceof ApiError && e.code === 'password_needed') setAsking(true);
+      else setError(errorText(e));
       setBusy(false);
     }
   }
@@ -40,12 +45,17 @@ export function FaceIdOffer(p: { onDone: () => void }) {
         <p class="lead">Sign in with a glance instead of typing your password. It’s also your way back in if you forget your password. You can change this any time in Settings.</p>
       </div>
       <div class="actions">
+        {asking && (
+          <div class="fgroup">
+            <PasswordField id="offer-password" label="Your password" value={password} onInput={setPassword} autoComplete="current-password" />
+          </div>
+        )}
         {error && (
           <p class="error" role="alert">
             {error}
           </p>
         )}
-        <button class="btn primary" onClick={yes} disabled={busy}>
+        <button class="btn primary" onClick={yes} disabled={busy || (asking && !password)}>
           {busy ? 'Waiting for Face ID…' : 'Use Face ID'}
         </button>
         <button class="btn text" onClick={p.onDone} disabled={busy}>
@@ -171,27 +181,60 @@ export function ChangeEmail() {
   );
 }
 
-/** Settings › Password: the current one, then a new one. Other devices are signed out. */
+/**
+ * Settings › Password: the current one, then a new one. Other devices are signed out. D83: forgot the
+ * current one? Face ID (a fresh check) does instead. Afterwards, the passkeys that can still sign in.
+ */
 export function ChangePassword() {
+  const { me } = useSession();
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
+  const [faceId, setFaceId] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
+  const [left, setLeft] = useState<Passkey[] | null>(null);
+  const canFaceId = (me.passkeys ?? 0) > 0 && passkeysSupported();
 
   async function save(e: Event) {
     e.preventDefault();
     setBusy(true);
     setError('');
     try {
-      await api('PUT', '/account/password', { current, password });
-      setDone(true);
+      const proof = faceId ? await checkFaceId('/account/password/options') : { current };
+      const res = await api<{ passkeys: Passkey[] }>('PUT', '/account/password', { ...proof, password });
+      setLeft(res.passkeys);
       setCurrent('');
       setPassword('');
     } catch (err) {
       setError(errorText(err));
     }
     setBusy(false);
+  }
+
+  if (left) {
+    return (
+      <>
+        <Header title="Password" left={<BackButton to="/more" />} />
+        <main class="screen">
+          <div class="wrap stack" style={{ paddingTop: '16px' }}>
+            <p class="hint ok" role="status">
+              Password changed. Any other phone or computer signed in to your account has been signed out.
+            </p>
+            {left.length > 0 && (
+              <>
+                <h2 class="cap still-faceid">These can still sign in with Face ID</h2>
+                <p class="lead">Remove any you don’t recognise or don’t use any more.</p>
+                <PasskeyList list={left} onChange={setLeft} />
+              </>
+            )}
+            <button class="btn primary" onClick={() => navigate('/more')}>
+              Done
+            </button>
+          </div>
+        </main>
+        <TabBar active="more" />
+      </>
+    );
   }
 
   return (
@@ -201,21 +244,25 @@ export function ChangePassword() {
         <form class="wrap stack" style={{ paddingTop: '16px' }} onSubmit={save}>
           <p class="lead">After a change, any other phone or computer is signed out.</p>
           <div class="fgroup">
-            <PasswordField id="current-password" label="Current password" value={current} onInput={(v) => (setCurrent(v), setDone(false))} autoComplete="current-password" />
-            <PasswordField id="new-password" label="New password" value={password} onInput={(v) => (setPassword(v), setDone(false))} autoComplete="new-password" hint={<PasswordHint password={password} />} />
+            {!faceId && <PasswordField id="current-password" label="Current password" value={current} onInput={setCurrent} autoComplete="current-password" />}
+            <PasswordField id="new-password" label="New password" value={password} onInput={setPassword} autoComplete="new-password" hint={<PasswordHint password={password} />} />
           </div>
+          {faceId ? (
+            <p class="hint">Face ID will check it’s you when you tap Change password.</p>
+          ) : (
+            canFaceId && (
+              <button class="btn text" type="button" onClick={() => (setFaceId(true), setCurrent(''), setError(''))}>
+                Forgot it? Use Face ID instead
+              </button>
+            )
+          )}
           {error && (
             <p class="error" role="alert">
               {error}
             </p>
           )}
-          {done && (
-            <p class="hint ok" role="status">
-              Password changed. Any other phone or computer signed in to your account has been signed out.
-            </p>
-          )}
-          <button class="btn primary" type="submit" disabled={busy || !current || !!passwordProblem(password)}>
-            {busy ? 'Saving…' : 'Change password'}
+          <button class="btn primary" type="submit" disabled={busy || (!faceId && !current) || !!passwordProblem(password)}>
+            {busy ? (faceId ? 'Waiting for Face ID…' : 'Saving…') : 'Change password'}
           </button>
         </form>
       </main>

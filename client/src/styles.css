@@ -575,6 +575,8 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .gh-ov b.none { color: var(--text-3); }
 .switch-row .gh-ic + span { flex: 1; }
 .lh.cap.dng { color: var(--danger); }
+/* D83: after a password change, above the passkeys that can still sign in. */
+.cap.still-faceid { margin: 12px 0 0; color: var(--accent-bright); }
 .cap { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
 .lead { margin: 0; color: var(--text-2); font-size: 15px; }
 .lead strong { color: var(--text); font-weight: 600; }

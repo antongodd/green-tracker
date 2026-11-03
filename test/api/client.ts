@@ -92,6 +92,12 @@ export async function makeOldAccount(username: string) {
   if (res.status !== 200) throw new Error(`old-account ${res.status}`);
 }
 
+/** D83: makes the account's sessions look signed in `minutes` ago, so adding Face ID asks for the password (a test-server hook). */
+export async function ageSessions(username: string, minutes = 10) {
+  const res = await new Browser().post('/api/test/age-sessions', { username, minutes });
+  if (res.status !== 200) throw new Error(`age-sessions ${res.status}`);
+}
+
 export const signInWithPassword = (browser: Browser, email: string, password = PASSWORD) => browser.post('/api/auth/signin', { email, password });
 
 export async function signIn(browser: Browser, passkey: SoftPasskey) {

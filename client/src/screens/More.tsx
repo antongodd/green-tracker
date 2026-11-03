@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
-import { api, errorText, type Passkey } from '../api';
+import { ApiError, api, errorText, type Passkey } from '../api';
+import { PasswordField } from '../components/inputs';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
@@ -206,36 +207,20 @@ function when(p: Passkey): string {
   return p.lastUsedAt && p.lastUsedAt !== p.createdAt ? `${added} · Last used ${formatDate(p.lastUsedAt)}` : added;
 }
 
-export function Passkeys() {
+/**
+ * Your passkeys, each with when it was added and last used, and a Remove button. On Settings › Face ID,
+ * and (D83) after a password change: "These can still sign in with Face ID".
+ */
+export function PasskeyList(p: { list: Passkey[]; onChange: (list: Passkey[]) => void }) {
   const { refresh } = useSession();
-  const [list, setList] = useState<Passkey[] | null>(null);
   const [removing, setRemoving] = useState<Passkey | null>(null);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api<{ passkeys: Passkey[] }>('GET', '/account/passkeys')
-      .then((r) => setList(r.passkeys))
-      .catch((e) => setError(errorText(e)));
-  }, []);
-
-  async function add() {
-    setBusy(true);
-    setError('');
-    try {
-      setList((await addPasskey()).passkeys);
-      await refresh();
-    } catch (e) {
-      setError(errorText(e));
-    }
-    setBusy(false);
-  }
-
-  async function remove(p: Passkey) {
+  async function remove(k: Passkey) {
     setRemoving(null);
     setError('');
     try {
-      setList((await api<{ passkeys: Passkey[] }>('DELETE', `/account/passkeys/${encodeURIComponent(p.id)}`)).passkeys);
+      p.onChange((await api<{ passkeys: Passkey[] }>('DELETE', `/account/passkeys/${encodeURIComponent(k.id)}`)).passkeys);
       await refresh();
     } catch (e) {
       setError(errorText(e));
@@ -244,36 +229,26 @@ export function Passkeys() {
 
   return (
     <>
-      <Header title="Face ID" left={<BackButton to="/more" />} />
-      <main class="screen">
-        <div class="wrap stack" style={{ paddingTop: '16px' }}>
-          <p class="lead">A passkey signs you in with Face ID, Touch ID or your screen lock instead of your password. Add one on each device you use; your email and password always work too.</p>
-          {list && (
-            <div class="list">
-              {list.map((p) => (
-                <div class="li" key={p.id}>
-                  <span class="main">
-                    {p.name}
-                    <span class="sub">{when(p)}</span>
-                  </span>
-                  <button class="act" onClick={() => setRemoving(p)} aria-label={`Remove passkey ${p.name}`}>
-                    Remove
-                  </button>
-                </div>
-              ))}
+      {p.list.length > 0 && (
+        <div class="list">
+          {p.list.map((k) => (
+            <div class="li" key={k.id}>
+              <span class="main">
+                {k.name}
+                <span class="sub">{when(k)}</span>
+              </span>
+              <button class="act" onClick={() => setRemoving(k)} aria-label={`Remove passkey ${k.name}`}>
+                Remove
+              </button>
             </div>
-          )}
-          {error && (
-            <p class="error" role="alert">
-              {error}
-            </p>
-          )}
-          <button class="btn secondary" onClick={add} disabled={busy}>
-            {busy ? 'Waiting for your passkey…' : 'Add a passkey on this device'}
-          </button>
+          ))}
         </div>
-      </main>
-      <TabBar active="more" />
+      )}
+      {error && (
+        <p class="error" role="alert">
+          {error}
+        </p>
+      )}
       {removing && (
         <Sheet
           title={`Remove “${removing.name}”?`}
@@ -282,6 +257,85 @@ export function Passkeys() {
           onCancel={() => setRemoving(null)}
         />
       )}
+    </>
+  );
+}
+
+export function Passkeys() {
+  const { refresh } = useSession();
+  const [list, setList] = useState<Passkey[] | null>(null);
+  // D83: adding one asks for your password, unless you signed in on this device a few minutes ago.
+  const [passwordNeeded, setPasswordNeeded] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api<{ passkeys: Passkey[]; passwordNeeded: boolean }>('GET', '/account/passkeys')
+      .then((r) => (setList(r.passkeys), setPasswordNeeded(r.passwordNeeded)))
+      .catch((e) => setError(errorText(e)));
+  }, []);
+
+  async function add(e?: Event) {
+    e?.preventDefault();
+    if (passwordNeeded && !password) return setAsking(true);
+    setBusy(true);
+    setError('');
+    try {
+      setList((await addPasskey(password || undefined)).passkeys);
+      setAsking(false);
+      setPassword('');
+      await refresh();
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'password_needed') {
+        setPasswordNeeded(true);
+        setAsking(true);
+      } else setError(errorText(err));
+    }
+    setBusy(false);
+  }
+
+  return (
+    <>
+      <Header title="Face ID" left={<BackButton to="/more" />} />
+      <main class="screen">
+        <div class="wrap stack" style={{ paddingTop: '16px' }}>
+          <p class="lead">A passkey signs you in with Face ID, Touch ID or your screen lock instead of your password. Add one on each device you use; your email and password always work too.</p>
+          {list && <PasskeyList list={list} onChange={setList} />}
+          {asking ? (
+            <form class="stack" onSubmit={add} noValidate>
+              <div class="fgroup">
+                <PasswordField id="passkey-password" label="Your password" value={password} onInput={setPassword} autoComplete="current-password" />
+              </div>
+              <p class="hint">So nobody else holding your phone can add a way into your account.</p>
+              {error && (
+                <p class="error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button class="btn primary" type="submit" disabled={busy || !password}>
+                {busy ? 'Waiting for your passkey…' : 'Continue'}
+              </button>
+              <button class="btn text" type="button" onClick={() => (setAsking(false), setPassword(''), setError(''))} disabled={busy}>
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <>
+              {error && (
+                <p class="error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button class="btn secondary" onClick={() => add()} disabled={busy}>
+                {busy ? 'Waiting for your passkey…' : 'Add a passkey on this device'}
+              </button>
+            </>
+          )}
+        </div>
+      </main>
+      <TabBar active="more" />
     </>
   );
 }

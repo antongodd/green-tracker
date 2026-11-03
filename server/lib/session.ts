@@ -3,6 +3,7 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { AppEnv } from '../env';
 import { randomToken, sha256Hex } from './crypto';
 import { fail } from './http';
+import { rememberDevice } from './knownDevice';
 
 export const SESSION_COOKIE = 'gt_session';
 const DAY = 24 * 60 * 60 * 1000;
@@ -18,7 +19,7 @@ function cookieOptions(c: Context<AppEnv>) {
   };
 }
 
-/** Creates a session for `userId` and sets the cookie. Only the token's hash is stored. */
+/** Creates a session for `userId` and sets the cookie. Only the token's hash is stored. The device is remembered (D83). */
 export async function startSession(c: Context<AppEnv>, userId: string): Promise<void> {
   const token = randomToken();
   const now = Date.now();
@@ -26,7 +27,11 @@ export async function startSession(c: Context<AppEnv>, userId: string): Promise<
     .bind(await sha256Hex(token), userId, now, now + SESSION_TTL)
     .run();
   setCookie(c, SESSION_COOKIE, token, { ...cookieOptions(c), maxAge: SESSION_TTL / 1000 });
+  await rememberDevice(c, userId);
 }
+
+/** D83: a sign-in this recent counts as having just typed your password (or used Face ID). */
+export const FRESH_SIGNIN_MS = 5 * 60 * 1000;
 
 export function clearSessionCookie(c: Context<AppEnv>): void {
   deleteCookie(c, SESSION_COOKIE, cookieOptions(c));
@@ -41,14 +46,14 @@ export const loadSession: MiddlewareHandler<AppEnv> = async (c, next) => {
     const tokenHash = await sha256Hex(token);
     const now = Date.now();
     const row = await c.env.DB.prepare(
-      `SELECT s.expires_at, u.id, u.username, u.email IS NULL AS needs_login
+      `SELECT s.expires_at, s.created_at, u.id, u.username, u.email IS NULL AS needs_login
        FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?1`,
     )
       .bind(tokenHash)
-      .first<{ expires_at: number; id: string; username: string; needs_login: number }>();
+      .first<{ expires_at: number; created_at: number; id: string; username: string; needs_login: number }>();
     if (row && row.expires_at > now) {
       c.set('user', { id: row.id, username: row.username, needsLogin: row.needs_login === 1 });
-      c.set('session', { tokenHash });
+      c.set('session', { tokenHash, createdAt: row.created_at });
       if (row.expires_at - now < SESSION_TTL - DAY) {
         await c.env.DB.prepare('UPDATE sessions SET expires_at = ?1 WHERE token_hash = ?2').bind(now + SESSION_TTL, tokenHash).run();
         setCookie(c, SESSION_COOKIE, token, { ...cookieOptions(c), maxAge: SESSION_TTL / 1000 });
