@@ -260,7 +260,7 @@ export function RestoreScreen() {
       {confirming && summary && (
         <Sheet
           title="Replace all your data?"
-          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'log entry', 'log entries')} and ${plural(summary.photos, 'photo')}. This can’t be undone.`}
+          message={`Everything in your account now is replaced by this file’s ${plural(summary.products + summary.archived, 'product')}, ${plural(summary.logEntries, 'Log entry', 'Log entries')} and ${plural(summary.photos, 'photo')}. This can’t be undone.`}
           options={[{ label: 'Replace my data', danger: true, onSelect: run }]}
           onCancel={() => setConfirming(false)}
         />
@@ -355,7 +355,7 @@ export function DeleteAccount() {
             <input id="confirm-username" class={`input${matches ? ' armed' : ''}`} value={typed} onInput={(e) => setTyped(e.currentTarget.value)} placeholder={username} autoCapitalize="none" autoCorrect="off" spellcheck={false} autoComplete="off" />
           </div>
           <div class="field">
-            <label for="confirm-password">Your password</label>
+            <label for="confirm-password">Current password</label>
             <input id="confirm-password" class="input" type="password" value={password} onInput={(e) => setPassword(e.currentTarget.value)} autoComplete="current-password" />
           </div>
           {error && (

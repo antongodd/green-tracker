@@ -109,10 +109,10 @@ test('export everything, restore it after changes, then delete the account', asy
   await expect(button).toBeDisabled();
   await page.getByLabel('Type your username to confirm').fill(username.toUpperCase());
   await expect(button).toBeDisabled();
-  await page.getByLabel('Your password').fill('not my password');
+  await page.getByLabel('Current password').fill('not my password');
   await button.click();
   await expect(page.getByRole('alert')).toHaveText('That password isn’t right.');
-  await page.getByLabel('Your password').fill(PASSWORD);
+  await page.getByLabel('Current password').fill(PASSWORD);
   await shot(page, '62-delete');
   await button.click();
   await expect(page).toHaveURL(/\/signin$/);

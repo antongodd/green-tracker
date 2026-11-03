@@ -101,7 +101,7 @@ export const LOOKS: Record<Look, { label: string; description: string }> = {
   aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
   neon: { label: 'Neon Night', description: 'Deep indigo with violet, pink and cyan lights' },
   pearl: { label: 'Holo Pearl', description: 'Near-black with pearly rainbow edges' },
-  forest: { label: 'Deep Forest', description: 'The green look, tidied' },
+  forest: { label: 'Deep Forest', description: 'Deep greens, calm and simple' },
   sakura: { label: 'Sakura', description: 'Dusk pink with drifting blossom' },
   fireflies: { label: 'Fireflies', description: 'A summer night, little lights blinking' },
   deepsea: { label: 'Deep Sea', description: 'Light rays and glowing plankton' },
@@ -143,7 +143,7 @@ export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'strip', pr
  * takes the default; anything else wrong is refused.
  */
 export function validateAppearance(raw: unknown): { ok: true; value: Appearance } | { ok: false; message: string } {
-  const bad = { ok: false, message: 'The appearance settings could not be read.' } as const;
+  const bad = { ok: false, message: 'The appearance settings couldn’t be read.' } as const;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return bad;
   const r = raw as Record<string, unknown>;
   const look = r.look === undefined ? DEFAULT_APPEARANCE.look : r.look;

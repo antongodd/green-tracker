@@ -51,20 +51,20 @@ export function effectivePrivacy(p: Privacy): Privacy {
  * doesn't know are ignored (an older app or export still sending the Smokes switches, D60).
  */
 export function validatePrivacy(raw: unknown): { ok: true; value: Privacy } | { ok: false; message: string } {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, message: 'The privacy settings could not be read.' };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, message: 'The privacy settings couldn’t be read.' };
   const r = raw as Record<string, unknown>;
   const out = {} as Privacy;
   for (const k of PRIVACY_KEYS) {
-    if (typeof r[k] !== 'boolean') return { ok: false, message: 'The privacy settings could not be read.' };
+    if (typeof r[k] !== 'boolean') return { ok: false, message: 'The privacy settings couldn’t be read.' };
     out[k] = r[k] as boolean;
   }
   return { ok: true, value: out };
 }
 
-/** The line under More → What followers see: "Followers see: Leaderboard, Source, Country, Photos". */
+/** The line under Settings → What followers see: "Leaderboard, Source, Country, Photos, Posts" (posts are always shared, D77). */
 export function privacySummary(p: Privacy): string {
   const e = effectivePrivacy(p);
-  if (!e.shareBoard) return 'Followers see only your name';
-  const parts = ['Leaderboard', e.shareSource && 'Source', e.shareCountry && 'Country', e.sharePhotos && 'Photos'].filter(Boolean);
-  return `Followers see: ${parts.join(', ')}`;
+  if (!e.shareBoard) return 'Only your name and your posts';
+  const parts = ['Leaderboard', e.shareSource && 'Source', e.shareCountry && 'Country', e.sharePhotos && 'Photos', 'Posts'].filter(Boolean);
+  return parts.join(', ');
 }

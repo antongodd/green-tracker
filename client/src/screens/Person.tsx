@@ -93,7 +93,7 @@ function SharedRow(p: { username: string; product: SharedProduct; rank: number; 
 function PreviewNote() {
   return (
     <p class="pv-note">
-      This is what your followers see now. <a href="/more/privacy" onClick={linkTo('/more/privacy')}>Change it in Privacy</a>
+      This is what your followers see now. <a href="/more/privacy" onClick={linkTo('/more/privacy')}>Change this in Privacy</a>.
     </p>
   );
 }
@@ -142,7 +142,7 @@ function Stranger(p: { person: PersonCard; onChange: (next: PersonCard) => void 
               <button class="btn primary" style={{ width: 'auto', minWidth: '160px' }} disabled={busy} onClick={() => run(() => api.follow(u))}>
                 Follow
               </button>
-              <p class="lead">Follow to see their leaderboard and posts.</p>
+              <p class="lead">Follow to see their Leaderboard and posts.</p>
             </>
           )}
           {error && (
@@ -304,7 +304,7 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
             {/* PRODUCTS and AVERAGE only — never TOTAL. */}
             <Tiles
               tiles={[
-                { value: String(tiles.products), label: 'Products' },
+                { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
               ]}
               lead={1}
@@ -318,8 +318,8 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
           </EmptyCard>
         )}
         {empty === 'filtered-empty' && (
-          <EmptyCard art="filter" title={`No ${typeLabel}`}>
-            <p>None of @{person.username}’s products are {typeLabel}.</p>
+          <EmptyCard art="filter" title={`No ${typeLabel} products`}>
+            <p>@{person.username} has no {typeLabel} products.</p>
             <button class="btn secondary" style={{ width: 'auto' }} onClick={() => change({ ...view, filter: 'all' })}>
               Show all types
             </button>
@@ -502,7 +502,7 @@ export function TheirBrandPage(p: { username: string; name: string; preview?: bo
             {/* PRODUCTS and AVERAGE only, as on their board: never prices or where they bought it. */}
             <Tiles
               tiles={[
-                { value: String(tiles.products), label: 'Products' },
+                { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
               ]}
             />

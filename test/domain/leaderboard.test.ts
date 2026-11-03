@@ -124,7 +124,7 @@ describe('Rank by (§10.1)', () => {
       { key: 'taste', label: 'Taste' },
       { key: 'high', label: 'High' },
     ]);
-    expect(rankByOptions('flower', { money: true })[1]!.label).toBe('Price per gram');
+    expect(rankByOptions('flower', { money: true })[1]!.label).toBe('Price');
     expect(rankByOptions('pre_roll', { money: true }).map((o) => o.key)).not.toContain('look');
   });
 
@@ -204,19 +204,19 @@ describe('Product pages: place and badge (D22, D48)', () => {
     expect(placeText(2, { filter: 'flower', rankBy: 'overall' }, 'your')).toBe('#2 in Flower');
     expect(placeText(1, { filter: 'all', rankBy: 'taste' }, 'your')).toBe('#1 by Taste');
     expect(placeText(3, { filter: 'flower', rankBy: 'taste' }, 'their')).toBe('#3 in Flower by Taste');
-    expect(placeText(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edibles by Price per mg');
+    expect(placeText(3, { filter: 'edibles', rankBy: 'price' }, 'your')).toBe('#3 in Edible by Price per mg');
     expect(placeText(2, { filter: 'concentrate', rankBy: 'vfm' }, 'your')).toBe('#2 in Concentrate by Value for money');
-    expect(placeText(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre roll by Burn');
+    expect(placeText(1, { filter: 'pre_roll', rankBy: 'burn' }, 'your')).toBe('#1 in Pre-roll by Burn');
   });
 
-  it('the badge: a band names its colour in your preset; #1 without one gets its place only when marked', () => {
+  it('the badge: a band shows its place (no colour name since 0.69.8); #1 without one gets its place only when marked', () => {
     const all = { filter: 'all', rankBy: 'overall' } as const;
-    expect(placeBadge({ rank: 3, band: 3, first: false }, all, 'your', gems)).toBe('Amethyst · #3 on your Leaderboard');
-    expect(placeBadge({ rank: 1, band: 4, first: true }, all, 'their', gems)).toBe('Rainbow · #1 on their Leaderboard');
-    expect(placeBadge({ rank: 2, band: 2, first: false }, { filter: 'flower', rankBy: 'overall' }, 'your', { ...DEFAULT_APPEARANCE, preset: 'metals', markFirst: true })).toBe('Rose gold · #2 in Flower');
-    expect(placeBadge({ rank: 4, band: 1, first: false }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'prism', markFirst: false })).toBe('Prism · #4 on your Leaderboard');
+    expect(placeBadge({ rank: 3, band: 3, first: false }, all, 'your', gems)).toBe('#3 on your Leaderboard');
+    expect(placeBadge({ rank: 1, band: 4, first: true }, all, 'their', gems)).toBe('#1 on their Leaderboard');
+    expect(placeBadge({ rank: 2, band: 2, first: false }, { filter: 'flower', rankBy: 'overall' }, 'your', { ...DEFAULT_APPEARANCE, preset: 'metals', markFirst: true })).toBe('#2 in Flower');
+    expect(placeBadge({ rank: 4, band: 1, first: false }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'prism', markFirst: false })).toBe('#4 on your Leaderboard');
     expect(placeBadge({ rank: 5, band: null, first: false }, all, 'your', gems)).toBeNull();
-    expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price per gram');
+    expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price');
     expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'gems', markFirst: false })).toBeNull();
   });
 });

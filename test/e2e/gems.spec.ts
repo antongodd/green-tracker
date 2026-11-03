@@ -104,11 +104,11 @@ const open = async (page: Page, path: string) => {
 
 test('each colour carries onto its page: Rainbow, Amethyst, Sapphire, Emerald; #1 wears the crown', async () => {
   const expected = [
-    ['Secret', { band: '4', badge: 'Rainbow · #1 on your Leaderboard', crown: true, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Alpha', { band: '4', badge: 'Rainbow · #2 on your Leaderboard', crown: false, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Charlie', { band: '3', badge: 'Amethyst · #3 on your Leaderboard', crown: false, holo: true, haze: '0.12', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Delta', { band: '2', badge: 'Sapphire · #5 on your Leaderboard', crown: false, holo: true, haze: '0.09', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
-    ['Echo', { band: '1', badge: 'Emerald · #6 on your Leaderboard', crown: false, holo: true, haze: '0.06', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Secret', { band: '4', badge: '#1 on your Leaderboard', crown: true, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
+    ['Alpha', { band: '4', badge: '#2 on your Leaderboard', crown: false, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
+    ['Charlie', { band: '3', badge: '#3 on your Leaderboard', crown: false, holo: true, haze: '0.12', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
+    ['Delta', { band: '2', badge: '#5 on your Leaderboard', crown: false, holo: true, haze: '0.09', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Echo', { band: '1', badge: '#6 on your Leaderboard', crown: false, holo: true, haze: '0.06', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
   ] as const;
   for (const [name, want] of expected) {
     await open(owner, `/products/${ids[name]}`);
@@ -130,7 +130,7 @@ test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothin
   expect(await appearance(owner, { preset: 'metals', markFirst: true })).toBe(200);
   await open(owner, `/products/${ids.Charlie}`);
   await expect(owner.locator('main')).toHaveAttribute('data-band', '3');
-  await expect(owner.locator('.gem-badge')).toHaveText('Diamond · #3 on your Leaderboard');
+  await expect(owner.locator('.gem-badge')).toHaveText('#3 on your Leaderboard');
   await expect(owner.locator('.glint')).toHaveCount(3);
   const overlaps = await owner.locator('main').evaluate((main) => {
     const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
@@ -141,7 +141,7 @@ test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothin
   });
   expect(overlaps).toEqual([]);
   await open(owner, `/products/${ids.Delta}`);
-  await expect(owner.locator('.gem-badge')).toHaveText('Rose gold · #5 on your Leaderboard');
+  await expect(owner.locator('.gem-badge')).toHaveText('#5 on your Leaderboard');
   await expect(owner.locator('.glint')).toHaveCount(0);
   expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
   for (const name of ['Secret', 'Charlie', 'Delta', 'Echo']) {
@@ -199,7 +199,7 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
   await expect(owner.locator('.row.first')).toHaveCount(1);
   // 4th under All, 3rd under Flower.
   await owner.locator('.row', { hasText: 'Bravo' }).click();
-  await expect(owner.locator('.gem-badge')).toHaveText('Amethyst · #3 in Flower');
+  await expect(owner.locator('.gem-badge')).toHaveText('#3 in Flower');
   await expect(owner.locator('main')).toHaveAttribute('data-band', '3');
 
   // The edible isn't on a Flower board, so its page is ordinary.
@@ -213,7 +213,7 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
   await expect(owner.locator('.row')).toHaveCount(1);
   await owner.getByRole('link', { name: 'Log', exact: true }).click();
   await owner.locator('.lrow', { hasText: 'Delta' }).click();
-  await expect(owner.locator('.gem-badge')).toHaveText('Amethyst · #1 in Flower by Taste');
+  await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Taste');
   await expect(owner.locator('.gem-badge svg')).toHaveCount(1);
   await expect(owner.locator('main')).toHaveAttribute('data-band', '3');
 
@@ -224,10 +224,10 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
   await expect(owner.locator('.row').first()).toHaveClass(/\bfirst\b/);
   await expect(owner.locator('.row.tier')).toHaveCount(0);
   await owner.locator('.row').first().click();
-  await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Price per gram');
+  await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Price');
   // Opened directly for the readability check, so Photo grows isn't mid-flight (D20).
   await open(owner, `/products/${ids.Alpha}`);
-  await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Price per gram');
+  await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Price');
   await expect(owner.locator('.gem-badge')).toHaveClass(/\bplain\b/);
   await expect(owner.locator('main')).toHaveAttribute('data-band', 'none');
   await settled(owner);
@@ -247,7 +247,7 @@ test('#1 unmarked: no crown or halo on the row or the page, the colour stays', a
   await expect(owner.locator('.row.tier')).toHaveCount(6);
   await expect(owner.locator('.row.first, .rank-crown')).toHaveCount(0);
   await open(owner, `/products/${ids.Secret}`);
-  await expect(owner.locator('.gem-badge')).toHaveText('Rainbow · #1 on your Leaderboard');
+  await expect(owner.locator('.gem-badge')).toHaveText('#1 on your Leaderboard');
   await expect(owner.locator('.gem-badge svg')).toHaveCount(0);
   expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
 });
@@ -280,7 +280,7 @@ test('a friend’s product page gets its colour and place on their board, worked
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.row.tier')).toHaveCount(5);
   await fan.locator('.row', { hasText: 'Alpha' }).click();
-  await expect(fan.locator('.gem-badge')).toHaveText('Rainbow · #1 on their Leaderboard');
+  await expect(fan.locator('.gem-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('data-band', '4');
   expect(await pieces(fan)).toMatchObject({ crown: true, haze: '0.14', score: true, sweep: true, glints: 0 });
   // The Poster (D27) on their page too, without a price.
@@ -289,7 +289,7 @@ test('a friend’s product page gets its colour and place on their board, worked
   await shot(fan, '91-colour-friend-page');
 
   await open(fan, `/u/${ownerName}/p/${ids.Bravo}`);
-  await expect(fan.locator('.gem-badge')).toHaveText('Amethyst · #3 on their Leaderboard');
+  await expect(fan.locator('.gem-badge')).toHaveText('#3 on their Leaderboard');
   expect(await pieces(fan)).toMatchObject({ holo: true, haze: '0.12', score: true });
   await open(fan, `/u/${ownerName}/p/${ids.Foxtrot}`);
   await expect(fan.locator('main')).toHaveAttribute('data-band', 'none');
@@ -302,7 +302,7 @@ test('a friend’s product page gets its colour and place on their board, worked
   await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(0);
   expect(await appearance(owner, { preset: 'prism', markFirst: true })).toBe(200);
   await open(fan, `/u/${ownerName}/p/${ids.Delta}`);
-  await expect(fan.locator('.gem-badge')).toHaveText('Prism · #4 on their Leaderboard');
+  await expect(fan.locator('.gem-badge')).toHaveText('#4 on their Leaderboard');
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(5);
   for (const p of [owner, fan]) expect(await appearance(p, { preset: 'gems', markFirst: true })).toBe(200);

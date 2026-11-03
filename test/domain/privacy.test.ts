@@ -4,7 +4,7 @@ import { DEFAULT_PRIVACY, effectivePrivacy, privacyEnabled, privacySummary, vali
 describe('privacy settings (D45)', () => {
   it('start exactly as before: Leaderboard, Source, Country, photos and profile photo shared', () => {
     expect(DEFAULT_PRIVACY).toEqual({ shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true });
-    expect(privacySummary(DEFAULT_PRIVACY)).toBe('Followers see: Leaderboard, Source, Country, Photos');
+    expect(privacySummary(DEFAULT_PRIVACY)).toBe('Leaderboard, Source, Country, Photos, Posts');
   });
 
   it('a switch whose prerequisite is off counts as off', () => {
@@ -13,8 +13,8 @@ describe('privacy settings (D45)', () => {
     expect(effectivePrivacy({ ...all, shareBoard: false })).toEqual({ shareBoard: false, shareSource: false, shareCountry: false, sharePhotos: false, shareProfilePhoto: true });
     expect(privacyEnabled({ ...all, shareBoard: false }, 'shareSource')).toBe(false);
     expect(privacyEnabled({ ...all, shareBoard: false }, 'shareProfilePhoto')).toBe(true);
-    expect(privacySummary({ ...all, shareBoard: false })).toBe('Followers see only your name');
-    expect(privacySummary({ ...all, shareSource: false })).toBe('Followers see: Leaderboard, Country, Photos');
+    expect(privacySummary({ ...all, shareBoard: false })).toBe('Only your name and your posts');
+    expect(privacySummary({ ...all, shareSource: false })).toBe('Leaderboard, Country, Photos, Posts');
   });
 
   it('takes only a full set of true/false switches', () => {

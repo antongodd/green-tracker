@@ -183,9 +183,9 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
     if (!p || typeof p !== 'object' || !Array.isArray(p.photos) || !p.photos.every(photoOk) || !isTime(p.createdAt)) return bad('A product in the file couldn’t be read.');
   }
   for (const e of f.logEntries as Record<string, unknown>[]) {
-    if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt)) return bad('A log entry in the file couldn’t be read.');
+    if (!e || typeof e !== 'object' || (e.photo !== null && !photoOk(e.photo)) || !isTime(e.createdAt)) return bad('A Log entry in the file couldn’t be read.');
     const k = e.kept as Record<string, unknown> | undefined;
-    if (k !== undefined && (!k || typeof k !== 'object' || !Array.isArray(k.photos) || !k.photos.every(photoOk) || !isTime(k.createdAt))) return bad('A log entry in the file couldn’t be read.');
+    if (k !== undefined && (!k || typeof k !== 'object' || !Array.isArray(k.photos) || !k.photos.every(photoOk) || !isTime(k.createdAt))) return bad('A Log entry in the file couldn’t be read.');
   }
   if (f.privacy !== undefined && !validatePrivacy(f.privacy).ok) return bad('The privacy settings in the file couldn’t be read.');
   if (f.appearance !== undefined && !validateAppearance(f.appearance).ok) return bad('The appearance settings in the file couldn’t be read.');
@@ -212,9 +212,9 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
  */
 export function validateRestore(raw: unknown): Result<RestorePayload> {
   const bad = (message: string): Result<RestorePayload> => ({ ok: false, message });
-  if (!raw || typeof raw !== 'object') return bad('The restore could not be read.');
+  if (!raw || typeof raw !== 'object') return bad('The restore couldn’t be read.');
   const r = raw as Record<string, unknown>;
-  if (!Array.isArray(r.products) || !Array.isArray(r.logEntries)) return bad('The restore could not be read.');
+  if (!Array.isArray(r.products) || !Array.isArray(r.logEntries)) return bad('The restore couldn’t be read.');
   if (r.products.length > RESTORE_LIMITS.products || r.logEntries.length > RESTORE_LIMITS.logEntries) return bad('Too much data to restore at once.');
 
   const uploads = new Set<string>();
@@ -227,16 +227,16 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
     const where = `Product ${i + 1}${raw && typeof raw.name === 'string' ? ` (“${raw.name}”)` : ''}`;
     if (!v.ok) return bad(`${where}: ${v.message}`);
     if (Object.values(v.value.ratings).some((x) => x === null)) return bad(`${where}: a rating is missing its value.`);
-    if (!newPhotosOnly(v.value.photos)) return bad(`${where}: a photo could not be read.`);
-    if (typeof raw.archived !== 'boolean' || !isTime(raw.createdAt)) return bad(`${where} could not be read.`);
+    if (!newPhotosOnly(v.value.photos)) return bad(`${where}: a photo couldn’t be read.`);
+    if (typeof raw.archived !== 'boolean' || !isTime(raw.createdAt)) return bad(`${where} couldn’t be read.`);
     products.push({ ...v.value, archived: raw.archived, createdAt: raw.createdAt });
   }
   const logEntries: RestoreLogEntry[] = [];
   for (const [i, raw] of (r.logEntries as Record<string, unknown>[]).entries()) {
     const v = validateLogEntryInput(raw);
     if (!v.ok) return bad(`Log entry ${i + 1}: ${v.message}`);
-    if (!newPhotosOnly(v.value.photos)) return bad(`Log entry ${i + 1}: a photo could not be read.`);
-    if (!isTime(raw.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
+    if (!newPhotosOnly(v.value.photos)) return bad(`Log entry ${i + 1}: a photo couldn’t be read.`);
+    if (!isTime(raw.createdAt)) return bad(`Log entry ${i + 1} couldn’t be read.`);
     // D50: what a returned entry keeps, checked like any product.
     let kept: RestoreKept | undefined;
     if (raw.kept !== undefined) {
@@ -244,8 +244,8 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
       const kv = validateProductInput(k);
       if (!kv.ok) return bad(`Log entry ${i + 1}: ${kv.message}`);
       if (Object.values(kv.value.ratings).some((x) => x === null)) return bad(`Log entry ${i + 1}: a rating is missing its value.`);
-      if (!newPhotosOnly(kv.value.photos)) return bad(`Log entry ${i + 1}: a photo could not be read.`);
-      if (!isTime(k!.createdAt)) return bad(`Log entry ${i + 1} could not be read.`);
+      if (!newPhotosOnly(kv.value.photos)) return bad(`Log entry ${i + 1}: a photo couldn’t be read.`);
+      if (!isTime(k!.createdAt)) return bad(`Log entry ${i + 1} couldn’t be read.`);
       kept = { ...kv.value, createdAt: k!.createdAt };
     }
     logEntries.push({ ...v.value, createdAt: raw.createdAt, ...(kept ? { kept } : {}) });
@@ -253,23 +253,23 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
   let privacy: Privacy | undefined;
   if (r.privacy !== undefined) {
     const pv = validatePrivacy(r.privacy);
-    if (!pv.ok) return bad('The privacy settings could not be read.');
+    if (!pv.ok) return bad('The privacy settings couldn’t be read.');
     privacy = pv.value;
   }
   let appearance: Appearance | undefined;
   if (r.appearance !== undefined) {
     const av = validateAppearance(r.appearance);
-    if (!av.ok) return bad('The appearance settings could not be read.');
+    if (!av.ok) return bad('The appearance settings couldn’t be read.');
     appearance = av.value;
   }
-  if (r.money !== undefined && !validMoney(r.money)) return bad('The main currency could not be read.');
+  if (r.money !== undefined && !validMoney(r.money)) return bad('The main currency couldn’t be read.');
   const money = r.money as Money | undefined;
   let posts: RestorePost[] | undefined;
   if (r.posts !== undefined) {
-    if (!Array.isArray(r.posts) || r.posts.length > RESTORE_LIMITS.posts) return bad('The posts could not be read.');
+    if (!Array.isArray(r.posts) || r.posts.length > RESTORE_LIMITS.posts) return bad('The posts couldn’t be read.');
     posts = [];
     for (const [i, raw] of (r.posts as Record<string, unknown>[]).entries()) {
-      const bad1 = () => bad(`Post ${i + 1} could not be read.`);
+      const bad1 = () => bad(`Post ${i + 1} couldn’t be read.`);
       if (!raw || typeof raw !== 'object') return bad1();
       const caption = validateCaption(raw.caption);
       if (!caption.ok) return bad(`Post ${i + 1}: ${caption.message}`);
@@ -286,6 +286,6 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
   if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null, ...extra } };
   const pp = r.profilePhoto as Record<string, unknown>;
   const crop = parseCrop(pp.crop);
-  if (typeof pp.upload !== 'string' || !pp.upload || uploads.has(pp.upload) || !crop) return bad('The profile photo could not be read.');
+  if (typeof pp.upload !== 'string' || !pp.upload || uploads.has(pp.upload) || !crop) return bad('The profile photo couldn’t be read.');
   return { ok: true, value: { products, logEntries, profilePhoto: { upload: pp.upload, crop }, ...extra } };
 }

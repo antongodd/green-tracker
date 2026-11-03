@@ -57,7 +57,7 @@ export function overallExplanation(typeKey: string): string {
     const total = feeding.reduce((n, s) => n + s.weight, 0);
     text = `Overall is ${list(feeding.map((s) => `${RATING_LABELS[s.key]} ${fraction(s.weight, total)}`))}.`;
   }
-  if (notFeeding.length) text += ` ${list(notFeeding)} ${notFeeding.length === 1 ? 'is' : 'are'} rated but doesn't count.`;
+  if (notFeeding.length) text += ` ${list(notFeeding)} ${notFeeding.length === 1 ? 'is rated but doesn’t' : 'are rated but don’t'} count.`;
   return text + ' Blank categories are left out.';
 }
 

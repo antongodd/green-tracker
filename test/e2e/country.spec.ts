@@ -104,7 +104,7 @@ test('no match offers to use the typed text as Other', async () => {
 
   await expect(field()).toHaveText('Other');
   await expect(page.getByLabel('Which country?')).toHaveValue('Isle of Man');
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(/\/log$/);
   const { entries } = await get('/api/log');
   expect(entries.find((e: { name: string }) => e.name === 'Island Sample')).toMatchObject({ country: 'OTHER', countryOther: 'Isle of Man' });

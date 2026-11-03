@@ -129,7 +129,7 @@ export function More() {
             {/* D80: you sign in with your email and password; Face ID (a passkey) is optional. */}
             <Row label="Email" sub={me.email ?? undefined} to="/more/email" icon={MailIcon} tint="teal" />
             <Row label="Password" value="Change" to="/more/password" icon={LockIcon} tint="violet" />
-            <Row label="Face ID (passkeys)" value={String(passkeys)} to="/more/passkeys" icon={FaceIdIcon} />
+            <Row label="Face ID" value={String(passkeys)} to="/more/passkeys" icon={FaceIdIcon} />
             <Row label="Blocked people" to="/more/blocked" icon={BlockIcon} />
           </div>
         </div>

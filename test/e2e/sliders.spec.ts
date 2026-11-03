@@ -101,9 +101,9 @@ test.describe('rating sliders', () => {
 
   test('hit time moves in 15-minute steps and reads as a duration', async ({ page }) => {
     await page.getByLabel('Product type').selectOption('edibles');
-    expect(await valueOf(page, 'Hit time')).toBe('Not set');
-    await touchPath(page, await dragPoints(page, 'Hit time', 75 / 180));
-    expect(await valueOf(page, 'Hit time')).toBe('1h 15m');
+    expect(await valueOf(page, 'Time to kick in')).toBe('Not set');
+    await touchPath(page, await dragPoints(page, 'Time to kick in', 75 / 180));
+    expect(await valueOf(page, 'Time to kick in')).toBe('1h 15m');
     await page.getByRole('slider', { name: 'Taste', exact: true }).press('End');
     await page.getByRole('slider', { name: 'Taste', exact: true }).press('PageDown');
     await page.getByRole('slider', { name: 'Taste', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));

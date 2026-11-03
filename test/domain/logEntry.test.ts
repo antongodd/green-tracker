@@ -15,7 +15,7 @@ describe('log entries', () => {
 
   it('allows one photo and a positive amount (or none)', () => {
     const photo = { upload: 'u1', crop: null };
-    expect(validateLogEntryInput({ ...emptyLogEntryInput(), name: 'X', photos: [photo, { upload: 'u2', crop: null }] })).toEqual({ ok: false, message: 'A log entry has one photo.' });
+    expect(validateLogEntryInput({ ...emptyLogEntryInput(), name: 'X', photos: [photo, { upload: 'u2', crop: null }] })).toEqual({ ok: false, message: 'A Log entry has one photo.' });
     expect(validateLogEntryInput({ ...emptyLogEntryInput(), name: 'X', amount: -1 }).ok).toBe(false);
     expect(validateLogEntryInput({ ...emptyLogEntryInput(), name: 'X', amount: 3.5, photos: [photo] }).ok).toBe(true);
   });

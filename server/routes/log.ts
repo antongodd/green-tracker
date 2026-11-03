@@ -66,7 +66,7 @@ async function loadEntries(db: D1Database, userId: string, id?: string): Promise
 
 async function loadEntry(db: D1Database, userId: string, id: string): Promise<LogEntry> {
   const [e] = await loadEntries(db, userId, id);
-  if (!e) fail(404, 'not_found', 'That log entry doesn’t exist.');
+  if (!e) fail(404, 'not_found', 'That Log entry doesn’t exist.');
   return e;
 }
 
@@ -179,7 +179,7 @@ log.post('/return/:productId', async (c) => {
   const userId = c.var.user!.id;
   const db = c.env.DB;
   const product = await loadOne(db, userId, c.req.param('productId')); // yours, and not already returned
-  if (product.archived) fail(409, 'archived', 'Un-archive it first.');
+  if (product.archived) fail(409, 'archived', 'This product is archived. Bring it back from Settings → Archive first.');
   const id = randomId();
   const now = Date.now();
   const first = product.photos[0];

@@ -237,7 +237,7 @@ test('a Log entry photo can be cut out, and promotion keeps the cut-out', async 
   await expect(flow(page).locator('.cut-row')).toHaveCount(0);
   await flow(page).getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('Uploading…')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(/\/log$/);
   await expect(page.locator('.lrow .thumb.cut img')).toBeVisible();
   const { entries } = await getJson(page, '/api/log');
@@ -245,7 +245,7 @@ test('a Log entry photo can be cut out, and promotion keeps the cut-out', async 
 
   // Add to leaderboard: the photo moves across, still a cut-out.
   await page.locator('.lrow', { hasText: 'Loose Cut' }).click();
-  await page.getByRole('button', { name: 'Add to leaderboard' }).click();
+  await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('.hero-photo.cut img')).toBeVisible();
   const id = page.url().split('/products/')[1]!;

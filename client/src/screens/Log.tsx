@@ -124,8 +124,8 @@ export function Log() {
             {/* Log tiles show even when empty: 0 / 0 / 0g. */}
             <Tiles
               tiles={[
-                { value: String(tiles.products), label: 'Products' },
-                { value: String(tiles.countries), label: 'Countries' },
+                { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
+                { value: String(tiles.countries), label: tiles.countries === 1 ? 'Country' : 'Countries' },
                 { value: formatWeightTotal(tiles.totalGrams), label: 'Total' },
               ]}
               foot={mostFrom && (
@@ -142,13 +142,13 @@ export function Log() {
                 <p>Everything you try goes here. Add a quick entry, or add a product to your Leaderboard.</p>
                 <a class="btn primary" style={{ width: 'auto' }} href="/log/new" onClick={linkTo('/log/new')}>
                   <PlusIcon />
-                  Add a log entry
+                  Add a Log entry
                 </a>
               </EmptyCard>
             ) : groups.length === 0 ? (
-              <EmptyCard art="filter" title={`No ${typeLabel} in your Log`}>
+              <EmptyCard art="filter" title={`No ${typeLabel} rows in your Log`}>
                 <p>
-                  Your Log has {rows.length} {rows.length === 1 ? 'row' : 'rows'}, but none {rows.length === 1 ? 'is' : 'are'} {typeLabel}.
+                  Your Log has {rows.length} {rows.length === 1 ? 'row' : 'rows'}, but none in {typeLabel}.
                 </p>
                 <button class="btn secondary" style={{ width: 'auto' }} onClick={() => setFilter('all')}>
                   Show all types
@@ -171,13 +171,13 @@ export function Log() {
                     </div>
                   </section>
                 ))}
-                <p class="footnote">Everything you’ve tried, grouped by country. Rows with a type mark have a full profile on your Leaderboard.</p>
+                <p class="footnote">Everything you’ve tried, grouped by country. Rows with the leaf or other icon have a full profile on your Leaderboard.</p>
               </>
             )}
           </>
         )}
       </main>
-      <button class="fab" aria-label="Add a log entry" onClick={() => navigate('/log/new')}>
+      <button class="fab" aria-label="Add a Log entry" onClick={() => navigate('/log/new')}>
         <PlusIcon />
       </button>
       <TabBar active="log" />

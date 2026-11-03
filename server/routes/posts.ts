@@ -266,7 +266,7 @@ async function build(db: D1Database, viewer: string, rows: PostRow[], perPost: n
 async function page(c: Context<AppEnv>, where: string, binds: unknown[]): Promise<{ posts: Post[]; next: string | null }> {
   const viewer = c.var.user!.id;
   const cursor = parseCursor(c.req.query('before'));
-  if (c.req.query('before') && !cursor) fail(400, 'bad_request', 'The request could not be read.');
+  if (c.req.query('before') && !cursor) fail(400, 'bad_request', 'The request couldn’t be read.');
   const n = binds.length + 2;
   const cond = cursor ? `AND (p.created_at < ?${n} OR (p.created_at = ?${n} AND p.id < ?${n + 1}))` : '';
   const { results } = await c.env.DB.prepare(`${POST_SELECT} WHERE ${visiblePostSql('p')} ${where} ${cond} ORDER BY p.created_at DESC, p.id DESC LIMIT ${POSTS_PAGE + 1}`)
@@ -377,7 +377,7 @@ posts.post('/', async (c) => {
       .bind(input.about.product, me)
       .first<{ id: string; name: string; product_type: string; product_type_other: string | null; strain_type: string | null; private: number; archived: number; kept: number }>();
     if (!p) fail(404, 'not_found', 'That product doesn’t exist.');
-    if (p.archived === 1) fail(409, 'archived', 'Archived products can’t be posted. Un-archive it first.');
+    if (p.archived === 1) fail(409, 'archived', 'This product is archived. Bring it back from Settings → Archive first.');
     if (p.kept === 1) fail(409, 'kept', 'This one is back in your Log. Post its Log entry instead.');
     if (p.private === 1) {
       if (!input.makeVisible) fail(409, 'product_private', 'This product is private. Your followers can’t see it.');
@@ -389,7 +389,7 @@ posts.post('/', async (c) => {
       .prepare('SELECT id, name, product_type, product_type_other FROM log_entries WHERE id = ?1 AND user_id = ?2')
       .bind(input.about.logEntry, me)
       .first<{ id: string; name: string; product_type: string; product_type_other: string | null }>();
-    if (!e) fail(404, 'not_found', 'That log entry doesn’t exist.');
+    if (!e) fail(404, 'not_found', 'That Log entry doesn’t exist.');
     about = { productId: null, logEntryId: e.id, name: e.name, type: e.product_type, typeOther: e.product_type_other, strain: null };
   }
 

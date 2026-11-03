@@ -46,7 +46,7 @@ export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 
           <div key={slot.key} class={`rbar${slot.weight === 0 ? ' muted' : ''}`} data-heat={heat ?? undefined} style={heat ? { '--heat': heat } : undefined}>
             <span>{RATING_LABELS[slot.key]}</span>
             <div class="track">{v != null && <div class="fill" style={{ width: `${v * 10}%` }} />}</div>
-            <span class={`v${v == null ? ' none' : ''}`}>{v == null ? '—' : formatScore(v)}</span>
+            <span class={`v${v == null ? ' none' : ''}`}>{v == null ? '–' : formatScore(v)}</span>
           </div>
         );
       })}
@@ -56,7 +56,7 @@ export function Ratings(p: { product: Pick<Product, 'productType' | 'ratings' | 
       </p>
       {type === 'edibles' && (
         <div class="vfm">
-          <span class="cap">Hit time</span>
+          <span class="cap">Time to kick in</span>
           <span class="num">{formatHitTime(p.product.hitTimeMinutes)}</span>
         </div>
       )}
@@ -103,7 +103,7 @@ function PriceHistory(p: { product: Product }) {
           <span>
             <span class="cap">Value for money</span>
             <span class="small" style={{ display: 'block' }}>
-              Overall ÷ latest {type === 'edibles' ? `${currencySign(main)} per 20mg (the same effect as 1g of flower)` : `${currencySign(main)}/g`} · higher is better
+              Overall score divided by the latest price {type === 'edibles' ? 'per 20mg (counted as 1g of flower)' : 'per gram'}. Higher is better.
             </span>
           </span>
           <b>{formatVFM(vfm)}</b>
@@ -302,7 +302,7 @@ export function Profile(p: { id: string }) {
         <section class="sect" aria-label="Actions">
           {product.archived ? (
             <button class="btn primary" onClick={() => toggle('archived', false)} disabled={busy}>
-              Un-archive
+              Bring back
             </button>
           ) : (
             <>
@@ -350,7 +350,7 @@ export function Profile(p: { id: string }) {
       {confirmArchive && (
         <Sheet
           title={`Archive “${product.name}”?`}
-          message="It leaves your Leaderboard, Log, tiles and followers’ view. Its data is kept, and you can un-archive it from More → Archive."
+          message="It leaves your Leaderboard, Log, totals and followers’ view. Its data is kept, and you can bring it back from Settings → Archive."
           options={[
             {
               label: 'Archive',

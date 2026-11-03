@@ -93,9 +93,9 @@ test('it becomes a Log entry: its page opens, with what it keeps; it’s off the
   await expect(page.locator('.log-tag')).toHaveText('In your Log');
   const details = await pairs(page.getByRole('region', { name: 'Details' }));
   expect(details.slice(0, 3)).toEqual([['Type', 'Flower'], ['Country', '🇪🇸 Spain'], ['Amount', '7g']]); // 3.5g + 3.5g
-  await expect(kept()).toContainText('Hidden for now. Add to leaderboard brings it all back.');
+  await expect(kept()).toContainText('Hidden for now. Add to Leaderboard brings it all back.');
   expect(await pairs(kept())).toEqual([['Ratings', '4 · Overall 8.8'], ['Purchases', '2 · £60.00'], ['Notes', 'Yes'], ['Other photos', '1']]);
-  await expect(actions().locator('.btn')).toHaveText(['Add to leaderboard', 'Post', 'Edit', 'Delete entry']);
+  await expect(actions().locator('.btn')).toHaveText(['Add to Leaderboard', 'Post', 'Edit', 'Delete entry']);
   await shot(page, '49-returned-entry');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await shot(page, '49-returned-entry-kept');
@@ -149,8 +149,8 @@ test('Delete entry says what’s kept goes too', async () => {
 
 test('Add to leaderboard brings it all back: ratings, purchases, notes and both photos', async () => {
   await page.goto(`/log/${ids['Zkittlez entry']}`);
-  await actions().getByRole('button', { name: 'Add to leaderboard' }).click();
-  await expect(page.locator('.hdr')).toContainText('Add to leaderboard');
+  await actions().getByRole('button', { name: 'Add to Leaderboard' }).click();
+  await expect(page.locator('.hdr')).toContainText('Add to Leaderboard');
   await expect(page.getByLabel('Name')).toHaveValue('Zkittlez');
   await expect(page.locator('#notes')).toHaveValue('Sweet and smooth.');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -172,7 +172,7 @@ test('Add to leaderboard brings it all back: ratings, purchases, notes and both 
 test('not on an archived product; offline it waits for the connection', async () => {
   await call('POST', `/api/products/${ids['Stays Put']}/archived`, { value: true });
   await page.goto(`/products/${ids['Stays Put']}`);
-  await expect(actions().getByRole('button', { name: 'Un-archive' })).toBeVisible();
+  await expect(actions().getByRole('button', { name: 'Bring back' })).toBeVisible();
   await expect(actions().getByRole('button', { name: 'Return to Log' })).toHaveCount(0);
   await call('POST', `/api/products/${ids['Stays Put']}/archived`, { value: false });
 

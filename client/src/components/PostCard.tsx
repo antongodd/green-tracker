@@ -309,7 +309,7 @@ export function PostCard(p: { post: Post; full?: boolean; onChange: (post: Post)
           <span class="act">
             <CommentIcon />
             <span class="num">{post.commentCount}</span>
-            <span class="visually-hidden">comments</span>
+            <span class="visually-hidden">{post.commentCount === 1 ? 'comment' : 'comments'}</span>
           </span>
         ) : (
           <a class="act" href={href} onClick={linkTo(href)} aria-label={`${post.commentCount} ${post.commentCount === 1 ? 'comment' : 'comments'}`}>
