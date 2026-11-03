@@ -1820,6 +1820,10 @@ None.
 
 ## 6. Changelog
 
+### Notes — trust basics for strangers are live
+- 0.73.0–0.73.1 (on dev 2026-11-03) went live on 2026-11-03 (release 0.73.1) and move to Done. The release check
+  caught `more.spec.ts` still counting 16 Settings rows (19 with About), fixed in #184 (tests only). Notes only.
+
 ### 0.73.1 — the contact address (owner request)
 - The privacy page, house rules, Settings › About › Contact and the website show greentracker.help@gmail.com
   (Anton's new address) in place of the placeholder.
