@@ -13,6 +13,7 @@ import { photoOf } from '../screens/People';
 import { heatStyle } from '../heat';
 import { play } from '../sounds';
 import { Avatar } from './Avatar';
+import { YourChip } from './Duel';
 import { Sheet } from './chrome';
 import { Effects, rowClass, useAppearance } from './Gems';
 
@@ -66,11 +67,14 @@ export function AboutCard(p: { about: PostAbout }) {
           <div class="score unrated">
             <b>–</b>
             <span class="cap">Unrated</span>
+            {a.yours && <YourChip score={a.yours.score} />}
           </div>
         ) : (
           <div class="score">
             <b>{formatScore(a.score)}</b>
             <span class="cap">Overall</span>
+            {/* D82: you've had the same product: your photo and your score, only for you. */}
+            {a.yours && <YourChip score={a.yours.score} />}
           </div>
         ))}
       {a.kind === 'log' && <span class="in-log">In the Log</span>}

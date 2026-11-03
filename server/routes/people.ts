@@ -9,6 +9,7 @@ import { loadEffectivePrivacy } from '../lib/privacy';
 import { loadAppearance } from '../lib/appearance';
 import { serveImage } from '../lib/photos';
 import { load } from './products';
+import { compareBoards, yoursByKey, yoursFor } from '../../shared/domain/compare';
 
 // People (brief §5). Following is one-way and needs approval; blocks remove follows
 // both ways and hide the blocker. Nothing about another person is ever returned
@@ -192,8 +193,14 @@ async function sharedFor(c: Context<AppEnv>) {
   const products = privacy.shareBoard ? shareProducts(await load(db, them.id, { archived: false }), privacy) : [];
   // D74: their look, top and colours, so their board and product pages look the way they chose.
   const appearance = await loadAppearance(db, them.id);
-  return { them, products, appearance };
+  return { them, products, appearance, privacy };
 }
+
+/**
+ * Your own products as your Leaderboard has them (D82): not archived, not returned to the Log
+ * (load's NOT_KEPT); your private ones too, since what's worked out from them is shown only to you.
+ */
+const yourBoard = (c: Context<AppEnv>) => load(c.env.DB, c.var.user!.id, { archived: false });
 
 /** Their Leaderboard: visible products, shared fields only (D45), in their appearance (D74). */
 people.get('/u/:username/products', async (c) => {
@@ -206,7 +213,16 @@ people.get('/u/:username/products/:id', async (c) => {
   const { them, products, appearance } = await sharedFor(c);
   const product = products.find((p) => p.id === c.req.param('id'));
   if (!product) fail(404, 'not_found', 'That product isn’t available.');
-  return c.json({ person: await card(c, them, 'following'), product, appearance });
+  // D82: your own score when you've had the same product (name, Source and type); only for you.
+  const yours = yoursFor(product, yoursByKey(await yourBoard(c)));
+  return c.json({ person: await card(c, them, 'following'), product, appearance, yours });
+});
+
+/** Compare boards (D82): your board against what they share with you, worked out here, for you only. */
+people.get('/u/:username/compare', async (c) => {
+  const { them, products, appearance, privacy } = await sharedFor(c);
+  const comparison = compareBoards(await yourBoard(c), products, privacy.shareSource);
+  return c.json({ person: await card(c, them, 'following'), appearance, comparison });
 });
 
 // Their profile photo (D23) -----------------------------------------------------
