@@ -337,7 +337,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
-| Don't lose my work: Keep editing / Discard on Cancel and swipe-back in the product, Log entry and post editors; a 20-second limit on Save and Post; no double send | 0.69.2 | | 2026-11-03 | 2026-11-03 |
+| Don't lose my work: Keep editing / Discard on Cancel and swipe-back in the product, Log entry and post editors; a 20-second limit on Save and Post; no double send (checked on Anton's iPhone) | 0.69.2 | | 2026-11-03 | 2026-11-03 |
 | Forgot-password safety net: "Forgot password?" on Sign in, honest words at sign-up and on the Face ID offer, "too many tries" mentions Face ID, iCloud Keychain hints at sign-up (Keychain still to try on Anton's iPhone) | 0.69.1 | | 2026-11-03 | 2026-11-03 |
 | Review panel run again on 0.69.0 (app and website in one round); ten jobs on the to-do list | (notes) | | 2026-11-03 | notes only |
 | Email and password: create an account with an email and password, then your @name; Face ID optional; existing accounts add both once; no more recovery codes (tried by Anton on GT Dev) | 0.69.0 | D80 | 2026-11-02 | 2026-11-03 |
