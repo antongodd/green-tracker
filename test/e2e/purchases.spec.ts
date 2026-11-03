@@ -93,11 +93,15 @@ test('Add purchase opens a new one at the bottom, dated today, with the cursor i
   await expect(row(1)).toHaveAttribute('aria-expanded', 'false');
   await expect(card(4).getByLabel('Date')).not.toHaveValue('');
   await expect(card(4).getByLabel('Amount (g)')).toBeFocused();
-  // No total paid yet: amber, on the row and in the fields.
-  await expect(row(4).locator('.warn')).toHaveText('Needs a total paid to be kept');
-  await expect(card(4).locator('.pcard-foot .warn')).toHaveText('Needs a total paid to be kept');
-  expect(await row(4).locator('.warn').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(240, 169, 59)');
+  // No total paid yet, but nothing nags while you're filling it in (D81)…
+  await expect(card(4).locator('.warn')).toHaveCount(0);
   await expect(row(4).locator('.r')).toHaveText('–');
+  // …only once you leave it without one: amber, on the row and in the fields.
+  await row(4).click();
+  await expect(row(4).locator('.warn')).toHaveText('Needs a total paid to be kept');
+  expect(await row(4).locator('.warn').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(240, 169, 59)');
+  await row(4).click();
+  await expect(card(4).locator('.pcard-foot .warn')).toHaveText('Needs a total paid to be kept');
   await card(4).getByLabel('Amount (g)').fill('1');
   await card(4).getByLabel('Total paid').fill('3');
   await expect(row(4).locator('.r')).toHaveText('£3.00/g');
@@ -135,6 +139,28 @@ test('a purchase that stops the save opens by itself, with the message', async (
   await expect(row(2)).toHaveAttribute('aria-expanded', 'true');
   await expect(card(2).getByLabel('Total paid')).toHaveValue('nine');
   await expect(page).toHaveURL(/\/edit$/);
+});
+
+test('Save stops on a purchase with no total paid: fill it in or remove it (D81)', async () => {
+  await openEditor('Gelato 41');
+  await page.getByRole('button', { name: 'Add purchase' }).click();
+  await card(5).getByLabel('Amount (g)').fill('2');
+  await row(5).click(); // folded, so Save has to open it
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Add the total paid for the purchase, or remove it.');
+  await expect(row(5)).toHaveAttribute('aria-expanded', 'true');
+  await expect(card(5).getByLabel('Total paid')).toBeFocused();
+  await expect(card(5).locator('.pcard-foot .warn')).toHaveText('Needs a total paid to be kept');
+  await expect(page).toHaveURL(/\/edit$/);
+  // Still open, Save puts the cursor back in Total paid.
+  await card(5).getByLabel('Amount (g)').focus();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(card(5).getByLabel('Total paid')).toBeFocused();
+  // Removed, it saves, and the four purchases are as they were.
+  await card(5).getByRole('button', { name: 'Remove' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page).toHaveURL(/\/products\/[^/]+$/);
+  await expect(page.getByRole('region', { name: 'Price history' }).locator('.purchase')).toHaveCount(4);
 });
 
 test('readable and accessible, folded and open', async () => {
