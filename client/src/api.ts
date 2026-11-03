@@ -15,26 +15,47 @@ export class ApiError extends Error {
 
 const OFFLINE = 'You’re offline. Check your connection and try again.';
 
-export async function api<T = unknown>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
-  let res: Response;
+/** Save and Post give up after this long, so a weak signal can't leave them hanging (0.69.2). */
+export const SAVE_TIMEOUT_MS = 20_000;
+const TIMED_OUT = 'That took too long, so it stopped. Your signal may be weak: try again.';
+
+export async function api<T = unknown>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown, opts: { timeoutMs?: number } = {}): Promise<T> {
+  const ctl = opts.timeoutMs ? new AbortController() : null;
+  let timedOut = false;
+  const timer = ctl ? setTimeout(() => ((timedOut = true), ctl.abort()), opts.timeoutMs) : null;
   try {
-    res = await fetch(`/api${path}`, {
-      method,
-      credentials: 'same-origin',
-      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-  } catch {
-    reportNetwork(false);
-    throw new ApiError(0, 'offline', OFFLINE);
+    let res: Response;
+    try {
+      res = await fetch(`/api${path}`, {
+        method,
+        credentials: 'same-origin',
+        headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: ctl?.signal,
+      });
+    } catch {
+      if (timedOut) throw new ApiError(0, 'timeout', TIMED_OUT);
+      reportNetwork(false);
+      throw new ApiError(0, 'offline', OFFLINE);
+    }
+    reportNetwork(true);
+    const data = (await res.json().catch(() => null)) as (T & { error?: string; message?: string }) | null;
+    if (timedOut) throw new ApiError(0, 'timeout', TIMED_OUT);
+    if (!res.ok) {
+      throw new ApiError(res.status, data?.error ?? 'server_error', data?.message ?? 'Something went wrong. Please try again.');
+    }
+    return data as T;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
-  reportNetwork(true);
-  const data = (await res.json().catch(() => null)) as (T & { error?: string; message?: string }) | null;
-  if (!res.ok) {
-    throw new ApiError(res.status, data?.error ?? 'server_error', data?.message ?? 'Something went wrong. Please try again.');
-  }
-  return data as T;
 }
+
+/**
+ * A new product, Log entry or post that timed out may have reached the server anyway: say where to
+ * look before trying again, so a second try doesn't make it twice.
+ */
+export const timedOutNew = (e: unknown, where: string): string | null =>
+  e instanceof ApiError && e.code === 'timeout' ? `That took too long, so it stopped. It may have been saved anyway: check ${where} before you try again.` : null;
 
 export const errorText = (e: unknown): string => (e instanceof Error ? e.message : 'Something went wrong. Please try again.');
 

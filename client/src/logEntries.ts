@@ -1,8 +1,11 @@
 // Client access to loose Log entries, with an in-memory cache like products.ts.
 import type { LogEntry, LogEntryInput } from '../../shared/domain/logEntry';
 import type { Product, ProductInput } from '../../shared/domain/product';
-import { api } from './api';
+import { api, SAVE_TIMEOUT_MS } from './api';
 import { cacheProduct, forgetProduct } from './products';
+
+/** Save gives up after 20 seconds (0.69.2). */
+const LIMIT = { timeoutMs: SAVE_TIMEOUT_MS };
 
 const byId = new Map<string, LogEntry>();
 let list: LogEntry[] | null = null;
@@ -36,7 +39,7 @@ export async function fetchEntry(id: string): Promise<LogEntry> {
 }
 
 export async function saveEntry(id: string | null, input: LogEntryInput): Promise<LogEntry> {
-  const r = id ? await api<{ entry: LogEntry }>('PUT', `/log/${encodeURIComponent(id)}`, input) : await api<{ entry: LogEntry }>('POST', '/log', input);
+  const r = id ? await api<{ entry: LogEntry }>('PUT', `/log/${encodeURIComponent(id)}`, input, LIMIT) : await api<{ entry: LogEntry }>('POST', '/log', input, LIMIT);
   return remember(r.entry);
 }
 
@@ -47,7 +50,7 @@ export async function deleteEntry(id: string): Promise<void> {
 
 /** Promotion: one atomic call creates the product and removes the entry. */
 export async function promoteEntry(id: string, input: ProductInput): Promise<Product> {
-  const r = await api<{ product: Product }>('POST', `/log/${encodeURIComponent(id)}/promote`, input);
+  const r = await api<{ product: Product }>('POST', `/log/${encodeURIComponent(id)}/promote`, input, LIMIT);
   forget(id);
   return cacheProduct(r.product);
 }

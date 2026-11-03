@@ -5,8 +5,9 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import type { LogEntry } from '../../../shared/domain/logEntry';
 import { overall } from '../../../shared/domain/ratings';
-import { ApiError, errorText } from '../api';
+import { ApiError, errorText, timedOutNew } from '../api';
 import { Header, Sheet } from '../components/chrome';
+import { DiscardSheet, useKeepEditing } from '../components/KeepEditing';
 import { CutoutFlow, type CutoutResult } from '../components/CutoutFlow';
 import { Cropper } from '../components/PhotoViewer';
 import { AboutCard } from '../components/PostCard';
@@ -128,6 +129,14 @@ export function Composer(p: { product?: string; entry?: string }) {
   const posted = useRef(false);
   const latest = useRef(chosen);
   latest.current = chosen;
+  // 0.69.2: Cancel and a swipe back ask once there's a caption or the photos differ from the start.
+  const startKeys = useRef('');
+  const keeper = useKeepEditing({ dirty: () => caption.trim() !== '' || chosen.map((c) => c.key).join() !== startKeys.current, leave: () => back('/feed') });
+  const sending = useRef(false); // a second tap on Post while the first is on its way does nothing
+  // A swipe back while choosing what it's about: the question goes, the Discard sheet shows on its own.
+  useEffect(() => {
+    if (keeper.asking && step === 'choose' && about) setStep('compose');
+  }, [keeper.asking]);
 
   // Leaving without posting discards new photos' pending sets.
   useEffect(
@@ -141,7 +150,10 @@ export function Composer(p: { product?: string; entry?: string }) {
     setAbout(a);
     const photos = a.kind === 'product' ? a.product.photos : a.kind === 'log' && a.entry.photo ? [a.entry.photo] : [];
     // Its cover to start with; new photos already added stay.
-    setChosen((list) => [...(photos[0] ? [{ kind: 'own' as const, key: photos[0].id, photo: photos[0] }] : []), ...list.filter((c) => c.kind === 'new')]);
+    const next: Chosen[] = [...(photos[0] ? [{ kind: 'own' as const, key: photos[0].id, photo: photos[0] }] : []), ...latest.current.filter((c) => c.kind === 'new')];
+    // The cover it starts with isn't work to lose; new photos already added are.
+    if (!latest.current.some((c) => c.kind === 'new')) startKeys.current = next.map((c) => c.key).join();
+    setChosen(next);
     setAt(0);
     setStep('compose');
   };
@@ -169,57 +181,64 @@ export function Composer(p: { product?: string; entry?: string }) {
         .catch((e) => setError(errorText(e)));
   }, [step]);
 
-  const leave = () => back('/feed');
+  const leave = keeper.cancel;
+  const discardSheet = <DiscardSheet keeper={keeper} title="Discard this post?" message="Nothing has been posted. Your photos and caption won’t be kept." />;
 
   if (step === 'pickProduct')
     return (
-      <Picker
-        title="Your Leaderboard"
-        items={products ? newestFirst(products.filter((x) => !x.archived)) : null}
-        error={error}
-        note="Archived products and ones returned to the Log aren’t listed: post their Log entry instead."
-        onBack={() => setStep('choose')}
-        onPick={(product) => start({ kind: 'product', product })}
-        row={(x) => {
-          const score = overall(x.productType, x.ratings);
-          return (
+      <>
+        {discardSheet}
+        <Picker
+          title="Your Leaderboard"
+          items={products ? newestFirst(products.filter((x) => !x.archived)) : null}
+          error={error}
+          note="Archived products and ones returned to the Log aren’t listed: post their Log entry instead."
+          onBack={() => setStep('choose')}
+          onPick={(product) => start({ kind: 'product', product })}
+          row={(x) => {
+            const score = overall(x.productType, x.ratings);
+            return (
+              <>
+                <TypeThumb type={x.productType} photo={x.photos[0]} />
+                <span class="mid">
+                  <b>{x.name}</b>
+                  <span class="small">{productType(x.productType).label}</span>
+                </span>
+                {x.private && (
+                  <span class="lock-tag">
+                    <LockIcon />
+                    Private
+                  </span>
+                )}
+                {score !== null && <span class="num sc">{score.toFixed(1)}</span>}
+              </>
+            );
+          }}
+        />
+      </>
+    );
+  if (step === 'pickLog')
+    return (
+      <>
+        {discardSheet}
+        <Picker
+          title="Your Log"
+          items={entries ? newestFirst(entries) : null}
+          error={error}
+          note="Followers see only its name and type."
+          onBack={() => setStep('choose')}
+          onPick={(entry) => start({ kind: 'log', entry })}
+          row={(x) => (
             <>
-              <TypeThumb type={x.productType} photo={x.photos[0]} />
+              <TypeThumb type={x.productType} photo={x.photo} />
               <span class="mid">
                 <b>{x.name}</b>
                 <span class="small">{productType(x.productType).label}</span>
               </span>
-              {x.private && (
-                <span class="lock-tag">
-                  <LockIcon />
-                  Private
-                </span>
-              )}
-              {score !== null && <span class="num sc">{score.toFixed(1)}</span>}
             </>
-          );
-        }}
-      />
-    );
-  if (step === 'pickLog')
-    return (
-      <Picker
-        title="Your Log"
-        items={entries ? newestFirst(entries) : null}
-        error={error}
-        note="Followers see only its name and type."
-        onBack={() => setStep('choose')}
-        onPick={(entry) => start({ kind: 'log', entry })}
-        row={(x) => (
-          <>
-            <TypeThumb type={x.productType} photo={x.photo} />
-            <span class="mid">
-              <b>{x.name}</b>
-              <span class="small">{productType(x.productType).label}</span>
-            </span>
-          </>
-        )}
-      />
+          )}
+        />
+      </>
     );
 
   const photos = about?.kind === 'product' ? about.product.photos : about?.kind === 'log' && about.entry.photo ? [about.entry.photo] : [];
@@ -297,6 +316,8 @@ export function Composer(p: { product?: string; entry?: string }) {
   const post = async (makeVisible = false) => {
     if (!about || !ready) return;
     if (isPrivate && !makeVisible) return setSheet('private');
+    if (sending.current) return;
+    sending.current = true;
     setSheet(null);
     setBusy(true);
     setError('');
@@ -311,12 +332,14 @@ export function Composer(p: { product?: string; entry?: string }) {
     try {
       await createPost(input);
       posted.current = true;
+      keeper.done();
       if (about.kind === 'product') forgetProduct(about.product.id);
       play('save');
       navigate('/feed', { replace: true });
     } catch (e) {
       if (e instanceof ApiError && e.code === 'product_private') setSheet('private');
-      else setError(errorText(e));
+      else setError(timedOutNew(e, 'the Feed') || errorText(e));
+      sending.current = false;
       setBusy(false);
     }
   };
@@ -441,6 +464,7 @@ export function Composer(p: { product?: string; entry?: string }) {
           onCancel={() => (about ? setStep('compose') : leave())}
         />
       )}
+      {discardSheet}
       {sheet === 'private' && (
         <Sheet
           title="This product is private."
