@@ -1716,6 +1716,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — email and password sign-in is live
+- D80 (0.69.0, on dev 2026-11-02) went live on 2026-11-03 and moves to Done. Notes only.
+
 ### 0.69.0 — email and password; no more recovery codes (owner request)
 - Decision D80. You create an account with an email and a password, then pick your @name: two screens. Face ID
   (passkeys) stays, offered once after sign-up and always optional. Recovery codes are gone. Accounts made before this

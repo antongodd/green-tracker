@@ -289,17 +289,12 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.68.0 (2026-11-02): everything up to a row's photo opening full screen (D79).
-- **Dev:** 0.69.0: live plus email and password sign-in, no recovery codes (D80).
+- **Live:** 0.69.0 (2026-11-03): everything up to email and password sign-in, no recovery codes (D80).
+- **Dev:** 0.69.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
-1. **Email and password; no more recovery codes** — **on dev** (0.69.0, D80, 2026-11-02; Anton's idea). Create an
-   account with an email and password, then pick your @name; Face ID offered once and optional; existing accounts add
-   an email and password once; Settings changes either; Delete account asks for the password. Next: Anton tries it
-   on GT Dev (his dev account will ask for an email and password first), then says "go live". Not checked on a real
-   iPhone yet: the keyboard and iCloud Keychain offering to save the password.
-2. **Forgot password, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send email:
+1. **Forgot password, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send email:
    a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no Face
    ID can't be recovered.
 
@@ -307,6 +302,7 @@ section, so it must always be current.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Email and password: create an account with an email and password, then your @name; Face ID optional; existing accounts add both once; no more recovery codes (tried by Anton on GT Dev) | 0.69.0 | D80 | 2026-11-02 | 2026-11-03 |
 | Tap a row's photo to see it full screen: the viewer with the product page's bar on your Leaderboard, Log, Archive and brand pages; a friend's shared photos with no bar | 0.68.0 | D79 | 2026-11-02 | 2026-11-02 |
 | Posting: Your Leaderboard and Your Log newest first when picking what a post is about | 0.67.1 | | 2026-11-02 | 2026-11-02 |
 | Posts, comments and a Feed: a Feed tab in People's place, comments and a 🔥, Leaderboard \| Posts pages; several photos a post, swiped, and the product's photo in the card (checked on Anton's iPhone on GT Dev) | 0.66.0–0.67.0 | D77, D78 | 2026-11-02 | 2026-11-02 |
