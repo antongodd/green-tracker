@@ -32,6 +32,9 @@ Claude says which at the start. You can always overrule it.
 4. You try it and send screenshots of anything odd. Claude fixes things until you're happy.
 5. You say **"go live"**. Claude puts it live and tells you how to see it.
 
+If a big change changes what people can share with each other, Claude updates the Ofcom papers (`design/ofcom/`)
+with it, before it goes live.
+
 ## Who's on the app
 
 Ask Claude to "audit all accounts" any time. You get a table in the conversation of everyone on the live
