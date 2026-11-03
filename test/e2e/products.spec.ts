@@ -3,7 +3,7 @@ import { shot, signUp } from './helpers';
 
 // The editor's count line, and Overall live in the Ratings heading (D34, 0.27.0).
 async function expectRated(page: Page, count: string, overall: string) {
-  await expect(page.getByText(`Rated ${count}`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`Rated ${count} categories`, { exact: true })).toBeVisible();
   await expect(page.locator('.gh-ov b')).toHaveText(overall);
 }
 
