@@ -1724,6 +1724,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the website catch-up is live
+- 0.69.4 and 0.69.6 (on dev 2026-11-03) went live on 2026-11-03 (release 0.69.6) and move to Done. Notes only.
+
 ### 0.69.6 — the website's top product has a shorter name
 - In the website's picture of the app (and the share picture), "Lemon Cherry Gelato" is now "Lemon Gelato": on Linux
   the long name was cut off in its row (0.69.4's new test caught it in the release check; an iPhone drew it just
