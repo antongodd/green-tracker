@@ -370,7 +370,8 @@ Each is a job for its own conversation; the summary lists what each covers.
    (greentracker.help@gmail.com) and ran both checkers (2026-11-03): **Ofcom: yes**, the Online Safety Act applies (a
    user-to-user service: an illegal content risk assessment, a children's access assessment, a children's risk
    assessment if that finds children likely); **ICO: the fee applies** (tier one, £52, £47 by direct debit; paying is
-   Anton's to do). Still for Anton: the Cloudflare billing alert. Later if he wants it: move the photos (now in North America) to Europe.
+   Anton's to do). The Cloudflare billing alert is set ("Billing budget alert - Green Tracker spend", by email;
+   in the dashboard under Observability › Alerts › Platform Notifications, 2026-11-03). Later if he wants it: move the photos (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
