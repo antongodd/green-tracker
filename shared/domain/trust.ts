@@ -1,7 +1,7 @@
 // Trust basics for strangers (D84): reports, the 18+ tick, the photo limit and the contact address.
 
 /** The address on the privacy page, the house rules, Settings and the website. */
-export const CONTACT_EMAIL = 'help@example.com';
+export const CONTACT_EMAIL = 'greentracker.help@gmail.com';
 
 /** Most photos an account can have: product, Log and post photos together. The database checks it too (migration 0021). */
 export const PHOTO_LIMIT = 3000;

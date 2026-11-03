@@ -347,9 +347,9 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.72.0 (2026-11-03): everything up to sign-in hardening (to-do item 9).
-- **Dev:** 0.73.0 (2026-11-03): trust basics for strangers (to-do item 7), waiting for Anton's "go live". The
-  contact address is still the placeholder `help@example.com` (`CONTACT_EMAIL`, `site/public/index.html`) until
-  Anton sends his new one: change both before going live.
+- **Dev:** 0.73.1 (2026-11-03): trust basics for strangers (to-do item 7), waiting for Anton's "go live". The
+  contact address is greentracker.help@gmail.com (Anton's, made 2026-11-03; `CONTACT_EMAIL` and
+  `site/public/index.html`, kept in step by `test/domain/trust.test.ts`).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -365,10 +365,10 @@ Each is a job for its own conversation; the summary lists what each covers.
    (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
    brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
-7. **Trust basics for strangers** (big): **on dev** in 0.73.0 (2026-11-03), D84. 18+ tick, privacy page, house
-   rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton to do (2026-11-03): make the
-   contact email (then swap the placeholder), run Ofcom's and the ICO's checkers (keep the answers), set the Cloudflare
-   billing alert. Later if he wants it: move the photos (now in North America) to Europe.
+7. **Trust basics for strangers** (big): **on dev** in 0.73.0–0.73.1 (2026-11-03), D84. 18+ tick, privacy page, house
+   rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton made the contact email
+   (greentracker.help@gmail.com). Still for Anton: run Ofcom's and the ICO's checkers (keep the answers), set the
+   Cloudflare billing alert. Later if he wants it: move the photos (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
