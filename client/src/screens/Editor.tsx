@@ -8,15 +8,16 @@ import { fetchRate, lastCurrency, rememberCurrency, useCurrency } from '../money
 import { latestPurchase, unitPrice, unitPricePaid } from '../../../shared/domain/money';
 import { emptyProductInput, productToInput, validateProductInput, type Product, type ProductInput } from '../../../shared/domain/product';
 import { RATING_LABELS, productType, unitFor, type ProductTypeKey, type RatingKey } from '../../../shared/domain/productTypes';
-import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
+import { overall, ratedCount, type Ratings } from '../../../shared/domain/ratings';
+import { nameExample, sourceExample } from '../../../shared/domain/examples';
 import { errorText, timedOutNew } from '../api';
 import { Header } from '../components/chrome';
-import { CONCENTRATE_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
+import { CONCENTRATE_OPTIONS, STRAIN_CHOICES, typeChoices } from '../components/fieldOptions';
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
-import { GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
+import { ChoiceChips, GroupHead, HitTimeInput, RatingInput, Select, TextField } from '../components/inputs';
 import { formatIsoDate, todayIso } from '../components/ProductRow';
-import { ChevronDown, ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PinIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
+import { ChevronDown, ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIcon, PencilIcon, PlusIcon, ReceiptIcon, StarIcon, TrashIcon } from '../icons';
 import { scoreHeat } from '../../../shared/domain/heat';
 import { cachedProduct, cachedProducts, fetchProduct, fetchProducts, saveProduct } from '../products';
 import { intoSuggestions, NameSuggestions } from '../components/NameSuggestions';
@@ -107,8 +108,7 @@ function rateProblem(d: PurchaseDraft, main: string): string | null {
 
 /**
  * The first purchase that would stop the product saving (a number that can't be read, or a value
- * the shared rules refuse), so the editor can open it (D42). A missing total paid isn't one: that
- * purchase is simply not kept.
+ * the shared rules refuse), so the editor can open it (D42).
  */
 function blockingPurchase(f: Form, main: string): string | null {
   for (const d of f.purchases) {
@@ -119,6 +119,11 @@ function blockingPurchase(f: Form, main: string): string | null {
     if (!one.ok) return d.key;
   }
   return null;
+}
+
+/** D81: the first purchase with no total paid. Save stops on it: fill it in, or remove it. */
+function unpaidPurchase(f: Form): string | null {
+  return f.purchases.find((d) => parseNum(d.totalPaid) === null)?.key ?? null;
 }
 
 /** Builds what the server receives; returns a message if a number can't be read. */
@@ -167,25 +172,32 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const main = useCurrency();
   const existing = p.id ? cachedProduct(p.id) : undefined;
   const [promotion] = useState(() => (p.promoteFrom ? takePromotion(p.promoteFrom) : null));
+  // D81: a new product, and one moved over from the Log, start with today as Date tried.
   const [form, setForm] = useState<Form | null>(() =>
     promotion
-      ? toForm(promotion.input, promotion.ratings ?? {}, main)
+      ? toForm({ ...promotion.input, dateTried: promotion.input.dateTried ?? todayIso() }, promotion.ratings ?? {}, main)
       : p.id
         ? existing
           ? toForm(productToInput(existing), existing.ratings, main)
           : null
         : p.promoteFrom
           ? null
-          : toForm(emptyProductInput(), {}, main),
+          : toForm({ ...emptyProductInput(), dateTried: todayIso() }, {}, main),
   );
+  // D81: the examples in the empty Name and Source boxes, picked at random each time the editor opens.
+  const [examples] = useState(() => ({ name: nameExample(), source: sourceExample() }));
   const [error, setError] = useState('');
   // D42: the one purchase whose fields are open; a new one opens with the cursor in Amount.
-  const [openPurchase, setOpenPurchase] = useState<string | null>(null);
-  const focusAmount = useRef<string | null>(null);
+  const [openPurchase, setOpenPurchaseNow] = useState<string | null>(null);
+  // D81: purchases you've left (closed, or tried to save) without a total paid: only these say so.
+  const [unpaidSeen, setUnpaidSeen] = useState<ReadonlySet<string>>(new Set());
+  const seeUnpaid = (key: string) => setUnpaidSeen((s) => (s.has(key) ? s : new Set(s).add(key)));
+  const focusField = useRef<{ key: string; field: 'amount' | 'paid' } | null>(null);
   useEffect(() => {
-    if (!openPurchase || focusAmount.current !== openPurchase) return;
-    focusAmount.current = null;
-    document.getElementById(`${openPurchase}-amount`)?.focus();
+    const f = focusField.current;
+    if (!openPurchase || f?.key !== openPurchase) return;
+    focusField.current = null;
+    document.getElementById(`${openPurchase}-${f.field}`)?.focus();
   }, [openPurchase]);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
@@ -285,8 +297,14 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     const date = todayIso();
     set('purchases', [...form.purchases, { key, date, amount: '', totalPaid: '', supplier: '', currency, rate: currency === main ? 1 : null, rateText: null, typed: false, look: 'idle' }]);
     if (currency !== main) lookUp(key, currency, date);
+    focusField.current = { key, field: 'amount' };
     setOpenPurchase(key);
-    focusAmount.current = key;
+  };
+  // D42: one purchase open at a time. D81: leaving one without a total paid makes it say so.
+  const setOpenPurchase = (key: string | null) => {
+    const leaving = openPurchase && openPurchase !== key ? form.purchases.find((d) => d.key === openPurchase) : undefined;
+    if (leaving && parseNum(leaving.totalPaid) === null) seeUnpaid(leaving.key);
+    setOpenPurchaseNow(key);
   };
   // Leaving Source or Supplier (not for its suggestions) saves the spelling you already use (D59).
   // Read from the latest form: a picked suggestion and the blur that follows it land together (D61).
@@ -306,10 +324,23 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   async function save() {
     if (!form) return;
     setError('');
+    // D81: a purchase with no total paid stops the save (it used to be dropped without a word):
+    // it opens, says so, and the cursor goes to Total paid.
+    const unpaid = unpaidPurchase(form);
+    if (unpaid) {
+      seeUnpaid(unpaid);
+      if (openPurchase === unpaid) document.getElementById(`${unpaid}-paid`)?.focus();
+      else {
+        focusField.current = { key: unpaid, field: 'paid' };
+        setOpenPurchaseNow(unpaid);
+      }
+      setError('Add the total paid for the purchase, or remove it.');
+      return;
+    }
     // A purchase that stops the save opens, so its fields are in view (D42).
     const fail = (message: string) => {
       const key = blockingPurchase(form, main);
-      if (key) setOpenPurchase(key);
+      if (key) setOpenPurchaseNow(key);
       setError(message);
     };
     const input = toInput(form, drafts, main);
@@ -351,17 +382,28 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             save();
           }}
         >
-          <section class="fgroup" aria-label="Basics">
-            <GroupHead icon={PencilIcon} label="Basics" />
-            <TextField id="name" label="Name" value={form.name} onInput={(v) => set('name', v)} onBlur={() => set('name', autoCapitalise(form.name))} autoCapitalize="words" />
+          {/* D81: the owner's order: Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private. */}
+          {/* A section of its own, its heading the box's label (0.70.2, the owner: "like the photos section"). */}
+          <section class="fgroup">
+            <GroupHead icon={PencilIcon} label="Name" htmlFor="name" />
+            <input
+              id="name"
+              class="input"
+              type="text"
+              placeholder={examples.name}
+              value={form.name}
+              autoCapitalize="words"
+              autoComplete="off"
+              onInput={(e) => set('name', e.currentTarget.value)}
+              onBlur={() => set('name', autoCapitalise(form.name))}
+            />
           </section>
 
-          <section class="fgroup" aria-label="Classification">
-            <GroupHead icon={LeafLineIcon} label="Classification" />
-            <div class="two-col">
-              <Select id="type" label="Product type" value={form.productType} options={TYPE_OPTIONS} onChange={(v) => set('productType', v as ProductTypeKey)} />
-              <Select id="strain" label="Strain type" value={form.strainType ?? ''} options={STRAIN_OPTIONS} onChange={(v) => set('strainType', (v || null) as Form['strainType'])} />
-            </div>
+          <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} name={form.name || undefined} wide />
+
+          <section class="fgroup" aria-label="The product">
+            <GroupHead icon={LeafLineIcon} label="The product" />
+            <ChoiceChips id="type" label="Type" value={form.productType} options={typeChoices(form.productType)} onChange={(v) => v && set('productType', v as ProductTypeKey)} />
             {def.freeText && <TextField id="type-other" label="What type?" value={form.productTypeOther ?? ''} onInput={(v) => set('productTypeOther', v)} />}
             {def.subtypes && (
               <>
@@ -369,23 +411,13 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                 {form.concentrateType === 'other' && <TextField id="conc-other" label="What concentrate?" value={form.concentrateTypeOther ?? ''} onInput={(v) => set('concentrateTypeOther', v)} />}
               </>
             )}
-          </section>
-
-          <section class="fgroup" aria-label="Origin">
-            <GroupHead icon={PinIcon} label="Origin" />
+            <ChoiceChips id="strain" label="Strain type" value={form.strainType} options={STRAIN_CHOICES} clearable onChange={(v) => set('strainType', v as Form['strainType'])} />
+            {/* The brand or grower, shown to followers unless Privacy says no (shops and dealers go in Supplier). */}
+            <TextField id="source" label="Source" placeholder={examples.source} value={form.source ?? ''} onInput={(v) => set('source', v)} onFocus={() => setSuggesting('source')} onBlur={leaveSource} autoCapitalize="words" />
+            {suggesting === 'source' && <NameSuggestions for="source" label="Source" typed={form.source ?? ''} used={used} onPick={(name) => set('source', name)} onLeave={leaveSource} />}
             <CountryField id="country" label="Country" value={form.country} otherText={form.countryOther} onChange={setCountry} />
             {form.country === OTHER_COUNTRY && <TextField id="country-other" label="Which country?" value={form.countryOther ?? ''} onInput={(v) => set('countryOther', v)} />}
-            <div class="two-col">
-              <TextField id="source" label="Source" placeholder="e.g. Cookies" value={form.source ?? ''} onInput={(v) => set('source', v)} onFocus={() => setSuggesting('source')} onBlur={leaveSource} autoCapitalize="words">
-                {/* The brand or grower, shown to followers unless Privacy says no (shops and dealers go in Supplier). */}
-                <p class="hint" id="source-hint">
-                  Followers can see this, unless you turn it off in Privacy.
-                </p>
-              </TextField>
-              {/* Next after Source for Tab, drawn across the card under both boxes (.suggest in a .two-col). */}
-              {suggesting === 'source' && <NameSuggestions for="source" label="Source" typed={form.source ?? ''} used={used} onPick={(name) => set('source', name)} onLeave={leaveSource} />}
-              <TextField id="date-tried" label="Date tried" type="date" value={form.dateTried ?? ''} onInput={(v) => set('dateTried', v || null)} />
-            </div>
+            <TextField id="date-tried" label="Date tried" type="date" value={form.dateTried ?? ''} onInput={(v) => set('dateTried', v || null)} />
           </section>
 
           <section class="fgroup" aria-label="Ratings">
@@ -415,7 +447,6 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
             <p class="small">
               Rated {count.rated} of {count.of} categories
             </p>
-            <p class="small">{overallExplanation(form.productType)}</p>
           </section>
 
           <section class="fgroup" aria-label="Purchases">
@@ -431,6 +462,8 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               const paidUp = priced && foreign ? unitPricePaid({ amount, totalPaid: total }) : null;
               const upText = up !== null ? formatUnitPrice(form.productType, up, main) : paidUp !== null ? formatUnitPrice(form.productType, paidUp, d.currency) : null;
               const open = openPurchase === d.key;
+              // D81: said only once you've left it (or tried to save) without a total paid.
+              const unpaid = total === null && unpaidSeen.has(d.key);
               const sub = [typeof amount === 'number' ? formatAmount(form.productType, amount) : null, typeof total === 'number' ? formatMoney(total, d.currency) : null, d.supplier.trim() || null].filter(Boolean).join(' · ');
               const bodyId = `${d.key}-fields`;
               return (
@@ -442,7 +475,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                         {d.key === latestKey && <span class="tag-latest">Latest</span>}
                         {foreign && <span class="fx">{currencySign(d.currency)}</span>}
                       </b>
-                      {total === null ? <span class="warn">Needs a total paid to be kept</span> : <span>{sub}</span>}
+                      {unpaid ? <span class="warn">Needs a total paid to be kept</span> : <span>{sub}</span>}
                     </span>
                     <span class="r">
                       {upText ?? '–'}
@@ -485,8 +518,8 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
                       </div>
                       {foreign && <RateLine d={d} main={main} total={typeof total === 'number' ? total : null} rate={rate} onChange={() => setPurchase(d.key, { rateText: formatRate(d.rate ?? 1) })} onText={(v) => setPurchase(d.key, { rateText: v, typed: true })} onDone={() => closeRate(d)} />}
                       <div class="pcard-foot">
-                        <span class={total === null ? 'warn' : ''}>{total === null ? 'Needs a total paid to be kept' : (upText ?? '')}</span>
-                        <button type="button" onClick={() => (set('purchases', form.purchases.filter((x) => x.key !== d.key)), setOpenPurchase(null))}>
+                        <span class={unpaid ? 'warn' : ''}>{unpaid ? 'Needs a total paid to be kept' : (upText ?? '')}</span>
+                        <button type="button" onClick={() => (set('purchases', form.purchases.filter((x) => x.key !== d.key)), setOpenPurchaseNow(null))}>
                           <TrashIcon />
                           Remove
                         </button>
@@ -500,8 +533,6 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
               <PlusIcon /> Add purchase
             </button>
           </section>
-
-          <EditorPhotos drafts={drafts} setDrafts={setDrafts} savedRef={saved} name={form.name || undefined} />
 
           <section class="fgroup" aria-label="Notes">
             <GroupHead icon={NoteIcon} label="Notes" htmlFor="notes" />

@@ -6,6 +6,18 @@ export type Ratings = Partial<Record<RatingKey, number>>;
 export const RATING_MIN = 1;
 export const RATING_MAX = 10;
 
+/** D81: where − or + starts a rating you haven't given yet. */
+export const RATING_START = 5;
+
+/**
+ * D81: one tap of − (direction -1) or + (1) beside a score: 0.1 either way, kept within 1–10;
+ * an unrated score starts at 5.0 whichever is tapped.
+ */
+export function stepRating(value: number | null, direction: 1 | -1): number {
+  if (value === null) return RATING_START;
+  return Math.round(Math.min(RATING_MAX, Math.max(RATING_MIN, value + direction * 0.1)) * 10) / 10;
+}
+
 export function isValidRating(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= RATING_MIN && value <= RATING_MAX;
 }

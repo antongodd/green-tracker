@@ -123,6 +123,7 @@ export function TypeMark(p: { icon: string | null; label: string; class?: string
 }
 
 export const PlusIcon = icon('M12 4.5v15M4.5 12h15', { stroke: 2.6 });
+export const MinusIcon = icon('M4.5 12h15', { stroke: 2.6 });
 export const CrownIcon = icon('M3 18h18v2H3Zm1-2 1.6-9.2 4.4 4.2L12 5l2 6 4.4-4.2L20 16Z');
 /** Leaderboard colours (D48): a cut gem, for the Colours key and More → Appearance. */
 /** Sounds and ticks (D57): a speaker and two sound waves. */

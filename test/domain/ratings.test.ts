@@ -7,6 +7,8 @@ import {
   overallExplanation,
   productType,
   ratedCount,
+  RATING_START,
+  stepRating,
   type Ratings,
 } from '../../shared/domain';
 
@@ -101,5 +103,23 @@ describe('Editor guidance text is per type (§8)', () => {
     );
     expect(overallExplanation('concentrate')).toContain('Look, Consistency, Smell, Taste and Burn');
     expect(overallExplanation('pre_roll')).toContain('Smell, Taste and Burn');
+  });
+});
+
+describe('− and + by a score (D81)', () => {
+  it('move 0.1, within 1 to 10, without drifting', () => {
+    expect(stepRating(8.4, 1)).toBe(8.5);
+    expect(stepRating(8.4, -1)).toBe(8.3);
+    expect(stepRating(9.95, 1)).toBe(10);
+    expect(stepRating(10, 1)).toBe(10);
+    expect(stepRating(1, -1)).toBe(1);
+    let v = 5;
+    for (let i = 0; i < 30; i++) v = stepRating(v, 1);
+    expect(v).toBe(8);
+  });
+  it('start an unrated score at 5.0, whichever is tapped', () => {
+    expect(RATING_START).toBe(5);
+    expect(stepRating(null, 1)).toBe(5);
+    expect(stepRating(null, -1)).toBe(5);
   });
 });
