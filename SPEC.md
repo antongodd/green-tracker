@@ -1716,6 +1716,26 @@ None.
 
 ## 6. Changelog
 
+### 0.69.3 — privacy and data words brought up to date (review panel, 2026-11-03)
+- Words only: nothing anyone can see, and no rule, changes. Sentences written before posts (D77), their look (D74)
+  and email sign-in (D80) now say what the app really does.
+- Privacy: Share my Leaderboard off says "followers see only your name and your posts" (a post about a product then
+  shows only its name and type); Source is "The brand or grower, e.g. Cookies. Shops and dealers go in Supplier,
+  which is never shared."; the footnote ends "…never shared, except what you choose to post". People and a person's
+  page (remove a follower, no followers yet, unfollow, block, blocked) say "Leaderboard and posts".
+- The product form's Source box: "e.g. Cookies" in place of "Source/Brand", and "Followers can see this, unless you
+  turn it off in Privacy." under it.
+- Export lists your posts ("not the comments or 🔥 on them") and warns "This file isn't locked. Anyone who opens it
+  can read everything in it."; Restore says posts are replaced too (if the file has them) and that your email,
+  password, passkeys and followers stay; Delete account lists "Your posts, and your comments and 🔥 on others'".
+- Look, Leaderboard top and Leaderboard colours: "Your followers see your board in it too" (since D74 a friend's
+  board shows in *their* look, not yours); Leaderboard top: "The Log and brand pages use it too."
+- A line under the comment box ("Everyone who follows @them sees your comment and your @name", or "Your followers…"
+  on your own post) and one in the post composer ("Your followers see these photos. Leave out faces, places and
+  anything with a name or number.").
+- Sign-up, adding an email to an older account and Change email: "Your email is private: only you see it. We use it
+  only to sign you in." in place of "Nobody else ever sees it" (Anton and Cloudflare can).
+
 ### Notes — don't lose my work is live
 - 0.69.2 (on dev 2026-11-03) went live on 2026-11-03 and moves to Done. Notes only.
 

@@ -210,7 +210,7 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
                   </label>
                 ))}
               </div>
-              <p class="footnote priv-foot">The Log, friends’ boards and brand pages use it too.</p>
+              <p class="footnote priv-foot">The Log and brand pages use it too.</p>
             </div>
           </section>
         )}
@@ -274,7 +274,7 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
         )}
         <div class="wrap">
           <p class="footnote priv-foot">
-            Saved to your account, so it follows you to a new phone. Friends’ boards show in your {p.part === 'look' ? 'look' : p.part === 'top' ? 'top' : 'colours'} too.
+            Saved to your account, so it follows you to a new phone. Your followers see your board in it too.
             {p.part === 'colours' && ' The colours come from scores, so a 9.5 is always the top colour, wherever it is.'}
           </p>
         </div>

@@ -1951,7 +1951,7 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 .post-error { margin: 0 14px 14px; }
 /* A post's page: every comment, and the box above the keyboard. */
 .post-page .posts, .post-page > .post { margin: 12px; }
-.post-page .cmts { max-width: 720px; margin: 0 auto; padding: 4px 16px calc(var(--nav-h) + 72px); }
+.post-page .cmts { max-width: 720px; margin: 0 auto; padding: 4px 16px calc(var(--nav-h) + 96px); }
 .post-page .cmts .cap { margin: 10px 0 4px; }
 .post-page .cmts .none { margin: 6px 0; }
 .cmt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--divider); }
@@ -1968,6 +1968,7 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 .comment-box .count, .count { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .count.over { color: var(--danger); }
 .comment-box .error { flex-basis: 100%; margin: 0; }
+.comment-box .who-sees { flex-basis: 100%; order: 1; margin: 0 4px; font-size: 13px; color: var(--text-2); }
 .firers { max-height: 50vh; overflow-y: auto; }
 .firers .who { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 16px; color: var(--text); text-decoration: none; border-top: 1px solid var(--hairline); }
 .firers .who:first-child { border-top: 0; }

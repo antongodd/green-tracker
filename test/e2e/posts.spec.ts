@@ -108,6 +108,7 @@ test('a follower sees it in their Feed, gives a fire and comments; the poster se
   await expect(post.locator('.act.count')).toHaveText('1');
   await post.getByRole('link', { name: 'Open the post' }).click();
   await expect(fan).toHaveURL(/\/posts\//);
+  await expect(fan.locator('.comment-box .who-sees')).toHaveText(`Everyone who follows @${ownerName} sees your comment and your @name.`);
   await fan.getByRole('textbox', { name: 'Add a comment' }).fill('Need to try this');
   await fan.getByRole('button', { name: 'Send' }).click();
   await expect(fan.locator('.cmt', { hasText: 'Need to try this' })).toBeVisible();
@@ -150,6 +151,7 @@ test('from the Feed’s + button: what’s it about, then just a photo needs a p
   await owner.getByRole('button', { name: 'Just a photo' }).click();
   await expect(owner.getByRole('button', { name: 'Post' })).toBeDisabled();
   await expect(owner.getByText('Add a photo to post')).toBeVisible();
+  await expect(owner.locator('.compose-safe')).toHaveText('Your followers see these photos. Leave out faces, places and anything with a name or number.');
 });
 
 test('a friend’s page: Leaderboard | Posts, in their look; /u/<them>/posts opens on Posts', async () => {

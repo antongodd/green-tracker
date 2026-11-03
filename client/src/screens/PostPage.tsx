@@ -127,6 +127,10 @@ export function PostPage(p: { id: string }) {
             Send
           </button>
           {left <= 30 && <span class={`count${left < 0 ? ' over' : ''}`}>{left}</span>}
+          {/* Who sees it: everyone who can see the post (its owner's approved followers, D77). */}
+          <p class="who-sees" id="comment-who">
+            {post.mine ? 'Your followers see your comment and your @name.' : `Everyone who follows @${post.username} sees your comment and your @name.`}
+          </p>
           {error && (
             <p class="error" role="alert">
               {error}

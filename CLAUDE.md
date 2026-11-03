@@ -299,7 +299,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.2 (2026-11-03): everything up to don't lose my work (to-do item 2).
-- **Dev:** 0.69.2, the same as live.
+- **Dev:** 0.69.3 (2026-11-03): privacy and data words (to-do item 3), on its way to live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -309,7 +309,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
    keep naming the same job.
 2. ~~Don't lose my work~~: live in 0.69.2 (see Done).
-3. **Privacy and data words that are out of date** (small, words only). Privacy page (posts), Source ("the brand or
+3. **Privacy and data words that are out of date** (small, words only): **on dev** in 0.69.3 (2026-11-03). Privacy page (posts), Source ("the brand or
    grower"), "Followers can see this" under Source; Export, Restore and Delete lists and the Export warning; the Look
    pages' footnote (D74); lines under the comment box and in the composer; the sign-up email line.
 4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room

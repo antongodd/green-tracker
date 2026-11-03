@@ -34,6 +34,9 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByLabel('Name').fill('gelato 41 OG');
   await page.getByLabel('Source').click();
   await expect(page.getByLabel('Name')).toHaveValue('Gelato 41 OG');
+  // Source is the brand or grower, and followers can see it (Privacy, D45).
+  await expect(page.getByLabel('Source')).toHaveAttribute('placeholder', 'e.g. Cookies');
+  await expect(page.locator('#source-hint')).toHaveText('Followers can see this, unless you turn it off in Privacy.');
   await page.getByLabel('Source').fill('cookies');
   await page.getByLabel('Strain type').selectOption('hybrid');
   await page.getByLabel('Country', { exact: true }).click();

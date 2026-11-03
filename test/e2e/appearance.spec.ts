@@ -250,6 +250,16 @@ test('the Look, Leaderboard top and Leaderboard colours pages are readable from 
   }
 });
 
+test('the footnotes say followers see your board in your look, top and colours (D74)', async () => {
+  for (const path of ['/more/look', '/more/top', '/more/colours']) {
+    await page.goto(path);
+    await expect(page.locator('.priv-foot').last(), path).toContainText('Saved to your account, so it follows you to a new phone. Your followers see your board in it too.');
+    await expect(page.locator('main'), path).not.toContainText('Friends’ boards');
+  }
+  await page.goto('/more/top');
+  await expect(page.locator('.priv-foot').first()).toHaveText('The Log and brand pages use it too.');
+});
+
 test('the Colours button fits beside Rank by and Type at 375px', async () => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/');
