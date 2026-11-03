@@ -76,7 +76,7 @@ test('create an account with email and password, Face ID once, sign out and in b
   await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await expect(page.getByText(`@${username}`)).toBeVisible();
   await expect(page.getByRole('link', { name: new RegExp(`Email\\s*${email.replace('.', '\\.')}`) })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Face ID \(passkeys\)\s*1/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Face ID\s*1\b/ })).toBeVisible();
   await expect(page.getByText(/recovery code/i)).toHaveCount(0);
   await shot(page, '05-more');
 
@@ -172,7 +172,7 @@ test('Not now: no passkey, and the password signs you in', async ({ page }) => {
   await page.getByRole('button', { name: 'Not now' }).click();
   await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
   await page.getByRole('link', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('link', { name: /Face ID \(passkeys\)\s*0/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Face ID\s*0\b/ })).toBeVisible();
 });
 
 test('Settings: change your email and your password', async ({ page }) => {
