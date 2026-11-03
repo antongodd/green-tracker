@@ -299,7 +299,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.2 (2026-11-03): everything up to don't lose my work (to-do item 2).
-- **Dev:** 0.69.4 (2026-11-03): privacy and data words (to-do item 3, 0.69.3) and the website catch-up (item 6),
+- **Dev:** 0.69.5 (2026-11-03): privacy and data words (to-do item 3, 0.69.3, with a fix in 0.69.5) and the website catch-up (item 6, 0.69.4),
   on their way to live.
 
 ### To-do list (suggested order; Anton decides)

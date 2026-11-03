@@ -983,7 +983,7 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .datebox > svg { position: absolute; z-index: 1; left: 11px; top: 50%; width: 17px; height: 17px; margin-top: -8.5px; color: var(--accent-bright); pointer-events: none; }
 .datebox input[type="date"].input { position: relative; padding-left: 36px; padding-right: 8px; }
 .datebox input[type="date"].input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
 .two-col > * { min-width: 0; }
 /* Slim ratings (D34, 0.27.0): name and number on one line, a thinner slider right under it;
    a counting, rated one takes its score's colour (D30's scale) in the fill, knob and number. */
