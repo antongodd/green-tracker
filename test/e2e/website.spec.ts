@@ -75,7 +75,7 @@ test('no accessibility problems, at the top and after scrolling through', async 
 // The words sit over drifting lights (axe can't judge text over moving colour): the lights are
 // paused at several moments and the worst pixel behind each piece of text is measured, all the
 // way down the page. The little picture of the app and of Safari are pictures, not words to read.
-const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .label, .feat p, .verdict, .rate .nm b, .rate .nm small, .rate .sc, .scale span, .step b, .step p, .step .n, .video figcaption, .other, .foot span';
+const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .asks, .label, .feat p, .verdict, .rate .nm b, .rate .nm small, .rate .sc, .scale span, .step b, .step p, .step .n, .video figcaption, .other, .foot span';
 test('every word is readable over the moving lights, all the way down', async ({ page }) => {
   test.slow();
   await open(page);
@@ -110,7 +110,8 @@ test('fits a phone: nothing spills sideways, from the smallest iPhone up', async
 
 test('Go on, rate it: the slider gives the score the colours it earns in the app', async ({ page }) => {
   await open(page);
-  const slider = page.getByRole('slider', { name: /fire|talking|bad|mids|top shelf/i });
+  // Its name stays the same as it moves (0.69.4); the verdict is read out with the value.
+  const slider = page.getByRole('slider', { name: 'Score for Blue Zushi', exact: true });
   const row = page.locator('#rate-row');
   await slider.fill('9.7');
   await expect(page.locator('#rate-score')).toHaveText('9.7');
@@ -123,6 +124,7 @@ test('Go on, rate it: the slider gives the score the colours it earns in the app
   await expect(row).toHaveClass('lr heat');
   await expect(page.locator('#rate-verdict')).toHaveText('Mids. Straight to the bottom.');
   await expect(slider).toHaveAttribute('aria-valuetext', '5.0 out of 10: Mids. Straight to the bottom.');
+  await expect(page.getByRole('slider', { name: 'Score for Blue Zushi', exact: true })).toHaveCount(1);
   // Below 8 the score glows amber to mint, like the app's heat (D30): amber here.
   expect(await page.locator('#rate-score').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(210, 184, 82)');
 });
@@ -182,6 +184,80 @@ test('with Reduce Motion on, nothing moves', async ({ browser }) => {
 test('an address that does not exist gets the lost page, with a way back', async ({ page }) => {
   const { elsewhere } = await open(page, '/nope');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Lost the lighter?');
+  await expect(page.getByText('This page doesn’t exist. Head back to the start.')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Back to Green Tracker' })).toHaveAttribute('href', '/');
+  await expect(page.getByRole('link', { name: 'Open the app' })).toHaveAttribute('href', `${APP}/`);
   expect(elsewhere).toEqual([]);
+});
+
+// 0.69.4 (the website catching up with the app, review panel 2026-11-03): what sign-up asks for (D80), the Feed
+// (D77), one time throughout, the real address, and the price chip clear of the scores.
+test('the words match today’s app: an email and password, posts for approved friends, one time throughout', async ({ page }) => {
+  await open(page);
+  const text = await page.locator('body').innerText();
+  await expect(page.locator('.hero .asks')).toHaveText('Just an email and password. Your email stays private; Face ID is optional.');
+  // Since D80 sign-up asks for both: the page must never say otherwise.
+  expect(text).not.toMatch(/no (email|password|phone)/i);
+  await expect(page.getByRole('heading', { name: 'See your mates’ picks and posts' })).toBeVisible();
+  expect(text).toContain('only friends you approve see it');
+  expect(text).not.toMatch(/\bpeep\b/i);
+  // One time everywhere: 20 seconds, as the video itself says.
+  expect(text.match(/\b\d+ seconds?\b|\bminute\b/gi)).toEqual(['20 seconds', '20 seconds']);
+  const vtt = readFileSync(join(DIR, 'media/home-screen.vtt'), 'utf8');
+  expect(vtt.match(/\b\d+ seconds?\b|\bminute\b/gi)).toEqual(['20 seconds']);
+  expect(vtt.trim().split('\n').slice(-2)[0]).toBe('Get it in 3 steps: open it in Safari, Share → View More → Add to Home Screen, tap Add.');
+  // The real address in the Safari drawing, and a way out of WhatsApp's and Instagram's own browsers.
+  await expect(page.locator('.safari .url')).toHaveText(new URL(APP).host);
+  await expect(page.locator('#install li').first()).toContainText('Opened this inside WhatsApp or Instagram? Open it in Safari first');
+  // The picture of the app: the app's own words, a price called a price, no name cut short.
+  await expect(page.locator('.mini-h span')).toHaveText('All · Overall');
+  await expect(page.locator('.chip.c2')).toHaveText('£9.50/gprice');
+  for (const name of await page.locator('.mini .nm b').all()) expect(await name.evaluate((b) => b.scrollWidth <= b.clientWidth), await name.innerText()).toBe(true);
+});
+
+test('the floating chips never cover a score, on a phone or a laptop', async ({ page }) => {
+  for (const [width, height] of [[320, 700], [390, 844], [1280, 800]]) {
+    await page.setViewportSize({ width, height });
+    await open(page);
+    // Held still (the chips and the phone float), so the boxes are where they rest.
+    await page.evaluate(() => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = 0; } });
+    const clash = await page.evaluate(() => {
+      const scores = [...document.querySelectorAll('.mini .sc')].map((e) => e.getBoundingClientRect());
+      const out: string[] = [];
+      for (const chip of document.querySelectorAll('.chip')) {
+        const c = chip.getBoundingClientRect();
+        for (const s of scores) if (c.left < s.right && s.left < c.right && c.top < s.bottom && s.top < c.bottom) out.push(chip.textContent!);
+      }
+      return out;
+    });
+    expect(clash, `${width}px wide`).toEqual([]);
+  }
+});
+
+test('the buttons at the top are big enough to tap (44 points)', async ({ page }) => {
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await open(page);
+    for (const link of await page.locator('.nav a').all()) {
+      const box = (await link.boundingBox())!;
+      expect(Math.min(box.width, box.height), `${await link.innerText()} at ${width}px`).toBeGreaterThanOrEqual(44);
+    }
+  }
+});
+
+test('on a laptop everything lines up with the hero, and the three steps sit side by side', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await open(page);
+  await noRise(page);
+  const left = (sel: string) => page.locator(sel).first().evaluate((e) => Math.round(e.getBoundingClientRect().left));
+  const hero = await left('h1');
+  for (const sel of ['#what', '#try', '#get', '.feats', '.rate', '.steps', '.other', '.final']) expect(await left(sel), sel).toBe(hero);
+  const steps = await page.locator('#install ol > li').evaluateAll((ls) => ls.map((l) => Math.round(l.getBoundingClientRect().top)));
+  expect(new Set(steps).size).toBe(1);
+  // Each step's words start right under its title (no gap from stretching to the tallest step).
+  for (const step of await page.locator('#install ol > li').all()) {
+    const gap = await step.evaluate((l) => l.querySelector('p')!.getBoundingClientRect().top - l.querySelector('b')!.getBoundingClientRect().bottom);
+    expect(gap).toBeLessThan(10);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1280);
 });
