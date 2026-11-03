@@ -92,10 +92,11 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(hero(page).getByText('8.9')).toBeVisible();
 
-  // Cancel needs no prompt and changes nothing.
+  // Cancel after a change asks first (0.69.2); Discard changes nothing.
   await page.getByRole('link', { name: 'Edit' }).first().click();
   await page.getByLabel('Name').fill('Something else');
   await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('dialog', { name: 'Discard your changes?' }).getByRole('button', { name: 'Discard' }).click();
   await expect(page).toHaveURL(profileUrl);
   await expect(page.getByRole('heading', { name: 'Gelato 41 OG' })).toBeVisible();
 
