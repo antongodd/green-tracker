@@ -402,7 +402,7 @@ body {
 /* Hidden and still under anything that covers the whole screen (the viewer, the cropper, Move and
    zoom, the cut-out flow, the country picker): nobody sees them there, and the phone (and its battery)
    can give everything to what's on top, like the background remover's work. */
-html:has(.viewer, .cropper, .cpicker) .bg-layer { background-image: none; animation-play-state: paused; }
+html:has(.viewer, .cropper) .bg-layer { background-image: none; animation-play-state: paused; }
 @keyframes lights { to { background-position: -20vw -14vh, 44vw 10vh, 10vw 48vh; } }
 
 /* D70's eight looks draw their own backgrounds: the lights (above, in each look's colours) and,
@@ -414,7 +414,7 @@ html:has(.viewer, .cropper, .cpicker) .bg-layer { background-image: none; animat
    the looks' darker glass dims them further behind every card. Still with Reduce Motion; hidden
    under the viewer and the editors, like the lights. */
 .bg-layer::before, .bg-layer::after { position: absolute; inset: 0; pointer-events: none; }
-html:has(.viewer, .cropper, .cpicker) .bg-layer::before, html:has(.viewer, .cropper, .cpicker) .bg-layer::after { display: none; }
+html:has(.viewer, .cropper) .bg-layer::before, html:has(.viewer, .cropper) .bg-layer::after { display: none; }
 /* Sakura: petals drifting down and across (one tile 300 wide, 900 tall, every 64s), a branch in the top corner. */
 html[data-look="sakura"] .bg-layer::before { content: ""; background-image: radial-gradient(5px 3.5px at 30px 60px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(4px 3px at 170px 140px, rgba(255, 196, 220, 0.24) 65%, transparent), radial-gradient(5.5px 3.5px at 90px 300px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(4px 2.8px at 250px 380px, rgba(255, 196, 220, 0.22) 65%, transparent), radial-gradient(5px 3.2px at 40px 520px, rgba(255, 196, 220, 0.28) 65%, transparent), radial-gradient(4.5px 3px at 200px 610px, rgba(255, 196, 220, 0.26) 65%, transparent), radial-gradient(5px 3.4px at 120px 760px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(3.5px 2.6px at 270px 840px, rgba(255, 196, 220, 0.2) 65%, transparent), radial-gradient(4px 3px at 60px 880px, rgba(255, 196, 220, 0.22) 65%, transparent); background-size: 300px 900px; }
 html[data-look="sakura"] .bg-layer::after { content: ""; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 230 150'%3E%3Cpath d='M230 10C180 20 150 40 120 70S70 110 30 120' stroke='%233a1c2a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M150 42C150 60 140 75 128 86' stroke='%233a1c2a' stroke-width='3' fill='none'/%3E%3Cg fill='%23ffc6dc' fill-opacity='.3'%3E%3Ccircle cx='120' cy='66' r='6'/%3E%3Ccircle cx='96' cy='88' r='5'/%3E%3Ccircle cx='60' cy='108' r='5'/%3E%3Ccircle cx='150' cy='40' r='6'/%3E%3Ccircle cx='180' cy='26' r='5'/%3E%3Ccircle cx='132' cy='84' r='4'/%3E%3Ccircle cx='40' cy='118' r='4'/%3E%3Ccircle cx='110' cy='78' r='4'/%3E%3Ccircle cx='200' cy='18' r='5'/%3E%3Ccircle cx='165' cy='50' r='4'/%3E%3C/g%3E%3C/svg%3E") no-repeat right -26px top calc(var(--safe-top) + 6px) / 230px 150px; }
@@ -483,7 +483,7 @@ html[data-look="haze"] .bg-layer::after { content: ""; background-image: radial-
 @keyframes bg-haze-a { to { background-position: 100% 60%; } }
 @keyframes bg-haze-b { to { background-position: 0 20%; } }
 /* Under the viewer and the editors, the looks that paint .bg-layer their own way hide and still it too. */
-html:has(.viewer, .cropper, .cpicker) .bg-layer { background-image: none; animation-play-state: paused; }
+html:has(.viewer, .cropper) .bg-layer { background-image: none; animation-play-state: paused; }
 #app { min-height: 100dvh; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -563,7 +563,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .stack { display: grid; gap: 12px; }
 .lh { padding: 20px 16px 8px; }
 /* Section titles are green (D18); tile and score captions stay grey. */
-.lh.cap, .fgroup > .cap, .gh > .cap, .sect > .cap, .cp-list .cap { color: var(--accent-bright); }
+.lh.cap, .fgroup > .cap, .gh > .cap, .sect > .cap, .cdrop .cap { color: var(--accent-bright); }
 /* Editor section headings (D34, 0.27.0): an outline icon in a soft green square before the caption. */
 .gh { display: flex; align-items: center; gap: 8px; min-height: 24px; }
 .gh > .cap { font-size: 12px; }
@@ -1293,21 +1293,20 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
 /* ---------- offline (design §6.12) ---------- */
 .offline { position: fixed; left: 0; right: 0; top: var(--header-h); z-index: 30; padding: 8px 16px; background: var(--warning); color: var(--on-accent); font-size: 14px; font-weight: 600; text-align: center; }
 
-/* Country field and picker (D16): the one non-native picker. */
-.country-btn { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; padding: 0 36px 0 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline-strong); font: inherit; font-size: 16px; color: var(--text); text-align: left; outline: none; }
-.country-btn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.country-btn .nm, .cp-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Country field (D16; inline since D81): a box you can type in, the list right under it, in the form. */
+.cbox { position: relative; }
+.cbox .input { padding-right: 36px; text-overflow: ellipsis; }
+.cbox.has-flag .input { padding-left: 44px; }
+.cbox > .flag { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.cbox > svg { position: absolute; right: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--text-2); pointer-events: none; }
+.cp-row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .flag { flex: none; font-size: 20px; line-height: 1; }
-.cpicker { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; background: var(--bg); padding-top: var(--safe-top); }
-.cpicker::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: var(--safe-top); background: var(--bar-solid); }
-.cp-top { display: grid; grid-template-columns: 88px minmax(0, 1fr) 88px; align-items: center; height: 44px; padding: 0 4px; font-size: 17px; text-align: center; }
-.cp-top .hbtn { justify-self: start; }
-.cp-search { padding: 4px 16px 8px; }
-.cp-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 16px calc(var(--safe-bottom) + 16px); }
-.cp-list section { margin-top: 12px; }
-.cp-list .cap { display: block; margin: 0 0 6px 4px; }
-.cp-list ul { list-style: none; margin: 0; padding: 0; background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 12px; overflow: hidden; }
-.cp-list li + li { border-top: 1px solid var(--divider); }
+/* About five rows tall, scrolling inside, so it fits above the iPhone keyboard. */
+.cdrop { max-height: 276px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--card-edge); background: var(--surface-1); padding: 4px 0; }
+.cdrop section + section { margin-top: 8px; }
+.cdrop .cap { display: block; margin: 8px 0 4px 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.cdrop ul { list-style: none; margin: 0; padding: 0; }
+.cdrop li + li { border-top: 1px solid var(--divider); }
 .cp-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 14px; background: none; border: 0; font: inherit; font-size: 16px; color: var(--text); text-align: left; }
 .cp-row[aria-current] { color: var(--accent-bright); }
 .cp-row .tick { flex: none; width: 16px; height: 16px; color: var(--accent-bright); }
@@ -1322,16 +1321,16 @@ canvas.cut-tap { background: repeating-conic-gradient(#121a15 0 25%, #0b110e 0 5
    Motion; the growing and the spring back don't. */
 .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .sheet .opt.is-pressed, .prow .who.is-pressed, .psum.is-pressed { background-color: rgba(88, 224, 140, 0.12); }
 .row:not(.tier).is-pressed, .scard.is-pressed { border-color: rgba(88, 224, 140, 0.5); }
-.pill.is-pressed, .country-btn.is-pressed { border-color: var(--accent-bright); }
+.pill.is-pressed { border-color: var(--accent-bright); }
 .btn.secondary.is-pressed, .seg button.is-pressed { background-color: var(--surface-3); }
 .btn.primary.is-pressed, .fab.is-pressed { filter: brightness(1.08); }
 @media (prefers-reduced-motion: no-preference) {
-  .row, .scard, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .tab svg, .hbtn, .hero-photo, .pcell, .add-cell, .seg button, .more-btn, .clr, .country-btn, .addrow {
+  .row, .scard, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .tab svg, .hbtn, .hero-photo, .pcell, .add-cell, .seg button, .more-btn, .clr, .addrow {
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease-out, background-color 0.18s ease-out, border-color 0.18s ease-out, filter 0.18s ease-out;
   }
   .row.is-pressed, .scard.is-pressed { position: relative; z-index: 1; transform: scale(1.03); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(88, 224, 140, 0.25); }
   .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .prow .who.is-pressed { transform: scale(1.02); }
-  .btn.is-pressed, .country-btn.is-pressed { transform: scale(1.03); }
+  .btn.is-pressed { transform: scale(1.03); }
   .pill.is-pressed, .seg button.is-pressed, .pcell.is-pressed, .add-cell.is-pressed, .addrow.is-pressed { transform: scale(1.05); }
   .fab.is-pressed { transform: scale(1.1); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55); }
   .tab.is-pressed svg, .hbtn.is-pressed, .more-btn.is-pressed, .clr.is-pressed { transform: scale(1.12); }

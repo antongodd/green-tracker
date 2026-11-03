@@ -1,9 +1,11 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { shot, signUp } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
 
-// The searchable country picker (D16), in both editors, on one seeded account.
+// The searchable country field (D16), in both editors, on one seeded account. Since D81 its list opens
+// right under the box, in the form, instead of on a screen of its own.
 let context: BrowserContext;
 let page: Page;
 test.describe.configure({ mode: 'serial' });
@@ -29,27 +31,34 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => context.close());
 
-const field = () => page.getByLabel('Country', { exact: true });
-const picker = () => page.getByRole('dialog', { name: 'Choose a country' });
-const search = () => picker().getByRole('searchbox', { name: 'Search', exact: true });
-const rows = (section: string) => picker().getByRole('region', { name: section, exact: true }).getByRole('button');
+const field = () => page.getByRole('combobox', { name: 'Country', exact: true });
+const list = () => page.getByRole('group', { name: 'Countries', exact: true });
+const rows = (section: string) => list().getByRole('region', { name: section, exact: true }).getByRole('button');
+const flag = () => page.locator('.cbox > .flag');
 
-test('flags beside every country, a Used section, and typing filters the list', async () => {
+test('the list opens under the box: Used first, flags, and typing filters it', async () => {
   await page.goto('/products/new');
-  await expect(field()).toHaveText('Not set');
+  await expect(field()).toHaveValue('');
+  await expect(field()).toHaveAttribute('placeholder', 'Not set');
+  await expect(field()).toHaveAttribute('aria-expanded', 'false');
   await field().click();
-  await expect(picker()).toBeVisible();
-  // The search box has focus, so typing starts straight away.
-  await expect(search()).toBeFocused();
-  // It covers the whole screen (nothing behind shows through the iPhone's see-through
-  // keyboard), and everything behind is inert (the keyboard's ⌃ ⌄ can't reach it).
-  expect(await picker().boundingBox()).toEqual({ x: 0, y: 0, width: 390, height: 844 });
-  await expect(page.locator('#app')).toHaveAttribute('inert', '');
-  expect(await page.evaluate(() => {
-    const name = document.getElementById('name') as HTMLInputElement;
-    name.focus();
-    return document.activeElement === name;
-  })).toBe(false);
+  await expect(list()).toBeVisible();
+  await expect(field()).toHaveAttribute('aria-expanded', 'true');
+  // You type straight into the box; nothing covers the form (no screen of its own).
+  await expect(field()).toBeFocused();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('#app')).not.toHaveAttribute('inert');
+  // Right under the box, as wide, and the box has moved up near the top of the screen.
+  const fb = (await field().boundingBox())!;
+  const lb = (await list().boundingBox())!;
+  expect(lb.y).toBeGreaterThanOrEqual(fb.y + fb.height);
+  expect(lb.y).toBeLessThanOrEqual(fb.y + fb.height + 12);
+  expect(Math.abs(lb.x - fb.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(lb.width - fb.width)).toBeLessThanOrEqual(1);
+  expect(fb.y).toBeLessThan(250);
+  // About five rows tall, scrolling inside.
+  expect(lb.height).toBeLessThanOrEqual(280);
+  expect(await list().evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
 
   // Used: most used first, archived and Other left out.
   await expect(rows('Used')).toHaveText(['🇪🇸Spain', '🇨🇦Canada', '🇲🇦Morocco']);
@@ -61,29 +70,41 @@ test('flags beside every country, a Used section, and typing filters the list', 
   await shot(page, 'country-picker');
 
   await page.keyboard.type('uk');
-  await expect(picker().getByRole('region', { name: 'Used' })).toHaveCount(0);
+  await expect(list().getByRole('region', { name: 'Used' })).toHaveCount(0);
   await expect(rows('Matching countries')).toHaveText(['🇬🇧United Kingdom', '🇺🇦Ukraine', 'Other…']);
   await shot(page, 'country-picker-search');
   await rows('Matching countries').first().click();
 
-  await expect(picker()).toHaveCount(0);
-  await expect(page.locator('#app')).not.toHaveAttribute('inert');
-  await expect(field()).toHaveText('🇬🇧United Kingdom');
-  await expect(field()).toBeFocused();
+  // Picked: the list closes, the box shows the flag and name, and the keyboard goes.
+  await expect(list()).toHaveCount(0);
+  await expect(field()).toHaveValue('United Kingdom');
+  await expect(flag()).toHaveText('🇬🇧');
+  await expect(field()).not.toBeFocused();
   await shot(page, 'country-field');
 
-  // Reopening marks the choice; Cancel changes nothing.
+  // Reopening marks the choice; Escape changes nothing.
   await field().click();
-  await search().fill('united');
+  await expect(field()).toHaveValue('');
+  await page.keyboard.type('united');
   await expect(rows('Matching countries').first()).toHaveAttribute('aria-current', 'true');
-  await picker().getByRole('button', { name: 'Cancel' }).click();
-  await expect(field()).toHaveText('🇬🇧United Kingdom');
+  await page.keyboard.press('Escape');
+  await expect(list()).toHaveCount(0);
+  await expect(field()).toHaveValue('United Kingdom');
 
-  // Enter picks the best match.
+  // A tap elsewhere closes it unchanged too.
   await field().click();
-  await search().fill('holland');
-  await search().press('Enter');
-  await expect(field()).toHaveText('🇳🇱Netherlands');
+  await page.keyboard.type('spa');
+  await page.getByLabel('Name', { exact: true }).click();
+  await expect(list()).toHaveCount(0);
+  await expect(field()).toHaveValue('United Kingdom');
+
+  // Enter picks the best match, and stays in the box.
+  await field().click();
+  await page.keyboard.type('holland');
+  await page.keyboard.press('Enter');
+  await expect(field()).toHaveValue('Netherlands');
+  await expect(field()).toBeFocused();
+  await expect(list()).toHaveCount(0);
 
   await page.getByLabel('Name', { exact: true }).fill('Picked Here');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -97,12 +118,12 @@ test('no match offers to use the typed text as Other', async () => {
   await page.goto('/log/new');
   await page.getByLabel('Name', { exact: true }).fill('Island Sample');
   await field().click();
-  await search().fill('Isle of Man');
-  await expect(picker().getByText('No matching countries')).toBeVisible();
+  await field().fill('Isle of Man');
+  await expect(list().getByText('No matching countries')).toBeVisible();
   await shot(page, 'country-picker-other');
-  await picker().getByRole('button', { name: 'Use “Isle of Man” as Other' }).click();
+  await list().getByRole('button', { name: 'Use “Isle of Man” as Other' }).click();
 
-  await expect(field()).toHaveText('Other');
+  await expect(field()).toHaveValue('Other');
   await expect(page.getByLabel('Which country?')).toHaveValue('Isle of Man');
   await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(/\/log$/);
@@ -114,40 +135,32 @@ test('Not set and Other can be picked from the list', async () => {
   const { entries } = await get('/api/log');
   const id = entries.find((e: { name: string }) => e.name === 'F').id;
   await page.goto(`/log/${id}/edit`); // its form (D41: /log/:id is the entry's page)
-  await expect(field()).toHaveText('🇪🇸Spain');
+  await expect(field()).toHaveValue('Spain');
+  await expect(flag()).toHaveText('🇪🇸');
 
   await field().click();
+  await rows('All countries').last().scrollIntoViewIfNeeded();
   await rows('All countries').last().click();
-  await expect(field()).toHaveText('Other');
+  await expect(field()).toHaveValue('Other');
+  await expect(flag()).toHaveCount(0);
   await expect(page.getByLabel('Which country?')).toHaveValue('');
 
   await field().click();
   await rows('All countries').first().click();
-  await expect(field()).toHaveText('Not set');
+  await expect(field()).toHaveValue('');
   await expect(page.getByLabel('Which country?')).toHaveCount(0);
-
-  // Escape closes without changing anything (desktop keyboards).
-  await field().click();
-  await search().fill('spa');
-  await page.keyboard.press('Escape');
-  await expect(picker()).toHaveCount(0);
-  await expect(field()).toHaveText('Not set');
 });
 
-test('with the keyboard up, the list leaves room for it instead of shrinking the picker', async () => {
-  await page.goto('/log/new');
-  // Stand in for the iPhone keyboard: the visible area is the top 500px of 844.
-  await page.evaluate(() => {
-    const vv = Object.assign(new EventTarget(), { height: 500, offsetTop: 0, width: 390 });
-    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
-  });
+test('readable and accessible, open', async () => {
+  await page.goto('/products/new');
   await field().click();
-  expect(await picker().boundingBox()).toEqual({ x: 0, y: 0, width: 390, height: 844 });
-  await expect(picker().locator('.cp-list')).toHaveCSS('padding-bottom', '360px'); // 344 + 16
-  // The end of the list can be scrolled into the visible area.
-  const other = rows('All countries').last();
-  await other.scrollIntoViewIfNeeded();
-  await picker().locator('.cp-list').evaluate((el) => el.scrollTo(0, el.scrollHeight));
-  const box = await other.boundingBox();
-  expect(box!.y + box!.height).toBeLessThanOrEqual(500);
+  await expect(rows('Used').first()).toBeVisible();
+  await settled(page);
+  const { violations } = await new AxeBuilder({ page }).include('.cfield').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+  // Only the rows in sight: the rest are scrolled out of the list's own window.
+  const lb = (await list().boundingBox())!;
+  const boxes = (await textBoxes(page, '.cdrop .cap, .cp-row .nm')).filter((b) => b.y >= Math.max(100, lb.y) && b.y + b.h <= Math.min(740, lb.y + lb.height));
+  expect(boxes.length).toBeGreaterThan(3);
+  expect(await contrastFailures(page, boxes, 1)).toEqual([]);
 });

@@ -4,7 +4,7 @@
 //    scrolling a list never lights rows up.
 //  - A quick tap still gets a brief press before whatever it opens.
 
-const PRESSABLE = 'a[href], button, .pill, .country-btn, [role="button"]';
+const PRESSABLE = 'a[href], button, .pill, [role="button"]';
 const DELAY_MS = 60; // before showing: long enough to tell a scroll from a press
 const TAP_MS = 120; // how long a quick tap's press stays visible
 const SLOP_PX = 8; // finger movement that means "scrolling", not "pressing"

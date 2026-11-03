@@ -160,7 +160,8 @@ test('promotion: pre-filled from the entry, commits nothing until Save, asks bef
   await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
   await expect(page.getByText('Add to Leaderboard', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Name')).toHaveValue('Gary Payton');
-  await expect(page.getByLabel('Country', { exact: true })).toHaveText('🇺🇸United States');
+  await expect(page.getByLabel('Country', { exact: true })).toHaveValue('United States');
+  await expect(page.locator('.cbox > .flag')).toHaveText('🇺🇸');
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
   await expect(page.getByRole('group', { name: 'Purchase 1' })).toHaveCount(0); // the amount is dropped
   await shot(page, '42-promote');
