@@ -200,7 +200,7 @@ describe('making a post', () => {
     const p = await post(owner, { caption: 'from the log', about: { logEntry: entry.id }, photo: { fromPhotoId: entry.photo!.id } });
     expect(p.about).toMatchObject({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', href: `/log/${entry.id}` });
     const seen = (await fan.get(`/api/posts/${p.id}`)).json.post.about;
-    expect(seen).toEqual({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', productTypeOther: null, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null, photo: null });
+    expect(seen).toEqual({ kind: 'log', name: 'Logged Cart', productType: 'concentrate', productTypeOther: null, strainType: null, score: null, preset: null, source: null, country: null, countryOther: null, href: null, photo: null, yours: null });
     expect(JSON.stringify(seen)).not.toContain('0.5');
 
     const promoted = await owner.post(`/api/log/${entry.id}/promote`, { ...emptyProductInput(), name: 'Logged Cart', productType: 'concentrate', ratings: { look: 8, smell: 8, taste: 8, consistency: 8 }, photos: [{ id: entry.photo!.id, crop: null }] });

@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D81 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D82 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -25,7 +25,8 @@ file (and the recipes it touches) in the same pull request.
 https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
 https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site: on the Worker's **Access**
 tab the lock must cover **Production**, not "Previews only", which leaves the address open). It loads nothing from
-anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses.
+anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses. The app's
+one link to it is the Invite a friend message (D82).
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
   `CLOUDFLARE_ENV=dev` (`npm run deploy:dev`). CI deploys `dev` → dev site, `main` → live site. **Never deploy by hand.**
@@ -136,7 +137,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D82) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D83) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -160,7 +161,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D81.
+- Reopen any decision D1–D82.
 - Loosen how passwords are kept or checked (D80, `server/lib/password.ts`): only a salted PBKDF2 hash, the same answer
   for a wrong password and an unknown email, the per-email and per-account limits; the email is never shown to anyone
   else.
@@ -302,6 +303,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   (`getByRole('combobox', { name: 'Country' })`, its value the country's name, the flag in `.cbox > .flag`); its list is
   the group "Countries" under it (regions Used / All countries / Matching countries), not a dialog. Measure only the
   rows in sight: the list scrolls inside its own window.
+- You against them (D82): the same product is `sameProductKey` (`shared/domain/compare.ts`): name, Source and type by
+  `nameKey`, never the name alone. A friend's product page reply has `yours`, a post's `about.yours`, and
+  `/api/people/u/<them>/compare` the `comparison`; all built from `sharedFor` (their Privacy) and your `load` (with
+  `NOT_KEPT`). A new field in them must be checked in `test/api/compare.test.ts` (raw replies, nothing unshared). The
+  scores show each person's photo and @name (`components/Duel.tsx`), never "you" / "them". Invite a friend calls
+  `navigator.share`: pretend it with an init script (`compare.spec.ts` `person`). Opened straight from its address, a
+  friend's page fades into their look: wait for `html` to lose `vt-look` before axe.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -314,8 +322,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.69.9 (2026-11-03): everything up to the small fixes on the Leaderboard, Log and Feed (to-do item 4).
-- **Dev:** 0.70.2 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
+- **Live:** 0.70.2 (2026-11-03): everything up to the quicker add-a-product form (to-do item 10).
+- **Dev:** 0.71.0 (2026-11-03): to-do item 8, waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -334,7 +342,8 @@ Each is a job for its own conversation; the summary lists what each covers.
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
-8. **Friends: you against them, and inviting someone** (big; reworked with Anton 2026-11-03, not started).
+8. **Friends: you against them, and inviting someone** (big): **on dev in 0.71.0 (2026-11-03), D82**, waiting for
+   "go live". Anton's picks: 1A, 2B, 3B, 4B (website link), photo and @name instead of you / them (C). What was asked:
    (A) "You've had this too: you 9.1 · them 8.0" on a friend's product page and post card **only for the same
    product**: same strain name **and** same brand (Source; `nameKey` matching) and type. Never a name-only match
    (Anton: same name ≠ same product); never uses Supplier (never shared); nothing when their Source isn't shared.
@@ -346,9 +355,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
-10. **A quicker add-a-product form** (big): **on dev** in 0.70.0–0.70.2 (2026-11-03, D81), waiting for Anton's
-   "go live". Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores; Country as
-   a list under the box (both editors); Name with its own heading.
+10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
@@ -357,6 +364,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A quicker add-a-product form: Name, Photos, The product (Type and Strain type as one tap, Source, Country, Date tried from today), Ratings with − / +, Purchases (none opened by itself; Save asks for a missing total paid), Notes, Leafly, Private; examples from Anton's lists; Country as a list under the box (also in the Log); Name with its own heading (tried by Anton on GT Dev; holding − / + and VoiceOver not yet checked on his iPhone) | 0.70.0–0.70.2 | D81 | 2026-11-03 | 2026-11-03 |
 | Small fixes on the Leaderboard, Log and Feed: "Value" and "per 20mg" in value for money, room under the +, no zeros on an empty Log, a solid comment box, 44-point post buttons, Feed photos as you scroll, tap the Feed tab again for the top and new posts, catching up when the app comes back (keyboard and Feed scrolling not yet tried on Anton's iPhone) | 0.69.9 | | 2026-11-03 | 2026-11-03 |
 | Wording fixes across the app: Settings for More, Bring back, 1 product / 1 country / 1 comment, capital L for Leaderboard and Log, the badge without its colour name, Time to kick in, Pre-roll / Edible / Live rosin on screen, Current password, the Sources title, couldn’t, one dash (not yet seen on Anton's iPhone) | 0.69.8 | | 2026-11-03 | 2026-11-03 |
 | Privacy and data words brought up to date: Privacy (posts), Source (brand or grower, "Followers can see this" under the box), Export / Restore / Delete lists and the Export warning, the Look pages' footnote, lines under the comment box and in the post composer, the email line (not yet seen on Anton's iPhone) | 0.69.3, 0.69.5 | | 2026-11-03 | 2026-11-03 |

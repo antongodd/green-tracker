@@ -78,7 +78,7 @@ describe('appearance settings (D48)', () => {
     expect(Object.keys(board.json).sort()).toEqual(['appearance', 'person', 'products']);
     const page = await fan.get(`/api/people/u/${ownerName}/products/${shown.id}`);
     expect(page.json.appearance).toEqual(theirs);
-    expect(Object.keys(page.json).sort()).toEqual(['appearance', 'person', 'product']);
+    expect(Object.keys(page.json).sort()).toEqual(['appearance', 'person', 'product', 'yours']);
     // A private product is still not found, appearance or not.
     const missing = await fan.get(`/api/people/u/${ownerName}/products/${hidden.id}`);
     expect(missing.status).toBe(404);

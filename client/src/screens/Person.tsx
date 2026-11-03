@@ -20,7 +20,7 @@ import { Cluster, formatRankValue, PhotoButton, photoTap, Score, Thumb } from '.
 // A friend's board never ranks by price (followers never see prices), so no currency is ever shown.
 import { DEFAULT_CURRENCY } from '../../../shared/domain/currency';
 import { PhotoViewer, type ShownPhoto } from '../components/PhotoViewer';
-import { MoreIcon } from '../icons';
+import { CompareIcon, MoreIcon } from '../icons';
 import { fetchPreview } from '../privacy';
 import { EmptyCard } from '../components/EmptyCard';
 import * as api from '../people';
@@ -32,6 +32,8 @@ import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadOthersView, saveOthersView } from '../viewState';
 import { useTheirLook } from '../theirLook';
 import { Avatar } from '../components/Avatar';
+import { Duel, them, useMe } from '../components/Duel';
+import type { YourScore } from '../../../shared/domain/compare';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
 import { Skeleton } from '../components/Skeleton';
@@ -300,6 +302,13 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
         {!products && <Skeleton kind="board" />}
         {products && products.length > 0 && (
           <>
+            {/* D82: your board against theirs, worked out from what they share. */}
+            {!own && (
+              <a class="btn secondary compare-btn" href={`/u/${enc(person.username)}/compare`} onClick={linkTo(`/u/${enc(person.username)}/compare`)}>
+                <CompareIcon />
+                Compare with my board
+              </a>
+            )}
             <ControlRow filter={view.filter} rankBy={view.rankBy} money={false} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             {/* PRODUCTS and AVERAGE only — never TOTAL. */}
             <Tiles
@@ -359,6 +368,9 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   const [product, setProduct] = useState<SharedProduct | null>(null);
   const [error, setError] = useState('');
   const [viewing, setViewing] = useState<number | null>(null);
+  // D82: you've had the same product (name, Source and type): your score, shown only to you.
+  const [also, setAlso] = useState<{ yours: YourScore; person: PersonCard } | null>(null);
+  const me = useMe();
   // Its row on their board (D22, D48), worked out only from what you can see, under the
   // same Rank by as their board.
   const [list, setList] = useState<SharedProduct[] | null>(null);
@@ -384,7 +396,10 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
     if (!p.preview)
       api
         .theirProduct(p.username, p.id)
-        .then(setProduct)
+        .then((r) => {
+          setProduct(r.product);
+          setAlso(r.yours ? { yours: r.yours, person: r.person } : null);
+        })
         .catch((e) => setError(errorText(e)));
   }, [p.username, p.id, p.preview]);
 
@@ -435,6 +450,17 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
           view={view}
           whose="their"
         />
+        {also && !p.preview && (
+          <section class="sect too" aria-label="You’ve had this too">
+            <div class="too-head">
+              <span class="cap">You’ve had this too</span>
+              <a href={`/products/${enc(also.yours.id)}`} onClick={linkTo(`/products/${enc(also.yours.id)}`)}>
+                Your page ›
+              </a>
+            </div>
+            <Duel me={me} them={them(also.person)} mine={also.yours.score} theirs={o} />
+          </section>
+        )}
         <Ratings product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">

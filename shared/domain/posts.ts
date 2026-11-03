@@ -43,6 +43,11 @@ export interface PostAbout {
    * card shows the type's icon. Never a Log entry's photo (the Log is never shared).
    */
   photo: { id: string; version: string; cutout: boolean } | null;
+  /**
+   * D82: your own product and Overall when you've had the same product (same name, Source and type), on a
+   * friend's product card whose Source they share; otherwise null. Shown only to you.
+   */
+  yours: { id: string; score: number | null } | null;
 }
 
 export interface PostComment {
@@ -78,7 +83,7 @@ export interface Post {
 
 /** Every key a Post may have — the allow-list the tests check raw replies against. */
 export const POST_KEYS: readonly (keyof Post)[] = ['id', 'username', 'photo', 'mine', 'caption', 'createdAt', 'editedAt', 'image', 'photos', 'about', 'fires', 'youFired', 'commentCount', 'comments'];
-export const POST_ABOUT_KEYS: readonly (keyof PostAbout)[] = ['kind', 'name', 'productType', 'productTypeOther', 'strainType', 'score', 'preset', 'source', 'country', 'countryOther', 'href', 'photo'];
+export const POST_ABOUT_KEYS: readonly (keyof PostAbout)[] = ['kind', 'name', 'productType', 'productTypeOther', 'strainType', 'score', 'preset', 'source', 'country', 'countryOther', 'href', 'photo', 'yours'];
 
 export type PostPhotoInput = { fromPhotoId: string } | { upload: string };
 export type PostAboutInput = { product: string } | { logEntry: string } | null;

@@ -26,7 +26,8 @@ import { requireUser } from '../lib/session';
 import { canView, findUser, photoColumnSql } from '../lib/social';
 import { loadEffectivePrivacy } from '../lib/privacy';
 import { loadAppearance } from '../lib/appearance';
-import { NOT_KEPT } from './products';
+import { load, NOT_KEPT } from './products';
+import { yoursByKey, yoursFor, type YourScore } from '../../shared/domain/compare';
 
 // Posts, comments and fires (D77). THE rule: a post — its photo, comments, fires and counts — is seen
 // only by its owner and by people who pass canView (an approved follow, no block either way), checked
@@ -132,6 +133,8 @@ interface AboutProductRow {
   name: string;
   product_type: string;
   product_type_other: string | null;
+  concentrate_type: string | null;
+  concentrate_type_other: string | null;
   strain_type: string | null;
   source: string | null;
   country: string | null;
@@ -151,7 +154,7 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
   const [prods, ratings, entries, covers] = await db.batch<unknown>([
     db
       .prepare(
-        `SELECT pr.id, pr.user_id, pr.name, pr.product_type, pr.product_type_other, pr.strain_type, pr.source, pr.country, pr.country_other, pr.private, pr.archived,
+        `SELECT pr.id, pr.user_id, pr.name, pr.product_type, pr.product_type_other, pr.concentrate_type, pr.concentrate_type_other, pr.strain_type, pr.source, pr.country, pr.country_other, pr.private, pr.archived,
                 NOT ${NOT_KEPT('pr')} AS kept
          FROM products pr WHERE pr.id IN (SELECT value FROM json_each(?1))`,
       )
@@ -183,10 +186,29 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
     presets.set(owner, (await loadAppearance(db, owner)).preset);
   }
 
+  // D82: your own products, loaded once and only when a friend's card could match one of them.
+  let yours: Map<string, YourScore> | null = null;
+  const yourScore = async (p: AboutProductRow): Promise<YourScore | null> => {
+    yours ??= yoursByKey(await load(db, viewer, { archived: false }));
+    return yoursFor(
+      {
+        id: p.id,
+        name: p.name,
+        productType: p.product_type as ProductTypeKey,
+        productTypeOther: p.product_type_other,
+        concentrateType: p.concentrate_type,
+        concentrateTypeOther: p.concentrate_type_other,
+        source: p.source,
+        ratings: {},
+      },
+      yours,
+    );
+  };
+
   const out = new Map<string, PostAbout | null>();
   for (const r of rows) {
     const mine = r.user_id === viewer;
-    const base = { score: null, preset: null, source: null, country: null, countryOther: null, photo: null };
+    const base = { score: null, preset: null, source: null, country: null, countryOther: null, photo: null, yours: null };
     const plain = (): PostAbout | null =>
       r.about_name
         ? { kind: 'plain', name: r.about_name, productType: r.about_type as ProductTypeKey | null, productTypeOther: r.about_type_other, strainType: r.about_strain as StrainTypeKey | null, ...base, href: null }
@@ -216,6 +238,8 @@ async function aboutFor(db: D1Database, viewer: string, rows: PostRow[]): Promis
         href: mine ? `/products/${encodeURIComponent(p.id)}` : `/u/${encodeURIComponent(r.username)}/p/${encodeURIComponent(p.id)}`,
         // Its cover, as their board shows it: only while their Privacy shares product photos (D45).
         photo: mine || pv.sharePhotos ? (coverOf.get(p.id) ?? null) : null,
+        // D82: "You've had this too", only on a friend's card whose Source they share (same name, Source and type).
+        yours: !mine && pv.shareSource && p.source ? await yourScore(p) : null,
       });
     } else if (e && e.user_id === r.user_id) {
       // A Log entry: its name and type only. The Log is never shared, so it opens only for you.

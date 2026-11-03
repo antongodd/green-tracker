@@ -3,6 +3,7 @@ import type { Post } from '../../../shared/domain/posts';
 import { errorText } from '../api';
 import { Header, TabBar } from '../components/chrome';
 import { EmptyCard } from '../components/EmptyCard';
+import { InviteButton } from '../components/InviteButton';
 import { MeButton } from '../components/MeButton';
 import { PostCard } from '../components/PostCard';
 import { Skeleton } from '../components/Skeleton';
@@ -210,7 +211,8 @@ export function Feed() {
           <EmptyCard art="feed" title="Nothing here yet">
             <p>Posts by you and the people you follow show here. Only your approved followers ever see yours.</p>
             <div class="stack-btns">
-              <button class="btn primary" onClick={() => navigate('/feed/new')}>
+              <InviteButton />
+              <button class="btn secondary" onClick={() => navigate('/feed/new')}>
                 Post something
               </button>
               <button class="btn secondary" onClick={() => navigate('/people')}>

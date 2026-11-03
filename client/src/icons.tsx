@@ -66,6 +66,10 @@ export const BoardIcon = icon('M9 7.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V20H9Z M2.5 1
 export const LogIcon = icon('M6 2.5h11.5a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a1.5 1.5 0 0 1-1.5-1.5V4A1.5 1.5 0 0 1 6 2.5Z M8.5 7.25h8v1.5h-8Z M8.5 11.25h8v1.5h-8Z M8.5 15.25h5v1.5h-5Z', { evenodd: true });
 export const PeopleIcon = icon('M9 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M1.5 19.5c0-3.3 3.4-5.5 7.5-5.5s7.5 2.2 7.5 5.5v.5a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5Z M16.5 11.2a3.3 3.3 0 1 0-1.1-6.4 5.5 5.5 0 0 1 0 6.2c.35.13.72.2 1.1.2Z M18 20.5h4a.5.5 0 0 0 .5-.5v-.4c0-2.6-2.3-4.4-5.4-4.8 1 1.1 1.4 2.4 1.4 3.8Z');
 export const MoreIcon = icon('M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z M19 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z');
+/** Compare boards (D82): two arrows, one each way. */
+export const CompareIcon = icon('M4 8h13 M13.5 4.5 17 8l-3.5 3.5 M20 16H7 M10.5 12.5 7 16l3.5 3.5', { stroke: 1.8 });
+/** Invite a friend (D82): the iPhone share mark, a box with an arrow up. */
+export const ShareIcon = icon('M12 3v12 M8 6.5 12 3l4 3.5 M8.5 10H6.5a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5h-2', { stroke: 1.8 });
 /** The Sources tab (D61): a shop front with its awning, the door cut out. */
 export const SourcesIcon = icon('M5 3.5h14l2 6.2c0 1.6-1.3 2.8-2.9 2.8-1.2 0-2.2-.7-2.7-1.7-.5 1-1.6 1.7-2.8 1.7s-2.3-.7-2.8-1.7c-.5 1-1.5 1.7-2.7 1.7C4.3 12.5 3 11.3 3 9.7Z M5.5 14h13v6.5h-13Z M10 16.5h4v4h-4Z', { evenodd: true });
 /** The Settings tab (D61): a gear, its middle cut out. */
