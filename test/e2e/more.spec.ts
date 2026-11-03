@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
+import { CONTACT_EMAIL } from '../../shared/domain/trust';
 import { contrastFailures, emailOf, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // D38 (0.31.0): the More screen opens with you (photo or letter, @username, products, followers
@@ -37,7 +38,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(16);
+  await expect(page.locator('main .list .li')).toHaveCount(19);
   // D61: the Settings tab, titled so; Brands & suppliers moved to its own tab.
   await expect(page.locator('.hdr .title')).toHaveText('Settings');
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Leaderboard, Source, Country, Photos, Posts');
@@ -59,11 +60,15 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     { label: 'Export', icon: true, tint: 'teal', href: '/more/export' },
     { label: 'Restore', icon: true, tint: 'teal', href: '/more/restore' },
     { label: 'Archive', icon: true, tint: 'green', href: '/more/archive' },
+    // D84: what's kept, the house rules, and how to reach Anton (copies the address).
+    { label: 'PrivacyWhat’s kept, where, and who sees it', icon: true, tint: 'violet', href: '/more/about/privacy' },
+    { label: 'House rules', icon: true, tint: 'green', href: '/more/about/rules' },
+    { label: `Contact${CONTACT_EMAIL}`, icon: true, tint: 'amber', href: null },
     { label: 'Sign out', icon: true, tint: 'green', href: null },
     { label: 'Sign out everywhere', icon: true, tint: 'green', href: null },
     { label: 'Delete account', icon: true, tint: 'red', href: '/more/delete' },
   ]);
-  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Appearance', 'Money', 'Data', 'Danger zone']);
+  expect(await page.locator('.lh.cap').allTextContents()).toEqual(['Account', 'Privacy', 'Appearance', 'Money', 'Data', 'About', 'Danger zone']);
   expect(await page.locator('.li.dng .main').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(255, 107, 107)');
   await page.getByRole('link', { name: /Face ID/ }).click();
   await expect(page).toHaveURL(/\/more\/passkeys$/);
