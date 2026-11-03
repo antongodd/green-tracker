@@ -7,8 +7,8 @@ import { checkPassword as checkPasswordHash, hashPassword } from '../lib/passwor
 import { LIMITS, hit } from '../lib/rateLimit';
 import { emailKey } from '../../shared/domain/account';
 import { EMAIL_TAKEN, checkEmail, checkPassword, emailTaken } from './auth';
-import { clearSessionCookie, requireUser } from '../lib/session';
-import { RP_NAME, parseTransports, passkeyName, saveChallenge, takeChallenge } from '../lib/webauthn';
+import { FRESH_SIGNIN_MS, clearSessionCookie, requireUser } from '../lib/session';
+import { RP_NAME, checkOwnPasskey, ownPasskeyOptions, parseTransports, passkeyName, saveChallenge, takeChallenge } from '../lib/webauthn';
 
 export const account = new Hono<AppEnv>();
 
@@ -27,8 +27,22 @@ async function listPasskeys(db: D1Database, userId: string) {
   return results.map((p) => ({ id: p.id, name: p.name ?? 'Passkey', createdAt: p.created_at, lastUsedAt: p.last_used_at }));
 }
 
+/** D83: true unless this device signed in in the last few minutes (then you've just typed your password, or used Face ID). */
+const passwordNeeded = (c: Context<AppEnv>) => Date.now() - c.var.session!.createdAt > FRESH_SIGNIN_MS;
+
+/**
+ * Adding a passkey. D83: it asks for your password first, unless you signed in on this device a few
+ * minutes ago (the Face ID offer straight after sign-up), so someone holding your unlocked phone can't
+ * quietly add a way into your account.
+ */
 account.post('/passkeys/options', requireUser(), async (c) => {
   const user = c.var.user!;
+  if (passwordNeeded(c)) {
+    const body = await c.req.json<Record<string, unknown>>().catch(() => ({}) as Record<string, unknown>);
+    const password = typeof body.password === 'string' ? body.password : '';
+    if (!password) fail(400, 'password_needed', 'Enter your password to add Face ID.');
+    await confirmPassword(c, password);
+  }
   const { results } = await c.env.DB.prepare('SELECT id, transports FROM passkeys WHERE user_id = ?1').bind(user.id).all<{ id: string; transports: string | null }>();
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
@@ -70,7 +84,7 @@ account.post('/passkeys/verify', requireUser(), async (c) => {
   return c.json({ passkeys: await listPasskeys(db, user.id) });
 });
 
-account.get('/passkeys', requireUser(), async (c) => c.json({ passkeys: await listPasskeys(c.env.DB, c.var.user!.id) }));
+account.get('/passkeys', requireUser(), async (c) => c.json({ passkeys: await listPasskeys(c.env.DB, c.var.user!.id), passwordNeeded: passwordNeeded(c) }));
 
 // D80: passkeys are optional now (the email and password always sign you in), so any of them can go, the last too.
 account.delete('/passkeys/:id', requireUser(), async (c) => {
@@ -127,19 +141,34 @@ account.put('/email', requireUser(), async (c) => {
   return c.json({ email });
 });
 
-/** A new password, after the current one. Every other device is signed out; this one stays in. */
+/** D83: step 1 of a new password without the old one: a fresh Face ID check with one of your passkeys. */
+account.post('/password/options', requireUser(), async (c) => {
+  const user = c.var.user!;
+  const has = await c.env.DB.prepare('SELECT 1 AS ok FROM passkeys WHERE user_id = ?1').bind(user.id).first();
+  if (!has) fail(400, 'no_passkey', 'You haven’t set up Face ID, so you’ll need your current password.');
+  return c.json(await ownPasskeyOptions(c, user.id));
+});
+
+/**
+ * A new password, after the current one, or (D83) after a fresh Face ID check: the way back in for a
+ * forgotten password. Every other device is signed out; this one stays in. The reply lists the passkeys
+ * that can still sign in, so you can remove any you don't recognise.
+ */
 account.put('/password', requireUser(), async (c) => {
   const user = c.var.user!;
   const body = await jsonBody(c);
   const password = str(body, 'password');
   checkPassword(password);
-  await confirmPassword(c, str(body, 'current'));
+  if (typeof body.challengeId === 'string' && body.current === undefined) {
+    await hit(c, LIMITS.passwordCheck, user.id);
+    await checkOwnPasskey(c, body, user.id);
+  } else await confirmPassword(c, str(body, 'current'));
   const db = c.env.DB;
   await db.batch([
     db.prepare('UPDATE users SET password_hash = ?1 WHERE id = ?2').bind(await hashPassword(password), user.id),
     db.prepare('DELETE FROM sessions WHERE user_id = ?1 AND token_hash != ?2').bind(user.id, c.var.session!.tokenHash),
   ]);
-  return c.json({ ok: true });
+  return c.json({ ok: true, passkeys: await listPasskeys(db, user.id) });
 });
 
 account.post('/signout-everywhere', requireUser({ allowNeedsLogin: true }), async (c) => {

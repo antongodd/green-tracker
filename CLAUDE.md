@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D82 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D83 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -137,7 +137,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D83) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D84) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -161,10 +161,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D82.
-- Loosen how passwords are kept or checked (D80, `server/lib/password.ts`): only a salted PBKDF2 hash, the same answer
-  for a wrong password and an unknown email, the per-email and per-account limits; the email is never shown to anyone
-  else.
+- Reopen any decision D1–D83.
+- Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
+  answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
+  since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
 - Loosen the posts rule (D77, `visiblePostSql` / `actorShownSql` in `server/routes/posts.ts`): the owner and approved
   followers only, checked in SQL on every request.
 
@@ -310,6 +310,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   scores show each person's photo and @name (`components/Duel.tsx`), never "you" / "them". Invite a friend calls
   `navigator.share`: pretend it with an init script (`compare.spec.ts` `person`). Opened straight from its address, a
   friend's page fades into their look: wait for `html` to lose `vt-look` before axe.
+- Sign-in hardening (D83): only wrong passwords count against an email (`check` / `miss` in `rateLimit.ts`); a
+  browser that signed in is remembered (`gt_device`, `known_devices`) and has its own tries. Adding a passkey asks for
+  the password unless the session is under 5 minutes old: the API tests' and browser tests' `signUp` add theirs at
+  once, so they don't. To make a session older, `POST /api/test/age-sessions` `{ username, minutes }` (`ageSessions`
+  in `test/api/client.ts`). A new password with Face ID: `POST /api/account/password/options`, then `PUT
+  /api/account/password` with `challengeId` and `response` instead of `current`. Chromium allows one virtual Face ID
+  per page: to add a second passkey in a browser test, `WebAuthn.clearCredentials` first (`accounts.spec.ts`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -323,7 +330,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.71.0 (2026-11-03): everything up to you against them and Invite a friend (to-do item 8).
-- **Dev:** 0.71.0, the same as live.
+- **Dev:** 0.72.0: sign-in hardening (to-do item 9), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -343,9 +350,10 @@ Each is a job for its own conversation; the summary lists what each covers.
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
-9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
-   password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
-   set a new password without the old one (changes D80).
+9. **Sign-in hardening** (big): **on dev** in 0.72.0 (2026-11-03), D83. Only wrong passwords count per email, and a
+   phone you've signed in on keeps its own tries; adding Face ID asks for the password; "Forgot it? Use Face ID
+   instead" on Password (Anton: yes to both); the passkeys that can still sign in after a change. Next: Anton tries
+   it on GT Dev, then "go live".
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no

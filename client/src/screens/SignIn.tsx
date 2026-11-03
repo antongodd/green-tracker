@@ -114,7 +114,7 @@ export function SignIn() {
   );
 }
 
-/** Too many wrong tries (D80's limits, unchanged): the server's words, plus the way in that still works. */
+/** Too many wrong tries (D80's limits; D83: only wrong tries count): the server's words, plus the way in that still works. */
 const TOO_MANY_TEXT = 'Too many tries. Wait a few minutes and try again, or sign in with Face ID if you set it up.';
 
 /** Forgot password? Honest words (0.69.1): there's no email reset yet, so Face ID is the way back in. */

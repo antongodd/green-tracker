@@ -32,7 +32,15 @@ export async function signIn(): Promise<{ user: { username: string } }> {
   return api('POST', '/auth/signin/verify', { challengeId, response });
 }
 
-export async function addPasskey(): Promise<{ passkeys: Passkey[] }> {
-  const { challengeId, response } = await create('/account/passkeys/options');
+/** D83: `password` is needed unless this device signed in a few minutes ago (the server says `password_needed`). */
+export async function addPasskey(password?: string): Promise<{ passkeys: Passkey[] }> {
+  const { challengeId, response } = await create('/account/passkeys/options', password ? { password } : undefined);
   return api('POST', '/account/passkeys/verify', { challengeId, response });
+}
+
+/** A fresh Face ID check with one of your own passkeys (D83: a new password without the old one). */
+export async function checkFaceId(optionsPath: string): Promise<{ challengeId: string; response: unknown }> {
+  const { challengeId, options } = await api<Options<PublicKeyCredentialRequestOptionsJSON>>('POST', optionsPath);
+  const response = await startAuthentication({ optionsJSON: options }).catch(friendly);
+  return { challengeId, response };
 }

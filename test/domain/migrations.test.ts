@@ -99,3 +99,18 @@ describe('email and password (D80)', () => {
     expect(() => add('d', 'SAM@example.com')).toThrow(/UNIQUE/);
   });
 });
+
+describe('known devices (D83)', () => {
+  it('0020 adds the table and changes nothing else; a device row goes with its account', () => {
+    const db = fresh();
+    migrate(db, (f) => f < '0020');
+    db.prepare("INSERT INTO users (id, username, username_lower, created_at) VALUES ('u1', 'Sam', 'sam', 1)").run();
+    db.prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES ('t1', 'u1', 1, 2)").run();
+    migrate(db, (f) => f.startsWith('0020'));
+    expect(db.prepare('SELECT token_hash, user_id FROM sessions').all()).toEqual([{ token_hash: 't1', user_id: 'u1' }]);
+    db.prepare("INSERT INTO known_devices (token_hash, user_id, created_at) VALUES ('d1', 'u1', 1)").run();
+    expect(() => db.prepare("INSERT INTO known_devices (token_hash, user_id, created_at) VALUES ('d1', 'u1', 2)").run()).toThrow(/UNIQUE|PRIMARY/);
+    db.prepare("DELETE FROM users WHERE id = 'u1'").run();
+    expect(db.prepare('SELECT * FROM known_devices').all()).toEqual([]);
+  });
+});

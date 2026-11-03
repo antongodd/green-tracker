@@ -25,6 +25,8 @@ export interface SessionUser {
 
 export interface Session {
   tokenHash: string;
+  /** When this session was signed in (D83: a fresh sign-in can add a passkey without the password). */
+  createdAt: number;
 }
 
 export type AppEnv = {

@@ -18,3 +18,13 @@ testHooks.post('/old-account', async (c) => {
   await c.env.DB.prepare('UPDATE users SET email = NULL, email_lower = NULL, password_hash = NULL WHERE username_lower = ?1').bind(usernameKey(username)).run();
   return c.json({ ok: true });
 });
+
+/** D83: makes an account's sessions look signed in `minutes` ago (a fresh sign-in skips the password for Face ID). */
+testHooks.post('/age-sessions', async (c) => {
+  const body = await jsonBody(c);
+  const minutes = typeof body.minutes === 'number' ? body.minutes : 10;
+  await c.env.DB.prepare('UPDATE sessions SET created_at = created_at - ?1 WHERE user_id = (SELECT id FROM users WHERE username_lower = ?2)')
+    .bind(minutes * 60_000, usernameKey(str(body, 'username')))
+    .run();
+  return c.json({ ok: true });
+});
