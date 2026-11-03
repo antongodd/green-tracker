@@ -14,6 +14,9 @@ stops where you **wait for Anton**; everything else you do yourself.
    D1–D76 (or later) without asking.
 2. Ask the questions only Anton can answer, a few at a time, each with your recommendation. Explain knock-on effects
    in plain words: other screens, data, Export and Restore, followers, privacy. **Ask before adding scope.**
+3. **Ofcom paperwork:** if it changes what people can share with each other or who can see it (messages, groups,
+   public posts, links, video, recommending people, opening sign-up wider), say so in the plan: the papers in
+   `design/ofcom/` must be looked at again **before** it goes live, and updated in the same pull request.
 
 ## 2. Plan and mockups, then wait
 

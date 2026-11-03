@@ -372,16 +372,22 @@ Each is a job for its own conversation; the summary lists what each covers.
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
-12. **Ofcom paperwork** (notes only; Anton, 2026-11-03). Ofcom's checker says the Online Safety Act applies. Draft,
-   in plain English and from Ofcom's own guidance and what the app really does: the illegal content risk assessment
-   (with its records) and the children's access assessment (the 18+ tick, house rules, Report, Block, the website's
-   18+); a children's risk assessment only if that finds children are likely to use it. Kept in `design/`; Anton reads
-   and keeps them. Not legal advice: say so in them.
+12. ~~Ofcom paperwork~~: drafted 2026-11-03 in `design/ofcom/` (see Done). Anton still signs, dates and keeps them,
+   checks the 🔎 points on Ofcom's site, and looks at them again by 2027-11-03 or before a big change to what people
+   can share (`big-change` step 1).
+13. **Acting on reports** (from the Ofcom paperwork, 2026-11-03; Anton decides). Reports reach Anton only when he asks
+   (a weekly reminder, or a message when one arrives); there's no way to close an account that keeps breaking the
+   rules, though the house rules say Anton can; the house rules don't say how to complain about a decision (the
+   contact address). Ofcom expects reports dealt with swiftly and a route for complaints.
+14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
+   effective age assurance", so in law children can use the app; for now the children's access assessment finds
+   they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Ofcom paperwork: the illegal content risk assessment (drugs supply medium, everything else low or negligible) and the children's access assessment (children can get past the tick, but aren't likely to use it, so no children's risk assessment for now), in `design/ofcom/`, with what Anton must still do (sign, keep, review by 2027-11-03); two new to-do items (13, 14) | (notes) | | 2026-11-03 | notes only |
 | Trust basics for strangers: "I'm 18 or over" at sign-up (older accounts asked once), a privacy page and house rules under Settings › About with the contact address greentracker.help@gmail.com, Report on posts, comments and profiles (hidden for you at once; Anton reads them with the reports recipe), a 3,000-photo limit, Delete account mentions the 30-day backups, 18+ on the website; Anton ran the Ofcom and ICO checkers and set a Cloudflare billing alert (the tick, report sheets and VoiceOver not yet checked on Anton's iPhone) | 0.73.0, 0.73.1 | D84 | 2026-11-03 | 2026-11-03 |
 | An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |
 | Sign-in hardening: only wrong passwords count against an email, and a phone you've signed in on has its own tries (strangers can't lock you out); adding Face ID asks for your password (not straight after signing in); "Forgot it? Use Face ID instead" on Password; after a password change, the passkeys that can still sign in with Last used and Remove (Face ID prompts and the new screens not yet confirmed on Anton's iPhone) | 0.72.0 | D83 | 2026-11-03 | 2026-11-03 |
