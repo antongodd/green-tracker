@@ -1724,6 +1724,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the wording fixes are live
+- 0.69.8 (on dev 2026-11-03) went live on 2026-11-03 (release 0.69.8) and moves to Done. Notes only.
+
 ### 0.69.8 — wording fixes across the app (review panel, 2026-11-03, to-do item 5)
 - Words only; nothing stored changes. Type names on screen: Pre-roll, Edible, Live rosin, Live resin (the saved keys
   `pre_roll`, `edibles`, `live_rosin`, `live_resin` stay, so exports and restores are unchanged); empty states built
