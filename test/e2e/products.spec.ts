@@ -49,7 +49,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await rate(page, 'Burn', '8.6');
   await rate(page, 'High', '9.4');
   await expectRated(page, '5 of 5', '8.9');
-  await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn\'t count. Blank categories are left out.')).toBeVisible();
+  await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn’t count. Blank categories are left out.')).toBeVisible();
 
   // Purchases: date defaults to today; the per-unit price is derived live.
   await page.getByRole('button', { name: 'Add purchase' }).click();
