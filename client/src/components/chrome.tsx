@@ -64,6 +64,19 @@ const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Lin
  * active tab is the only indicator of the main screen. The Feed carries one mark at a time (D77): the follow
  * requests number, which needs you to act; otherwise a dot when there's something new.
  */
+/**
+ * The tab you're on, tapped again: on its own page that's a `gt-tab-again` event (the Feed goes to the top
+ * and fetches what's new, 0.69.9); deeper in (a post, a product), it goes there as usual.
+ */
+function again(key: Tab, path: string) {
+  const go = linkTo(path);
+  return (e: MouseEvent) => {
+    if (location.pathname !== path) return go(e);
+    e.preventDefault();
+    window.dispatchEvent(new CustomEvent('gt-tab-again', { detail: key }));
+  };
+}
+
 export function TabBar(p: { active: Tab | null }) {
   const { me } = useSession();
   const requests = me.pendingRequests ?? 0;
@@ -72,7 +85,7 @@ export function TabBar(p: { active: Tab | null }) {
     <nav class="nav" aria-label="Main">
       <div class="tabs">
         {TABS.map(({ key, label, path, Icon, Line }) => (
-          <a key={key} class="tab" href={path} onClick={linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
+          <a key={key} class="tab" href={path} onClick={p.active === key ? again(key, path) : linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
             {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
             <span class="tab-l">{label}</span>
             {key === 'feed' && requests > 0 && (

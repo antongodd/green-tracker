@@ -102,7 +102,7 @@ export function Leaderboard() {
   return (
     <>
       <Header right={<MeButton />} />
-      <main class="screen">
+      <main class="screen has-fab">
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">

@@ -5,6 +5,7 @@ import {
   boardPlace,
   placeBadge,
   placeText,
+  rankByCaption,
   rankByOptions,
   rankProducts,
   resolveViewState,
@@ -218,5 +219,13 @@ describe('Product pages: place and badge (D22, D48)', () => {
     expect(placeBadge({ rank: 5, band: null, first: false }, all, 'your', gems)).toBeNull();
     expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price');
     expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'gems', markFirst: false })).toBeNull();
+  });
+});
+
+describe('rankByCaption', () => {
+  it('says VALUE under a value-for-money score, never VFM (0.69.9)', () => {
+    expect(rankByCaption('vfm')).toBe('VALUE');
+    expect(rankByCaption('overall')).toBe('OVERALL');
+    expect(rankByCaption('price')).toBe('PRICE');
   });
 });

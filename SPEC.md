@@ -1724,6 +1724,25 @@ None.
 
 ## 6. Changelog
 
+### 0.69.9 — small fixes on the Leaderboard, Log and Feed (review panel, 2026-11-03)
+- Value for money: the score's caption says **VALUE** (it said VFM), and the short form of Rank by, when the row is
+  too narrow, is "Value". An edible's row says "per 20mg" under Value for money too, as it already did under Price
+  across all types: its value for money is always worked out on 20mg (D67 unchanged), whichever Type is chosen.
+- The Leaderboard, Log and Feed (the screens with the +) leave room under the list for the button
+  (`.screen.has-fab`), so the last row always scrolls clear of it: with the glass hero it sat on row 5's score.
+- An empty Log shows only its card, without the Type pill and "0 products · 0 countries · 0g" (as the Leaderboard).
+- A post's page: the comment box is solid (`--bar-solid`, no blur), so a comment never shows through it, and the
+  comments leave room for its measured height (`--cbox-h`), the line about who sees your comment included.
+- Post buttons: the 🔥 count (see who), "View all N comments" and "more" are each at least 44 points, and the count
+  sits a little apart from the 🔥.
+- A quicker Feed: only the first post's first photo loads at once; every other photo waits until it's about to
+  scroll into view (a post's own page still loads its photo at once). Tapping the Feed tab while on the Feed goes
+  back to the top and fetches new posts (`gt-tab-again`); coming back to the app does too, keeping the post you were
+  reading where it was, and the Feed dot and follow requests number catch up on every screen (`visibilitychange`).
+
+### Notes — the wording fixes are live
+- 0.69.8 (on dev 2026-11-03) went live on 2026-11-03 (release 0.69.8) and moves to Done. Notes only.
+
 ### 0.69.8 — wording fixes across the app (review panel, 2026-11-03, to-do item 5)
 - Words only; nothing stored changes. Type names on screen: Pre-roll, Edible, Live rosin, Live resin (the saved keys
   `pre_roll`, `edibles`, `live_rosin`, `live_resin` stay, so exports and restores are unchanged); empty states built

@@ -10,7 +10,7 @@ const SCORED = (r: RankBy) => r !== 'price' && r !== 'vfm';
 
 // Short forms, used only when the measured row doesn't fit (brief §6.4:
 // full labels by default; abbreviate only what is measured not to fit).
-const SHORT_RANK: Partial<Record<RankBy, string>> = { vfm: 'VFM', consistency: 'Consis.' };
+const SHORT_RANK: Partial<Record<RankBy, string>> = { vfm: 'Value', consistency: 'Consis.' };
 const SHORT_PRICE: Record<string, string> = { g: 'Price/g', mg: 'Price/mg' };
 const SHORT_TYPE: Partial<Record<TypeFilter, string>> = { concentrate: 'Conc.' };
 

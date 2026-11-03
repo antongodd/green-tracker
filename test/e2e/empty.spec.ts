@@ -64,6 +64,9 @@ test('an empty Log: the notebook and a green Add a log entry', async () => {
   await me.goto('/log');
   const c = await card(me, 'log', 'Your Log is empty');
   await greenAdd(c, 'Add a Log entry');
+  // Only the card: no "0 products · 0 countries · 0g" and no Type pill over an empty Log (0.69.9), as on the Leaderboard.
+  await expect(me.locator('.tile')).toHaveCount(0);
+  await expect(me.getByLabel('Type', { exact: true })).toHaveCount(0);
   await shot(me, '81-empty-log');
 });
 

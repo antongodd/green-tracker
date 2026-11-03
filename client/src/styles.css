@@ -497,6 +497,8 @@ button { cursor: pointer; }
 
 /* ---------- screen + motion ---------- */
 .screen { min-height: 100dvh; padding-top: var(--header-h); padding-bottom: calc(var(--nav-h) + 24px); }
+/* A screen with the + (Leaderboard, Log, Feed): room under the list for the button, so the last row scrolls clear of it (0.69.9). */
+.screen.has-fab { padding-bottom: calc(var(--nav-h) + 16px + 56px + 16px); }
 /* The Aurora's lights (D29) belong to the screen, so they scroll with it (a 900px-tall band at its top). */
 .screen, .fullscreen { background-image: var(--aurora-top); background-repeat: no-repeat; background-position: top center; background-size: 100% 900px; }
 .screen.no-nav { padding-bottom: calc(var(--safe-bottom) + 24px); }
@@ -1932,7 +1934,8 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 .post-acts { display: flex; align-items: center; gap: 2px; padding: 6px 8px 0; }
 .post-acts .act { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 8px; border: 0; border-radius: 12px; background: none; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; justify-content: center; }
 .post-acts .act svg { width: 24px; height: 24px; }
-.post-acts .act.count { min-width: 32px; padding: 0 10px 0 2px; margin-left: -6px; justify-content: flex-start; font-variant-numeric: tabular-nums; }
+/* The count (see who) is its own 44-point button, a little apart from the 🔥 (0.69.9). */
+.post-acts .act.count { min-width: 44px; padding: 0 10px; margin-left: 4px; justify-content: flex-start; font-variant-numeric: tabular-nums; }
 .post-acts .act.count:disabled { opacity: 1; cursor: default; }
 .post-acts .fire.on { color: var(--star); }
 .post-acts .fire.on svg { filter: drop-shadow(0 0 6px rgba(255, 154, 61, 0.55)); }
@@ -1942,16 +1945,17 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 @keyframes fire-pop { 40% { transform: scale(1.35); } }
 .post-caption { margin: 2px 14px 0; font-size: 15px; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
 .post-caption.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.post .more-text { margin: 0 14px; min-height: 36px; color: var(--text-2); font-weight: 700; }
+.post .more-text { margin: 0 14px; min-height: 44px; min-width: 44px; text-align: left; color: var(--text-2); font-weight: 700; }
 .post-cmts { display: grid; gap: 2px; padding: 6px 14px 14px; font-size: 14px; }
 .post-cmts p { margin: 0; overflow-wrap: anywhere; }
 .post-cmts b { font-weight: 700; }
-.post-cmts .all { color: var(--text-2); font-weight: 600; padding-top: 4px; min-height: 32px; display: inline-flex; align-items: center; text-decoration: none; }
+.post-cmts .all { color: var(--text-2); font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; }
 .post > :last-child:not(.post-cmts):not(.error) { margin-bottom: 14px; }
 .post-error { margin: 0 14px 14px; }
 /* A post's page: every comment, and the box above the keyboard. */
 .post-page .posts, .post-page > .post { margin: 12px; }
-.post-page .cmts { max-width: 720px; margin: 0 auto; padding: 4px 16px calc(var(--nav-h) + 96px); }
+/* Room for the comment box under the last comment: its measured height (--cbox-h, PostPage), 0.69.9. */
+.post-page .cmts { max-width: 720px; margin: 0 auto; padding: 4px 16px calc(var(--nav-h) + var(--cbox-h, 120px) + 16px); }
 .post-page .cmts .cap { margin: 10px 0 4px; }
 .post-page .cmts .none { margin: 6px 0; }
 .cmt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--divider); }
@@ -1961,7 +1965,7 @@ html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::af
 .cmt-body .u { color: var(--text); font-weight: 700; text-decoration: none; margin-right: 6px; }
 .cmt-body p { margin: 2px 0 0; font-size: 15px; overflow-wrap: anywhere; white-space: pre-line; }
 .cmt .more-btn { margin: -8px -8px 0 0; }
-.comment-box { position: fixed; z-index: 14; left: 0; right: 0; bottom: var(--nav-h); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); border-top: 1px solid var(--bar-line); }
+.comment-box { position: fixed; z-index: 14; left: 0; right: 0; bottom: var(--nav-h); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bar-solid); border-top: 1px solid var(--bar-line); } /* solid: no comment shows through it (0.69.9) */
 .comment-box input { flex: 1; min-width: 0; height: 42px; border-radius: 21px; border: 1px solid var(--hairline-strong); background: var(--surface-2); color: var(--text); padding: 0 14px; font-size: 16px; }
 .comment-box input::placeholder { color: var(--text-3); }
 .comment-box .send { width: auto; height: 42px; border-radius: 21px; padding: 0 16px; }
