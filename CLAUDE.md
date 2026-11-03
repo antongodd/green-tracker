@@ -315,7 +315,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.9 (2026-11-03): everything up to the small fixes on the Leaderboard, Log and Feed (to-do item 4).
-- **Dev:** 0.70.1 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
+- **Dev:** 0.70.2 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -339,9 +339,9 @@ Each is a job for its own conversation; the summary lists what each covers.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
-10. **A quicker add-a-product form** (big): **on dev** in 0.70.0 and 0.70.1 (2026-11-03, D81), waiting for Anton's
+10. **A quicker add-a-product form** (big): **on dev** in 0.70.0–0.70.2 (2026-11-03, D81), waiting for Anton's
    "go live". Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores; Country as
-   a list under the box (both editors).
+   a list under the box (both editors); Name with its own heading.
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).

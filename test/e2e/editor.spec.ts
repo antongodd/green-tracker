@@ -41,7 +41,10 @@ const openEditor = async () => {
 
 test('every section heading has its icon, in the product and Log editors', async () => {
   await openEditor();
-  expect(await heads()).toEqual(['Photos', 'The product', 'Ratings', 'Purchases', 'Notes', 'Leafly'].map((label) => ({ label, icon: true })));
+  expect(await heads()).toEqual(['Name', 'Photos', 'The product', 'Ratings', 'Purchases', 'Notes', 'Leafly'].map((label) => ({ label, icon: true })));
+  // Name's heading is its box's label (0.70.2).
+  await expect(page.locator('.gh label.cap[for="name"]')).toHaveText('Name');
+  await expect(page.getByLabel('Name', { exact: true })).toHaveValue('Wedding Cake');
   // Name comes first, on its own; Private last.
   const order = await page.locator('.editor > *').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? (e.querySelector('#name') ? 'Name' : e.querySelector('[role=switch]') ? 'Private' : e.tagName)));
   expect(order.filter((x) => x !== 'BUTTON')).toEqual(['Name', 'Photos', 'The product', 'Ratings', 'Purchases', 'Notes', 'Leafly', 'Private']);
