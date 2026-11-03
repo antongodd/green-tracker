@@ -1,11 +1,11 @@
 import type { ComponentChildren, FunctionComponent } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { formatScore } from '../../../shared/domain/format';
 import { PASSWORD_MAX } from '../../../shared/domain/account';
-import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime } from '../../../shared/domain/ratings';
+import { HIT_TIME_MAX, HIT_TIME_STEP, RATING_MAX, RATING_MIN, formatHitTime, stepRating } from '../../../shared/domain/ratings';
 import { scoreHeat } from '../../../shared/domain/heat';
 import type { RatingKey } from '../../../shared/domain/productTypes';
-import { CalendarIcon, ChevronDown, CrossIcon } from '../icons';
+import { CalendarIcon, ChevronDown, CrossIcon, MinusIcon, PlusIcon } from '../icons';
 import { Slider } from './Slider';
 
 /** Native select (iOS shows its own picker), styled as an input. */
@@ -100,8 +100,57 @@ export function TextField(p: {
 const clamp = (v: number) => Math.min(RATING_MAX, Math.max(RATING_MIN, v));
 
 /**
- * One rating (brief §6.6): label, value (tap to type), ✕ to clear, and a 0.1-step
- * slider. Unrated shows — and an empty track; moving the slider rates it.
+ * D81: − or + beside a score. A tap moves it 0.1 (an unrated score starts at 5.0); held, it keeps
+ * going. The step is taken on the click, so a scroll that starts on the button changes nothing
+ * (the browser cancels the pointer); holding only repeats after a pause.
+ */
+function StepButton(p: { direction: 1 | -1; label: string; value: number | null; onChange: (v: number) => void }) {
+  const latest = useRef(p.value);
+  latest.current = p.value;
+  const hold = useRef<{ wait?: number; every?: number; repeated: boolean }>({ repeated: false });
+  const stop = () => {
+    clearTimeout(hold.current.wait);
+    clearInterval(hold.current.every);
+  };
+  useEffect(() => stop, []);
+  const step = () => {
+    const next = stepRating(latest.current, p.direction);
+    latest.current = next;
+    p.onChange(next);
+  };
+  return (
+    <button
+      type="button"
+      class="step"
+      aria-label={`${p.direction > 0 ? 'Raise' : 'Lower'} ${p.label}`}
+      onPointerDown={() => {
+        stop();
+        hold.current.repeated = false;
+        hold.current.wait = window.setTimeout(() => {
+          hold.current.repeated = true;
+          step();
+          hold.current.every = window.setInterval(step, 90);
+        }, 450);
+      }}
+      onPointerUp={stop}
+      onPointerCancel={stop}
+      onPointerLeave={stop}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={() => {
+        stop();
+        if (hold.current.repeated) hold.current.repeated = false;
+        else step();
+      }}
+    >
+      {p.direction > 0 ? <PlusIcon /> : <MinusIcon />}
+    </button>
+  );
+}
+
+/**
+ * One rating (brief §6.6; D34; D81): label, − , value (tap to type), +, ✕ to clear, and a 0.1-step
+ * slider under them. Unrated shows – and an empty track; moving the slider or − / + rates it. A
+ * rating that doesn't count is grey; `note` says why to screen readers only (D81).
  */
 export function RatingInput(p: { id: string; rating: RatingKey; label: string; value: number | null; onChange: (v: number | null) => void; note?: string }) {
   const [typing, setTyping] = useState<string | null>(null);
@@ -122,10 +171,11 @@ export function RatingInput(p: { id: string; rating: RatingKey; label: string; v
       <div class="rate-top">
         <span class="l">
           <span id={`${p.id}-label`}>{p.label}</span>
-          {p.note && <small>{p.note}</small>}
+          {p.note && <span class="visually-hidden">{p.note}</span>}
         </span>
+        <StepButton direction={-1} label={p.label} value={v} onChange={p.onChange} />
         {typing === null ? (
-          <button type="button" class={`val${v === null ? ' none' : ''}`} onClick={() => setTyping(v === null ? '' : formatScore(v))} aria-label={`${p.label}: ${v === null ? 'unrated' : formatScore(v)}. Tap to type a value`}>
+          <button type="button" class={`val${v === null ? ' none' : ''}`} onClick={() => setTyping(v === null ? '' : formatScore(v))} aria-label={`${p.label}: ${v === null ? 'unrated' : formatScore(v)}${p.note ? `, ${p.note.toLowerCase()}` : ''}. Tap to type a value`}>
             {v === null ? '–' : formatScore(v)}
           </button>
         ) : (
@@ -140,6 +190,7 @@ export function RatingInput(p: { id: string; rating: RatingKey; label: string; v
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), commit())}
           />
         )}
+        <StepButton direction={1} label={p.label} value={v} onChange={p.onChange} />
         <button type="button" class={`clr${v === null ? ' hidden' : ''}`} onClick={() => p.onChange(null)} aria-label={`Clear ${p.label}`} tabIndex={v === null ? -1 : 0}>
           <CrossIcon />
         </button>
@@ -155,6 +206,36 @@ export function RatingInput(p: { id: string; rating: RatingKey; label: string; v
         label={p.label}
         valueText={v === null ? 'Unrated' : formatScore(v)}
       />
+    </div>
+  );
+}
+
+/**
+ * D81: a short list picked with one tap (the product editor's Type and Strain type): real radio
+ * buttons drawn as chips, so a screen reader and the arrow keys treat them as one choice.
+ * `clearable`: tapping the chosen one again clears it (Strain type can be Not set).
+ */
+export function ChoiceChips(p: { id: string; label: string; value: string | null; options: { value: string; label: string }[]; onChange: (v: string | null) => void; clearable?: boolean }) {
+  return (
+    <div class="field">
+      <span class="flabel" id={`${p.id}-label`}>
+        {p.label}
+      </span>
+      <div class="choices" role="radiogroup" aria-labelledby={`${p.id}-label`}>
+        {p.options.map((o) => (
+          <label key={o.value} class={`choice${p.value === o.value ? ' on' : ''}`}>
+            <input
+              type="radio"
+              name={p.id}
+              value={o.value}
+              checked={p.value === o.value}
+              onChange={() => p.onChange(o.value)}
+              onClick={() => p.clearable && p.value === o.value && p.onChange(null)}
+            />
+            <span>{o.label}</span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }

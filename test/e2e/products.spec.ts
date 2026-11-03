@@ -25,20 +25,20 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('button', { name: 'Add a product' }).click();
   await expect(page).toHaveURL(/\/products\/new$/);
 
-  // Defaults: Flower, the flower rating set, no date tried.
-  await expect(page.getByLabel('Product type')).toHaveValue('flower');
-  await expect(page.getByLabel('Date tried')).toHaveValue('');
+  // Defaults: Flower, the flower rating set, tried today (D81).
+  await expect(page.getByRole('radio', { name: 'Flower', exact: true })).toBeChecked();
+  await expect(page.getByLabel('Date tried')).toHaveValue(await page.evaluate(() => new Date().toLocaleDateString('en-CA')));
   for (const l of ['Look', 'Smell', 'Taste', 'Burn', 'High']) await expect(page.getByText(l, { exact: true })).toBeVisible();
 
   // Name auto-capitalises on blur, only adding capitals.
   await page.getByLabel('Name').fill('gelato 41 OG');
   await page.getByLabel('Source').click();
   await expect(page.getByLabel('Name')).toHaveValue('Gelato 41 OG');
-  // Source is the brand or grower, and followers can see it (Privacy, D45).
-  await expect(page.getByLabel('Source')).toHaveAttribute('placeholder', 'e.g. Cookies');
-  await expect(page.locator('#source-hint')).toHaveText('Followers can see this, unless you turn it off in Privacy.');
+  // Source is the brand or grower (D81: one of the owner's examples, and no line under it).
+  await expect(page.getByLabel('Source')).toHaveAttribute('placeholder', /^The brand or grower, e\.g\. (Cookies|Tenco|Wizard Trees|710 Nomads|Z Money)$/);
+  await expect(page.locator('#source-hint')).toHaveCount(0);
   await page.getByLabel('Source').fill('cookies');
-  await page.getByLabel('Strain type').selectOption('hybrid');
+  await page.getByRole('radio', { name: 'Hybrid' }).click();
   await page.getByLabel('Country', { exact: true }).click();
   await page.keyboard.type('usa');
   await page.getByRole('dialog', { name: 'Choose a country' }).getByRole('button', { name: 'United States' }).click();
@@ -49,7 +49,8 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await rate(page, 'Burn', '8.6');
   await rate(page, 'High', '9.4');
   await expectRated(page, '5 of 5', '8.9');
-  await expect(page.getByText('Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn’t count. Blank categories are left out.')).toBeVisible();
+  // D81: the screen explains itself; the long line under the scores is gone from the editor.
+  await expect(page.locator('.editor').getByText(/^Overall is the average/)).toHaveCount(0);
 
   // Purchases: date defaults to today; the per-unit price is derived live.
   await page.getByRole('button', { name: 'Add purchase' }).click();
@@ -74,7 +75,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
 
   // Switch to Edibles: Taste and High carry over; Look/Smell/Burn hide; Overall = Taste ⅓ + High ⅔.
   await page.getByRole('link', { name: 'Edit' }).first().click();
-  await page.getByLabel('Product type').selectOption('edibles');
+  await page.getByRole('radio', { name: 'Edible', exact: true }).click();
   await expect(page.getByText('Look', { exact: true })).toHaveCount(0);
   await expectRated(page, '2 of 2', '9.2');
   await expect(page.getByText('Time to kick in', { exact: true })).toBeVisible();
@@ -90,7 +91,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
 
   // And back to Flower: every rating is still there.
   await page.getByRole('link', { name: 'Edit' }).first().click();
-  await page.getByLabel('Product type').selectOption('flower');
+  await page.getByRole('radio', { name: 'Flower', exact: true }).click();
   await expectRated(page, '5 of 5', '8.9');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(hero(page).getByText('8.9')).toBeVisible();
@@ -137,7 +138,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await page.getByRole('button', { name: 'Add a product' }).click();
   await page.getByLabel('Name').fill('mystery sample');
-  await page.getByLabel('Product type').selectOption('other');
+  await page.getByRole('radio', { name: 'Other', exact: true }).click();
   await page.getByLabel('Date tried').fill('2026-08-12');
   await page.getByRole('button', { name: 'Save' }).click();
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();

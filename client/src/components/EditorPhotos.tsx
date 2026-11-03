@@ -43,7 +43,7 @@ export function photosToInput(drafts: PhotoDraft[]): PhotoInput[] | string {
  * crops upload straight away as pending sets, and only Save attaches them
  * (brief §11). Unsaved sets are discarded when the editor closes without saving.
  */
-export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean }; max?: number; name?: string }) {
+export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: PhotoDraft[]) => PhotoDraft[]) => void; savedRef: { current: boolean }; max?: number; name?: string; wide?: boolean }) {
   const max = p.max ?? Infinity;
   const [viewing, setViewing] = useState<number | null>(null);
   const [cropping, setCropping] = useState<number | null>(null);
@@ -149,9 +149,11 @@ export function EditorPhotos(p: { drafts: PhotoDraft[]; setDrafts: (f: (d: Photo
         }}
       >
         {p.drafts.length < max && (
-          <label class="add-cell">
+          // D81: the product editor opens on one wide Add photos button until there's a photo.
+          <label class={`add-cell${p.wide && !p.drafts.length ? ' wide' : ''}`}>
             <CameraIcon />
             {max === 1 ? 'Add photo' : 'Add photos'}
+            {p.wide && !p.drafts.length && <small>Take one, or pick from your library</small>}
             <input type="file" accept="image/*" multiple={max > 1} aria-label={max === 1 ? 'Add photo' : 'Add photos'} onChange={(e) => (add(e.currentTarget.files), (e.currentTarget.value = ''))} />
           </label>
         )}

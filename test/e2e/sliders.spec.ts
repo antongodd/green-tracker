@@ -61,7 +61,7 @@ test.describe('rating sliders', () => {
   });
 
   test('date fields stay inside their card', async ({ page }) => {
-    const card = (await page.getByRole('region', { name: 'Origin' }).boundingBox())!;
+    const card = (await page.getByRole('region', { name: 'The product' }).boundingBox())!;
     const date = (await page.getByLabel('Date tried').boundingBox())!;
     expect(date.x + date.width).toBeLessThanOrEqual(card.x + card.width - 16);
   });
@@ -100,7 +100,7 @@ test.describe('rating sliders', () => {
   });
 
   test('hit time moves in 15-minute steps and reads as a duration', async ({ page }) => {
-    await page.getByLabel('Product type').selectOption('edibles');
+    await page.getByRole('radio', { name: 'Edible', exact: true }).click();
     expect(await valueOf(page, 'Time to kick in')).toBe('Not set');
     await touchPath(page, await dragPoints(page, 'Time to kick in', 75 / 180));
     expect(await valueOf(page, 'Time to kick in')).toBe('1h 15m');

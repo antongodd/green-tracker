@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D80 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D81 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -136,7 +136,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D81) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D82) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -160,7 +160,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D80.
+- Reopen any decision D1–D81.
 - Loosen how passwords are kept or checked (D80, `server/lib/password.ts`): only a salted PBKDF2 hash, the same answer
   for a wrong password and an unknown email, the per-email and per-account limits; the email is never shown to anyone
   else.
@@ -291,6 +291,14 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   back to the app is `visibilitychange`: pretend it with `Object.defineProperty(document, 'visibilityState', …)` and
   dispatch the event (`feed.spec.ts` `backToFront`). Only a list's first post loads its photo at once (`eager`).
   A screen with the + has `has-fab` (room under the list for it).
+- The product editor (D81): Type and Strain type are radio chips (`ChoiceChips`): pick with
+  `getByRole('radio', { name: 'Edible', exact: true }).click()` (the Log editor keeps its **Product type** list). − / +
+  are buttons named "Lower Look" / "Raise Look"; an unrated score starts at 5.0. Name is its own card, then Photos,
+  The product, Ratings, Purchases; the Ratings card is lower down, so scroll a rating into view before measuring it.
+  A new product starts with today as Date tried and no purchase. A purchase with no total paid stops Save ("Add the
+  total paid for the purchase, or remove it."), so a test that adds a purchase must give it a total or remove it. The
+  Name and Source examples are random: match them against `NAME_EXAMPLES` / `SOURCE_EXAMPLES`. A text measured inside
+  a chip is its `span` (`.choice > span`); `.field > label` for the box labels.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -304,7 +312,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.9 (2026-11-03): everything up to the small fixes on the Leaderboard, Log and Feed (to-do item 4).
-- **Dev:** 0.69.9, the same as live.
+- **Dev:** 0.70.0 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -328,7 +336,8 @@ Each is a job for its own conversation; the summary lists what each covers.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
-10. **A quicker add-a-product form** (big, mockups first). Photos first, extra details folded away, − / + by scores.
+10. **A quicker add-a-product form** (big): **on dev** in 0.70.0 (2026-11-03, D81), waiting for Anton's "go live".
+   Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores.
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).

@@ -991,16 +991,27 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
    a counting, rated one takes its score's colour (D30's scale) in the fill, knob and number. */
 .rates { display: grid; gap: 4px; }
 .rate { display: grid; gap: 0; }
-.rate-top { display: flex; align-items: center; gap: 10px; min-height: 32px; }
-.rate-top .l { font-size: 16px; font-weight: 500; }
-.rate-top .l small { display: block; font-size: 12px; font-weight: 400; color: var(--text-2); }
+.rate-top { display: flex; align-items: center; gap: 6px; min-height: 44px; }
+.rate-top .l { font-size: 16px; font-weight: 500; margin-right: auto; min-width: 0; }
 .rate.muted .rate-top .l { color: var(--text-2); }
-.rate-top .val { margin-left: auto; min-width: 56px; height: 32px; padding: 0 6px; border-radius: 8px; border: 1px solid transparent; background: none; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.rate-top .val { min-width: 56px; height: 36px; padding: 0 4px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: var(--surface-2); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+/* D81: − and + by each score, a 44px target each; holding one keeps it going, so no long-press menu. */
+.step { width: 44px; height: 44px; flex: none; border-radius: 12px; border: 1px solid var(--hairline-strong); background: var(--btn-bg); color: var(--text); display: grid; place-items: center; padding: 0; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.step svg { width: 18px; height: 18px; }
+.step:active { border-color: var(--accent); background: var(--accent-soft); }
+/* D81: a short list as one-tap chips (Type, Strain type): real radio buttons under the chip. */
+.field .flabel { font-size: 13px; color: var(--text-2); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices .choice { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 15px; border-radius: 999px; background: var(--btn-bg); border: 1px solid var(--hairline-strong); color: var(--text-2); font-size: 15px; font-weight: 600; cursor: pointer; }
+.choices .choice input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.choices .choice.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-bright); }
+.choices .choice:has(input:focus-visible) { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
 .rate-top .val.none { color: var(--text-3); }
-.rate-top input.val { width: 72px; border-color: var(--accent); background: var(--surface-2); outline: none; font-size: 17px; }
+.rate-top input.val { width: 64px; border-color: var(--accent); background: var(--surface-2); outline: none; font-size: 17px; }
 .clr { position: relative; width: 26px; height: 26px; flex: none; border-radius: 50%; border: 1px solid var(--hairline); background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; }
 .clr svg { width: 10px; height: 10px; }
 .clr.hidden { visibility: hidden; }
+.rate-top .clr { margin-left: 4px; } /* D81: its 44px target clear of the + beside it */
 .clr::before { content: ""; position: absolute; inset: -9px; } /* a 44px tap target around the smaller circle */
 .rate .slider { height: 28px; }
 .rate .slider-track, .rate .slider-fill { top: 12px; height: 4px; }
@@ -1109,6 +1120,8 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 .add-cell { aspect-ratio: 1; border-radius: 8px; border: 1px dashed var(--hairline-strong); background: var(--surface-2); color: var(--accent-bright); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 13px; font-weight: 600; cursor: pointer; position: relative; }
 .add-cell svg { width: 26px; height: 26px; }
 .add-cell input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 16px; }
+.add-cell.wide { grid-column: 1 / -1; aspect-ratio: auto; height: 132px; border-radius: 12px; border-color: rgba(88, 224, 140, 0.45); background: rgba(88, 224, 140, 0.05); font-size: 16px; gap: 6px; } /* D81 */
+.add-cell.wide small { color: var(--text-2); font-size: 13px; font-weight: 500; }
 
 /* Remove background (D26). A cut-out has no box: in rows it sits straight on the row,
    and everywhere the whole bud shows (contain, not cover). Photos not cut out keep
