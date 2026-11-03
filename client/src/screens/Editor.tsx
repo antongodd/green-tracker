@@ -9,7 +9,7 @@ import { latestPurchase, unitPrice, unitPricePaid } from '../../../shared/domain
 import { emptyProductInput, productToInput, validateProductInput, type Product, type ProductInput } from '../../../shared/domain/product';
 import { RATING_LABELS, productType, unitFor, type ProductTypeKey, type RatingKey } from '../../../shared/domain/productTypes';
 import { overall, overallExplanation, ratedCount, type Ratings } from '../../../shared/domain/ratings';
-import { errorText } from '../api';
+import { errorText, timedOutNew } from '../api';
 import { Header } from '../components/chrome';
 import { CONCENTRATE_OPTIONS, STRAIN_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
 import { CountryField } from '../components/CountryPicker';
@@ -27,7 +27,7 @@ import { useOnline } from '../online';
 import { back, navigate, replaceHistory } from '../router';
 import { promoteEntry } from '../logEntries';
 import { takePromotion } from '../promotion';
-import { Sheet } from '../components/chrome';
+import { DiscardSheet, snapshot, useKeepEditing } from '../components/KeepEditing';
 
 interface PurchaseDraft {
   key: string;
@@ -160,7 +160,8 @@ function topProduct(): string | null | undefined {
 /**
  * The product editor. With `promoteFrom`, it's the promotion editor (brief §10.2):
  * pre-filled from the log entry's live form, nothing committed until Save, and
- * Cancel asks first (Keep editing / Discard).
+ * Cancel asks first (Keep editing / Discard). Since 0.69.2 every product does once anything has
+ * changed, on Cancel and on a swipe back (useKeepEditing).
  */
 export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const main = useCurrency();
@@ -188,7 +189,6 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   }, [openPurchase]);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<PhotoDraft[]>(() => (promotion ? promotion.drafts : existing ? draftsFromRecords(existing.photos) : []));
-  const [confirmLeave, setConfirmLeave] = useState(false);
   const online = useOnline();
   // D59: the names already used in Source and Supplier, offered under those boxes while you type.
   const [used, setUsed] = useState<UsedName[]>(() => usedNames(cachedProducts() ?? []));
@@ -201,6 +201,13 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   }, []);
   const saved = useRef(false);
   const loaded = useRef(!!form);
+  // What the form held when it opened: anything different is work Cancel would throw away.
+  const base = useRef<string | null>(null);
+  if (form && base.current === null) base.current = snapshot(form, drafts);
+  const leaveTo = () => (p.promoteFrom ? back(`/log/${p.promoteFrom}`) : back(p.id ? `/products/${p.id}` : '/'));
+  // Moving a Log entry over always asks: none of it is on your Leaderboard yet.
+  const keeper = useKeepEditing({ dirty: () => !!p.promoteFrom || (!!form && base.current !== snapshot(form, drafts)), leave: leaveTo });
+  const sending = useRef(false); // a second tap on Save while the first is on its way does nothing
 
   // A reload of the promotion screen has nothing to promote: go back to the entry.
   useEffect(() => {
@@ -221,7 +228,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
   // "Use '…' as Other" in the country picker also fills the Which country? box.
   const setCountry = (country: string | null, otherText?: string) => setForm((f) => (f ? { ...f, country, ...(otherText !== undefined ? { countryOther: otherText } : {}) } : f));
-  const cancel = () => (p.promoteFrom ? setConfirmLeave(true) : back(p.id ? `/products/${p.id}` : '/'));
+  const cancel = keeper.cancel;
 
   if (!form) {
     return (
@@ -309,11 +316,14 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
     if (typeof input === 'string') return fail(input);
     const checked = validateProductInput(input);
     if (!checked.ok) return fail(checked.message);
+    if (sending.current) return;
+    sending.current = true;
     setSaving(true);
     const topBefore = topProduct();
     try {
       const product = p.promoteFrom ? await promoteEntry(p.promoteFrom, checked.value) : await saveProduct(p.id, checked.value);
       saved.current = true; // the pending uploads now belong to the product
+      keeper.done();
       // D56: a fanfare when this save puts it at the top of your Leaderboard, else the save sound.
       play(topBefore !== undefined && topBefore !== product.id && topProduct() === product.id ? 'first' : 'save');
       if (p.id) back(`/products/${product.id}`);
@@ -324,7 +334,8 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
       }
       else navigate(`/products/${product.id}`, { replace: true });
     } catch (e) {
-      setError(errorText(e));
+      setError((!p.id && timedOutNew(e, p.promoteFrom ? 'your Leaderboard and your Log' : 'your Leaderboard')) || errorText(e));
+      sending.current = false;
       setSaving(false);
     }
   }
@@ -525,14 +536,12 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           </button>
         </div>
       </div>
-      {confirmLeave && (
-        <Sheet
-          title="Leave without adding it?"
-          message="Nothing has been added to your Leaderboard yet. Your log entry stays as it was."
-          cancelLabel="Keep editing"
-          options={[{ label: 'Discard', danger: true, onSelect: () => back(`/log/${p.promoteFrom}`) }]}
-          onCancel={() => setConfirmLeave(false)}
-        />
+      {p.promoteFrom ? (
+        <DiscardSheet keeper={keeper} title="Leave without adding it?" message="Nothing has been added to your Leaderboard yet. Your log entry stays as it was." />
+      ) : p.id ? (
+        <DiscardSheet keeper={keeper} title="Discard your changes?" message="The product stays as it was before you started editing." />
+      ) : (
+        <DiscardSheet keeper={keeper} title="Discard this product?" message="Nothing you’ve filled in will be kept." />
       )}
     </>
   );

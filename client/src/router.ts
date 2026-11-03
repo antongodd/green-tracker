@@ -82,8 +82,51 @@ function arrived(): void {
 // The app decides where each screen starts (top, or a restored position), not the browser.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
+/**
+ * A screen with unsaved work (the product, Log entry and post editors, 0.69.2) holds its place: a
+ * swipe from the edge (or the browser's Back) that would leave it while `dirty()` puts it straight
+ * back and calls `ask()`, so the screen can offer Keep editing / Discard. Returns the release.
+ * The screen's own Cancel asks before calling `back`, and stops being dirty before it leaves.
+ */
+interface Guard {
+  path: string;
+  depth: number;
+  y: number;
+  dirty: () => boolean;
+  ask: () => void;
+}
+let guard: Guard | null = null;
+const trackScroll = () => {
+  if (guard && location.pathname === guard.path) guard.y = window.scrollY;
+};
+export function holdPlace(dirty: () => boolean, ask: () => void): () => void {
+  const mine: Guard = { path: location.pathname, depth: depth(), y: window.scrollY, dirty, ask };
+  guard = mine;
+  window.addEventListener('scroll', trackScroll, { passive: true });
+  return () => {
+    if (guard !== mine) return;
+    guard = null;
+    window.removeEventListener('scroll', trackScroll);
+  };
+}
+
+/** A Back that would leave a held screen with unsaved work: put the screen back and ask. */
+function heldBack(): boolean {
+  const g = guard;
+  if (!g || lastPath !== g.path || location.pathname === g.path || !g.dirty()) return false;
+  // The entry we landed on keeps restoring its own scroll (record); the screen's own stays 'manual'.
+  history.scrollRestoration = 'auto';
+  history.pushState({ depth: g.depth }, '', g.path);
+  history.scrollRestoration = 'manual';
+  scrollPage(g.y);
+  ownBack = false;
+  g.ask();
+  return true;
+}
+
 let lastPath = location.pathname;
 window.addEventListener('popstate', () => {
+  if (heldBack()) return;
   const from = lastPath;
   lastPath = location.pathname;
   if (ownBack) arrived();

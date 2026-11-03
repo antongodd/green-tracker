@@ -1,6 +1,6 @@
 // Client calls for posts, comments and fires (D77).
 import type { Post, PostInput } from '../../shared/domain/posts';
-import { api } from './api';
+import { api, SAVE_TIMEOUT_MS } from './api';
 
 export type Page = { posts: Post[]; next: string | null };
 const q = (before?: string | null) => (before ? `?before=${encodeURIComponent(before)}` : '');
@@ -11,7 +11,7 @@ export const feedPage = (before?: string | null) => api<Page>('GET', `/posts/fee
 /** One person's posts (yours too). */
 export const postsBy = (username: string, before?: string | null) => api<Page>('GET', `/posts/by/${encodeURIComponent(username)}${q(before)}`);
 export const fetchPost = (id: string) => api<{ post: Post }>('GET', one(id)).then((r) => r.post);
-export const createPost = (input: Omit<PostInput, 'makeVisible'> & { makeVisible?: boolean }) => api<{ post: Post }>('POST', '/posts', input).then((r) => r.post);
+export const createPost = (input: Omit<PostInput, 'makeVisible'> & { makeVisible?: boolean }) => api<{ post: Post }>('POST', '/posts', input, { timeoutMs: SAVE_TIMEOUT_MS }).then((r) => r.post);
 export const editCaption = (id: string, caption: string) => api<{ post: Post }>('PUT', one(id), { caption }).then((r) => r.post);
 export const deletePost = (id: string) => api('DELETE', one(id));
 export const addComment = (id: string, body: string) => api<{ post: Post }>('POST', `${one(id)}/comments`, { body }).then((r) => r.post);

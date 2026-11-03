@@ -3,8 +3,9 @@ import { autoCapitalise } from '../../../shared/domain/capitalise';
 import { OTHER_COUNTRY } from '../../../shared/domain/countries';
 import { emptyLogEntryInput, logEntryToInput, validateLogEntryInput, type LogEntry, type LogEntryInput } from '../../../shared/domain/logEntry';
 import { productType, unitFor, type ProductTypeKey } from '../../../shared/domain/productTypes';
-import { ApiError, errorText } from '../api';
+import { ApiError, errorText, timedOutNew } from '../api';
 import { Header } from '../components/chrome';
+import { DiscardSheet, snapshot, useKeepEditing } from '../components/KeepEditing';
 import { CountryField } from '../components/CountryPicker';
 import { draftsFromRecords, EditorPhotos, photosToInput, type PhotoDraft } from '../components/EditorPhotos';
 import { CONCENTRATE_OPTIONS, TYPE_OPTIONS } from '../components/fieldOptions';
@@ -47,6 +48,12 @@ export function LogEditor(p: { id: string | null }) {
   // Set when the pending uploads belong elsewhere now (saved).
   const handedOff = useRef(false);
   const loaded = useRef(!!form);
+  // 0.69.2: Cancel and a swipe back ask once anything has changed since it opened.
+  const base = useRef<string | null>(null);
+  if (form && base.current === null) base.current = snapshot(form, drafts);
+  const home = p.id ? `/log/${p.id}` : '/log';
+  const keeper = useKeepEditing({ dirty: () => !!form && base.current !== snapshot(form, drafts), leave: () => back(home) });
+  const sending = useRef(false); // a second tap on Save while the first is on its way does nothing
 
   useEffect(() => {
     if (!p.id || loaded.current) return;
@@ -64,8 +71,7 @@ export function LogEditor(p: { id: string | null }) {
   }, [p.id]);
 
   // A saved entry returns to its page (D41); a new one to the Log.
-  const home = p.id ? `/log/${p.id}` : '/log';
-  const cancel = () => back(home);
+  const cancel = keeper.cancel;
   if (!form) {
     return (
       <>
@@ -93,15 +99,18 @@ export function LogEditor(p: { id: string | null }) {
 
   async function save() {
     const input = checked();
-    if (!input) return;
+    if (!input || sending.current) return;
+    sending.current = true;
     setBusy(true);
     try {
       await saveEntry(p.id, input);
       play('log');
       handedOff.current = true;
+      keeper.done();
       back(home);
     } catch (e) {
-      setError(errorText(e));
+      setError((!p.id && timedOutNew(e, 'your Log')) || errorText(e));
+      sending.current = false;
       setBusy(false);
     }
   }
@@ -163,6 +172,11 @@ export function LogEditor(p: { id: string | null }) {
           </button>
         </div>
       </div>
+      {p.id ? (
+        <DiscardSheet keeper={keeper} title="Discard your changes?" message="The entry stays as it was before you started editing." />
+      ) : (
+        <DiscardSheet keeper={keeper} title="Discard this entry?" message="Nothing you’ve filled in will be kept." />
+      )}
     </>
   );
 }
