@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D84 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D85 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -144,7 +144,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D85) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D86) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -168,7 +168,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D84.
+- Reopen any decision D1–D85.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -260,6 +260,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   `LOOK_KEYS`, `LOOK_BG` and `look.js` (`gems.test.ts` checks they agree); a new look or colour set needs **no
   migration** since D76 (the app checks them: `validateAppearance`; reading back, `loadAppearance` shows the default
   for one it doesn't know).
+- Website polish (D85): things on the website arrive once (phone, rows, chips, blocks rising); call `arrived(page)` in
+  `website.spec.ts` before axe or anything judging colours, or a half-faded chip reads as faint words. Only `drift1`,
+  `drift2`, `holo` and `holo-text` may loop (a test lists them). The top bar holds Open app and Sign up in one spot,
+  one hidden (`visibility`) at a time: measure only the one showing (`>> visible=true`).
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -347,7 +351,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
-- **Dev:** 0.73.1, the same as live.
+- **Dev:** 0.74.0 (2026-11-03): the website polished in Apple's style (to-do item 15), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -382,6 +386,10 @@ Each is a job for its own conversation; the summary lists what each covers.
 14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
    effective age assurance", so in law children can use the app; for now the children's access assessment finds
    they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
+15. **The website, polished in Apple's style** (big; Anton, 2026-11-03, a test of the `apple-design` skill before
+   using it on the app): **on dev** in 0.74.0 (2026-11-03), D85. Buttons press in at once, things move once, Sign up
+   in the top bar, the features in one panel, an iPhone-style slider, Reduce Transparency and Increase Contrast.
+   Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga. Waiting for "go live". Next: the same review on the app.
 
 ### Done (newest first)
 
