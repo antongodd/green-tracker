@@ -265,12 +265,12 @@ export function People() {
     onSelect: () =>
       ask({
         title: `Block @${username}?`,
-        message: 'Follows between you are removed both ways, and they can’t find or request you. They aren’t told. You can undo this in More → Blocked people.',
+        message: 'Follows between you are removed both ways, and they can’t find or request you. They aren’t told. You can undo this in Settings → Blocked people.',
         label: 'Block',
         run: () => api.block(username),
       }),
   });
-  const view = (username: string): SheetOption => ({ label: 'View leaderboard', onSelect: () => navigate(`/u/${encodeURIComponent(username)}`) });
+  const view = (username: string): SheetOption => ({ label: 'View Leaderboard', onSelect: () => navigate(`/u/${encodeURIComponent(username)}`) });
 
   const pending = me.pendingRequests ?? requests?.length ?? 0;
   return (
@@ -431,7 +431,7 @@ export function People() {
                 </div>
               ) : (
                 <EmptyCard art="following" title="Not following anyone" compact>
-                  <p>You’re not following anyone yet. Search for a username above.</p>
+                  <p>Search for a username above to follow a friend.</p>
                 </EmptyCard>
               ))}
           </div>

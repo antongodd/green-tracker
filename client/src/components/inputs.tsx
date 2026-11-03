@@ -126,7 +126,7 @@ export function RatingInput(p: { id: string; rating: RatingKey; label: string; v
         </span>
         {typing === null ? (
           <button type="button" class={`val${v === null ? ' none' : ''}`} onClick={() => setTyping(v === null ? '' : formatScore(v))} aria-label={`${p.label}: ${v === null ? 'unrated' : formatScore(v)}. Tap to type a value`}>
-            {v === null ? '—' : formatScore(v)}
+            {v === null ? '–' : formatScore(v)}
           </button>
         ) : (
           <input
@@ -168,7 +168,7 @@ export function HitTimeInput(p: { value: number | null; onChange: (v: number | n
   return (
     <div class="hit">
       <div class="hit-top">
-        <span>Hit time</span>
+        <span>Time to kick in</span>
         <span class="d">
           {formatHitTime(p.value)}
           {p.value !== null && (
@@ -187,7 +187,7 @@ export function HitTimeInput(p: { value: number | null; onChange: (v: number | n
         bigStep={60}
         value={p.value}
         onChange={p.onChange}
-        label="Hit time"
+        label="Time to kick in"
         valueText={formatHitTime(p.value)}
       />
       <div class="ticks" aria-hidden="true">

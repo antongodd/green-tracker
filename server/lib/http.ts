@@ -21,14 +21,14 @@ export async function jsonBody(c: Context): Promise<Record<string, unknown>> {
   try {
     body = await c.req.json();
   } catch {
-    fail(400, 'bad_request', 'The request could not be read.');
+    fail(400, 'bad_request', 'The request couldn’t be read.');
   }
-  if (!body || typeof body !== 'object' || Array.isArray(body)) fail(400, 'bad_request', 'The request could not be read.');
+  if (!body || typeof body !== 'object' || Array.isArray(body)) fail(400, 'bad_request', 'The request couldn’t be read.');
   return body as Record<string, unknown>;
 }
 
 export function str(body: Record<string, unknown>, key: string): string {
   const v = body[key];
-  if (typeof v !== 'string') fail(400, 'bad_request', 'The request is missing something.');
+  if (typeof v !== 'string') fail(400, 'bad_request', 'Something’s missing. Please try again.');
   return v;
 }

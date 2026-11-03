@@ -47,7 +47,7 @@ test('saved purchases fold into rows: date, Latest on the newest, amount · tota
   expect(await rows()).toEqual([
     ['1 Aug 2026', '7g · £17.50 · Grasshopper Farms Craft Collective', '£2.50/g'],
     ['14 Sep 2026Latest', '3.5g · £9.50 · Cookies', '£2.71/g'],
-    ['No date', '£12.00', '—'],
+    ['No date', '£12.00', '–'],
   ]);
   await expect(page.locator('.tag-latest')).toHaveCount(1);
   await expect(card(2).locator('.tag-latest')).toHaveText('Latest');
@@ -97,7 +97,7 @@ test('Add purchase opens a new one at the bottom, dated today, with the cursor i
   await expect(row(4).locator('.warn')).toHaveText('Needs a total paid to be kept');
   await expect(card(4).locator('.pcard-foot .warn')).toHaveText('Needs a total paid to be kept');
   expect(await row(4).locator('.warn').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(240, 169, 59)');
-  await expect(row(4).locator('.r')).toHaveText('—');
+  await expect(row(4).locator('.r')).toHaveText('–');
   await card(4).getByLabel('Amount (g)').fill('1');
   await card(4).getByLabel('Total paid').fill('3');
   await expect(row(4).locator('.r')).toHaveText('£3.00/g');

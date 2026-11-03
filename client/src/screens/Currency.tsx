@@ -64,7 +64,7 @@ export function CurrencyScreen() {
       <Header title="Main currency" left={<BackButton to="/more" />} />
       <main class="screen privacy currency-screen">
         <div class="wrap">
-          <p class="footnote priv-foot">Prices shown together are in this currency, so everything can be compared. Each purchase keeps the currency you paid in.</p>
+          <p class="footnote priv-foot">Totals and comparisons use this currency. Each purchase keeps the currency you paid in.</p>
         </div>
         {error && (
           <p class="error pv-error" role="alert">
@@ -79,7 +79,7 @@ export function CurrencyScreen() {
           </div>
         )}
         {group(
-          'Usual',
+          'Common',
           CURRENCIES.filter((c) => (COMMON_CURRENCIES as readonly string[]).includes(c.code)),
         )}
         {group(

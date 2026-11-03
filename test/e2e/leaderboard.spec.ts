@@ -107,7 +107,7 @@ test('All types ranks by value for money and price, edibles as 20mg for 1g of fl
   // The edible's page says how its value for money is worked out, and keeps its real price.
   await rows().nth(6).click();
   await expect(page.locator('.vfm b')).toHaveText('8.00');
-  await expect(page.locator('.vfm', { hasText: 'Value for money' })).toContainText('Overall ÷ latest £ per 20mg (the same effect as 1g of flower) · higher is better');
+  await expect(page.locator('.vfm', { hasText: 'Value for money' })).toContainText('Overall score divided by the latest price per 20mg (counted as 1g of flower). Higher is better.');
   await expect(page.locator('.purchase .u')).toHaveText('£0.05/mg');
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(rows()).toHaveCount(7);
@@ -118,7 +118,7 @@ test('All types ranks by value for money and price, edibles as 20mg for 1g of fl
 test('filter to Edibles: ranks renumber, the #1 mark follows, tiles recalculate, TOTAL 0g', async () => {
   await pill('Type').selectOption('edibles');
   await expect(pillBox('Type')).toHaveClass(/active/);
-  await expect(pillBox('Type')).toContainText('Type: Edibles');
+  await expect(pillBox('Type')).toContainText('Type: Edible');
   await expect(rows()).toHaveCount(3);
   await expect(rows().nth(0)).toContainText('Camino Midnight Blueberry');
   await expect(rows().nth(0).locator('.rk')).toHaveText('1');
@@ -142,7 +142,7 @@ test('Rank by Price per mg: highest first, relabelled score, price also on the m
 
 test('the view is remembered on this device', async () => {
   await page.reload();
-  await expect(pillBox('Type')).toContainText('Edibles');
+  await expect(pillBox('Type')).toContainText('Edible');
   await expect(pillBox('Rank by')).toContainText(/Price/);
   await expect(rows()).toHaveCount(3);
 });
@@ -153,7 +153,8 @@ test('Rank by Consistency under Concentrate hides concentrates without it', asyn
   await expect(rows()).toHaveCount(1);
   await expect(rows().nth(0)).toContainText('Moroccan Hash');
   await expect(rows().nth(0).locator('.score')).toHaveText(/7\.8\s*Consistency/i);
-  await expect(tile('Products')).toHaveText('1');
+  await expect(tile('Product')).toHaveText('1');
+  await expect(page.locator('.tile .cap').first()).toHaveText('Product'); // 1 product, not 1 products (0.69.8)
 });
 
 test('a Rank by that the new filter lacks falls back to Overall and overwrites the stored setting', async () => {
@@ -166,17 +167,17 @@ test('a Rank by that the new filter lacks falls back to Overall and overwrites t
 
 test('empty states: filtered, and ranking (which wins when both apply)', async () => {
   await pill('Type').selectOption('pre_roll');
-  await expect(page.getByRole('heading', { name: 'No Pre roll yet' })).toBeVisible();
-  await expect(page.getByText('You have 16 products, but none are Pre roll.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No Pre-roll products yet' })).toBeVisible();
+  await expect(page.getByText('You have 16 products, but none in Pre-roll.')).toBeVisible();
   await expect(tile('Products')).toHaveText('0');
   await shot(page, '22-filtered-empty');
 
   await pill('Rank by').selectOption('smell');
   await expect(page.getByRole('heading', { name: 'Nothing rated on Smell' })).toBeVisible();
-  await expect(page.getByText('None of your Pre roll products has a Smell rating yet.')).toBeVisible();
+  await expect(page.getByText('None of your Pre-roll products has a Smell rating yet.')).toBeVisible();
   await page.getByRole('button', { name: 'Rank by Overall' }).click();
   await expect(pill('Rank by')).toHaveValue('overall');
-  await expect(page.getByRole('heading', { name: 'No Pre roll yet' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No Pre-roll products yet' })).toBeVisible();
   await page.getByRole('button', { name: 'Show all types' }).click();
   await expect(rows()).toHaveCount(16);
 });

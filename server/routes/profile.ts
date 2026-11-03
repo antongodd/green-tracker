@@ -21,7 +21,7 @@ interface Row {
 /** Your own photo, any variant (the original is used to re-frame and to export). */
 profile.get('/photo/:variant', async (c) => {
   const variant = c.req.param('variant') as PhotoVariant;
-  if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'Not found.');
+  if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'That isn’t here any more.');
   const userId = c.var.user!.id;
   const row = await c.env.DB.prepare('SELECT original_set, image_set FROM profile_photos WHERE user_id = ?1').bind(userId).first<Row>();
   if (!row) fail(404, 'not_found', 'You have no profile photo.');
@@ -39,7 +39,7 @@ profile.put('/photo', async (c) => {
   const body = await jsonBody(c);
   const upload = str(body, 'upload');
   const crop = parseCrop(body.crop);
-  if (!crop) fail(400, 'invalid_photos', 'The photo’s framing could not be read.');
+  if (!crop) fail(400, 'invalid_photos', 'The photo’s framing couldn’t be read.');
   // A cut-out set (D26) is never a profile photo: profile photos stay JPEG.
   const up = await db.prepare('SELECT has_original FROM uploads WHERE id = ?1 AND user_id = ?2 AND cutout = 0').bind(upload, userId).first<{ has_original: number }>();
   if (!up) fail(400, 'photo_upload_missing', 'The photo upload has expired. Please try again.');

@@ -36,9 +36,9 @@ function BoardEmpty(p: { kind: 'empty' | 'filtered-empty' | 'rank-empty'; view: 
   }
   if (p.kind === 'filtered-empty') {
     return (
-      <EmptyCard art="filter" title={`No ${typeLabel} yet`}>
+      <EmptyCard art="filter" title={`No ${typeLabel} products yet`}>
         <p>
-          You have {p.total} {p.total === 1 ? 'product' : 'products'}, but none {p.total === 1 ? 'is' : 'are'} {typeLabel}.
+          You have {p.total} {p.total === 1 ? 'product' : 'products'}, but none in {typeLabel}.
         </p>
         <button class="btn secondary" style={{ width: 'auto' }} onClick={p.onAll}>
           Show all types
@@ -115,7 +115,7 @@ export function Leaderboard() {
             <ControlRow filter={view.filter} rankBy={view.rankBy} onFilter={(filter) => change({ ...view, filter })} onRankBy={(rankBy) => change({ ...view, rankBy })} onKey={() => setShowKey(true)} />
             <Tiles
               tiles={[
-                { value: String(tiles.products), label: 'Products' },
+                { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
                 { value: formatWeightTotal(tiles.totalGrams ?? 0), label: 'Total' },
               ]}
@@ -173,7 +173,7 @@ export function Archive() {
       <Header title="Archive" left={<BackButton to="/more" />} />
       <main class="screen">
         <div class="wrap" style={{ padding: '12px 16px' }}>
-          <p class="lead">Archived products are kept but hidden from your Leaderboard, Log, tiles and followers.</p>
+          <p class="lead">Archived products are kept but hidden from your Leaderboard, Log, totals and followers.</p>
           {error && (
             <p class="error" role="alert" style={{ marginTop: '8px' }}>
               {error}
@@ -182,7 +182,7 @@ export function Archive() {
         </div>
         {products && products.length === 0 && (
           <EmptyCard art="archive" title="Nothing archived">
-            <p>Products you archive from their profile appear here.</p>
+            <p>Products you archive from their product page appear here.</p>
           </EmptyCard>
         )}
         <div class="rows">
@@ -190,7 +190,7 @@ export function Archive() {
             <div class="archived-row" key={r.product.id}>
               <ProductRow product={r.product} rank={r.rank} band={null} first={false} onPhoto={() => setPhotosOf(r.product)} />
               <button class="btn secondary unarchive" style={{ width: 'auto', height: '40px' }} onClick={() => unarchive(r.product.id)}>
-                Un-archive
+                Bring back
               </button>
             </div>
           ))}

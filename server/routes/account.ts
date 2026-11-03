@@ -57,7 +57,7 @@ account.post('/passkeys/verify', requireUser(), async (c) => {
     expectedOrigin: c.env.ORIGIN,
     expectedRPID: c.env.RP_ID,
   }).catch(() => ({ verified: false as const }));
-  if (!verification.verified) fail(400, 'passkey_failed', 'The passkey could not be checked. Please try again.');
+  if (!verification.verified) fail(400, 'passkey_failed', 'The passkey couldn’t be checked. Please try again.');
   const { credential } = verification.registrationInfo;
 
   const now = Date.now();

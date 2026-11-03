@@ -65,7 +65,7 @@ export function logEntryToInput(e: LogEntry): LogEntryInput {
  * names, types and countries follow exactly the same rules (and auto-capitalisation).
  */
 export function validateLogEntryInput(raw: unknown): { ok: true; value: LogEntryInput } | { ok: false; message: string } {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, message: 'The entry could not be read.' };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, message: 'The entry couldn’t be read.' };
   const r = raw as Record<string, unknown>;
   const shared = validateProductInput({
     name: r.name,
@@ -78,7 +78,7 @@ export function validateLogEntryInput(raw: unknown): { ok: true; value: LogEntry
     photos: r.photos,
   });
   if (!shared.ok) return { ok: false, message: shared.message.replace('Give the product a name.', 'Give the entry a name.') };
-  if (shared.value.photos.length > 1) return { ok: false, message: 'A log entry has one photo.' };
+  if (shared.value.photos.length > 1) return { ok: false, message: 'A Log entry has one photo.' };
   const amount = r.amount ?? null;
   if (amount !== null && (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || amount > PRODUCT_LIMITS.money)) {
     return { ok: false, message: 'Amount must be more than 0.' };

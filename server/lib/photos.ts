@@ -166,7 +166,7 @@ export async function serveImage(bucket: R2Bucket, ifNoneMatch: string | undefin
   const headers = { 'cache-control': 'private, no-cache', etag };
   if (ifNoneMatch === etag) return new Response(null, { status: 304, headers });
   const obj = await bucket.get(photoKey(userId, set, variant));
-  if (!obj) fail(404, 'not_found', 'Not found.');
+  if (!obj) fail(404, 'not_found', 'That isn’t here any more.');
   // JPEG, or PNG for a cut-out (D26): whatever the upload stored.
   const type = obj.httpMetadata?.contentType === 'image/png' ? 'image/png' : 'image/jpeg';
   return new Response(obj.body, { headers: { ...headers, 'content-type': type, 'content-length': String(obj.size) } });

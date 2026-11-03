@@ -185,10 +185,10 @@ test('Settings: change your email and your password', async ({ page }) => {
   await expect(page).toHaveURL(/\/more\/email$/);
   const fresh = emailOf(`new${username}`);
   await page.getByLabel('Email').fill(fresh);
-  await page.getByLabel('Your password').fill('wrong password');
+  await page.getByLabel('Current password').fill('wrong password');
   await page.getByRole('button', { name: 'Save email' }).click();
   await expect(page.getByRole('alert')).toHaveText('That password isn’t right.');
-  await page.getByLabel('Your password').fill(PASSWORD);
+  await page.getByLabel('Current password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Save email' }).click();
   await expect(page).toHaveURL(/\/more$/);
   await expect(page.getByRole('link', { name: /^Email/ })).toContainText(fresh);

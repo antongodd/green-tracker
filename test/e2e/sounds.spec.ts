@@ -97,7 +97,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   await page.getByRole('link', { name: 'Log' }).click();
   await page.locator('.fab').click();
   await page.getByLabel('Name').fill('Sour Diesel');
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page.locator('.lrow', { hasText: 'Sour Diesel' })).toBeVisible();
   await expectHeard(page, ['log:soft']);
   await page.locator('.lrow', { hasText: 'Sour Diesel' }).click();

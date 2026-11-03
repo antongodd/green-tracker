@@ -80,7 +80,7 @@ test('a counting rating takes its score’s colour; High where it doesn’t coun
   // An unrated one stays plain.
   await rate('burn').locator('.clr').click();
   await expect(rate('burn')).not.toHaveAttribute('data-heat');
-  await expect(rate('burn').locator('.rate-top .val')).toHaveText('—');
+  await expect(rate('burn').locator('.rate-top .val')).toHaveText('–');
 });
 
 test('on an edible High counts, so it’s coloured', async () => {
@@ -96,13 +96,13 @@ test('Overall is live in the Ratings heading, in its colour, and a dash when not
   const ov = page.locator('.gh-ov b');
   await expect(ov).toHaveText('7.5'); // (9.1 + 8.4 + 7.2 + 5.1) / 4
   expect(await ov.evaluate((e) => getComputedStyle(e).color)).toBe(scoreHeat('overall', (9.1 + 8.4 + 7.2 + 5.1) / 4));
-  await expect(page.getByText('Rated 5 of 5', { exact: true })).toBeVisible();
+  await expect(page.getByText('Rated 5 of 5 categories', { exact: true })).toBeVisible();
   await page.locator('#rate-burn-range').focus();
   await page.keyboard.press('End'); // Burn 10
   await expect(ov).toHaveText('8.7'); // (9.1 + 8.4 + 7.2 + 10) / 4
   expect(await ov.evaluate((e) => getComputedStyle(e).color)).toBe(scoreHeat('overall', (9.1 + 8.4 + 7.2 + 10) / 4));
   for (const key of ['look', 'smell', 'taste', 'burn']) await rate(key).locator('.clr').click();
-  await expect(ov).toHaveText('—');
+  await expect(ov).toHaveText('–');
   await expect(ov).toHaveClass(/\bnone\b/);
 });
 

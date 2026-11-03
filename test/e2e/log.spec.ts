@@ -124,7 +124,7 @@ test('a loose entry opens its page; Edit, and the edits save back to it', async 
   await expect(page.getByLabel('Amount (g)')).toHaveValue('3.5');
   await page.getByLabel('Amount (g)').fill('7');
   await shot(page, '41-log-editor');
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
   await expect(page.getByRole('region', { name: 'Details' })).toContainText('7g');
   await page.getByRole('link', { name: 'Back' }).click();
@@ -142,14 +142,14 @@ test('delete a loose entry behind a confirmation', async () => {
 });
 
 test('add a new loose entry', async () => {
-  await page.getByRole('button', { name: 'Add a log entry' }).click();
+  await page.getByRole('button', { name: 'Add a Log entry' }).click();
   await page.getByLabel('Name').fill('sour diesel');
   await page.getByLabel('Product type').selectOption('edibles');
   await expect(page.getByLabel('Amount (mg THC)')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Add to leaderboard' })).toHaveCount(0); // saved entries only
+  await expect(page.getByRole('button', { name: 'Add to Leaderboard' })).toHaveCount(0); // saved entries only
   await expect(page.getByRole('button', { name: 'Delete entry' })).toHaveCount(0);
   await page.getByLabel('Amount (mg THC)').fill('50');
-  await page.getByRole('button', { name: 'Save to log' }).click();
+  await page.getByRole('button', { name: 'Save to Log' }).click();
   await expect(group('No country').getByRole('link', { name: /Sour Diesel/ })).toBeVisible();
   await expect(tile('Total')).toHaveText('36g'); // edibles never count
 });
@@ -157,8 +157,8 @@ test('add a new loose entry', async () => {
 test('promotion: pre-filled from the entry, commits nothing until Save, asks before leaving', async () => {
   await group('United States').getByRole('link', { name: /Gary Payton/ }).click();
   // From the entry's page (D41).
-  await page.getByRole('button', { name: 'Add to leaderboard' }).click();
-  await expect(page.getByText('Add to leaderboard', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
+  await expect(page.getByText('Add to Leaderboard', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Name')).toHaveValue('Gary Payton');
   await expect(page.getByLabel('Country', { exact: true })).toHaveText('🇺🇸United States');
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
@@ -174,10 +174,10 @@ test('promotion: pre-filled from the entry, commits nothing until Save, asks bef
   await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
   // Back on the entry's page, unchanged.
   await expect(page.getByRole('heading', { level: 1, name: 'Gary Payton' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Add to leaderboard' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add to Leaderboard' })).toBeVisible();
 
   // Promote for real.
-  await page.getByRole('button', { name: 'Add to leaderboard' }).click();
+  await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: 'Gary Payton' })).toBeVisible();
   await expect(page.locator('.hero-photo img')).toBeVisible(); // the photo moved with it

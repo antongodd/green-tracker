@@ -8,7 +8,7 @@ import {
 } from './productTypes';
 import { headlinePrice, pricePerGramEquivalent, purchasedWeight, valueForMoney, type Purchase } from './money';
 import { categoryValue, overall, type Ratings } from './ratings';
-import { bandName, scoreBand, type Appearance, type Band } from './gems';
+import { scoreBand, type Appearance, type Band } from './gems';
 
 export interface RankableProduct {
   id: string;
@@ -185,13 +185,14 @@ export function placeText(rank: number, view: ViewState, whose: 'your' | 'their'
 }
 
 /**
- * The badge on a product's page (D48), or null for none: a product in a band names its
- * colour and place ("Amethyst · #3 on your Leaderboard"); your #1 without a band (below 8,
+ * The badge on a product's page (D48), or null for none: a product in a band shows its
+ * place ("#3 on your Leaderboard", in the band's colours; since 0.69.8 without the colour's
+ * name, which read as jargon); your #1 without a band (below 8,
  * or ranked by price or value for money) gets its place when #1 is marked.
  */
 export function placeBadge(place: Pick<RankedRow<RankableProduct>, 'rank' | 'band' | 'first'>, view: ViewState, whose: 'your' | 'their', appearance: Appearance): string | null {
   const where = placeText(place.rank, view, whose);
-  if (place.band) return `${bandName(appearance.preset, place.band)} · ${where}`;
+  if (place.band) return where;
   return place.first && appearance.markFirst ? where : null;
 }
 

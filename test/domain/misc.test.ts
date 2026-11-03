@@ -35,7 +35,7 @@ describe('Auto-capitalisation (§11 table, exactly)', () => {
 
 describe('Product type definition is complete (§7 one definition)', () => {
   it('declares every type in order, appended never inserted', () => {
-    expect(PRODUCT_TYPES.map((t) => t.label)).toEqual(['Flower', 'Concentrate', 'Edibles', 'Pre roll', 'Other', 'Not set']);
+    expect(PRODUCT_TYPES.map((t) => t.label)).toEqual(['Flower', 'Concentrate', 'Edible', 'Pre-roll', 'Other', 'Not set']);
   });
 
   it('every type has a label, a non-empty rating set, a unit, and consistent icon/filter declarations', () => {
@@ -60,7 +60,7 @@ describe('Product type definition is complete (§7 one definition)', () => {
   });
 
   it('filter: All plus Flower, Concentrate, Edibles, Pre roll; never 🚬', () => {
-    expect(filterOptions().map((o) => o.label)).toEqual(['All', 'Flower', 'Concentrate', 'Edibles', 'Pre roll']);
+    expect(filterOptions().map((o) => o.label)).toEqual(['All', 'Flower', 'Concentrate', 'Edible', 'Pre-roll']);
     expect(FILTER_TYPES.map((t) => t.filterEmoji)).toEqual(['🌿', '💧', '🍪', '💨']);
   });
 });

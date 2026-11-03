@@ -30,7 +30,7 @@ const GROUPS: { title: string; switches: Switch[] }[] = [
     switches: [
       { key: 'shareSource', label: 'Source', note: 'The brand or grower, e.g. Cookies. Shops and dealers go in Supplier, which is never shared.' },
       { key: 'shareCountry', label: 'Country', note: 'The flag and country name.' },
-      { key: 'sharePhotos', label: 'Product photos', note: 'Without them, followers see the type’s mark.' },
+      { key: 'sharePhotos', label: 'Product photos', note: 'Without them, followers see the leaf or other icon.' },
     ],
   },
   { title: 'You', switches: [{ key: 'shareProfilePhoto', label: 'My profile photo', note: 'Off: everyone else sees your letter instead.' }] },

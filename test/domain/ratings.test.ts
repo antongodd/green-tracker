@@ -92,12 +92,12 @@ describe('Hit time', () => {
 describe('Editor guidance text is per type (§8)', () => {
   it('never tells an edible that High doesn’t count', () => {
     expect(overallExplanation('edibles')).toContain('Taste ⅓ and High ⅔');
-    expect(overallExplanation('edibles')).not.toContain("doesn't count");
+    expect(overallExplanation('edibles')).not.toContain("doesn’t count");
   });
 
   it('tells flower, concentrate and pre roll that High doesn’t count', () => {
     expect(overallExplanation('flower')).toBe(
-      "Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn't count. Blank categories are left out.",
+      "Overall is the average of Look, Smell, Taste and Burn. High is rated but doesn’t count. Blank categories are left out.",
     );
     expect(overallExplanation('concentrate')).toContain('Look, Consistency, Smell, Taste and Burn');
     expect(overallExplanation('pre_roll')).toContain('Smell, Taste and Burn');

@@ -159,7 +159,7 @@ auth.post('/signin/verify', async (c) => {
   const body = await jsonBody(c);
   const challenge = await takeChallenge(c, str(body, 'challengeId'), 'authenticate');
   const response = body.response as AuthenticationResponseJSON;
-  if (typeof response?.id !== 'string') fail(400, 'bad_request', 'The request could not be read.');
+  if (typeof response?.id !== 'string') fail(400, 'bad_request', 'The request couldn’t be read.');
 
   const passkey = await c.env.DB.prepare('SELECT p.id, p.user_id, p.public_key, p.counter, p.transports, u.username FROM passkeys p JOIN users u ON u.id = p.user_id WHERE p.id = ?1')
     .bind(response.id)
@@ -178,7 +178,7 @@ auth.post('/signin/verify', async (c) => {
       transports: parseTransports(passkey.transports),
     },
   }).catch(() => ({ verified: false as const, authenticationInfo: null }));
-  if (!verification.verified || !verification.authenticationInfo) fail(400, 'passkey_failed', 'The passkey could not be checked. Please try again.');
+  if (!verification.verified || !verification.authenticationInfo) fail(400, 'passkey_failed', 'The passkey couldn’t be checked. Please try again.');
 
   await c.env.DB.prepare('UPDATE passkeys SET counter = ?1, last_used_at = ?2 WHERE id = ?3')
     .bind(verification.authenticationInfo.newCounter, Date.now(), passkey.id)

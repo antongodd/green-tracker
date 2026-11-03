@@ -117,7 +117,7 @@ export function LogEditor(p: { id: string | null }) {
 
   return (
     <>
-      <Header title={p.id ? form.name || 'Log entry' : 'New log entry'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
+      <Header title={p.id ? form.name || 'Log entry' : 'New Log entry'} left={<button class="hbtn" onClick={cancel}>Cancel</button>} />
       <main class="screen has-savebar">
         <form
           class="editor"
@@ -167,7 +167,7 @@ export function LogEditor(p: { id: string | null }) {
             </p>
           )}
           <button class="btn primary has-tick" onClick={save} disabled={busy || uploading || !online}>
-            {busy ? 'Saving…' : uploading ? 'Uploading photo…' : 'Save to log'}
+            {busy ? 'Saving…' : uploading ? 'Uploading photo…' : 'Save to Log'}
             {!busy && !uploading && online && <Tick />}
           </button>
         </div>

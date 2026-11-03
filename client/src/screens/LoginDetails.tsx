@@ -154,7 +154,7 @@ export function ChangeEmail() {
               <label for="new-email">Email</label>
               <input id="new-email" class="input" type="email" value={email} onInput={(e) => setEmail(e.currentTarget.value)} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellcheck={false} />
             </div>
-            <PasswordField id="email-password" label="Your password" value={password} onInput={setPassword} autoComplete="current-password" />
+            <PasswordField id="email-password" label="Current password" value={password} onInput={setPassword} autoComplete="current-password" />
           </div>
           {error && (
             <p class="error" role="alert">
@@ -199,6 +199,7 @@ export function ChangePassword() {
       <Header title="Password" left={<BackButton to="/more" />} />
       <main class="screen">
         <form class="wrap stack" style={{ paddingTop: '16px' }} onSubmit={save}>
+          <p class="lead">After a change, any other phone or computer is signed out.</p>
           <div class="fgroup">
             <PasswordField id="current-password" label="Current password" value={current} onInput={(v) => (setCurrent(v), setDone(false))} autoComplete="current-password" />
             <PasswordField id="new-password" label="New password" value={password} onInput={(v) => (setPassword(v), setDone(false))} autoComplete="new-password" hint={<PasswordHint password={password} />} />

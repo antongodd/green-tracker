@@ -34,7 +34,7 @@ describe('loose log entries', () => {
   it('has one photo at most', async () => {
     const res = await me.post('/api/log', entry({ photos: [{ upload: await newSet(me, 'a'), crop: null }, { upload: await newSet(me, 'b'), crop: null }] }));
     expect(res.status).toBe(400);
-    expect(res.json.message).toBe('A log entry has one photo.');
+    expect(res.json.message).toBe('A Log entry has one photo.');
   });
 
   it('swaps its photo for a new one in a single edit (D51)', async () => {

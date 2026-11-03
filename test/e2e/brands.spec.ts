@@ -209,18 +209,20 @@ test('the Sources tab: every name as a card with its best product’s photo, to 
   await owner.goto('/');
   await owner.getByRole('link', { name: 'Sources', exact: true }).click();
   await expect(owner).toHaveURL(/\/sources$/);
-  await expect(owner.locator('.hdr .title')).toHaveText('Brands & suppliers');
+  await expect(owner.locator('.hdr .title')).toHaveText('Sources');
+  // The title matches the tab and is never cut off (it was "Brands & supplie…" before 0.69.8).
+  expect(await owner.locator('.hdr .title span').evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
   await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Sources');
   const names = () => owner.locator('.scard .nm');
   const card = (name: string) => owner.locator('.scard', { has: owner.locator('.nm', { hasText: name }) });
   // Most products first, then A–Z.
   await expect(names()).toHaveText(['Grasshopper', "Barney's", 'Cookies']);
   // How many, what you spent on it (D62), then the best.
-  await expect(card('Grasshopper').locator('.sub')).toHaveText(['4 products · £54.00 spent', 'best: Amnesia Haze']);
+  await expect(card('Grasshopper').locator('.sub')).toHaveText(['4 products · £54.00 spent', 'Best: Amnesia Haze']);
   await expect(card('Grasshopper').locator('.role')).toHaveText(['Brand', 'Bought here']);
   await expect(card('Grasshopper').locator('.avg')).toHaveText('Average 7.5');
-  await expect(card("Barney's").locator('.sub')).toHaveText(['2 products · £35.00 spent', 'best: Gelato']);
-  await expect(card('Cookies').locator('.sub')).toHaveText(['2 products · £35.00 spent', 'best: Gelato']);
+  await expect(card("Barney's").locator('.sub')).toHaveText(['2 products · £35.00 spent', 'Best: Gelato']);
+  await expect(card('Cookies').locator('.sub')).toHaveText(['2 products · £35.00 spent', 'Best: Gelato']);
   await expect(card("Barney's").locator('.role')).toHaveText(['Bought here']);
   await expect(card('Cookies').locator('.role')).toHaveText(['Brand']);
   // The best product's photo, or its type's mark without one.

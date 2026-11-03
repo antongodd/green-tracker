@@ -40,7 +40,7 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
   await expect(page.locator('main .list .li')).toHaveCount(16);
   // D61: the Settings tab, titled so; Brands & suppliers moved to its own tab.
   await expect(page.locator('.hdr .title')).toHaveText('Settings');
-  await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Followers see: Leaderboard, Source, Country, Photos');
+  await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Leaderboard, Source, Country, Photos, Posts');
   const rows = await page.locator('main .list .li').evaluateAll((els) =>
     els.map((e) => ({ label: e.querySelector('.main')!.textContent, icon: !!e.querySelector('.li-ic svg'), tint: e.querySelector('.li-ic')?.classList[1] ?? null, href: e.getAttribute('href') })),
   );
@@ -48,9 +48,9 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     // D80: your email and password; Face ID optional; recovery codes gone.
     { label: `Email${emailOf(name)}`, icon: true, tint: 'teal', href: '/more/email' },
     { label: 'Password', icon: true, tint: 'violet', href: '/more/password' },
-    { label: 'Face ID (passkeys)', icon: true, tint: 'green', href: '/more/passkeys' },
+    { label: 'Face ID', icon: true, tint: 'green', href: '/more/passkeys' },
     { label: 'Blocked people', icon: true, tint: 'green', href: '/more/blocked' },
-    { label: 'What followers seeFollowers see: Leaderboard, Source, Country, Photos', icon: true, tint: 'violet', href: '/more/privacy' },
+    { label: 'What followers seeLeaderboard, Source, Country, Photos, Posts', icon: true, tint: 'violet', href: '/more/privacy' },
     { label: 'Look', icon: true, tint: 'violet', href: '/more/look' }, // D64; its own page since D71
     { label: 'Leaderboard top', icon: true, tint: 'violet', href: '/more/top' }, // D64; D71
     { label: 'Leaderboard colours', icon: true, tint: 'gem', href: '/more/colours' }, // D48; D71

@@ -82,7 +82,7 @@ export function BrandsList() {
   if (sort === 'average') shown.sort((a, b) => (a.average === b.average ? 0 : a.average === null ? 1 : b.average === null ? -1 : b.average - a.average) || a.name.localeCompare(b.name));
   return (
     <>
-      <Header title="Brands & suppliers" right={<MeButton />} />
+      <Header title="Sources" right={<MeButton />} />
       <main class="screen">
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
@@ -93,7 +93,7 @@ export function BrandsList() {
         )}
         {products && names.length === 0 && (
           <EmptyCard art="filter" title="No brands or suppliers yet">
-            <p>Add a Source to a product, or a Supplier to a purchase, and it shows here.</p>
+            <p>Add a brand to a product, or a supplier to a purchase, and it shows here.</p>
           </EmptyCard>
         )}
         {names.length > 0 && (
@@ -125,7 +125,7 @@ export function BrandsList() {
                   <span class="sub">
                     {n.products} {n.products === 1 ? 'product' : 'products'} · {formatMoney(n.spent, main)} spent
                   </span>
-                  {n.best && <span class="sub best">best: {n.best.name}</span>}
+                  {n.best && <span class="sub best">Best: {n.best.name}</span>}
                   <RoleTags brand={n.brand > 0} shop={n.shop > 0} />
                 </a>
               ))}
@@ -197,7 +197,7 @@ export function BrandPage(p: { name: string }) {
             </p>
             <Tiles
               tiles={[
-                { value: String(tiles.products), label: 'Products' },
+                { value: String(tiles.products), label: tiles.products === 1 ? 'Product' : 'Products' },
                 { value: tiles.average === null ? '–' : formatScore(tiles.average), label: 'Average' },
                 { value: formatMoney(spentOn(products!, key), main), label: 'Spent' },
               ]}

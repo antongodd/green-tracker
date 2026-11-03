@@ -124,7 +124,7 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   // From here on it's known: their pages put it on before they're drawn, with no fade.
   await recordLooks(fan);
   await fan.locator('.row', { hasText: 'Alpha' }).click();
-  await expect(fan.locator('.gem-badge')).toHaveText('Rainbow · #1 on their Leaderboard');
+  await expect(fan.locator('.gem-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('class', /pal-metals/);
   await fan.getByRole('link', { name: 'Acme' }).click();
   await expect(fan.locator('.brand-lead')).toBeVisible();
@@ -136,7 +136,7 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   await expect(fan.locator('.row', { hasText: 'Alpha' })).toBeVisible();
   // A fresh visit to a product page (as from a link) gets it from the product's own reply too.
   await fan.goto(`/u/${ownerName}/p/${ids.Bravo}`);
-  await expect(fan.locator('.gem-badge')).toHaveText('Emerald · #2 on their Leaderboard');
+  await expect(fan.locator('.gem-badge')).toHaveText('#2 on their Leaderboard');
   await expect(html(fan)).toHaveAttribute('data-look', 'outrun');
   await recordLooks(fan);
   await fan.getByRole('link', { name: 'Back' }).click();

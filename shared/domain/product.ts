@@ -151,7 +151,7 @@ const STRAIN_KEYS = new Set<string>(STRAIN_TYPES.map((s) => s.key));
  */
 export function validateProductInput(raw: unknown): ValidationResult {
   const fail = (message: string): ValidationResult => ({ ok: false, message });
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return fail('The product could not be read.');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return fail('The product couldn’t be read.');
   const r = raw as Record<string, unknown>;
 
   const text = (key: string, max: number, opts: { capitalise?: boolean } = {}): string | null | undefined => {
@@ -193,10 +193,10 @@ export function validateProductInput(raw: unknown): ValidationResult {
   if (dateTried !== null && !(typeof dateTried === 'string' && isIsoDate(dateTried))) return fail('Date tried isn’t a valid date.');
 
   const hit = r.hitTimeMinutes ?? null;
-  if (hit !== null && !isValidHitTime(hit)) return fail('Hit time must be 0–3 hours in 15-minute steps.');
+  if (hit !== null && !isValidHitTime(hit)) return fail('Time to kick in must be 0–3 hours in 15-minute steps.');
 
   const ratingsIn = r.ratings ?? {};
-  if (typeof ratingsIn !== 'object' || ratingsIn === null || Array.isArray(ratingsIn)) return fail('The ratings could not be read.');
+  if (typeof ratingsIn !== 'object' || ratingsIn === null || Array.isArray(ratingsIn)) return fail('The ratings couldn’t be read.');
   const ratings: Partial<Record<RatingKey, number | null>> = {};
   for (const [key, value] of Object.entries(ratingsIn)) {
     if (!(RATING_CATEGORIES as readonly string[]).includes(key)) return fail('Unknown rating category.');
@@ -205,11 +205,11 @@ export function validateProductInput(raw: unknown): ValidationResult {
   }
 
   const purchasesIn = r.purchases ?? [];
-  if (!Array.isArray(purchasesIn)) return fail('The purchases could not be read.');
+  if (!Array.isArray(purchasesIn)) return fail('The purchases couldn’t be read.');
   if (purchasesIn.length > PRODUCT_LIMITS.purchases) return fail('Too many purchases.');
   const purchases: PurchaseInput[] = [];
   for (const pRaw of purchasesIn) {
-    if (!pRaw || typeof pRaw !== 'object') return fail('A purchase could not be read.');
+    if (!pRaw || typeof pRaw !== 'object') return fail('A purchase couldn’t be read.');
     const p = pRaw as Record<string, unknown>;
     // A purchase with no total paid is discarded on save (brief §9).
     if (p.totalPaid === null || p.totalPaid === undefined) continue;
@@ -228,23 +228,23 @@ export function validateProductInput(raw: unknown): ValidationResult {
     if (typeof sup === 'string') {
       supplier = autoCapitalise(sup) || null;
       if (supplier && supplier.length > PRODUCT_LIMITS.shortText) return fail(`Keep supplier to ${PRODUCT_LIMITS.shortText} characters.`);
-    } else if (sup !== null && sup !== undefined) return fail('A purchase could not be read.');
+    } else if (sup !== null && sup !== undefined) return fail('A purchase couldn’t be read.');
     const id = typeof p.id === 'string' ? p.id : undefined;
     purchases.push({ ...(id ? { id } : {}), date, amount, totalPaid: p.totalPaid, supplier, ...(cur !== undefined ? { currency: cur } : {}), ...(rate !== null ? { rate } : {}) });
   }
 
   const photosIn = r.photos ?? [];
-  if (!Array.isArray(photosIn)) return fail('The photos could not be read.');
+  if (!Array.isArray(photosIn)) return fail('The photos couldn’t be read.');
   if (photosIn.length > MAX_PHOTOS_PER_PRODUCT) return fail(`Up to ${MAX_PHOTOS_PER_PRODUCT} photos per product.`);
   const photos: PhotoInput[] = [];
   for (const phRaw of photosIn) {
-    if (!phRaw || typeof phRaw !== 'object') return fail('A photo could not be read.');
+    if (!phRaw || typeof phRaw !== 'object') return fail('A photo couldn’t be read.');
     const ph = phRaw as Record<string, unknown>;
     const id = typeof ph.id === 'string' ? ph.id : undefined;
     const upload = typeof ph.upload === 'string' ? ph.upload : undefined;
-    if (!id && !upload) return fail('A photo could not be read.');
+    if (!id && !upload) return fail('A photo couldn’t be read.');
     const crop = parseCrop(ph.crop);
-    if (crop === undefined) return fail('A photo crop could not be read.');
+    if (crop === undefined) return fail('A photo crop couldn’t be read.');
     photos.push({ ...(id ? { id } : {}), ...(upload ? { upload } : {}), crop });
   }
 

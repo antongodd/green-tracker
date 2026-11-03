@@ -27,7 +27,7 @@ uploads.post('/', async (c) => {
   try {
     form = await c.req.formData();
   } catch {
-    fail(400, 'bad_upload', 'The photo could not be read.');
+    fail(400, 'bad_upload', 'The photo couldn’t be read.');
   }
   const part = (name: string) => {
     const v = form.get(name);
@@ -36,7 +36,7 @@ uploads.post('/', async (c) => {
   const original = part('original');
   const cropped = part('cropped');
   const thumb = part('thumb');
-  if (!cropped || !thumb) fail(400, 'bad_upload', 'The photo could not be read.');
+  if (!cropped || !thumb) fail(400, 'bad_upload', 'The photo couldn’t be read.');
   const cutout = form.get('cutout') === '1';
   for (const [file, max, png] of [
     [original, MAX_IMAGE_BYTES, false],
@@ -92,7 +92,7 @@ photos.use('*', requireUser());
  */
 photos.get('/:id/:variant', async (c) => {
   const variant = c.req.param('variant') as PhotoVariant;
-  if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'Not found.');
+  if (!PHOTO_VARIANTS.includes(variant)) fail(404, 'not_found', 'That isn’t here any more.');
   const me = c.var.user!.id;
   const row = await c.env.DB.prepare(
     `SELECT ph.user_id, ph.original_set, ph.image_set, ph.product_id, p.private, p.archived,
@@ -125,7 +125,7 @@ photos.post('/:id/crop', async (c) => {
   const body = await jsonBody(c);
   const upload = str(body, 'upload');
   const crop = parseCrop(body.crop);
-  if (crop === undefined) fail(400, 'invalid_photos', 'A photo crop could not be read.');
+  if (crop === undefined) fail(400, 'invalid_photos', 'A photo crop couldn’t be read.');
   const db = c.env.DB;
   const row = await db.prepare(`SELECT ${PHOTO_COLUMNS} FROM photos WHERE id = ?1 AND user_id = ?2`).bind(id, userId).first<PhotoRow>();
   if (!row) fail(404, 'not_found', 'That photo no longer exists.');
