@@ -41,7 +41,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('radio', { name: 'Hybrid' }).click();
   await page.getByLabel('Country', { exact: true }).click();
   await page.keyboard.type('usa');
-  await page.getByRole('dialog', { name: 'Choose a country' }).getByRole('button', { name: 'United States' }).click();
+  await page.getByRole('group', { name: 'Countries' }).getByRole('button', { name: 'United States' }).click();
 
   await rate(page, 'Look', '9.2');
   await rate(page, 'Smell', '9');

@@ -97,19 +97,13 @@ test('the lights are behind every screen, drifting, and stay put as you scroll',
   expect(low[2]!, `violet, not green ${low}`).toBeGreaterThan(low[1]!);
 });
 
-test('the screens carry no lights of their own; overlays cover the lights', async () => {
+test('the screens carry no lights of their own; signed out the lights are there too', async () => {
   for (const path of ['/', '/log', '/people', '/more', '/more/archive', '/products/new']) {
     await page.goto(path);
     await expect(page.locator('main.screen')).toBeVisible();
     expect(await page.locator('main.screen').evaluate((m) => getComputedStyle(m).backgroundImage), path).toBe('none');
   }
-  // The country picker covers the editor in the plain background.
-  await page.getByLabel('Country', { exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Choose a country' })).toBeVisible();
-  const picker = await colour(2, 130);
-  expect(Math.max(...picker.map((v, i) => Math.abs(v - BG[i]!))), `picker ${picker}`).toBeLessThan(1.5);
-  // Under it the lights are hidden and still, so the phone does no work for them (D64).
-  expect(await page.evaluate(() => [getComputedStyle(document.querySelector('.bg-layer')!)].map((cs) => [cs.backgroundImage, cs.animationPlayState])[0])).toEqual(['none', 'paused']);
+  // (The country picker that covered the editor is a list in the form since D81.)
   // Signed out: the lights are there too.
   const out = await (await page.context().browser()!.newContext()).newPage();
   await out.goto('/');

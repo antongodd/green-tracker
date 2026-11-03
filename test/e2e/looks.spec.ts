@@ -142,15 +142,6 @@ test('each background moves in small steps, holds still with Reduce Motion, and 
     const p = await pseudo();
     expect(p.anims.length, `${l.look} moves: ${p.anims}`).toBeGreaterThan(0);
     expect(p.smooth, `${l.look}: in steps`).toBe(0);
-    // The editors' country picker covers everything: the background hides and stops.
-    await page.goto('/products/new');
-    await page.getByLabel('Country', { exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Choose a country' })).toBeVisible();
-    const under = await page.evaluate(() => {
-      const layer = document.querySelector('.bg-layer')!;
-      return [getComputedStyle(layer).backgroundImage, getComputedStyle(layer).animationPlayState, getComputedStyle(layer, '::before').display, getComputedStyle(layer, '::after').display];
-    });
-    expect(under, l.look).toEqual(['none', expect.stringMatching(/paused|running/), 'none', 'none']);
     // With Reduce Motion: drawn, but nothing on the background moves.
     await still.goto('/');
     await still.evaluate((look) => document.documentElement.setAttribute('data-look', look), l.look);

@@ -298,7 +298,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   A new product starts with today as Date tried and no purchase. A purchase with no total paid stops Save ("Add the
   total paid for the purchase, or remove it."), so a test that adds a purchase must give it a total or remove it. The
   Name and Source examples are random: match them against `NAME_EXAMPLES` / `SOURCE_EXAMPLES`. A text measured inside
-  a chip is its `span` (`.choice > span`); `.field > label` for the box labels.
+  a chip is its `span` (`.choice > span`); `.field > label` for the box labels. Country (0.70.1) is a text box
+  (`getByRole('combobox', { name: 'Country' })`, its value the country's name, the flag in `.cbox > .flag`); its list is
+  the group "Countries" under it (regions Used / All countries / Matching countries), not a dialog. Measure only the
+  rows in sight: the list scrolls inside its own window.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -312,7 +315,7 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.69.9 (2026-11-03): everything up to the small fixes on the Leaderboard, Log and Feed (to-do item 4).
-- **Dev:** 0.70.0 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
+- **Dev:** 0.70.1 (2026-11-03): a quicker add-a-product form (to-do item 10), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -336,8 +339,9 @@ Each is a job for its own conversation; the summary lists what each covers.
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
-10. **A quicker add-a-product form** (big): **on dev** in 0.70.0 (2026-11-03, D81), waiting for Anton's "go live".
-   Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores.
+10. **A quicker add-a-product form** (big): **on dev** in 0.70.0 and 0.70.1 (2026-11-03, D81), waiting for Anton's
+   "go live". Name, Photos, The product, Ratings, Purchases, Notes, Leafly, Private; − / + by the scores; Country as
+   a list under the box (both editors).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
