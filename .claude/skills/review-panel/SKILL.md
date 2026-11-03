@@ -32,6 +32,11 @@ any `FAILED` line means a screen was missed, usually because a screen changed. F
 
 ## 2. The five reviewers, at the same time
 
+Cheapest way (2026-11-03): one round for **both** the app and the website, each reviewer writing one report in
+two parts, with last round's report from their own role in hand, so they spend their effort on what's new. Then
+one judge, whose to-do list comes as separate jobs, each sized for its own conversation. Sam (the everyday user)
+counts most (Anton, 2026-11-03).
+
 Start all five in one message (Agent tool, `subagent_type` = the agent's name). If the agent types aren't listed
 (they load when a session starts), use `general-purpose` and begin the prompt with "Act as the reviewer described
 in `.claude/agents/<name>.md`: read that file and follow it."
@@ -41,7 +46,7 @@ asked to focus on, and "Reply with your full report in Markdown; don't write any
 
 ## 3. Save the reports
 
-Save each reply word for word to `reviews/<YYYY-MM-DD>-<app|website>/<agent-name>.md` with a first line
+Save each reply word for word to `reviews/<YYYY-MM-DD>/<agent-name>.md` (or `<YYYY-MM-DD>-<app|website>/` for one target) with a first line
 `# <Reviewer>: <the app | the website> (<date>)`.
 
 ## 4. The judge
