@@ -346,10 +346,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.72.0 (2026-11-03): everything up to sign-in hardening (to-do item 9).
-- **Dev:** 0.73.1 (2026-11-03): trust basics for strangers (to-do item 7), waiting for Anton's "go live". The
-  contact address is greentracker.help@gmail.com (Anton's, made 2026-11-03; `CONTACT_EMAIL` and
-  `site/public/index.html`, kept in step by `test/domain/trust.test.ts`).
+- **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
+- **Dev:** 0.73.1, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -365,13 +363,9 @@ Each is a job for its own conversation; the summary lists what each covers.
    (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
    brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
-7. **Trust basics for strangers** (big): **on dev** in 0.73.0–0.73.1 (2026-11-03), D84. 18+ tick, privacy page, house
-   rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton made the contact email
-   (greentracker.help@gmail.com) and ran both checkers (2026-11-03): **Ofcom: yes**, the Online Safety Act applies (a
-   user-to-user service: an illegal content risk assessment, a children's access assessment, a children's risk
-   assessment if that finds children likely); **ICO: the fee applies** (tier one, £52, £47 by direct debit; paying is
-   Anton's to do). The Cloudflare billing alert is set ("Billing budget alert - Green Tracker spend", by email;
-   in the dashboard under Observability › Alerts › Platform Notifications, 2026-11-03). Later if he wants it: move the photos (now in North America) to Europe.
+7. ~~Trust basics for strangers~~: live in 0.73.0–0.73.1 (see Done). Ofcom: the Online Safety Act applies (its
+   paperwork is item 12); ICO: the fee applies (£52, paying is Anton's to do). Later if he wants it: move the photos
+   (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
@@ -388,6 +382,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Trust basics for strangers: "I'm 18 or over" at sign-up (older accounts asked once), a privacy page and house rules under Settings › About with the contact address greentracker.help@gmail.com, Report on posts, comments and profiles (hidden for you at once; Anton reads them with the reports recipe), a 3,000-photo limit, Delete account mentions the 30-day backups, 18+ on the website; Anton ran the Ofcom and ICO checkers and set a Cloudflare billing alert (the tick, report sheets and VoiceOver not yet checked on Anton's iPhone) | 0.73.0, 0.73.1 | D84 | 2026-11-03 | 2026-11-03 |
 | An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |
 | Sign-in hardening: only wrong passwords count against an email, and a phone you've signed in on has its own tries (strangers can't lock you out); adding Face ID asks for your password (not straight after signing in); "Forgot it? Use Face ID instead" on Password; after a password change, the passkeys that can still sign in with Last used and Remove (Face ID prompts and the new screens not yet confirmed on Anton's iPhone) | 0.72.0 | D83 | 2026-11-03 | 2026-11-03 |
 | You against them, and Invite a friend: "You've had this too" with both photos, @names and scores on a friend's product page and post (same name, brand and type only), Compare with my board (a card for each subject, empty ones hidden), Invite a friend on the empty Feed and People (the share sheet with your @name and the website) (the real share sheet, profile photos in the cards and VoiceOver not yet checked on Anton's iPhone) | 0.71.0 | D82 | 2026-11-03 | 2026-11-03 |
