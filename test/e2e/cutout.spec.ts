@@ -203,8 +203,9 @@ test('a bud lying on a tray: zoom in on it; in the editor it waits for Save', as
   await flow(page).getByRole('button', { name: 'Apply' }).click();
   await expect(page.locator('.pcell.cut')).toHaveCount(1);
 
-  // Cancel the edit: nothing saved.
+  // Cancel the edit (it asks first, 0.69.2): nothing saved.
   await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('dialog', { name: 'Discard your changes?' }).getByRole('button', { name: 'Discard' }).click();
   await expect(page.locator('main[data-band]')).toBeVisible();
   expect((await product(page, id)).photos[0].cutout).toBe(false);
   await expect(page.locator('.hero-photo.cut')).toHaveCount(0);
