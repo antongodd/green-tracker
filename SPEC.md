@@ -1772,6 +1772,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — you against them and Invite a friend are live
+- 0.71.0 (on dev 2026-11-03) went live on 2026-11-03 (release 0.71.0) and moves to Done. Notes only.
+
 ### 0.71.0 — you against them, and Invite a friend (review panel job 8, D82)
 - "You've had this too" on a friend's product page and post card when you've had the same product (same name,
   brand and type): each person's photo, @name and score.
