@@ -322,8 +322,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.70.2 (2026-11-03): everything up to the quicker add-a-product form (to-do item 10).
-- **Dev:** 0.71.0 (2026-11-03): to-do item 8, waiting for Anton's "go live".
+- **Live:** 0.71.0 (2026-11-03): everything up to you against them and Invite a friend (to-do item 8).
+- **Dev:** 0.71.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -342,16 +342,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 7. **Trust basics for strangers** (big). 18+ tick, a privacy page and terms with a contact address, a Report button
    on posts, comments and profiles, a per-account photo limit, a Cloudflare billing alert. Anton decides first
    (contact address; 18+ on the website reopens D63; Ofcom and ICO checkers).
-8. **Friends: you against them, and inviting someone** (big): **on dev in 0.71.0 (2026-11-03), D82**, waiting for
-   "go live". Anton's picks: 1A, 2B, 3B, 4B (website link), photo and @name instead of you / them (C). What was asked:
-   (A) "You've had this too: you 9.1 · them 8.0" on a friend's product page and post card **only for the same
-   product**: same strain name **and** same brand (Source; `nameKey` matching) and type. Never a name-only match
-   (Anton: same name ≠ same product); never uses Supplier (never shared); nothing when their Source isn't shared.
-   (C) **Compare boards**: a Compare button on a friend's Leaderboard: your #1 against theirs, averages, favourite
-   type and brand, brands you've both tried with both averages, their top picks you haven't tried. Only what they
-   already share (no prices or suppliers). Not (B) "same strain, different brand" (Anton: confusing).
-   Plus an "Invite a friend / share my @name" button (Anton loves it) on the empty Feed and People: the iPhone share
-   sheet with "Follow me on Green Tracker: @name" and a link; Anton picks app or website link.
+8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. **Sign-in hardening** (big). Count only wrong passwords per email (needs Anton's OK: D80 limits); ask for the
    password before adding Face ID; show passkeys after a password change; tests. Anton decides whether Face ID may
    set a new password without the old one (changes D80).
@@ -364,6 +355,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| You against them, and Invite a friend: "You've had this too" with both photos, @names and scores on a friend's product page and post (same name, brand and type only), Compare with my board (a card for each subject, empty ones hidden), Invite a friend on the empty Feed and People (the share sheet with your @name and the website) (the real share sheet, profile photos in the cards and VoiceOver not yet checked on Anton's iPhone) | 0.71.0 | D82 | 2026-11-03 | 2026-11-03 |
 | A quicker add-a-product form: Name, Photos, The product (Type and Strain type as one tap, Source, Country, Date tried from today), Ratings with − / +, Purchases (none opened by itself; Save asks for a missing total paid), Notes, Leafly, Private; examples from Anton's lists; Country as a list under the box (also in the Log); Name with its own heading (tried by Anton on GT Dev; holding − / + and VoiceOver not yet checked on his iPhone) | 0.70.0–0.70.2 | D81 | 2026-11-03 | 2026-11-03 |
 | Small fixes on the Leaderboard, Log and Feed: "Value" and "per 20mg" in value for money, room under the +, no zeros on an empty Log, a solid comment box, 44-point post buttons, Feed photos as you scroll, tap the Feed tab again for the top and new posts, catching up when the app comes back (keyboard and Feed scrolling not yet tried on Anton's iPhone) | 0.69.9 | | 2026-11-03 | 2026-11-03 |
 | Wording fixes across the app: Settings for More, Bring back, 1 product / 1 country / 1 comment, capital L for Leaderboard and Log, the badge without its colour name, Time to kick in, Pre-roll / Edible / Live rosin on screen, Current password, the Sources title, couldn’t, one dash (not yet seen on Anton's iPhone) | 0.69.8 | | 2026-11-03 | 2026-11-03 |
