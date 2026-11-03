@@ -1724,6 +1724,11 @@ None.
 
 ## 6. Changelog
 
+### 0.69.6 — the website's top product has a shorter name
+- In the website's picture of the app (and the share picture), "Lemon Cherry Gelato" is now "Lemon Gelato": on Linux
+  the long name was cut off in its row (0.69.4's new test caught it in the release check; an iPhone drew it just
+  inside). Website only.
+
 ### 0.69.5 — the date box beside Source stays its own height
 - 0.69.3's line under the Source box made that row taller, and the Date tried box beside it stretched to match, so
   its calendar icon sat a fraction below the box (`editor.spec.ts` caught it in the release check). Boxes side by
