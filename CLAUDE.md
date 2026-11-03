@@ -310,9 +310,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
    keep naming the same job.
 2. ~~Don't lose my work~~: live in 0.69.2 (see Done).
-3. **Privacy and data words that are out of date** (small, words only): **on dev** in 0.69.3 (2026-11-03). Privacy page (posts), Source ("the brand or
-   grower"), "Followers can see this" under Source; Export, Restore and Delete lists and the Export warning; the Look
-   pages' footnote (D74); lines under the comment box and in the composer; the sign-up email line.
+3. ~~Privacy and data words that are out of date~~: live in 0.69.3 and 0.69.5 (see Done).
 4. **Small fixes on the Leaderboard, Log and Feed** (small). Value for money ("per 20mg", "Value" not "VFM"); room
    under the +; no zeros on an empty Log; the first comment hidden under the comment box; 44-point post buttons;
    Feed photos load as you scroll, tapping the tab again refreshes, reload on coming back.
@@ -336,6 +334,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Privacy and data words brought up to date: Privacy (posts), Source (brand or grower, "Followers can see this" under the box), Export / Restore / Delete lists and the Export warning, the Look pages' footnote, lines under the comment box and in the post composer, the email line (not yet seen on Anton's iPhone) | 0.69.3, 0.69.5 | | 2026-11-03 | 2026-11-03 |
 | Website catch-up: what sign-up asks for, posts in the friends card, one time throughout, the video's last caption, the real address and a WhatsApp line in step 1, the price chip and share picture, 44-point top buttons, the slider's name, the laptop layout, the lost page (Anton kept "Know your plug", "Roll one up", "Made by Anton"); "Lemon Gelato" so no name is cut off | 0.69.4, 0.69.6 | | 2026-11-03 | 2026-11-03 |
 | Don't lose my work: Keep editing / Discard on Cancel and swipe-back in the product, Log entry and post editors; a 20-second limit on Save and Post; no double send (checked on Anton's iPhone) | 0.69.2 | | 2026-11-03 | 2026-11-03 |
 | Forgot-password safety net: "Forgot password?" on Sign in, honest words at sign-up and on the Face ID offer, "too many tries" mentions Face ID, iCloud Keychain hints at sign-up (Keychain still to try on Anton's iPhone) | 0.69.1 | | 2026-11-03 | 2026-11-03 |

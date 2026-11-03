@@ -1724,6 +1724,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — privacy and data words are live
+- 0.69.3 and its fix 0.69.5 (on dev 2026-11-03) went live on 2026-11-03 in release 0.69.6 and move to Done. Notes only.
+
 ### Notes — the website catch-up is live
 - 0.69.4 and 0.69.6 (on dev 2026-11-03) went live on 2026-11-03 (release 0.69.6) and move to Done. Notes only.
 
