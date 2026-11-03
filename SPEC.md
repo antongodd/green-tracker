@@ -1757,6 +1757,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the quicker product form is live
+- 0.70.0–0.70.2 (on dev 2026-11-03) went live on 2026-11-03 (release 0.70.2) and move to Done. Notes only.
+
 ### 0.70.2 — Name as a section of its own (D81, the owner on GT Dev)
 - The product editor's Name has a heading like the other sections: a pencil icon and "Name" in green (the box's
   label), "like the photos section".
