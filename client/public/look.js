@@ -5,11 +5,14 @@
 try {
   var look = localStorage.getItem('gt.look');
   var bgs = {
-    aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807',
-    sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10',
-    daymint: '#eef4f0', daypearl: '#f5f4f8', daysky: '#eef3fa'
+    aurora: '#03070a', neon: '#06041a', forest: '#050807',
+    sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c',
+    daysky: '#eef3fa'
   };
-  var light = { daymint: 1, daypearl: 1, daysky: 1 };
+  // D90: the looks that went show as their replacement (LOOKS_MOVED in gems.ts).
+  var moved = { pearl: 'aurora', haze: 'aurora', daymint: 'daysky', daypearl: 'daysky' };
+  if (look && Object.prototype.hasOwnProperty.call(moved, look)) look = moved[look];
+  var light = { daysky: 1 };
   if (look && Object.prototype.hasOwnProperty.call(bgs, look)) {
     document.documentElement.dataset.look = look;
     document.querySelector('meta[name="theme-color"]').setAttribute('content', bgs[look]);

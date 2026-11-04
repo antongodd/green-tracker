@@ -3,19 +3,21 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
-// D70 (0.60.0): eight more looks: Sakura, Fireflies, Deep Sea, Frost, Nebula, Outrun, Lava Lamp, Haze.
-// The owner's rule: a look changes only colours and the background behind everything, never fonts,
-// sizes or shapes. Each draws its own background (petals, fireflies, rays and plankton, snow, stars,
-// a sky and a grid, lava, smoke), moving in small steps, still with Reduce Motion, hidden under the
-// viewer and editors; words stay readable over it on every screen. One account per worker.
+// D70 (0.60.0): eight more looks; D90 (0.79.0): eleven looks, each with a scene of its own behind every screen
+// (components/Backdrop.tsx): petals, stars, curtains of light, pines and fog, bubbles and a jellyfish, snow, fireflies,
+// lava, a city in the rain, a sunset and a grid, clouds. The owner's rule: a look changes only colours and the background
+// behind everything, never fonts, sizes or shapes. Since D90 the backgrounds glide smoothly (in small steps before);
+// still with Reduce Motion, hidden under the viewer and editors; words stay readable over them on every screen.
+// One account per worker.
 test.describe.configure({ mode: 'parallel' });
 let page: Page;
 
 const NEW = [
-  // D72: the three light looks, through every check the dark ones have (their own extras: daylight.spec.ts).
-  { look: 'daymint', name: 'Daylight Mint', bg: 'rgb(238, 244, 240)', hex: '#eef4f0' },
-  { look: 'daypearl', name: 'Daylight Pearl', bg: 'rgb(245, 244, 248)', hex: '#f5f4f8' },
-  { look: 'daysky', name: 'Daylight Sky', bg: 'rgb(238, 243, 250)', hex: '#eef3fa' },
+  { look: 'aurora', name: 'Aurora Glass', bg: 'rgb(3, 7, 10)', hex: '#03070a' },
+  { look: 'forest', name: 'Deep Forest', bg: 'rgb(5, 8, 7)', hex: '#050807' },
+  { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a' },
+  // D72: the light look (one since D90), through every check the dark ones have (its own extras: daylight.spec.ts).
+  { look: 'daysky', name: 'Daylight', bg: 'rgb(238, 243, 250)', hex: '#eef3fa' },
   { look: 'sakura', name: 'Sakura', bg: 'rgb(19, 10, 19)', hex: '#130a13' },
   { look: 'fireflies', name: 'Fireflies', bg: 'rgb(4, 11, 11)', hex: '#040b0b' },
   { look: 'deepsea', name: 'Deep Sea', bg: 'rgb(2, 10, 20)', hex: '#020a14' },
@@ -23,7 +25,6 @@ const NEW = [
   { look: 'nebula', name: 'Nebula', bg: 'rgb(5, 4, 12)', hex: '#05040c' },
   { look: 'outrun', name: 'Outrun', bg: 'rgb(10, 4, 32)', hex: '#0a0420' },
   { look: 'lava', name: 'Lava Lamp', bg: 'rgb(18, 6, 12)', hex: '#12060c' },
-  { look: 'haze', name: 'Haze', bg: 'rgb(12, 11, 16)', hex: '#0c0b10' },
 ] as const;
 
 const put = (look: string, top = 'hero', preset = 'aurora') =>
@@ -49,13 +50,13 @@ test.afterAll(async () => {
   await page.context().close();
 });
 
-test('each new look is chosen in Appearance, marked New, saved, and changes the whole app and the Home Screen bar at once', async () => {
-  test.slow(); // eight looks, three screens each
+test('each look is chosen in Appearance, saved, and changes the whole app and the Home Screen bar at once; only Daylight is New', async () => {
+  test.slow(); // eleven looks, three screens each
   for (const l of NEW) {
     await page.goto('/more/look');
     const radio = page.locator(`input[name="look"][value="${l.look}"]`);
     await expect(page.locator('.ap-card', { has: radio }).locator('.ap-name')).toHaveText(l.name);
-    await expect(page.locator('.ap-card', { has: radio }).locator('.new-tag')).toHaveText('New');
+    await expect(page.locator('.ap-card', { has: radio }).locator('.new-tag')).toHaveCount(l.look === 'daysky' ? 1 : 0);
     await radio.check();
     await expect.poll(async () => ((await saved()) as { look: string }).look).toBe(l.look);
     await expect(page.locator('html')).toHaveAttribute('data-look', l.look);
@@ -65,9 +66,10 @@ test('each new look is chosen in Appearance, marked New, saved, and changes the 
     await page.goto('/more');
     await expect(page.getByRole('link', { name: /^Look/ })).toContainText(l.name);
   }
-  // The four from before aren't New.
+  // The four that went (D90) aren't offered.
   await page.goto('/more/look');
-  for (const look of ['aurora', 'neon', 'pearl', 'forest']) await expect(page.locator('.ap-card', { has: page.locator(`input[name="look"][value="${look}"]`) }).locator('.new-tag')).toHaveCount(0);
+  await expect(page.locator('input[name="look"]')).toHaveCount(11);
+  for (const look of ['pearl', 'haze', 'daymint', 'daypearl']) await expect(page.locator(`input[name="look"][value="${look}"]`)).toHaveCount(0);
   await shot(page, '700-looks-appearance');
   // A phone that remembers one opens in it before the account has loaded.
   let release!: () => void;
@@ -77,7 +79,7 @@ test('each new look is chosen in Appearance, marked New, saved, and changes the 
     await route.fallback();
   });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  expect(await page.evaluate(() => [document.documentElement.dataset.look, getComputedStyle(document.body).backgroundColor])).toEqual(['haze', 'rgb(12, 11, 16)']);
+  expect(await page.evaluate(() => [document.documentElement.dataset.look, getComputedStyle(document.body).backgroundColor])).toEqual(['lava', 'rgb(18, 6, 12)']);
   release();
   await expect(page.locator('.rows .row').first()).toBeVisible();
   await page.unroute('**/api/auth/me');
@@ -122,16 +124,22 @@ test('a look changes only colours and the background: every font, size and shape
   expect(await put('aurora')).toBe(200);
 });
 
-test('each background moves in small steps, holds still with Reduce Motion, and hides under the viewer and editors', async ({ browser }) => {
+test('each look has its own scene, gliding smoothly (D90); still with Reduce Motion; hidden under the viewer and editors', async ({ browser }) => {
   test.slow();
-  const pseudo = () =>
+  const scene = () =>
     page.evaluate(() => {
-      const layer = document.querySelector('.bg-layer')!;
+      const el = document.querySelector('.scene');
+      const mine = document.getAnimations().filter((a) => {
+        const t = (a.effect as KeyframeEffect).target as Element | null;
+        return !!t && (t === el || !!el?.contains(t));
+      });
       return {
-        layers: ['::before', '::after'].map((p) => getComputedStyle(layer, p).content !== 'none' && getComputedStyle(layer, p).display !== 'none').filter(Boolean).length,
-        // Every animation on the background, and its timing: always in steps, never smooth.
-        anims: document.getAnimations().filter((a) => (a.effect as KeyframeEffect).target === layer).map((a) => `${(a as CSSAnimation).animationName} ${(a.effect as KeyframeEffect).pseudoElement ?? ''}`.trim()),
-        smooth: document.getAnimations().filter((a) => (a.effect as KeyframeEffect).target === layer && !/steps/.test(String((a.effect as KeyframeEffect).getComputedTiming().easing) + getComputedStyle(layer, (a.effect as KeyframeEffect).pseudoElement).animationTimingFunction)).length,
+        cls: el?.className ?? null,
+        parts: el?.querySelectorAll('*').length ?? 0,
+        anims: mine.length,
+        // Smooth: eased or linear, not in steps (only Neon Night's windows flick on and off, in one step).
+        smooth: mine.filter((a) => !/steps/.test(String((a.effect as KeyframeEffect).getComputedTiming().easing) + getComputedStyle((a.effect as KeyframeEffect).target as Element).animationTimingFunction)).length,
+        lights: getComputedStyle(document.querySelector('.bg-layer')!).animationTimingFunction,
       };
     });
   const still = await (await browser.newContext({ reducedMotion: 'reduce' })).newPage();
@@ -139,13 +147,20 @@ test('each background moves in small steps, holds still with Reduce Motion, and 
     expect(await put(l.look)).toBe(200);
     await page.goto('/');
     await expect(page.locator('.rows .row').first()).toBeVisible();
-    const p = await pseudo();
-    expect(p.anims.length, `${l.look} moves: ${p.anims}`).toBeGreaterThan(0);
-    expect(p.smooth, `${l.look}: in steps`).toBe(0);
-    // With Reduce Motion: drawn, but nothing on the background moves.
+    await expect(page.locator(`.scene.scene-${l.look}`)).toHaveCount(1);
+    const p = await scene();
+    expect(p.parts, `${l.look}: its scene has its pieces`).toBeGreaterThan(2);
+    expect(p.smooth, `${l.look}: moves smoothly`).toBeGreaterThan(0);
+    expect(p.lights, `${l.look}: the lights glide`).not.toMatch(/steps/);
+    // Under the viewer (or a cropper) the scene is gone.
+    await page.evaluate(() => document.body.appendChild(Object.assign(document.createElement('div'), { className: 'viewer' })));
+    await expect(page.locator('.scene')).toBeHidden();
+    await page.evaluate(() => document.querySelector('body > .viewer')!.remove());
+    // With Reduce Motion: drawn, but nothing behind moves.
     await still.goto('/');
     await still.evaluate((look) => document.documentElement.setAttribute('data-look', look), l.look);
-    expect(await still.evaluate(() => document.getAnimations().filter((a) => (a.effect as KeyframeEffect).target === document.querySelector('.bg-layer')).length), `${l.look} still`).toBe(0);
+    await expect(still.locator(`.scene.scene-${l.look}`)).toHaveCount(1);
+    expect(await still.evaluate(() => document.getAnimations().filter((a) => { const t = (a.effect as KeyframeEffect).target as Element | null; return !!t && (t.matches('.bg-layer') || !!t.closest('.scene')); }).length), `${l.look} still`).toBe(0);
   }
   await still.context().close();
   expect(await put('aurora')).toBe(200);

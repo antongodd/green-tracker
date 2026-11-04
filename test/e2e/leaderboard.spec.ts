@@ -337,7 +337,7 @@ test('the + never sits on the last row’s score: room under the list on every t
   const put = (a: object) => page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const top of ['hero', 'tiles', 'strip']) {
-    expect(await put({ look: 'daymint', top, preset: 'gems', markFirst: true })).toBe(200);
+    expect(await put({ look: 'daysky', top, preset: 'gems', markFirst: true })).toBe(200);
     for (const path of ['/', '/log']) {
       await page.goto(path);
       await expect(page.locator(path === '/' ? '.row' : '.lrow').first()).toBeVisible();

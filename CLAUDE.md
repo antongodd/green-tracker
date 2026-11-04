@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D89 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D90 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -147,7 +147,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D90) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D91) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +171,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D89.
+- Reopen any decision D1–D90.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -250,15 +250,17 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Appearance pages (D71): Look `/more/look`, Leaderboard top `/more/top`, Leaderboard colours `/more/colours` (with
   Mark my #1); `/more/appearance` opens Settings. The top of the Leaderboard (hero, strip, tiles) glows with the look
   (`--hero-glow`); the glass hero must never take the product page's `.hero` styles (its `::before` fade made it black).
-- Light looks (D72): `daymint`, `daypearl`, `daysky` (`LIGHT_LOOKS`) set `html[data-tone="light"]`; anything with a colour
+- Light looks (D72): one since D90, Daylight (`daysky`, `LIGHT_LOOKS`), sets `html[data-tone="light"]`; anything with a colour
   of its own needs a light version under `html[data-tone="light"]` (end of `styles.css`), and the coloured rows are light
   cards there. `textBoxes` judges gradient text at both extremes. `daylight.spec.ts` sweeps screens with axe in each.
   The Look page lists them last, under *Light mode* (D73; the dark looks under *Dark mode*): two `radiogroup`s, one
   radio name. `LOOK_KEYS` keeps that order (`gems.test.ts`).
-- Looks (D70): fifteen since D72, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
+- Looks (D70): eleven since D90, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
   the background, never a font, size or shape (`looks.spec.ts` compares every position and font with Aurora Glass). A
-  look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
-  `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits for). Whatever drifts behind words
+  look's background is the lights on `.bg-layer` plus its scene (`.scene-<look>`, `components/Backdrop.tsx`, D90),
+  gliding smoothly; name every keyframe `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits
+  for). The looks that went (`LOOKS_MOVED`: Holo Pearl, Haze, Daylight Mint and Pearl) are refused by the API and show
+  as their replacement; a test can't save one. `holdLights` (`aurora.spec.ts`) holds the lights and every `bg-…`. Whatever drifts behind words
   must pass the readability tests at every moment, so keep it about as bright as Aurora's lights. A new look goes in
   `LOOK_KEYS`, `LOOK_BG` and `look.js` (`gems.test.ts` checks they agree); a new look or colour set needs **no
   migration** since D76 (the app checks them: `validateAppearance`; reading back, `loadAppearance` shows the default
@@ -378,7 +380,7 @@ section, so it must always be current.
 
 - **Live:** 0.78.0 (2026-11-04): everything up to the website's full overhaul (item 15) and the app's Apple-style
   redesign, stage A (item 16).
-- **Dev:** 0.78.0, the same as live.
+- **Dev:** 0.79.0 (2026-11-04): the app's Apple-style redesign, stage B, the Looks (item 16), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -419,10 +421,12 @@ Each is a job for its own conversation; the summary lists what each covers.
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
    - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
-   - **Stage B, the Looks:** Anton's favourites (Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea,
-     Frost, Fireflies, Lava Lamp, Neon Night, Outrun) refreshed with smooth, detailed moving backgrounds (battery is no
-     concern); Holo Pearl and Haze go (their users move to the default); light mode as one or two really good looks
-     instead of three (Anton doesn't use it). Next: mockups.
+   - **Stage B, the Looks:** **on dev** in 0.79.0 (2026-11-04), D90; mockups
+     https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe ("i like it"). His ten favourites with smooth backgrounds and
+     details of their own, one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as
+     Daylight). No tilting for now. Waiting for "go live".
+     Knock-on: the website's "Fifteen Looks. Pick yours." row (`site/public/index.html`, `site.js`) still lists the four
+     that went; to bring it to eleven (and the new descriptions) once stage B is live.
    - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
      without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
      Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora.

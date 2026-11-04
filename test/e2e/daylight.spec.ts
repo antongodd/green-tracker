@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { contrastFailures, heroTextBoxes, settled, shot, signUp, textBoxes } from './helpers';
 
-// D72 (0.62.0): three light looks, the Daylights (Mint, Pearl, Sky). A look changes only colours (D70's
+// D72 (0.62.0): three light looks, the Daylights (one since D90: Daylight). A look changes only colours (D70's
 // rule; looks.spec.ts checks them like every look); on top of that a light look takes the light tone:
 // the iPhone's own controls and status bar in their light style, and light cards for the colour sets.
 // Everyone starts dark: a light look is only ever chosen. One account per worker.
@@ -11,11 +11,8 @@ test.describe.configure({ mode: 'parallel' });
 let page: Page;
 const ids: Record<string, string> = {};
 
-const DAYLIGHTS = [
-  { look: 'daymint', name: 'Daylight Mint', bg: 'rgb(238, 244, 240)' },
-  { look: 'daypearl', name: 'Daylight Pearl', bg: 'rgb(245, 244, 248)' },
-  { look: 'daysky', name: 'Daylight Sky', bg: 'rgb(238, 243, 250)' },
-] as const;
+// D90: one light look, Daylight (Mint and Pearl went; its name inside is still Daylight Sky's).
+const DAYLIGHTS = [{ look: 'daysky', name: 'Daylight', bg: 'rgb(238, 243, 250)' }] as const;
 const PRESETS = ['gems', 'aurora', 'cosmos', 'deepsea', 'ember', 'metals', 'neon', 'prism', 'sunset', 'synthwave'] as const;
 
 const put = (look: string, preset = 'gems', top = 'strip') =>
@@ -86,7 +83,7 @@ test('the app starts dark; choosing a Daylight makes it light, the iPhone’s ow
 test('light cards in every colour set: a white card with the colours at its edge, and every word on it readable', async () => {
   test.slow(); // ten sets, each photographed through its motion
   for (const preset of PRESETS) {
-    expect(await put('daymint', preset)).toBe(200);
+    expect(await put('daysky', preset)).toBe(200);
     await page.goto('/');
     await expect(page.locator('.rows .row.tier')).toHaveCount(4);
     // The card's layer is white, not dark (the dark looks keep their dark cards: looks.spec.ts, appearance.spec.ts).
