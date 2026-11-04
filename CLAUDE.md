@@ -378,8 +378,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.79.0 (2026-11-04): everything up to the app's Apple-style redesign, stage B, the Looks (item 16).
-- **Dev:** 0.79.1 (2026-11-04): the website's Looks row brought to the eleven Looks (a small change, going live).
+- **Live:** 0.79.1 (2026-11-04): everything up to the app's Apple-style redesign, stage B, the Looks (item 16), and
+  the website's Looks row brought to the eleven.
+- **Dev:** the same as live. Next: stage C, the Leaderboard colours (mockups with Anton).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -425,7 +426,7 @@ Each is a job for its own conversation; the summary lists what each covers.
      without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
      Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora. Every set
      gets details of its own, growing from 8.0 to a full show at 9.5 (Anton, 2026-11-04). He wants mockups of
-     Ember's middle band (White-hot, Deep red or Gold, in place of Blue flame) and of new sets to add. Next: mockups.
+     Ember's middle band (White-hot, Deep red or Gold, in place of Blue flame) and of new sets to add. Mockups https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz (2026-11-04: the eight refreshed, Ember's three options with White-hot recommended, four new sets: Toxic recommended, Medals, Storm, Candy). Next: Anton's picks and "go ahead".
    - The website: its own job (item 15).
 
 ### Done (newest first)
