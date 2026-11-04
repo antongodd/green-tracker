@@ -1,7 +1,7 @@
 /* Green Tracker's website (D63): look A "Aurora Glass" of https://claude.ai/artifact/AkwHtCE8iVw8d9yyqEK2qR.
    The app's dark green and its Aurora lights (D29), opened up into slowly drifting green, teal and
    violet lights, with frosted glass cards. Fonts are stored with the site: nothing loads from
-   anywhere else (no tracking, D63).
+   anywhere else (no tracking, D63). Since D89 the fonts are Apple's own (as in the app), so none are downloaded.
    D85 (0.74.0): an Apple-style polish. Buttons answer the moment they're pressed; things move once,
    when they arrive, instead of looping for ever; the four features are one grouped panel; the slider
    is an iPhone-style one with marks where the colours change; the bar at the top gets its edge only
@@ -9,8 +9,6 @@
    with Reduce Transparency, plainer with Increase Contrast.
    D88 (0.77.0): Anton's own cut-out photos in place of the drawn nugs (img.nug, .card img.bud, .sphone img.photo). */
 
-@font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
-@font-face { font-family: "Manrope"; src: url("/fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
 
 :root {
   color-scheme: dark;
@@ -30,8 +28,9 @@
   --card: #0c1410;
   --card-edge: rgba(88, 224, 140, 0.16);
   --prism: #ff9aa8, #ffc996, #fff2a8, #a6f0c1, #9fdcff, #cdbdff, #ff9aa8;
-  --display: "Unbounded", "Arial Black", -apple-system, BlinkMacSystemFont, sans-serif;
-  --body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Apple's own fonts, as in the app since D87 (nothing downloaded): SF Pro on an iPhone or Mac. */
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --num: ui-rounded, "SF Pro Rounded", var(--body);
   --gutter-l: max(20px, env(safe-area-inset-left, 0px));
   --gutter-r: max(20px, env(safe-area-inset-right, 0px));
@@ -158,7 +157,6 @@ h1 em { font-style: normal; background: linear-gradient(100deg, #8ff0b4, #7fe3e3
 .chip .big { display: block; font-family: var(--num); font-size: 18px; color: var(--green); }
 .c1 { left: -6px; top: 0; animation-delay: 0.9s; }
 .c2 { right: 0; top: 424px; animation-delay: 1.05s; }
-.c3 { left: 10px; bottom: 30px; animation-delay: 1.2s; }
 
 /* Sections */
 .sec { padding-top: 64px; display: grid; gap: 16px; scroll-margin-top: 64px; }
@@ -419,3 +417,74 @@ img.nug { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit
   filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)); -webkit-user-drag: none; user-select: none; pointer-events: none; }
 .sphone img.photo { display: block; width: 100%; height: 96px; object-fit: contain; border-radius: 10px; background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), transparent 70%); }
 @media (min-width: 900px) { .sphone img.photo { height: 170px; } .stack .card img.bud { width: 210px; height: 210px; } }
+
+/* ===== D89 (0.78.0): the full overhaul. The website matches the app's Apple-style design (D87): Apple's fonts,
+   the phone drawn as the new app, calm labels, a privacy section, a footer with ways on, hover for a mouse. ===== */
+h1 { font-weight: 800; font-size: clamp(40px, 11.5vw, 60px); line-height: 1.02; letter-spacing: -0.04em; }
+h2 { font-weight: 800; font-size: 32px; line-height: 1.08; letter-spacing: -0.035em; }
+.final h2 { font-size: 30px; }
+.brand { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+.verdict, .now { font-weight: 700; letter-spacing: -0.02em; }
+.cnm b { font-weight: 800; letter-spacing: -0.03em; font-size: 23px; }
+/* Calm labels, as in the app: sentence case, no spaced-out capitals. */
+.label { text-transform: none; letter-spacing: -0.01em; font-size: 15px; font-weight: 600; }
+.ctop { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+.hero { gap: 16px; padding-top: 28px; }
+.lede { font-size: 17px; letter-spacing: -0.01em; }
+.asks { font-size: 14px; }
+
+/* The hero's phone, drawn as the app looks now: a large title, the Compact line, calm rows, the floating tab bar. */
+.mini-in { padding: 34px 9px 9px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+.mini-top { display: flex; justify-content: space-between; align-items: center; padding: 0 3px; }
+.mt-l { font: 800 21px/1.1 var(--display); letter-spacing: -0.03em; }
+.mt-av { width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #b6ffd4, #2f8a5a 70%); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.25); }
+.mini-strip { padding: 0 3px 2px; font-size: 8.5px; color: var(--text-3); }
+.mini-strip b { color: var(--text); font-family: var(--num); font-size: 9.5px; }
+.mini .lr { border: 0; border-radius: 12px; }
+.mini .lr:not(.holo) { background: rgba(255, 255, 255, 0.06); }
+.mini .lr.holo { border: 0; }
+.mini-bar { position: absolute; left: 9px; right: 9px; bottom: 10px; display: flex; gap: 6px; align-items: center; }
+.mb-tabs { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; border-radius: 20px; background: rgba(40, 46, 44, 0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.4); }
+.mb-tabs > span { display: grid; place-items: center; height: 26px; border-radius: 16px; color: var(--text-3); }
+.mb-tabs > span.on { color: #8ff0b4; background: rgba(255, 255, 255, 0.1); }
+.mb-plus { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: #8ff0b4; background: rgba(40, 46, 44, 0.72); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.4); }
+.mini-bar svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* The story's and the Looks' little phones: calm rows too. */
+.sphone .lr, .pmini .lr, .sphone .kv { border: 0; }
+.sphone .lr:not(.holo):not(.heat), .pmini .lr:not(.holo), .sphone .kv { background: rgba(255, 255, 255, 0.06); }
+.sphone .lr.holo, .pmini .lr.holo { border: 0; }
+.sphone .tt, .pmini .tt { font-weight: 800; letter-spacing: -0.02em; }
+.ik { display: inline-flex; align-items: center; gap: 3px; }
+.ik svg { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linejoin: round; }
+.story .feat { min-height: 270px; }
+
+/* Your stash is your business: four plain promises. */
+.promises { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 0; border-radius: 22px; background: var(--glass); overflow: hidden; }
+.promises li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; align-items: start; padding: 16px 16px 16px 14px; }
+.promises li + li { box-shadow: inset 0 0.5px 0 var(--hairline); }
+.pi { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #03140a; background: linear-gradient(135deg, var(--green), var(--teal)); }
+.pi svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.promises h3 { margin: 0 0 3px; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+.promises p { margin: 0; font-size: 15px; color: var(--text-2); }
+
+/* The footer: a way back to the app and to Anton, then the small print. */
+.foot { gap: 8px; }
+.foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; margin-bottom: 10px; }
+.foot-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 99px; color: var(--text); font-weight: 600; font-size: 15px; text-decoration: none; background: var(--glass); }
+
+/* A mouse gets hover feedback too (phones don't hover). */
+@media (hover: hover) {
+  .btn, .foot-links a, .lk .sw, .card { transition: transform 0.25s var(--settle), filter 0.2s ease, background-color 0.2s ease; }
+  .btn:hover, .foot-links a:hover { filter: brightness(1.12); }
+  .btn.ghost:hover, .foot-links a:hover { background: rgba(255, 255, 255, 0.1); }
+  .lk:hover .sw { transform: translateY(-2px); }
+  .promises li:hover { background: rgba(255, 255, 255, 0.025); }
+}
+@media (min-width: 900px) {
+  .promises { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .promises li:nth-child(2) { box-shadow: none; }
+  .looks { margin: 0; padding-left: 4px; padding-right: 4px; justify-content: center; }
+  .story .feat { min-height: 360px; }
+}
+.stage { height: 530px; }
+.c2 { top: 478px; }

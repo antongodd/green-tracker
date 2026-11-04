@@ -160,6 +160,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D86 | **New things on the website** (2026-11-04; the owner: "be more imaginative with this skill … add new things to the website, new well designed features", then "i like all of these 1 - 5"). Mockups https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct (ideas 1–5; all five chosen). | **Five things to play with, on top of D85:** (1) **Rate the stack** replaces the slider: drag or flick five made-up cards, the score following the card, then your own top shelf; Fire and Mids buttons too. (2) **Make it yours:** the app's fifteen Looks as swatches to swipe; the page's lights change to the one picked, and a little phone shows it. (3) **The phone you can pick up:** the hero's phone turns with a finger and springs back. (4) **The scroll story** replaces D85's grouped panel: the phone held beside the four features, showing each as you reach it. (5) **The install sheet:** "Put it on my iPhone" slides up a sheet with the three steps; the full steps and video stay below. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere and nothing is kept. See §4 *New things on the website*. |
 | D87 | **The Apple-style redesign, stage A: the base design** (2026-11-04; the owner: "a full overhaul… it just looks like a vibe coded app — i want it to look like a real developed apple app… like the photos app", "go as far as you need", with the `apple-design` skill; a review of every screen against it, then mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8). The owner's picks: Leaderboard **B, calm cards** (of A grouped list, B, C photo grid; no List/Grid switch); the three new tops, **Compact** for new accounts; fonts **B**, Apple's SF Pro for words and SF Pro Rounded for scores (of SF only, SF + Rounded, New York + SF, SF + Unbounded); Settings moves to your photo (top right) and + sits beside the tab bar ("sure"). Also from the questions: every screen may be rearranged as long as every feature stays easy to find; Apple-clean structure and type, "the colour and fun living in the Looks, the Leaderboard colours and the animations"; sounds and ticks stay; battery is no concern (iPhone 17 Pro). Press feedback presses in (scale 0.97, list rows light up) in place of D20's lift, as in the mockups. Kept: D70 (a Look changes only colours and the background), every readability and accessibility test. Stages B (the Looks: Holo Pearl, Haze and two of the Daylights to go, the rest with smooth moving backgrounds) and C (the colour sets: Gems and Metals to go, Ember without its blue) follow, each with its own mockups. What changed is in §4 *The Apple-style base*. |
 | D88 | **Anton's photos on the website** (2026-11-04; the owner: "the pictures used are just coloured blobs … take the best pictures from my live account anton_godd"; after the trade-offs were explained (his photos, AI, stock; the personal side of "Made by Anton" with real buds; D63's rule), "use mine", yes to reading his live account, "use my real strain names"). **Reopens D63** ("products shown are all made up; nobody's data is used") with his OK, for his own account only. | **The website shows the owner's own cut-out photos, real strain names and real scores** in place of drawn nugs and made-up products: the hero's top five and tiles, the scroll story, Make it yours and Rate the stack. **Sellers, prices, weights and other people stay made up**; no source or country is shown with a strain; private and kept products are never used; the pictures carry nothing but the picture. Nobody else's data is ever used. Website only; the app is unchanged. See §4 *Anton's photos on the website*. |
+| D89 | **The website's full overhaul** (2026-11-04; the owner: "run a review of the website with [ui-ux-pro-max]. i want a full website overhaul"; his picks: "1. match the app" (Apple's fonts), "2. ok" (no reviews until real ones), then "go ahead" on https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T). | **The website matches the app's Apple-style design:** Apple's fonts (none downloaded); the hero's phone drawn as the app looks now (large title, Compact line, calm rows, the floating tab bar with the +), showing on the first screen; Rate the stack straight after the top; a new **Your stash is your business** section of four promises, each true in the app; drawn icons in place of emoji; sentence-case labels; a footer with Open the app, Create an account and Email us; hover feedback for a mouse and a tidier laptop layout. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *The website's full overhaul*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1332,6 +1333,29 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     down; axe waits for everything to arrive (`arrived`: a half-faded chip read as faint words).
   - *Couldn't check here*: the press feel, the blur and the Sign up swap on a real iPhone; Reduce Transparency and
     Increase Contrast in Safari.
+- **The website's full overhaul (D89, 0.78.0).** From a review with the `ui-ux-pro-max` skill (its palettes and
+  fonts were generic and not used; its landing-page structure, usability rules and checklist were). *Fonts:* Apple's
+  own (`-apple-system`, SF Pro Display / Text; `ui-rounded` for scores), as in the app since D87; `site/public/fonts/`
+  is gone and nothing is downloaded. *The hero's phone* is drawn as the app looks now: a large "Leaderboard" title and
+  the photo (`.mini-top`), the Compact line (`.mini-strip`: 31 products · 7.9 average · 4 countries), calm rows (no
+  outlines; the holo and heat colours kept) and the floating tab bar with the + (`.mini-bar`); a tighter hero so it
+  starts showing on an iPhone's first screen; the "Logged" chip is gone (it sat on the tab bar), the price chip moved
+  below the phone. *Order:* hero, Rate the stack, What it does (the story), Make it yours, **Your stash is your
+  business**, Get it, the final Sign up. *Privacy section* (`.promises`): only friends you approve (D45/D77); you
+  choose what they see, and what you paid, where you got it and your notes are never shared (`shareProduct` never
+  sends purchases, the supplier or notes); no ads, no tracking, your email never shown (D80); export or delete (the
+  30-day backups, D84). No link to the app's privacy page (it needs signing in). *Calm details:* labels in sentence
+  case; the story's Feed screen has drawn flame and speech icons (no emoji anywhere on the page); the story's and the
+  Looks' little phones have calm rows. *Footer:* Open the app, Create an account, Email us (44-point buttons,
+  `.foot-links`), then the small print. *A mouse:* hover feedback on buttons, footer links, swatches and promises; on a
+  laptop the Looks are centred, the promises two by two, the story's gaps smaller. The D85/D86/D88 features, the
+  words of every section, the video, the sheet and the 18+ notes are unchanged; nothing new loads from elsewhere.
+  - *Tests* (`website.spec.ts`): no font downloaded and Apple's named; the order of the sections; the four promises
+    and their honest details; the phone's title, four tabs and +; no emoji on the page; sentence-case labels; the
+    footer's three links (44 points); the phone starting on the first screen; axe on the promises and footer; a mouse
+    hover changes a button. Changed: the Compact line in place of "All · Overall"; `WORDS` gains the promises' words
+    and the footer links; the laptop line-up includes the privacy section.
+  - *Couldn't check here*: SF Pro itself (Chromium draws a stand-in), and how the new hero sits on a real iPhone.
 - **Anton's photos on the website (D88, 0.77.0).** The drawn nugs (`.nug.n2`…, still used by `og.html`) give way
   to the owner's own cut-outs (Remove background, D26) from his live account `anton_godd`: chosen from his public
   products (never private or kept ones) with a cut-out, read once, read-only, through Cloudflare's D1 and R2 APIs.
@@ -1924,6 +1948,22 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### Tests — the rating slider measured once the editor has faded in
+- `sliders.spec.ts` › "the bar doesn't move or resize…" measured the bar while the editor was still fading in
+  (`enter`), when it reads 28.00006px tall instead of 28, so it failed on a busy machine (0.78.0's release run). It
+  now waits for `settled` first, as the testing notes ask. Tests only; the version stays.
+
+### 0.78.0 — the website's full overhaul (owner request, D89)
+- The website now looks like the app: Apple's fonts, the phone drawn as the new app (and showing on the first
+  screen), Rate the stack second, a "Your stash is your business" section with four plain promises, drawn icons in
+  place of emoji, calm labels, a footer with ways on, and hover feedback on a computer. Website only.
+
+### Notes — the website's overhaul so far and the app's redesign, stage A, are live
+- 0.74.0–0.77.1 went live on 2026-11-04 (release 0.77.1): the website's Apple-style polish (D85), five things to play
+  with (D86), Anton's photos (D88), and the app's Apple-style redesign, stage A (D87). The first release run failed on
+  `tabbar.spec.ts` (the tabs' widths on the CI fonts), fixed in 0.77.1 (#192); the second passed with no flaky tests.
+  Notes only.
 
 ### 0.77.1 — the tab bar's four tabs exactly equal
 - The floating tab bar (D87) shared its width with a plain `1fr`, which lets a tab whose name is wider than its share
