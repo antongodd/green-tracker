@@ -211,7 +211,7 @@
       sorted.forEach((p, i) => {
         const band = bandOf(p.s), r = document.createElement('div');
         r.className = `lr${band ? ` holo ${band}` : ''}`; r.style.animationDelay = `${i * 70}ms`;
-        r.innerHTML = `<span class="rk">${i + 1}</span><span class="nug ${p.nug}"></span><span class="nm"><b></b><small></small></span><span class="sc">${p.s.toFixed(1)}</span>`;
+        r.innerHTML = `<span class="rk">${i + 1}</span><img class="nug" src="/media/nugs/${p.img}-s.webp" alt="" width="96" height="96" /><span class="nm"><b></b><small></small></span><span class="sc">${p.s.toFixed(1)}</span>`;
         r.querySelector('b').textContent = p.name; r.querySelector('small').textContent = p.sub;
         if (!band) r.querySelector('.sc').style.color = heat(p.s);
         board.append(r);
@@ -224,7 +224,7 @@
       if (c.gone) return;
       const w = c.el.offsetWidth, s = Math.round(scoreAt(x, w) * 10) / 10, dir = Math.sign(x) || 1;
       c.gone = true; c.el.style.pointerEvents = 'none'; c.el.style.transition = 'none';
-      rated.push({ name: c.el.dataset.name, sub: c.el.dataset.sub, nug: c.el.dataset.nug, s });
+      rated.push({ name: c.el.dataset.name, sub: c.el.dataset.sub, img: c.el.dataset.img, s });
       say(`${c.el.dataset.name}: ${s.toFixed(1)}. ${verdictOf(s)}`);
       if (c.spring) c.spring.stop();
       spring(x, (n) => { c.el.style.transform = `translateX(${n.toFixed(1)}px) rotate(${(n / 18).toFixed(2)}deg)`; c.el.style.opacity = String(Math.max(0, 1 - Math.abs(n) / (w * 1.6))); },

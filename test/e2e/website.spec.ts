@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
@@ -11,7 +11,7 @@ import { contrastFailures, textBoxes } from './helpers';
 const SITE = 'https://site.test';
 const DIR = join(process.cwd(), 'site/public');
 const APP = 'https://green-tracker.green-tracker.workers.dev';
-const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.vtt': 'text/vtt' };
+const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.vtt': 'text/vtt', '.webp': 'image/webp' };
 const headers = Object.fromEntries(
   readFileSync(join(DIR, '_headers'), 'utf8').split('\n').filter((l) => /^\s+\S+:/.test(l)).map((l) => { const i = l.indexOf(':'); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }),
 );
@@ -323,15 +323,15 @@ test('Rate the stack: the buttons rate all five, and your top shelf builds itsel
   // One at a time: the next card is ready once the last has flown off.
   const rate = async (name: 'Fire' | 'Mids') => { const n = await cards.count(); await page.getByRole('button', { name, exact: true }).click(); await expect(cards).toHaveCount(n - 1); };
   await rate('Fire');
-  await expect(now).toHaveText('Lemon Gelato: 9.3. Fire.');
+  await expect(now).toHaveText('Cherry Popperz: 9.3. Fire.');
   await rate('Mids');
-  await expect(now).toHaveText('Blue Zushi: 3.1. Mids. Straight to the bottom.');
+  await expect(now).toHaveText('White Runtz: 3.1. Mids. Straight to the bottom.');
   for (const name of ['Fire', 'Mids', 'Fire'] as const) await rate(name);
   // Your top shelf: the three fires first, then the mids, in the app's colours.
-  await expect(now).toHaveText('Your top shelf: Lemon Gelato first, with 9.3.');
+  await expect(now).toHaveText('Your top shelf: Cherry Popperz first, with 9.3.');
   const rows = page.locator('.board .lr');
   await expect(rows).toHaveCount(5);
-  expect(await rows.locator('.nm b').allTextContents()).toEqual(['Lemon Gelato', 'Gushers Rosin', 'Purple Punch', 'Blue Zushi', 'Melon Gummies']);
+  expect(await rows.locator('.nm b').allTextContents()).toEqual(['Cherry Popperz', 'Zkittlez', 'Orange Diesel', 'White Runtz', 'Watermelon Zkittlez']);
   await expect(rows.first()).toHaveClass('lr holo b3');
   // Below 8 the score glows amber to mint, like the app's heat (D30): 3.1 is amber.
   expect(await rows.last().locator('.sc').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(240, 169, 59)');
@@ -346,7 +346,7 @@ test('Rate the stack: the buttons rate all five, and your top shelf builds itsel
   for (let i = 0; i < 5; i++) await rate('Fire');
   await page.getByRole('button', { name: 'Rate them again' }).click();
   await expect(page.locator('#stack .card')).toHaveCount(5);
-  await expect(now).toHaveText('Rating 1 of 5: Lemon Gelato.');
+  await expect(now).toHaveText('Rating 1 of 5: Cherry Popperz.');
 });
 
 test('Rate the stack: a card follows the finger, scores as it goes, springs back if let go early, and flies off when thrown', async ({ page }) => {
@@ -372,9 +372,9 @@ test('Rate the stack: a card follows the finger, scores as it goes, springs back
   await expect(page.locator('#rate-now')).toHaveText('');
   // Thrown left: it flies off and is rated low, and the next card comes up.
   await drag(page, at, -width * 0.3, 6, 12);
-  await expect(page.locator('#rate-now')).toHaveText(/^Lemon Gelato: [1-4]\.\d\. Mids\. Straight to the bottom\.$/);
+  await expect(page.locator('#rate-now')).toHaveText(/^Cherry Popperz: [1-4]\.\d\. Mids\. Straight to the bottom\.$/);
   await expect(page.locator('#stack .card')).toHaveCount(4);
-  await expect(page.locator('#stack .card:last-child .cnm b')).toHaveText('Blue Zushi');
+  await expect(page.locator('#stack .card:last-child .cnm b')).toHaveText('White Runtz');
 });
 
 test('Make it yours: a Look tapped or swiped to changes the page’s lights and the little phone', async ({ page }) => {
@@ -527,5 +527,34 @@ test('"Put it on my iPhone" slides up a sheet with the three steps; Done, Escape
   await sheet.getByRole('link', { name: 'The video and the full steps' }).click();
   await expect(sheet).toBeHidden();
   await expect.poll(() => page.locator('#install h2').evaluate((h) => h.getBoundingClientRect().top)).toBeLessThan(200);
+});
+
+// D88 (0.77.0): Anton's own photos (his cut-outs) with his real strain names and scores; sellers stay made up. Each
+// picture is a small WebP re-encoded from the cut-out, so it carries nothing but the picture: no EXIF (where or when
+// it was taken, the phone), no XMP. The page shows every one it names, and they load from the site itself.
+test('Anton’s photos: every one shows, small, with no hidden photo details', async ({ page }) => {
+  const dir = join(DIR, 'media/nugs');
+  const files = readdirSync(dir);
+  expect(files.length).toBeGreaterThan(0);
+  for (const f of files) {
+    expect(f, f).toMatch(/^[a-z0-9-]+-(s|l)\.webp$/);
+    const b = readFileSync(join(dir, f));
+    expect(b.subarray(0, 4).toString() + b.subarray(8, 12).toString(), f).toBe('RIFFWEBP');
+    // The chunks inside the file: only the picture itself (and the outline that says it has see-through parts).
+    const view = new DataView(b.buffer, b.byteOffset, b.byteLength), size = (at: number) => view.getUint32(at + 4, true);
+    const chunks: string[] = [];
+    for (let at = 12; at + 8 <= b.length; at += 8 + size(at) + (size(at) % 2)) chunks.push(b.subarray(at, at + 4).toString());
+    for (const c of chunks) expect(['VP8 ', 'VP8L', 'VP8X', 'ALPH'], `${f}: ${chunks.join(',')}`).toContain(c);
+    expect(b.length, f).toBeLessThan(f.endsWith('-s.webp') ? 10_000 : 70_000);
+  }
+  const { elsewhere, problems } = await open(page);
+  await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
+  for (const img of await page.locator('img[src^="/media/nugs/"]').all()) {
+    await img.scrollIntoViewIfNeeded();
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), (await img.getAttribute('src')) ?? '').toBe(true);
+    expect(files).toContain((await img.getAttribute('src'))!.split('/').pop());
+  }
+  expect(elsewhere).toEqual([]);
+  expect(problems).toEqual([]);
 });
 

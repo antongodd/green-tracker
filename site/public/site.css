@@ -6,7 +6,8 @@
    when they arrive, instead of looping for ever; the four features are one grouped panel; the slider
    is an iPhone-style one with marks where the colours change; the bar at the top gets its edge only
    once the page scrolls under it, and offers Sign up once the hero's buttons have gone; less see-through
-   with Reduce Transparency, plainer with Increase Contrast. */
+   with Reduce Transparency, plainer with Increase Contrast.
+   D88 (0.77.0): Anton's own cut-out photos in place of the drawn nugs (img.nug, .card img.bud, .sphone img.photo). */
 
 @font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
 @font-face { font-family: "Manrope"; src: url("/fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
@@ -409,3 +410,12 @@ html.sheet-open { overflow: hidden; }
 .board .lr .rk, .board .lr .nm small, .card.holo .ctop, .card.holo .cnm small { color: var(--text-2); }
 .board .holo.b4, .card.holo.b4 { --dk: 0.66; } .board .holo.b3, .card.holo.b3 { --dk: 0.76; }
 .board .holo.b2, .card.holo.b2 { --dk: 0.84; } .board .holo.b1, .card.holo.b1 { --dk: 0.9; }
+/* D88: Anton's own photos (the app's cut-outs, background removed) in place of the drawn nugs. Each sits on a soft
+   dark tile in the rows and chips, and floats on its own on the Rate the stack cards and the story's screens. */
+img.nug { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; padding: 2px; border-radius: 8px;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 70%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+.chip img.nug { width: 32px; }
+.card img.bud { display: block; width: 168px; height: 168px; justify-self: center; align-self: center; object-fit: contain; border-radius: 0; box-shadow: none;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)); -webkit-user-drag: none; user-select: none; pointer-events: none; }
+.sphone img.photo { display: block; width: 100%; height: 96px; object-fit: contain; border-radius: 10px; background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), transparent 70%); }
+@media (min-width: 900px) { .sphone img.photo { height: 170px; } .stack .card img.bud { width: 210px; height: 210px; } }
