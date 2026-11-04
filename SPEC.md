@@ -1983,6 +1983,10 @@ None.
 
 ## 6. Changelog
 
+### Notes — the Apple-style redesign, stage C (the Leaderboard colours) is live
+- 0.80.0 (on dev 2026-11-04) went live on 2026-11-04 (release 0.80.0, #205), with no flaky tests; tried by the owner
+  on GT Dev first ("ok this is good"). The Apple-style redesign (to-do item 16) is finished. Notes only.
+
 ### 0.80.0 — the Apple-style redesign, stage C: the Leaderboard colours (D91)
 - Twelve Leaderboard colour sets, each with little moving details of its own that grow with the score, from a hint at
   8.0 to a full show at 9.5: Aurora's northern lights, Candy's sprinkles, Cosmos' stars, Deep Sea's bubbles and

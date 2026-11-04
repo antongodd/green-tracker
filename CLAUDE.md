@@ -381,10 +381,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.79.1 (2026-11-04): everything up to the app's Apple-style redesign, stage B, the Looks (item 16), and
-  the website's Looks row brought to the eleven.
-- **Dev:** 0.80.0 (2026-11-04): the app's Apple-style redesign, stage C, the Leaderboard colours (item 16), waiting for
-  Anton's "go live".
+- **Live:** 0.80.0 (2026-11-04): everything up to the app's Apple-style redesign, finished (item 16, stage C: the
+  Leaderboard colours).
+- **Dev:** the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -421,22 +420,20 @@ Each is a job for its own conversation; the summary lists what each covers.
    they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
 15. ~~The website, overhauled~~: live in 0.74.0–0.78.0 (see Done). Later if Anton wants: a privacy page anyone can
    open (the app's is behind sign-in), and reviews once there are real ones.
-16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
+16. ~~The Apple-style redesign of the app~~: all three stages live by 0.80.0 (see Done). (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
    - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
    - ~~Stage B, the Looks~~: live in 0.79.0 (see Done); the website's Looks row followed in 0.79.1.
-   - **Stage C, the Leaderboard colours:** **on dev** in 0.80.0 (2026-11-04), D91; mockups
-     https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz ("i also really like the little animations"). Twelve sets, each
-     with details growing from 8.0 to 9.5: his eight (Ember's middle band Gold, his pick) and Candy, Medals, Storm and
-     Toxic (all four his picks); Gems and Metals went (shown as Aurora); new accounts start on Aurora. Waiting for
-     "go live".
+   - ~~Stage C, the Leaderboard colours~~: live in 0.80.0 (see Done). Later if Anton wants: the website showing the
+     new colour sets.
    - The website: its own job (item 15).
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The app's Apple-style redesign, stage C, the Leaderboard colours: twelve sets, each with little moving details growing from 8.0 to a full show at 9.5 (Aurora's lights, Candy's sprinkles, Cosmos' stars, Deep Sea's jellyfish, Ember's sparks, Medals' gold leaf, Neon's tubes, Prism's beams, Storm's lightning, Sunset's sun, Synthwave's grid, Toxic's drips); Ember's middle band Gold; Candy, Medals, Storm and Toxic new; Gems and Metals went (shown as Aurora); new accounts on Aurora; old backups with a removed Look or set restore again (tried by Anton on GT Dev: "ok this is good") | 0.80.0 | D91 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage B, the Looks: every Look's background glides smoothly with details of its own (Sakura's branch and petals, Nebula's shooting stars, Aurora's northern lights, Deep Sea's jellyfish…), one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as Daylight); the website's Looks row followed (eleven) in 0.79.1 (not yet tried on Anton's iPhone on live) | 0.79.0, 0.79.1 | D90 | 2026-11-04 | 2026-11-04 |
 | The website's full overhaul (from the ui-ux-pro-max review): Apple's fonts like the app, the phone drawn as the new app and on the first screen, Rate the stack second, "Your stash is your business" (four promises true in the app), drawn icons instead of emoji, calm labels, a footer with Open the app, Create an account and Email us, hover for a mouse (tried by Anton on the preview: "i like it") | 0.78.0 | D89 | 2026-11-04 | 2026-11-04 |
 | `apple-design` moved from this repository to Anton's Claude account (Settings › Customize › Skills), so all his projects can use it | (notes) | | 2026-11-04 | notes only |
