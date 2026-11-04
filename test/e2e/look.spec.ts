@@ -73,10 +73,11 @@ test('Settings shows the look, the top and the colours, each opening its own pag
   await expect(page.locator('input[name="look"][value="aurora"]')).toBeChecked();
   await expect(page.locator('h2.ap-mode')).toHaveText(['Dark mode', 'Light mode']);
   await expect(page.locator('h2.ap-mode svg')).toHaveCount(2);
-  await expect(page.getByRole('radiogroup', { name: 'Dark mode' }).locator('.ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Haze', 'Holo Pearl', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
-  await expect(page.getByRole('radiogroup', { name: 'Light mode' }).locator('.ap-name')).toHaveText(['Daylight Mint', 'Daylight Pearl', 'Daylight Sky']);
-  await expect(page.locator('.ap-card .ap-name').last()).toHaveText('Daylight Sky');
-  for (const name of ['Neon Night', 'Holo Pearl', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
+  // D90: Holo Pearl and Haze went; Daylight is the one light look.
+  await expect(page.getByRole('radiogroup', { name: 'Dark mode' }).locator('.ap-name')).toHaveText(['Aurora Glass', 'Deep Forest', 'Deep Sea', 'Fireflies', 'Frost', 'Lava Lamp', 'Nebula', 'Neon Night', 'Outrun', 'Sakura']);
+  await expect(page.getByRole('radiogroup', { name: 'Light mode' }).locator('.ap-name')).toHaveText(['Daylight']);
+  await expect(page.locator('.ap-card .ap-name').last()).toHaveText('Daylight');
+  for (const name of ['Neon Night', 'Deep Forest']) await expect(page.getByRole('radio', { name: new RegExp(name) })).toBeEnabled();
   await expect(page.getByText('Coming next')).toHaveCount(0);
   await expect(page.locator('input[name="top"], input[name="preset"], .ap-preview')).toHaveCount(0);
   await shot(page, '641-appearance-look');
@@ -217,11 +218,10 @@ test('quick taps in Appearance: each choice stays chosen, and the last one is wh
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
-// D65 (0.55.0): the other three looks.
+// D65 (0.55.0): the other looks of then (Holo Pearl went in D90).
 const LOOKS = [
   // D87: every look in Apple's own fonts (D65 gave these three their own titles before).
   { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a', display: /^-apple-system/ },
-  { look: 'pearl', name: 'Holo Pearl', bg: 'rgb(8, 8, 12)', hex: '#08080c', display: /^-apple-system/ },
   { look: 'forest', name: 'Deep Forest', bg: 'rgb(5, 8, 7)', hex: '#050807', display: /^-apple-system/ },
 ] as const;
 

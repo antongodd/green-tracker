@@ -138,7 +138,7 @@ test('Compare boards: from their Leaderboard, a card for each subject, nothing e
   }
 });
 
-for (const tone of ['aurora', 'daymint'] as const) {
+for (const tone of ['aurora', 'daysky'] as const) {
   test(`readable in ${tone}: the product page card, the post card and Compare`, async () => {
     test.slow();
     await look(mira, tone); // her pages are in her look (D74)
@@ -153,7 +153,7 @@ for (const tone of ['aurora', 'daymint'] as const) {
       await expect(me.locator('html')).not.toHaveClass(/vt-look/);
       await settled(me);
       expect((await new AxeBuilder({ page: me }).analyze()).violations).toEqual([]);
-      if (tone === 'daymint') await shot(me, 'compare-04-compare-daymint');
+      if (tone === 'daysky') await shot(me, 'compare-04-compare-daysky');
     } finally {
       await look(mira, 'aurora');
       await look(me, 'aurora');

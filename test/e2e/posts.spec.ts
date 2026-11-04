@@ -211,7 +211,7 @@ test('several photos (D78): add the product’s second photo, post, then swipe t
   await shot(owner, 'posts-09-feed-two');
 });
 
-for (const look of ['aurora', 'daymint'] as const) {
+for (const look of ['aurora', 'daysky'] as const) {
   test(`readable and accessible in ${look}: the Feed, a post’s page and the composer`, async () => {
     test.slow();
     await call(fan, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'gems', markFirst: true });
@@ -229,7 +229,7 @@ for (const look of ['aurora', 'daymint'] as const) {
     await fan.getByRole('button', { name: 'Just a photo' }).click();
     await settled(fan);
     expect((await new AxeBuilder({ page: fan }).analyze()).violations).toEqual([]);
-    if (look === 'daymint') await shot(fan, 'posts-07-feed-daymint');
+    if (look === 'daysky') await shot(fan, 'posts-07-feed-daysky');
   });
 }
 

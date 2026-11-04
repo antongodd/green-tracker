@@ -14,7 +14,8 @@ building part. Since D76 neither needs a migration.
   `looks.spec.ts` compares every position and font with Aurora Glass.
 - **Readability:** whatever drifts behind words must pass the readability tests at every moment; keep it about as
   bright as Aurora's lights. Never loosen a readability or accessibility test: change the colours.
-- The background moves only in `steps()`; name every keyframe `bg-…`; still with Reduce Motion; hidden under the
+- The background glides smoothly since D90 (in `steps()` before; battery is no worry for the owner), on `transform` and
+  `opacity` where it can; name every keyframe `bg-…`; still with Reduce Motion; hidden under the
   viewer and the editors (copy how an existing look does it).
 - Everyone starts on Aurora Glass, the Slim strip and Gems (D71); a light look is only ever chosen (D72).
 
@@ -22,9 +23,10 @@ building part. Since D76 neither needs a migration.
 
 | Where | What |
 |---|---|
-| `shared/domain/gems.ts` | `Look` type; `LOOK_KEYS` (dark looks: Aurora first, then A to Z by label; light looks last, A to Z); `NEW_LOOKS`; `LOOK_BG`; `LOOKS` (label, description); `LIGHT_LOOKS` if it's light |
+| `shared/domain/gems.ts` | `Look` type; `LOOK_KEYS` (dark looks: Aurora first, then A to Z by label; light looks last, A to Z); `NEW_LOOKS`; `LOOK_BG`; `LOOKS` (label, description); `LIGHT_LOOKS` if it's light; a look that goes gets a line in `LOOKS_MOVED` (what it shows as) and in look.js's `moved` |
+| `client/src/components/Backdrop.tsx` | its scene (D90): a function drawing its pieces, in `SCENES` under its key |
 | `client/public/look.js` | the same name and background in `bgs` (and `light` if it's light) |
-| `client/src/styles.css` | the tokens under `html[data-look="<key>"]` (copy the nearest existing look's block and change only colours); the background: `.bg-layer::before` / `::after`, its `bg-…` keyframes (inside `@media (prefers-reduced-motion: no-preference)`), the viewer rules; a light look also needs everything under `html[data-tone="light"]` to work for it |
+| `client/src/styles.css` | the tokens under `html[data-look="<key>"]` (copy the nearest existing look's block and change only colours); its scene's styles under `.scene-<key>` in the Looks' backgrounds section (its `bg-…` keyframes; Reduce Motion and the viewer are handled for every scene); a light look also needs everything under `html[data-tone="light"]` to work for it |
 | `test/domain/gems.test.ts` | the count and order of looks; New marks; `look.js` agrees (it fails until you update it) |
 | `test/api/appearance.test.ts` | the new key can be saved and read back |
 | `test/e2e/looks.spec.ts` | an entry `{ look, name, bg, hex }`: positions, fonts, readability over every screen |
@@ -47,7 +49,7 @@ building part. Since D76 neither needs a migration.
 ## Then
 
 1. `grep -rn "<a neighbouring key>" client server shared test` to catch any list you missed (a count in a test name,
-   "fifteen looks").
+   "eleven looks").
 2. Check the Look page or the colours page shows it in the right place, marked New, and that a friend sees their
    board in it (D74; `theirlook.spec.ts`).
 3. Run the specs above plus the core set; the full looks sweep is long, so run it in the background.
