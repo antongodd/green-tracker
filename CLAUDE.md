@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D92 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D93 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -115,7 +115,9 @@ see the others' work (open pull requests, recently pushed `claude/*` branches, C
 - `main` and `dev` are both protected (GitHub ruleset "Protect main and dev"): the GitHub Actions **test** check must
   pass. Merge as soon as it does (squash into `dev`); if it's still running, turn on auto-merge so it merges itself.
 - **Going live:** open a release pull request from `dev` to `main` listing what's going live, and merge it with a
-  **merge commit (not squash)** once its check is green, so `dev` and `main` stay in step. Then check the run on `main`
+  **merge commit (not squash)** once its check is green (its own run, with every browser test: **never turn on
+  auto-merge for a release**, as the push run on `dev` already passed "test" for the same commit and lets it merge
+  before the full run has finished; 0.81.1 did), so `dev` and `main` stay in step. Then check the run on `main`
   finished green, including **"Live site serves this build"**.
 - If something on live breaks: put the previous version back first (a pull request reverting the change, straight
   through to live), then fix it properly.
@@ -147,7 +149,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D93) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D94) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +173,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D92.
+- Reopen any decision D1–D93.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -237,8 +239,11 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Settings have one too and the bar is the same width everywhere. No button opens `/log/new` any more: a test reaches it
   with `history.pushState` + a `popstate` event (no reload; `keepediting.spec.ts`, `sounds.spec.ts`). Return to Log is
   labelled **Move to Tried, not rated**. A strain is the product's Name by `nameKey`; names are capitalised when saved,
-  so use different capitals (`ZKITTLEZ`) to show they're matched. Strainz and Sources open on **Tried** after a reload
-  (the half is kept only while the app is open): click the **Want to try** / **To try** tab after `goto`. Want to try in
+  so use different capitals (`ZKITTLEZ`) to show they're matched. Since D93 Strainz is shelves: read one with
+  `getByRole('list', { name: '<shelf title>', exact: true })` (`.pk-n` the names), See all is the link "See all:
+  <shelf>" (`/strainz/list/<sort>` the cards, `/strainz/list/want` the Want to try list); a Want to try shelf shows
+  only when the list has one. Sources opens on **Tried** after a reload (the half is kept only while the app is open):
+  click **To try** after `goto`. Want to try in
   a test: `POST /api/wants` `{ kind: 'strain' | 'source', name, note? }`; a product save answers `tickedOff`. The Want
   to try sheet's box is `getByLabel('Strain', { exact: true })` (the Strainz tab matches otherwise).
 - A colour set's effect on a product page (`.hero-photo .tfx`) fades out towards its box's bottom edge (0.81.1), so
@@ -395,11 +400,10 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.80.0 (2026-11-04): everything up to the app's Apple-style redesign, finished (item 16, stage C: the
-  Leaderboard colours).
-- **Dev:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), waiting for Anton's
-  "go live" (he likes it, 2026-11-04); and no line across a product's photo in the colour sets (0.81.1, a small fix
-  that goes live with it).
+- **Live:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), and no line across a
+  product's photo in the colour sets.
+- **Dev:** 0.82.0 (2026-11-04): Strainz as shelves (item 17, D93), waiting for Anton to try it on GT Dev and say
+  "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -444,11 +448,10 @@ Each is a job for its own conversation; the summary lists what each covers.
    - ~~Stage C, the Leaderboard colours~~: live in 0.80.0 (see Done). Later if Anton wants: the website showing the
      new colour sets.
    - The website: its own job (item 15).
-17. **Strainz** (big; Anton, 2026-11-04; D92): **on dev in 0.81.0 (2026-11-04)**, waiting for Anton to try it on GT
-   Dev and say "go live". A Strainz tab in the Log's place (strains as cards like Sources, a strain's page, Compare,
-   Rename, the Log's unrated entries under *Tried, not rated*), Want to try lists (strains, and sources on Sources),
-   the + beside the bar on every screen. Mockups https://claude.ai/artifact/987zYn5kvJgDSphKFaXGAr. Anton wants to
-   try Rename on GT Dev before deciding more.
+17. **Strainz** (big; Anton, 2026-11-04; D92): live in 0.81.0–0.81.1 (see Done). Anton wants to try Rename on his
+   own data before deciding more. **Shelves** (D93, Anton's pick A, 2026-11-04): on dev in 0.82.0
+   (2026-11-04), waiting for Anton to try on GT Dev and say "go live"; mockups
+   https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94.
 18. **Friends' strains** (later; Anton, 2026-11-04): "3 friends have tried Zkittlez", or your strains against a
    friend's. Changes what followers see, so it's a big change of its own (privacy, `big-change` step 1). Also later
    if he wants: Want to try lists his followers can see, and the website's "Log" screen in its scroll story showing
@@ -458,6 +461,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Strainz: a tab in the Log's place with your strains (a product's name) and a page for each (average, place, best and lowest, kinds, prices, sources, dates), Compare two, Rename, Want to try lists for strains and sources that tick themselves off, the Log's unrated entries under Tried, not rated, the + beside the bar on every screen; and no line across a product's photo in any colour set (0.81.1, Anton's Sunset screenshot) (tried by Anton on GT Dev: "i like it"; Rename and VoiceOver not yet checked on his iPhone) | 0.81.0, 0.81.1 | D92 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage C, the Leaderboard colours: twelve sets, each with little moving details growing from 8.0 to a full show at 9.5 (Aurora's lights, Candy's sprinkles, Cosmos' stars, Deep Sea's jellyfish, Ember's sparks, Medals' gold leaf, Neon's tubes, Prism's beams, Storm's lightning, Sunset's sun, Synthwave's grid, Toxic's drips); Ember's middle band Gold; Candy, Medals, Storm and Toxic new; Gems and Metals went (shown as Aurora); new accounts on Aurora; old backups with a removed Look or set restore again (tried by Anton on GT Dev: "ok this is good") | 0.80.0 | D91 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage B, the Looks: every Look's background glides smoothly with details of its own (Sakura's branch and petals, Nebula's shooting stars, Aurora's northern lights, Deep Sea's jellyfish…), one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as Daylight); the website's Looks row followed (eleven) in 0.79.1 (not yet tried on Anton's iPhone on live) | 0.79.0, 0.79.1 | D90 | 2026-11-04 | 2026-11-04 |
 | The website's full overhaul (from the ui-ux-pro-max review): Apple's fonts like the app, the phone drawn as the new app and on the first screen, Rate the stack second, "Your stash is your business" (four promises true in the app), drawn icons instead of emoji, calm labels, a footer with Open the app, Create an account and Email us, hover for a mouse (tried by Anton on the preview: "i like it") | 0.78.0 | D89 | 2026-11-04 | 2026-11-04 |

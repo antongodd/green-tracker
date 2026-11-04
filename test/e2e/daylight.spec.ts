@@ -110,7 +110,7 @@ for (const d of DAYLIGHTS) {
       expect(worst, `${d.look} ${name}:\n${worst.join('\n')}`).toEqual([]);
       expect(await axe(), `${d.look} ${name}`).toEqual([]);
     }
-    for (const path of ['/', '/log', '/sources', '/people', '/more', '/more/look', '/more/top', '/more/colours', '/more/sounds', '/more/currency', '/more/privacy', '/more/passkeys', '/more/archive', '/products/new']) {
+    for (const path of ['/', '/strainz', '/log', '/sources', '/people', '/more', '/more/look', '/more/top', '/more/colours', '/more/sounds', '/more/currency', '/more/privacy', '/more/passkeys', '/more/archive', '/products/new']) {
       await page.goto(path);
       await expect(page.locator('main')).toBeVisible();
       await page.waitForLoadState('networkidle');

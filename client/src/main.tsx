@@ -40,7 +40,7 @@ import { BrandPage, BrandsList } from './screens/Brands';
 import { Feed } from './screens/Feed';
 import { PostPage } from './screens/PostPage';
 import { Composer } from './screens/Composer';
-import { StrainCompare, StrainPage, StrainzList } from './screens/Strainz';
+import { StrainCompare, StrainPage, StrainzAll, StrainzList, StrainzWants } from './screens/Strainz';
 import { clearWantsCache, TickedOff } from './wants';
 
 const SIGNED_OUT_PATHS = ['/signin', '/login', '/signup'];
@@ -155,10 +155,13 @@ function App() {
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
     const brand = path.match(/^\/brands\/([^/]+)$/); // D59
     // D92: Strainz, a strain's page, two strains compared, and a new product named after a strain.
+    const strainShelf = path.match(/^\/strainz\/list\/(average|tried|recent|want)$/); // D93: See all
     const strain = path.match(/^\/strainz\/([^/]+)(?:\/vs\/([^/]+))?$/);
     const named = path.match(/^\/products\/new\/([^/]+)$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
     else if (named) screen = <Editor key={path} id={null} name={decodeURIComponent(named[1]!)} />;
+    else if (strainShelf?.[1] === 'want') screen = <StrainzWants />;
+    else if (strainShelf) screen = <StrainzAll key={path} shelf={strainShelf[1] as 'average' | 'tried' | 'recent'} />;
     else if (strain?.[2]) screen = <StrainCompare key={path} name={decodeURIComponent(strain[1]!)} other={decodeURIComponent(strain[2])} />;
     else if (strain) screen = <StrainPage key={path} name={decodeURIComponent(strain[1]!)} />;
     else if (postPage) screen = <PostPage key={path} id={decodeURIComponent(postPage[1]!)} />;
