@@ -382,7 +382,7 @@ test('Make it yours: a Look tapped or swiped to changes the page’s lights and 
   await open(page);
   const row = page.locator('.looks');
   await row.scrollIntoViewIfNeeded();
-  await expect(row.getByRole('button')).toHaveCount(15);
+  await expect(row.getByRole('button')).toHaveCount(11);
   await expect(row.getByRole('button', { name: 'Aurora Glass' })).toHaveAttribute('aria-pressed', 'true');
   const light = () => page.locator('.l1').evaluate((e) => getComputedStyle(e).backgroundColor);
   expect(await light()).toBe('rgb(88, 224, 140)');
@@ -390,12 +390,12 @@ test('Make it yours: a Look tapped or swiped to changes the page’s lights and 
   await row.getByRole('button', { name: 'Sakura' }).click();
   await expect(row.getByRole('button', { name: 'Sakura' })).toHaveAttribute('aria-pressed', 'true');
   await expect(row.getByRole('button', { name: 'Aurora Glass' })).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('#look-about')).toHaveText('Sakura: dusk pink with drifting blossom.');
+  await expect(page.locator('#look-about')).toHaveText('Sakura: dusk pink, a swaying branch, petals falling.');
   expect(await light()).not.toBe('rgb(245, 140, 186)');
   await expect.poll(light, { timeout: 4000 }).toBe('rgb(245, 140, 186)');
   // Swiped along to the end: the last one, a light Look, shows on the little phone (light), the page stays dark.
   await row.evaluate((r) => r.scrollTo({ left: r.scrollWidth, behavior: 'instant' }));
-  await expect(row.getByRole('button', { name: 'Daylight Sky' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(row.getByRole('button', { name: 'Daylight' })).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => page.locator('.pmini .scr').evaluate((e) => getComputedStyle(e).backgroundColor), { timeout: 4000 }).toBe('rgb(238, 243, 250)');
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(3, 7, 10)');
   expect((await new AxeBuilder({ page }).include('.looks').analyze()).violations.map((v) => v.id)).toEqual([]);
@@ -564,7 +564,7 @@ test('Anton’s photos: every one shows, small, with no hidden photo details', a
 test('the overhaul: the new order, the privacy promises, the new app on the phone, no emoji, a footer with ways on', async ({ page }) => {
   await open(page);
   // The order of the sections, top to bottom.
-  expect(await page.locator('main h2').allTextContents()).toEqual(['Rate the stack.', 'Your stash, sorted.', 'Fifteen Looks. Pick yours.', 'Your stash is your business.', 'On your iPhone in 20 seconds.', 'Roll one up and sign up.']);
+  expect(await page.locator('main h2').allTextContents()).toEqual(['Rate the stack.', 'Your stash, sorted.', 'Eleven Looks. Pick yours.', 'Your stash is your business.', 'On your iPhone in 20 seconds.', 'Roll one up and sign up.']);
   // Four promises, each true in the app (D45, D77, D80, D84): followers by approval, what they see, no ads, export or delete.
   const promises = page.locator('.promises li');
   await expect(promises.locator('h3')).toHaveText(['Only friends you approve', 'You choose what they see', 'No ads, no tracking', 'Yours to take or delete']);

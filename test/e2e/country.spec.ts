@@ -48,7 +48,9 @@ test('the list opens under the box: Used first, flags, and typing filters it', a
   await expect(field()).toBeFocused();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('#app')).not.toHaveAttribute('inert');
-  // Right under the box, as wide, and the box has moved up near the top of the screen.
+  // Right under the box, as wide, and the box has moved up near the top of the screen (a frame after it opens:
+  // wait for that, or a busy machine measures it where it was).
+  await expect.poll(async () => (await field().boundingBox())!.y).toBeLessThan(250);
   const fb = (await field().boundingBox())!;
   const lb = (await list().boundingBox())!;
   expect(lb.y).toBeGreaterThanOrEqual(fb.y + fb.height);

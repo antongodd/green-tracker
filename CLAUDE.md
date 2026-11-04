@@ -378,9 +378,8 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.78.0 (2026-11-04): everything up to the website's full overhaul (item 15) and the app's Apple-style
-  redesign, stage A (item 16).
-- **Dev:** 0.79.0 (2026-11-04): the app's Apple-style redesign, stage B, the Looks (item 16), waiting for Anton's "go live".
+- **Live:** 0.79.0 (2026-11-04): everything up to the app's Apple-style redesign, stage B, the Looks (item 16).
+- **Dev:** 0.79.1 (2026-11-04): the website's Looks row brought to the eleven Looks (a small change, going live).
 
 ### To-do list (suggested order; Anton decides)
 
@@ -421,21 +420,19 @@ Each is a job for its own conversation; the summary lists what each covers.
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
    - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
-   - **Stage B, the Looks:** **on dev** in 0.79.0 (2026-11-04), D90; mockups
-     https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe ("i like it"). His ten favourites with smooth backgrounds and
-     details of their own, one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as
-     Daylight). No tilting for now. Waiting for "go live".
-     Knock-on: the website's "Fifteen Looks. Pick yours." row (`site/public/index.html`, `site.js`) still lists the four
-     that went; to bring it to eleven (and the new descriptions) once stage B is live.
+   - ~~Stage B, the Looks~~: live in 0.79.0 (see Done); the website's Looks row followed in 0.79.1.
    - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
      without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
-     Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora.
+     Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora. Every set
+     gets details of its own, growing from 8.0 to a full show at 9.5 (Anton, 2026-11-04). He wants mockups of
+     Ember's middle band (White-hot, Deep red or Gold, in place of Blue flame) and of new sets to add. Next: mockups.
    - The website: its own job (item 15).
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The app's Apple-style redesign, stage B, the Looks: every Look's background glides smoothly with details of its own (Sakura's branch and petals, Nebula's shooting stars, Aurora's northern lights, Deep Sea's jellyfish…), one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as Daylight); the website's Looks row followed (eleven) in 0.79.1 (not yet tried on Anton's iPhone on live) | 0.79.0, 0.79.1 | D90 | 2026-11-04 | 2026-11-04 |
 | The website's full overhaul (from the ui-ux-pro-max review): Apple's fonts like the app, the phone drawn as the new app and on the first screen, Rate the stack second, "Your stash is your business" (four promises true in the app), drawn icons instead of emoji, calm labels, a footer with Open the app, Create an account and Email us, hover for a mouse (tried by Anton on the preview: "i like it") | 0.78.0 | D89 | 2026-11-04 | 2026-11-04 |
 | `apple-design` moved from this repository to Anton's Claude account (Settings › Customize › Skills), so all his projects can use it | (notes) | | 2026-11-04 | notes only |
 | The website, Anton's photos: his own cut-outs, strain names and scores in place of the drawn nugs (sellers, prices and people made up) | 0.77.0 | D88 | 2026-11-04 | 2026-11-04 |
