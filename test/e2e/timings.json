@@ -309,6 +309,7 @@
  "theirlook.spec.ts › leaving while it fades in still lands on yours": 2.7,
  "theirlook.spec.ts › someone you don’t follow stays in your look; so does your own board as followers see it": 3,
  "theirlook.spec.ts › their board is in their look, top and colours; the key says whose; your phone keeps yours": 5.3,
+ "website.spec.ts › Anton’s photos: every one shows, small, with no hidden photo details": 16.8,
  "website.spec.ts › \"Put it on my iPhone\" slides up a sheet with the three steps; Done, Escape or a flick down closes it": 12.5,
  "website.spec.ts › Make it yours: a Look tapped or swiped to changes the page’s lights and the little phone": 10.0,
  "website.spec.ts › Rate the stack: a card follows the finger, scores as it goes, springs back if let go early, and flies off when thrown": 5.0,

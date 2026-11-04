@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D87 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D88 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -25,7 +25,8 @@ file (and the recipes it touches) in the same pull request.
 https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
 https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site: on the Worker's **Access**
 tab the lock must cover **Production**, not "Previews only", which leaves the address open). It loads nothing from
-anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses. The app's
+anywhere else (no tracking). Since D88 it shows Anton's own cut-out photos, strain names and scores (from his
+account only, never private ones); sellers, prices and people stay made up, and nobody else's data is ever used. Its links to the app are absolute addresses. The app's
 one link to it is the Invite a friend message (D82).
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
@@ -144,7 +145,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D88) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D89) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -168,7 +169,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D87.
+- Reopen any decision D1–D88.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -271,6 +272,9 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   The sheet (`hidden` until opened) and the Looks' names (off the side of the screen) are judged in their own tests.
   Anything with `hidden` needs `[hidden] { display: none !important }` (at the top of `site.css`): a `display` of its
   own otherwise shows it.
+- Website photos (D88): `site/public/media/nugs/<strain>-s|l.webp`, made from Anton's cut-outs and re-encoded so they
+  carry only the picture (`website.spec.ts` reads each file's chunks). A new one: the same way (PIL, WebP, no
+  `exif`/`icc_profile`), never a straight copy of a photo. Never put anyone else's photos or names on the site.
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -367,8 +371,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
-- **Dev:** 0.76.0 (2026-11-04): the website polished in Apple's style and five new things on it (to-do item 15, 0.74.0–
-  0.75.0), and the app's Apple-style redesign, stage A (to-do item 16, 0.76.0); both waiting for Anton's "go live".
+- **Dev:** 0.77.0 (2026-11-04): the website polished in Apple's style, five new things on it and Anton's own photos
+  (to-do item 15, 0.74.0–0.75.0, 0.77.0), and the app's Apple-style redesign, stage A (to-do item 16, 0.76.0); both waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -408,7 +412,8 @@ Each is a job for its own conversation; the summary lists what each covers.
    in the top bar, the features in one panel, an iPhone-style slider, Reduce Transparency and Increase Contrast.
    Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga. Then Anton asked for more imagination: **on dev** in
    0.75.0 (2026-11-04), D86, all five of https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct: Rate the stack, Make it
-   yours (the Looks), the phone you can pick up, the scroll story, the install sheet. Waiting for "go live". Next: the
+   yours (the Looks), the phone you can pick up, the scroll story, the install sheet. Then Anton's own photos and
+   strain names in place of the drawn nugs: **on dev** in 0.77.0 (2026-11-04), D88. Waiting for "go live". Next: the
    same on the app (item 16).
 16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,

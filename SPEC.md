@@ -159,6 +159,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D85 | **The website, polished in Apple's style** (2026-11-03; the owner: "run a overhaul review on our website, using the apple design skill. tell me some thigns you would change, make mockups - then execute"; a test of the new `apple-design` skill before using it on the app). Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga (Now, A recommended, B); built as A. | **Same words, colours, lights and steps; it now feels like an iPhone page:** buttons press in the moment they're touched; things move once when they arrive and then hold still (only the lights, slower, and the holo colours keep moving); the top bar gets its edge only once the page scrolls under it, and offers a green **Sign up** once the hero's buttons have gone; the four features as one grouped panel; card titles in the body font; an iPhone-style slider with marks where the colours change and a small pop when the row earns new ones; solid glass with Reduce Transparency and plainer cards with Increase Contrast. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *Website polish, Apple-style*. |
 | D86 | **New things on the website** (2026-11-04; the owner: "be more imaginative with this skill … add new things to the website, new well designed features", then "i like all of these 1 - 5"). Mockups https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct (ideas 1–5; all five chosen). | **Five things to play with, on top of D85:** (1) **Rate the stack** replaces the slider: drag or flick five made-up cards, the score following the card, then your own top shelf; Fire and Mids buttons too. (2) **Make it yours:** the app's fifteen Looks as swatches to swipe; the page's lights change to the one picked, and a little phone shows it. (3) **The phone you can pick up:** the hero's phone turns with a finger and springs back. (4) **The scroll story** replaces D85's grouped panel: the phone held beside the four features, showing each as you reach it. (5) **The install sheet:** "Put it on my iPhone" slides up a sheet with the three steps; the full steps and video stay below. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere and nothing is kept. See §4 *New things on the website*. |
 | D87 | **The Apple-style redesign, stage A: the base design** (2026-11-04; the owner: "a full overhaul… it just looks like a vibe coded app — i want it to look like a real developed apple app… like the photos app", "go as far as you need", with the `apple-design` skill; a review of every screen against it, then mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8). The owner's picks: Leaderboard **B, calm cards** (of A grouped list, B, C photo grid; no List/Grid switch); the three new tops, **Compact** for new accounts; fonts **B**, Apple's SF Pro for words and SF Pro Rounded for scores (of SF only, SF + Rounded, New York + SF, SF + Unbounded); Settings moves to your photo (top right) and + sits beside the tab bar ("sure"). Also from the questions: every screen may be rearranged as long as every feature stays easy to find; Apple-clean structure and type, "the colour and fun living in the Looks, the Leaderboard colours and the animations"; sounds and ticks stay; battery is no concern (iPhone 17 Pro). Press feedback presses in (scale 0.97, list rows light up) in place of D20's lift, as in the mockups. Kept: D70 (a Look changes only colours and the background), every readability and accessibility test. Stages B (the Looks: Holo Pearl, Haze and two of the Daylights to go, the rest with smooth moving backgrounds) and C (the colour sets: Gems and Metals to go, Ember without its blue) follow, each with its own mockups. What changed is in §4 *The Apple-style base*. |
+| D88 | **Anton's photos on the website** (2026-11-04; the owner: "the pictures used are just coloured blobs … take the best pictures from my live account anton_godd"; after the trade-offs were explained (his photos, AI, stock; the personal side of "Made by Anton" with real buds; D63's rule), "use mine", yes to reading his live account, "use my real strain names"). **Reopens D63** ("products shown are all made up; nobody's data is used") with his OK, for his own account only. | **The website shows the owner's own cut-out photos, real strain names and real scores** in place of drawn nugs and made-up products: the hero's top five and tiles, the scroll story, Make it yours and Rate the stack. **Sellers, prices, weights and other people stay made up**; no source or country is shown with a strain; private and kept products are never used; the pictures carry nothing but the picture. Nobody else's data is ever used. Website only; the app is unchanged. See §4 *Anton's photos on the website*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1331,6 +1332,21 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     down; axe waits for everything to arrive (`arrived`: a half-faded chip read as faint words).
   - *Couldn't check here*: the press feel, the blur and the Sign up swap on a real iPhone; Reduce Transparency and
     Increase Contrast in Safari.
+- **Anton's photos on the website (D88, 0.77.0).** The drawn nugs (`.nug.n2`…, still used by `og.html`) give way
+  to the owner's own cut-outs (Remove background, D26) from his live account `anton_godd`: chosen from his public
+  products (never private or kept ones) with a cut-out, read once, read-only, through Cloudflare's D1 and R2 APIs.
+  `site/public/media/nugs/<strain>-s.webp` (96px, rows and chips) and `-l.webp` (440px, the cards and the story's
+  photos, `loading="lazy"` below the top), re-encoded from the PNG cut-out with only the picture inside (no EXIF, XMP
+  or colour profile; the cut-outs held only an empty EXIF stub). **Real strain names and his real Overall scores**
+  (`overall()`, rounded): the hero's top five (Mega Z Emerald 9.5, Super Boof 9.5, Tide 9.3, California OG 9.2, Lemon
+  Popperz 9.1), its tiles (31 products, average 7.9, 4 countries); the story's screens; the little phone in Make it
+  yours; Rate the stack's five cards (Cherry Popperz, White Runtz, Zkittlez, Watermelon Zkittlez, Orange Diesel; the
+  visitor gives the scores). Subtitles are the type and strain type ("Flower · Hybrid"), never a source or country.
+  **Sellers stay made up** (Highland Greens, The Green Room) and so do the examples' prices, weights and people
+  (@sam, @jo). `img.nug` sits on a soft dark tile; `.card img.bud` floats with a drop shadow.
+  - *Tests* (`website.spec.ts`): every picture is a WebP whose chunks are only the picture (`VP8`, `VP8L`, `VP8X`,
+    `ALPH`; proved by adding an EXIF one, which fails), small (under 10 kB / 70 kB), and every one the page names
+    loads from the site itself; Rate the stack's tests use the new names.
 - **New things on the website (D86, 0.75.0).** Five things to play with, each built from an idea in the
   `apple-design` skill, on top of D85. Shared helpers in `site.js`: `spring` (Apple's damping + response; starts from
   the current value and speed, so anything can be grabbed mid-move; Reduce Motion jumps to the end), `project` (where
@@ -1908,6 +1924,10 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.77.0 — Anton's photos on the website (owner request, D88)
+- The website's nugs are now the owner's own cut-out photos, with his real strain names and scores (his top five on
+  the hero's phone; five more on Rate the stack). Sellers stay made up. Website only.
 
 ### 0.76.0 — the Apple-style redesign, stage A: the base design (D87)
 - Apple's own fonts: SF Pro for words, SF Pro Rounded for scores. No fonts downloaded.
