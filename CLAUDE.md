@@ -401,10 +401,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), and no line across a
-  product's photo in the colour sets.
-- **Dev:** 0.82.1 (2026-11-04): Strainz as shelves (item 17, D93; one row scrolls, ×2, Unranked in 0.82.1), waiting for Anton to try it on GT Dev and say
-  "go live".
+- **Live:** 0.82.1 (2026-11-04): Strainz as shelves (item 17), on top of 0.81's Strainz, the + on every screen and
+  the line fix.
+- **Dev:** the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -450,9 +449,7 @@ Each is a job for its own conversation; the summary lists what each covers.
      new colour sets.
    - The website: its own job (item 15).
 17. **Strainz** (big; Anton, 2026-11-04; D92): live in 0.81.0–0.81.1 (see Done). Anton wants to try Rename on his
-   own data before deciding more. **Shelves** (D93, Anton's pick A, 2026-11-04): on dev in 0.82.0
-   (2026-11-04), waiting for Anton to try on GT Dev and say "go live"; mockups
-   https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94.
+   own data before deciding more. Shelves (D93) live in 0.82.0–0.82.1 (see Done).
 18. **Friends' strains** (later; Anton, 2026-11-04): "3 friends have tried Zkittlez", or your strains against a
    friend's. Changes what followers see, so it's a big change of its own (privacy, `big-change` step 1). Also later
    if he wants: Want to try lists his followers can see, and the website's "Log" screen in its scroll story showing
@@ -462,6 +459,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Strainz as shelves: your favourite strain on top, then rows that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring filled to its average and ×1, ×2…; See all for the whole list; tap a strain you want to try for its note or Remove; only the row you swipe moves (0.82.1, Anton's screenshots); "Tried, not rated" renamed Unranked everywhere, Move to Unranked on a product page (tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.82.0, 0.82.1 | D93 | 2026-11-04 | 2026-11-04 |
 | Strainz: a tab in the Log's place with your strains (a product's name) and a page for each (average, place, best and lowest, kinds, prices, sources, dates), Compare two, Rename, Want to try lists for strains and sources that tick themselves off, the Log's unrated entries under Tried, not rated, the + beside the bar on every screen; and no line across a product's photo in any colour set (0.81.1, Anton's Sunset screenshot) (tried by Anton on GT Dev: "i like it"; Rename and VoiceOver not yet checked on his iPhone) | 0.81.0, 0.81.1 | D92 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage C, the Leaderboard colours: twelve sets, each with little moving details growing from 8.0 to a full show at 9.5 (Aurora's lights, Candy's sprinkles, Cosmos' stars, Deep Sea's jellyfish, Ember's sparks, Medals' gold leaf, Neon's tubes, Prism's beams, Storm's lightning, Sunset's sun, Synthwave's grid, Toxic's drips); Ember's middle band Gold; Candy, Medals, Storm and Toxic new; Gems and Metals went (shown as Aurora); new accounts on Aurora; old backups with a removed Look or set restore again (tried by Anton on GT Dev: "ok this is good") | 0.80.0 | D91 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage B, the Looks: every Look's background glides smoothly with details of its own (Sakura's branch and petals, Nebula's shooting stars, Aurora's northern lights, Deep Sea's jellyfish…), one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as Daylight); the website's Looks row followed (eleven) in 0.79.1 (not yet tried on Anton's iPhone on live) | 0.79.0, 0.79.1 | D90 | 2026-11-04 | 2026-11-04 |
