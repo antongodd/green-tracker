@@ -1949,6 +1949,11 @@ None.
 
 ## 6. Changelog
 
+### Tests — the rating slider measured once the editor has faded in
+- `sliders.spec.ts` › "the bar doesn't move or resize…" measured the bar while the editor was still fading in
+  (`enter`), when it reads 28.00006px tall instead of 28, so it failed on a busy machine (0.78.0's release run). It
+  now waits for `settled` first, as the testing notes ask. Tests only; the version stays.
+
 ### 0.78.0 — the website's full overhaul (owner request, D89)
 - The website now looks like the app: Apple's fonts, the phone drawn as the new app (and showing on the first
   screen), Rate the stack second, a "Your stash is your business" section with four plain promises, drawn icons in

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { shot, signUp } from './helpers';
+import { settled, shot, signUp } from './helpers';
 
 /** A real touch gesture (touchStart → moves → touchEnd), as a finger on a phone produces. */
 async function touchPath(page: Page, points: { x: number; y: number }[]) {
@@ -11,9 +11,14 @@ async function touchPath(page: Page, points: { x: number; y: number }[]) {
   await cdp.detach();
 }
 
-/** The slider's box, after scrolling it to mid-screen (clear of the header and Save bar). */
+/**
+ * The slider's box, after scrolling it to mid-screen (clear of the header and Save bar), once the screen has finished
+ * fading in: measured during the page-load fade (`enter`) it reads 28.00006px tall, not 28 (0.78.0's release run).
+ */
 async function boxOf(page: Page, name: string) {
   const slider = page.getByRole('slider', { name, exact: true });
+  await slider.waitFor();
+  await settled(page);
   await slider.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   return (await slider.boundingBox())!;
 }
