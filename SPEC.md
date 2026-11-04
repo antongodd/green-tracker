@@ -2021,6 +2021,10 @@ None.
   on the dev push run's "test" before its own full browser run had finished; that run then passed on every machine.
   Releases no longer use auto-merge (CLAUDE.md).
 
+### Notes — Strainz as shelves is live
+- 0.82.0 and 0.82.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.82.1, #212), merged by hand once its own
+  full browser run had passed on all six machines. Notes only.
+
 ### 0.82.1 — Strainz shelves: one row scrolls, ×2, Unranked
 - Swiping a shelf moved the whole screen sideways on iPhone, and the favourite card ran off the right edge (the owner's
   screenshots): the shelves' column took the length of its longest row. Now only the row you swipe moves, and the card
