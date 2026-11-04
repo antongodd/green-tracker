@@ -2005,7 +2005,7 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   <shelf>", a `ul.rail` named after the shelf that scrolls sideways with snap) of `Pick`s (a link named "<strain>,
   average 8.0, 3 tried"; `StrainRing`: an SVG ring, `circle.fill` with a dash for the average out of 10, the round photo
   `.sring-ph` and the average `.sring-v`), up to 10 a shelf. Want to try's picks are buttons opening a `Sheet` (the note,
-  Remove from list) and end with Add one; Tried, not rated's open `/log/<id>` and its link is *Your Log*. See all:
+  Remove from list) and end with Add one; Unranked's ("Tried, not rated" until 0.82.1) open `/log/<id>` and its link is *Your Log*. See all:
   `StrainzAll` (`/strainz/list/average|tried|recent`, D92's cards with that sort chosen; Your favourites also lists the
   unrated entries) and `StrainzWants` (`/strainz/list/want`). Styles: "Strainz as shelves" at the end of `styles.css`.
   *Tests:* `strainz.spec.ts`.
@@ -2020,6 +2020,17 @@ None.
 - 0.81.0 and 0.81.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.81.1, #209). Auto-merge merged the release
   on the dev push run's "test" before its own full browser run had finished; that run then passed on every machine.
   Releases no longer use auto-merge (CLAUDE.md).
+
+### 0.82.1 — Strainz shelves: one row scrolls, ×2, Unranked
+- Swiping a shelf moved the whole screen sideways on iPhone, and the favourite card ran off the right edge (the owner's
+  screenshots): the shelves' column took the length of its longest row. Now only the row you swipe moves, and the card
+  has the same gap on both sides (`grid-template-columns: minmax(0, 1fr)`).
+- Under each strain on a shelf: ×1, ×2, ×3 for how often you've had it (the owner's pick; read out as "tried once",
+  "tried twice", "tried 3 times").
+- "Tried, not rated" is **Unranked** everywhere (the owner): the Strainz shelf and See all, and the product page's
+  **Move to Unranked**. It shows only when there's something in it.
+- Tests: `strainz.spec.ts` (a full shelf on an account with eight strains: it failed with the page 938px wide before
+  the fix; no Unranked shelf when nothing is unranked).
 
 ### 0.82.0 — Strainz as shelves (D93)
 - Strainz looks like its own tab now, not like Sources: your favourite strain on top, then rows that scroll sideways

@@ -2426,7 +2426,10 @@ table.vs .win { color: var(--accent-bright); }
 .toast.ticked { width: max-content; max-width: calc(100% - 32px); border-radius: 16px; text-align: center; line-height: 1.4; border-color: var(--accent); }
 
 /* ---------- Strainz as shelves (D93) ---------- */
-.shelves { display: grid; gap: 22px; max-width: 720px; margin: 0 auto; padding-top: 4px; }
+.shelves { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; max-width: 720px; margin: 0 auto; padding-top: 4px; }
+/* 0.82.0 (Anton's screenshots): a shelf's row is as wide as the screen and scrolls inside itself; it never widens the
+   page (a grid column's minimum width was the row's whole length, so on iPhone the whole screen slid sideways). */
+.shelf, .fav-card { min-width: 0; }
 .fav-card { display: flex; gap: 14px; align-items: center; margin: 0 16px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--card-edge); color: var(--text); text-decoration: none;
   background: linear-gradient(120deg, var(--accent-soft), color-mix(in srgb, var(--violet) 14%, transparent)), var(--glass); }
 .fav-t { display: grid; gap: 2px; min-width: 0; }
