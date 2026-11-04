@@ -2006,6 +2006,14 @@ None.
 
 ## 6. Changelog
 
+### 0.81.1 — no line across a product's photo in any Leaderboard colour set
+- On a product page, a colour set's effect (D91) is drawn over the photo's upper part. Six sets drew a line or band that
+  stopped hard at the bottom of that area, so a line crossed the photo: Sunset's horizon (the owner's screenshot on GT
+  Dev), Neon's tubes, Ember's heat, Aurora's ribbons, Synthwave's grid, Toxic's ooze, and Storm's rain. The effect now
+  fades out before that edge (`.hero-photo .tfx` mask), in every set. Also on live since 0.80.0.
+- Tests: `heroedge.spec.ts` compares the strip across the effect's bottom edge with and without it, in all twelve
+  sets (it failed in seven before the fix).
+
 ### 0.81.0 — Strainz, the + everywhere, and the Log folded in (D92)
 - A new **Strainz** tab in the Log's place: every strain you've tried (a product's name) as a card, with your average,
   how many products and "Tried once"; sort by Best average, Most tried, Recently tried or A–Z; search.

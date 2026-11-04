@@ -241,6 +241,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   (the half is kept only while the app is open): click the **Want to try** / **To try** tab after `goto`. Want to try in
   a test: `POST /api/wants` `{ kind: 'strain' | 'source', name, note? }`; a product save answers `tickedOff`. The Want
   to try sheet's box is `getByLabel('Strain', { exact: true })` (the Strainz tab matches otherwise).
+- A colour set's effect on a product page (`.hero-photo .tfx`) fades out towards its box's bottom edge (0.81.1), so
+  nothing stops there in a line across the photo; `heroedge.spec.ts` holds every animation (`getAnimations().pause()`;
+  the CSP refuses `addStyleTag`) and compares the strip with and without the effect. A new piece of an effect must
+  pass it.
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
 - Sounds and ticks (D56): each sound played sends a `gt-sound` event (`{ moment, set }`); collect them with an init
@@ -393,8 +397,9 @@ section, so it must always be current.
 
 - **Live:** 0.80.0 (2026-11-04): everything up to the app's Apple-style redesign, finished (item 16, stage C: the
   Leaderboard colours).
-- **Dev:** 0.81.0 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), waiting for Anton's
-  "go live" after he tries it on GT Dev.
+- **Dev:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), waiting for Anton's
+  "go live" (he likes it, 2026-11-04); and no line across a product's photo in the colour sets (0.81.1, a small fix
+  that goes live with it).
 
 ### To-do list (suggested order; Anton decides)
 
