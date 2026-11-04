@@ -75,44 +75,51 @@ export const bandName = (preset: Preset, band: Band): string => PRESETS[preset].
 export const bandRange = (band: Band): string => (band === 4 ? '9.5 – 10' : `${BAND_FLOORS[band - 1]!.toFixed(1)} – ${(BAND_FLOORS[band]! - 0.1).toFixed(1)}`);
 
 /**
- * The whole app's look (D64; all four built since D65; eight more since D70; three light ones since D72). A look changes only
+ * The whole app's look (D64; all four built since D65; eight more since D70; three light ones since D72; eleven since D90). A look changes only
  * colours and the background behind everything, never fonts, sizes or shapes (D70: the owner's rule;
  * Holo Pearl's and Deep Forest's title fonts are from before it).
  */
-export type Look = 'aurora' | 'neon' | 'pearl' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'haze' | 'daymint' | 'daypearl' | 'daysky';
+export type Look = 'aurora' | 'neon' | 'forest' | 'sakura' | 'fireflies' | 'deepsea' | 'frost' | 'nebula' | 'outrun' | 'lava' | 'daysky';
+/**
+ * The looks that went in D90 (the owner: Holo Pearl and Haze go; one light look, Daylight, in place of three) and the
+ * look each now shows as. Saved choices aren't rewritten: they're read as their replacement (`movedLook`), so a
+ * friend's board, the phone's memory (look.js) and your Settings all agree. Daylight keeps Daylight Sky's name inside.
+ */
+export const LOOKS_MOVED: Readonly<Record<string, Look>> = { pearl: 'aurora', haze: 'aurora', daymint: 'daysky', daypearl: 'daysky' };
+/** A saved look as it shows today: itself, its replacement (D90), or null for one this build doesn't know. */
+export function movedLook(v: string): Look | null {
+  if ((LOOK_KEYS as readonly string[]).includes(v)) return v as Look;
+  return LOOKS_MOVED[v] ?? null;
+}
 /**
  * In the order Appearance lists them: under Dark mode, Aurora Glass (everyone's first look, D71), then A to Z by
  * name; under Light mode (D73), at the end, the light looks A to Z.
  */
-export const LOOK_KEYS = ['aurora', 'forest', 'deepsea', 'fireflies', 'frost', 'haze', 'pearl', 'lava', 'nebula', 'neon', 'outrun', 'sakura', 'daymint', 'daypearl', 'daysky'] as const satisfies readonly Look[];
+export const LOOK_KEYS = ['aurora', 'forest', 'deepsea', 'fireflies', 'frost', 'lava', 'nebula', 'neon', 'outrun', 'sakura', 'daysky'] as const satisfies readonly Look[];
 /** The looks you can choose (a look not listed would show as "Coming next"). All of them. */
 export const READY_LOOKS: readonly Look[] = LOOK_KEYS;
-/** Marked New in Appearance (D70). */
-export const NEW_LOOKS: readonly Look[] = ['daymint', 'daypearl', 'daysky', 'deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura'];
-/** The light looks (D72, the three Daylights): light colours, the iPhone's own parts in their light style, light cards. Everyone starts dark: a light look is only ever chosen. */
-export const LIGHT_LOOKS: readonly Look[] = ['daymint', 'daypearl', 'daysky'];
+/** Marked New in Appearance (D70; D90: Daylight, the one light look). */
+export const NEW_LOOKS: readonly Look[] = ['daysky'];
+/** The light look (D72; one since D90, Daylight): light colours, the iPhone's own parts in their light style, light cards. Everyone starts dark: a light look is only ever chosen. */
+export const LIGHT_LOOKS: readonly Look[] = ['daysky'];
 /** Each look's background, for the Home Screen app's top bar (theme-color) and look.js. */
 export const LOOK_BG: Record<Look, string> = {
-  aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807',
-  sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10',
-  daymint: '#eef4f0', daypearl: '#f5f4f8', daysky: '#eef3fa',
+  aurora: '#03070a', neon: '#06041a', forest: '#050807',
+  sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c',
+  daysky: '#eef3fa',
 };
 export const LOOKS: Record<Look, { label: string; description: string }> = {
-  aurora: { label: 'Aurora Glass', description: 'Drifting green, teal and violet lights, frosted glass' },
-  neon: { label: 'Neon Night', description: 'Deep indigo with violet, pink and cyan lights' },
-  pearl: { label: 'Holo Pearl', description: 'Near-black with pearly rainbow edges' },
-  forest: { label: 'Deep Forest', description: 'Deep greens, calm and simple' },
-  sakura: { label: 'Sakura', description: 'Dusk pink with drifting blossom' },
-  fireflies: { label: 'Fireflies', description: 'A summer night, little lights blinking' },
-  deepsea: { label: 'Deep Sea', description: 'Light rays and glowing plankton' },
-  frost: { label: 'Frost', description: 'Icy blue with snow falling' },
-  nebula: { label: 'Nebula', description: 'Stars and slow-turning clouds of colour' },
-  outrun: { label: 'Outrun', description: 'Neon grid and a setting sun' },
+  aurora: { label: 'Aurora Glass', description: 'Northern lights waving over the stars' },
+  neon: { label: 'Neon Night', description: 'A city in the rain, windows and neon signs' },
+  forest: { label: 'Deep Forest', description: 'Sunbeams, pines and rolling fog' },
+  sakura: { label: 'Sakura', description: 'Dusk pink, a swaying branch, petals falling' },
+  fireflies: { label: 'Fireflies', description: 'A summer night, grass in the wind, little lights' },
+  deepsea: { label: 'Deep Sea', description: 'Light rays, bubbles and a drifting jellyfish' },
+  frost: { label: 'Frost', description: 'Icy blue, snow falling, crystals in the corners' },
+  nebula: { label: 'Nebula', description: 'Turning clouds of colour and shooting stars' },
+  outrun: { label: 'Outrun', description: 'A striped sunset and a neon grid racing by' },
   lava: { label: 'Lava Lamp', description: 'Warm blobs that rise and melt together' },
-  haze: { label: 'Haze', description: 'Slow curls of smoke over soft charcoal' },
-  daymint: { label: 'Daylight Mint', description: 'Light and fresh, with soft green light' },
-  daypearl: { label: 'Daylight Pearl', description: 'Clean white with a pastel shimmer' },
-  daysky: { label: 'Daylight Sky', description: 'A clear blue morning, a warm glow' },
+  daysky: { label: 'Daylight', description: 'Soft clouds drifting past a warm sun' },
 };
 
 /** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. D87 kept the saved

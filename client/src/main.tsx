@@ -1,4 +1,5 @@
 import { render } from 'preact';
+import { Backdrop } from './components/Backdrop';
 import { useCallback, useEffect, useState } from 'preact/hooks';
 import './styles.css';
 import { api, type Me } from './api';
@@ -254,6 +255,7 @@ function OfflineBanner() {
 
 render(
   <>
+    <Backdrop />
     <App />
     <OfflineBanner />
     {ticksSupported() && <TickSwitch />}

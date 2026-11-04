@@ -95,24 +95,6 @@ html[data-look="neon"] {
   --light-1: rgba(122, 60, 255, 0.34); --light-2: rgba(255, 63, 184, 0.24); --light-3: rgba(39, 216, 255, 0.2);
   --sticky-bg: rgba(6, 4, 26, 0.6); --controls-bg: rgba(6, 4, 26, 0.3);
 }
-/* Holo Pearl: near-black, calmer pastel lights, pearly rainbow edges on the stand-out cards, Sora titles. */
-html[data-look="pearl"] {
-  --bg: #08080c; --surface-1: #101015; --surface-2: rgba(255, 255, 255, 0.07); --surface-3: #1d1d25;
-  --glass: rgba(255, 255, 255, 0.06); --glass-strong: rgba(255, 255, 255, 0.085); --glass-edge: rgba(255, 255, 255, 0.16);
-  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), rgba(8, 8, 12, 0.5);
-  --bar: rgba(8, 8, 12, 0.6); --bar-solid: #09090d;
-  --text: #f6f5f8; --text-2: rgba(246, 245, 248, 0.72); --text-3: rgba(246, 245, 248, 0.47);
-  --accent: #8fe6b4; --accent-bright: #b4f5cf; --accent-soft: rgba(166, 240, 193, 0.14); --on-accent: #0b0b12;
-  --teal: #9fdcff; --teal-bright: #c4ebff; --violet: #cdbdff; --violet-bright: #e7dcff;
-  --card-edge: rgba(230, 220, 255, 0.13); --divider: rgba(255, 255, 255, 0.08); --bar-line: rgba(230, 220, 255, 0.1);
-  --photo-edge: 0 0 0 1px rgba(230, 220, 255, 0.14);
-  --grad: linear-gradient(100deg, #ffc9d2, #fff2a8 30%, #a6f0c1 55%, #9fdcff 78%, #cdbdff);
-  --primary: linear-gradient(135deg, #ffc9d2, #fff2a8, #a6f0c1, #9fdcff);
-  --pearl-edge: linear-gradient(120deg, rgba(255, 154, 168, 0.45), rgba(255, 242, 168, 0.35), rgba(166, 240, 193, 0.4), rgba(159, 220, 255, 0.45), rgba(205, 189, 255, 0.5));
-  --hero-wash: linear-gradient(120deg, rgba(255, 154, 168, 0.12), rgba(255, 242, 168, 0.07) 30%, rgba(166, 240, 193, 0.09) 55%, rgba(159, 220, 255, 0.11) 78%, rgba(205, 189, 255, 0.14));
-  --light-1: rgba(255, 154, 168, 0.16); --light-2: rgba(159, 220, 255, 0.16); --light-3: rgba(205, 189, 255, 0.18);
-  --sticky-bg: rgba(8, 8, 12, 0.6); --controls-bg: rgba(8, 8, 12, 0.3);
-}
 /* Deep Forest: the green look before D64, tidied, with the new numbers; Manrope titles. */
 html[data-look="forest"] {
   --bg: #050807; --surface-1: #0c1410; --surface-2: rgba(88, 224, 140, 0.06); --surface-3: #17251d;
@@ -276,70 +258,11 @@ html[data-look="lava"] {
   --danger: #ff8a8a; /* a touch lighter than :root's, to stay readable over what drifts behind it */
 }
 
-/* Haze: soft charcoal with lilac and sage smoke curling slowly up; sage highlights. */
-html[data-look="haze"] {
-  --bg: #0c0b10; --surface-1: #15131b; --surface-2: rgba(235, 228, 255, 0.07); --surface-3: #24212c;
-  --glass: rgba(22, 20, 30, 0.5); --glass-strong: rgba(235, 228, 255, 0.09); --glass-edge: rgba(235, 228, 255, 0.16);
-  --btn-bg: linear-gradient(rgba(235, 228, 255, 0.07), rgba(235, 228, 255, 0.07)), rgba(12, 11, 16, 0.55);
-  --hairline: rgba(235, 228, 255, 0.1); --hairline-strong: rgba(235, 228, 255, 0.18);
-  --bar: rgba(12, 11, 16, 0.6); --bar-solid: #0d0c12;
-  --text: rgb(244, 242, 247); --text-2: rgba(244, 242, 247, 0.72); --text-3: rgba(244, 242, 247, 0.47);
-  --accent: #8fd8ae; --accent-bright: #b4ecc9; --accent-soft: rgba(160, 230, 190, 0.14); --on-accent: #0c1410;
-  --teal: #b9e8cf; --teal-bright: #d8f4e6; --violet: #d6c8ff; --violet-bright: #ebe4ff;
-  --card-edge: rgba(235, 228, 255, 0.13); --divider: rgba(235, 228, 255, 0.08); --bar-line: rgba(235, 228, 255, 0.1); --photo-edge: 0 0 0 1px rgba(235, 228, 255, 0.14);
-  --grad: linear-gradient(100deg, #ece4ff, #b9e8cf 55%, #f4e2d0);
-  --primary: linear-gradient(135deg, #b9e8cf, #d6c8ff);
-  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(214, 200, 255, 0.16), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(185, 232, 207, 0.14), transparent 60%);
-  --light-1: rgba(214, 200, 255, 0.12); --light-2: rgba(185, 232, 207, 0.1); --light-3: rgba(230, 222, 240, 0.08);
-  --sticky-bg: rgba(12, 11, 16, 0.6); --controls-bg: rgba(12, 11, 16, 0.3);
-  --glow: rgba(160, 230, 190, 0.55); --tab-glow: var(--glow); --fab-glow: var(--glow);
-  --danger: #ff8a8a; /* a touch lighter than :root's, to stay readable over what drifts behind it */
-}
 
 /* Three light looks (D72, 0.62.0): the Daylights. Colours only, as every look (D70), plus the light
    tone (html[data-tone="light"], set with the look by look.js and main.tsx): the iPhone's own controls
    in their light style and light cards for the colour sets, below. Everyone starts dark (Aurora Glass);
    a light look is only ever chosen. */
-/* Daylight Mint: cool mint-white, soft green, sky and sunny lights, dark green words, leaf-green buttons. */
-html[data-look="daymint"] {
-  --bg: #eef4f0; --surface-1: #ffffff; --surface-2: rgba(16, 32, 26, 0.05); --surface-3: #ffffff;
-  --glass: rgba(255, 255, 255, 0.66); --glass-strong: rgba(255, 255, 255, 0.82); --glass-edge: rgba(16, 32, 26, 0.13);
-  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)), #eef4f0;
-  --hairline: rgba(16, 32, 26, 0.1); --hairline-strong: rgba(16, 32, 26, 0.18);
-  --bar: color-mix(in srgb, #eef4f0 80%, transparent); --bar-solid: #eef4f0;
-  --text: #10201a; --text-2: rgba(16, 32, 26, 0.74); --text-3: rgba(16, 32, 26, 0.66);
-  --accent: #127a41; --accent-bright: #0e6a37; --accent-soft: rgba(22, 136, 74, 0.12); --on-accent: #ffffff;
-  --teal: #0f7373; --teal-bright: #0b6262; --violet: #5a48c8; --violet-bright: #4a3ab4;
-  --card-edge: rgba(16, 32, 26, 0.11); --divider: rgba(16, 32, 26, 0.08); --bar-line: rgba(16, 32, 26, 0.09); --photo-edge: 0 0 0 1px rgba(16, 32, 26, 0.1);
-  --bar-fill: linear-gradient(90deg, #127a41, #0f7373);
-  --grad: linear-gradient(100deg, #13703f, #14657e 55%, #4a3cc0);
-  --primary: linear-gradient(135deg, #17804a, #126f70);
-  --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(88, 224, 140, 0.22), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(139, 123, 255, 0.14), transparent 60%);
-  --light-1: rgba(88, 224, 140, 0.32); --light-2: rgba(120, 190, 255, 0.28); --light-3: rgba(255, 214, 120, 0.26);
-  --sticky-bg: color-mix(in srgb, #eef4f0 72%, transparent); --controls-bg: color-mix(in srgb, #eef4f0 40%, transparent);
-  --danger: #c22c37; --star: #c98a0e;
-  --glow: rgba(22, 136, 74, 0.4); --tab-glow: var(--glow); --fab-glow: var(--glow);
-}
-/* Daylight Pearl: clean near-white with a faint pastel rainbow, graphite words, violet-blue buttons. */
-html[data-look="daypearl"] {
-  --bg: #f5f4f8; --surface-1: #ffffff; --surface-2: rgba(26, 26, 36, 0.05); --surface-3: #ffffff;
-  --glass: rgba(255, 255, 255, 0.66); --glass-strong: rgba(255, 255, 255, 0.82); --glass-edge: rgba(26, 26, 36, 0.13);
-  --btn-bg: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)), #f5f4f8;
-  --hairline: rgba(26, 26, 36, 0.1); --hairline-strong: rgba(26, 26, 36, 0.18);
-  --bar: color-mix(in srgb, #f5f4f8 80%, transparent); --bar-solid: #f5f4f8;
-  --text: #1a1a24; --text-2: rgba(26, 26, 36, 0.74); --text-3: rgba(26, 26, 36, 0.66);
-  --accent: #4c3fc4; --accent-bright: #4033b0; --accent-soft: rgba(76, 63, 196, 0.1); --on-accent: #ffffff;
-  --teal: #13708f; --teal-bright: #0f5f7a; --violet: #6a3fc0; --violet-bright: #5a32aa;
-  --card-edge: rgba(26, 26, 36, 0.11); --divider: rgba(26, 26, 36, 0.08); --bar-line: rgba(26, 26, 36, 0.09); --photo-edge: 0 0 0 1px rgba(26, 26, 36, 0.1);
-  --bar-fill: linear-gradient(90deg, #4c3fc4, #13708f);
-  --grad: linear-gradient(100deg, #a82c64, #4c3fc4 50%, #13708f);
-  --primary: linear-gradient(135deg, #5345c9, #2c6fb8);
-  --hero-wash: linear-gradient(120deg, rgba(255, 154, 168, 0.16), rgba(255, 242, 168, 0.1) 30%, rgba(166, 240, 193, 0.12) 55%, rgba(159, 220, 255, 0.14) 78%, rgba(205, 189, 255, 0.18));
-  --light-1: rgba(255, 170, 190, 0.3); --light-2: rgba(170, 210, 255, 0.3); --light-3: rgba(210, 190, 255, 0.3);
-  --sticky-bg: color-mix(in srgb, #f5f4f8 72%, transparent); --controls-bg: color-mix(in srgb, #f5f4f8 40%, transparent);
-  --danger: #c22c37; --star: #c98a0e;
-  --glow: rgba(76, 63, 196, 0.35); --tab-glow: var(--glow); --fab-glow: var(--glow);
-}
 /* Daylight Sky: soft blue-white like a clear morning, a warm sunny glow, navy words, ocean-blue buttons. */
 html[data-look="daysky"] {
   --bg: #eef3fa; --surface-1: #ffffff; --surface-2: rgba(15, 26, 44, 0.05); --surface-3: #ffffff;
@@ -379,105 +302,159 @@ body {
   font-size: 16px;
   line-height: 1.45;
 }
-/* The lights (D64): green top left, teal top right, violet low down, drifting slowly behind every
-   screen (one still frame with Reduce Motion). Painted on the fixed background itself, which is a
-   layer of its own anyway (as before D64): two extra full-screen layers measured about a fifth more
-   work for the phone, laid over everything on every frame while anything else on screen moved.
-   They move in small steps, about two a second, a pixel or so each over a very soft glow: a slow
-   drift to the eye, but the background is repainted twice a second, not sixty (measured: about the
-   same work as the app before D64). */
+/* ---------- The Looks' backgrounds (D90; D64, D70 before) ----------
+   Behind every screen: the fixed .bg-layer (index.html) with the look's colour and its three soft lights, and on top
+   of it the look's own scene (`.scene`, components/Backdrop.tsx): petals, stars, bubbles, a jellyfish, rain, a grid.
+   Since D90 everything glides smoothly (the owner: battery is no worry on his iPhone 17 Pro; D64-D70 moved in small
+   steps to save it), on transform and opacity where it can. Nothing behind words is brighter than about a quarter
+   white, so every word stays readable at every moment (the readability tests judge 12 moments of every animation).
+   Every keyframe is named bg-… (a plankton `rise` once replaced the menus' `rise`, which the tests wait for). With
+   Reduce Motion it all holds still; under anything covering the whole screen (the viewer, the croppers) it hides. */
 .bg-layer { position: fixed; inset: 0; z-index: -1; background-color: var(--bg);
   background-image: radial-gradient(closest-side, var(--light-1), transparent), radial-gradient(closest-side, var(--light-2), transparent), radial-gradient(closest-side, var(--light-3), transparent);
   background-repeat: no-repeat; background-size: 115vw 62vh, 100vw 58vh, 115vw 56vh;
   background-position: -32vw -22vh, 56vw 2vh, -4vw 58vh; }
 @media (prefers-reduced-motion: no-preference) {
-  .bg-layer { animation: lights 24s steps(48) infinite alternate; }
+  .bg-layer { animation: lights 24s ease-in-out infinite alternate; }
 }
-/* Hidden and still under anything that covers the whole screen (the viewer, the cropper, Move and
-   zoom, the cut-out flow, the country picker): nobody sees them there, and the phone (and its battery)
-   can give everything to what's on top, like the background remover's work. */
-html:has(.viewer, .cropper) .bg-layer { background-image: none; animation-play-state: paused; }
 @keyframes lights { to { background-position: -20vw -14vh, 44vw 10vh, 10vw 48vh; } }
-
-/* D70's eight looks draw their own backgrounds: the lights (above, in each look's colours) and,
-   for most, one or two more layers on .bg-layer::before and ::after: petals, fireflies, rays,
-   plankton, snow, stars, the Outrun sky and grid, more lava, smoke. Every layer is painted, never
-   a picture of anything but the Sakura branch, and moves the same way the lights do: in small
-   steps, a few a second, so the phone repaints the background a few times a second, not sixty.
-   Nothing in them is brighter than the lights, so words stay readable over them (look.spec.ts);
-   the looks' darker glass dims them further behind every card. Still with Reduce Motion; hidden
-   under the viewer and the editors, like the lights. */
-.bg-layer::before, .bg-layer::after { position: absolute; inset: 0; pointer-events: none; }
-html:has(.viewer, .cropper) .bg-layer::before, html:has(.viewer, .cropper) .bg-layer::after { display: none; }
-/* Sakura: petals drifting down and across (one tile 300 wide, 900 tall, every 64s), a branch in the top corner. */
-html[data-look="sakura"] .bg-layer::before { content: ""; background-image: radial-gradient(5px 3.5px at 30px 60px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(4px 3px at 170px 140px, rgba(255, 196, 220, 0.24) 65%, transparent), radial-gradient(5.5px 3.5px at 90px 300px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(4px 2.8px at 250px 380px, rgba(255, 196, 220, 0.22) 65%, transparent), radial-gradient(5px 3.2px at 40px 520px, rgba(255, 196, 220, 0.28) 65%, transparent), radial-gradient(4.5px 3px at 200px 610px, rgba(255, 196, 220, 0.26) 65%, transparent), radial-gradient(5px 3.4px at 120px 760px, rgba(255, 196, 220, 0.3) 65%, transparent), radial-gradient(3.5px 2.6px at 270px 840px, rgba(255, 196, 220, 0.2) 65%, transparent), radial-gradient(4px 3px at 60px 880px, rgba(255, 196, 220, 0.22) 65%, transparent); background-size: 300px 900px; }
-html[data-look="sakura"] .bg-layer::after { content: ""; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 230 150'%3E%3Cpath d='M230 10C180 20 150 40 120 70S70 110 30 120' stroke='%233a1c2a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M150 42C150 60 140 75 128 86' stroke='%233a1c2a' stroke-width='3' fill='none'/%3E%3Cg fill='%23ffc6dc' fill-opacity='.3'%3E%3Ccircle cx='120' cy='66' r='6'/%3E%3Ccircle cx='96' cy='88' r='5'/%3E%3Ccircle cx='60' cy='108' r='5'/%3E%3Ccircle cx='150' cy='40' r='6'/%3E%3Ccircle cx='180' cy='26' r='5'/%3E%3Ccircle cx='132' cy='84' r='4'/%3E%3Ccircle cx='40' cy='118' r='4'/%3E%3Ccircle cx='110' cy='78' r='4'/%3E%3Ccircle cx='200' cy='18' r='5'/%3E%3Ccircle cx='165' cy='50' r='4'/%3E%3C/g%3E%3C/svg%3E") no-repeat right -26px top calc(var(--safe-top) + 6px) / 230px 150px; }
-/* Fireflies: two swarms, each wandering slowly and blinking on and off, half a beat apart. */
-html[data-look="fireflies"] .bg-layer::before { content: ""; background-image: radial-gradient(circle at 30px 50px, rgba(235, 255, 150, 0.32) 0 1.2px, rgba(235, 255, 150, 0.1) 2.6px, transparent 10px), radial-gradient(circle at 150px 120px, rgba(235, 255, 150, 0.32) 0 1.4px, rgba(235, 255, 150, 0.1) 3.1px, transparent 12px), radial-gradient(circle at 230px 260px, rgba(235, 255, 150, 0.32) 0 1.2px, rgba(235, 255, 150, 0.1) 2.6px, transparent 10px), radial-gradient(circle at 80px 330px, rgba(235, 255, 150, 0.32) 0 1.1px, rgba(235, 255, 150, 0.1) 2.3px, transparent 9px), radial-gradient(circle at 190px 30px, rgba(235, 255, 150, 0.32) 0 1.0px, rgba(235, 255, 150, 0.1) 2.1px, transparent 8px); background-size: 280px 400px; }
-html[data-look="fireflies"] .bg-layer::after { content: ""; background-image: radial-gradient(circle at 60px 180px, rgba(225, 255, 140, 0.3) 0 1.3px, rgba(225, 255, 140, 0.09) 2.9px, transparent 11px), radial-gradient(circle at 250px 90px, rgba(225, 255, 140, 0.3) 0 1.1px, rgba(225, 255, 140, 0.09) 2.3px, transparent 9px), radial-gradient(circle at 120px 250px, rgba(225, 255, 140, 0.3) 0 1.2px, rgba(225, 255, 140, 0.09) 2.6px, transparent 10px), radial-gradient(circle at 300px 300px, rgba(225, 255, 140, 0.3) 0 1.0px, rgba(225, 255, 140, 0.09) 2.1px, transparent 8px); background-size: 340px 360px; }
-/* Deep Sea: rays of sun slanting down from the surface (fading with depth), plankton rising. */
-html[data-look="deepsea"] .bg-layer::before { content: ""; background-image: linear-gradient(100deg, transparent 8%, rgba(140, 230, 255, 0.07) 13%, transparent 19%, transparent 34%, rgba(140, 230, 255, 0.06) 40%, transparent 46%, transparent 60%, rgba(140, 230, 255, 0.07) 66%, transparent 72%, transparent 84%, rgba(140, 230, 255, 0.05) 89%, transparent 94%); background-size: 160% 100%; background-position: 0 0;
-  -webkit-mask-image: linear-gradient(#000, transparent 80%); mask-image: linear-gradient(#000, transparent 80%); }
-html[data-look="deepsea"] .bg-layer::after { content: ""; background-image: radial-gradient(circle at 20px 40px, rgba(160, 255, 240, 0.22) 0 1.0px, rgba(160, 255, 240, 0.08) 2.1px, transparent 5px), radial-gradient(circle at 130px 90px, rgba(160, 255, 240, 0.22) 0 0.8px, rgba(160, 255, 240, 0.08) 1.8px, transparent 4px), radial-gradient(circle at 200px 200px, rgba(160, 255, 240, 0.22) 0 1.1px, rgba(160, 255, 240, 0.08) 2.3px, transparent 5px), radial-gradient(circle at 70px 260px, rgba(160, 255, 240, 0.22) 0 0.8px, rgba(160, 255, 240, 0.08) 1.8px, transparent 4px), radial-gradient(circle at 170px 320px, rgba(160, 255, 240, 0.22) 0 0.7px, rgba(160, 255, 240, 0.08) 1.6px, transparent 4px); background-size: 240px 360px; }
-/* Frost: fine snow falling far away, a few bigger flakes falling faster close by. */
-html[data-look="frost"] .bg-layer::before { content: ""; background-image: radial-gradient(circle at 20px 30px, rgba(255, 255, 255, .2) 0 1px, transparent 2px), radial-gradient(circle at 110px 80px, rgba(255, 255, 255, .2) 0 1.2px, transparent 2.2px), radial-gradient(circle at 170px 160px, rgba(255, 255, 255, .2) 0 0.9px, transparent 1.9px), radial-gradient(circle at 60px 210px, rgba(255, 255, 255, .2) 0 1.1px, transparent 2.1px), radial-gradient(circle at 140px 270px, rgba(255, 255, 255, .2) 0 1px, transparent 2px), radial-gradient(circle at 190px 40px, rgba(255, 255, 255, .2) 0 0.8px, transparent 1.8px); background-size: 220px 300px; }
-html[data-look="frost"] .bg-layer::after { content: ""; background-image: radial-gradient(circle at 40px 60px, rgba(255, 255, 255, .16) 0 2px, transparent 3.5px), radial-gradient(circle at 220px 180px, rgba(255, 255, 255, .16) 0 2.4px, transparent 3.9px), radial-gradient(circle at 130px 330px, rgba(255, 255, 255, .2) 0 1.8px, transparent 3.3px), radial-gradient(circle at 270px 420px, rgba(255, 255, 255, .16) 0 2.2px, transparent 3.7px); background-size: 300px 500px; }
-/* Nebula: the lights are the clouds (bigger here); a still field of stars and a twinkling one. */
-html[data-look="nebula"] .bg-layer { background-size: 140vw 80vh, 130vw 76vh, 140vw 74vh; }
-html[data-look="nebula"] .bg-layer::before { content: ""; background-image: radial-gradient(circle at 12px 20px, rgba(255, 255, 255, .22) 0 0.8px, transparent 1.6px), radial-gradient(circle at 90px 60px, rgba(255, 255, 255, .22) 0 0.6px, transparent 1.4px), radial-gradient(circle at 200px 30px, rgba(255, 255, 255, .22) 0 0.9px, transparent 1.7000000000000002px), radial-gradient(circle at 150px 140px, rgba(255, 255, 255, .22) 0 0.6px, transparent 1.4px), radial-gradient(circle at 40px 190px, rgba(255, 255, 255, .22) 0 0.7px, transparent 1.5px), radial-gradient(circle at 180px 250px, rgba(255, 255, 255, .22) 0 0.8px, transparent 1.6px), radial-gradient(circle at 100px 280px, rgba(255, 255, 255, .22) 0 0.6px, transparent 1.4px), radial-gradient(circle at 220px 180px, rgba(255, 255, 255, .22) 0 0.6px, transparent 1.4px); background-size: 240px 310px; }
-html[data-look="nebula"] .bg-layer::after { content: ""; background-image: radial-gradient(circle at 30px 90px, rgba(230, 220, 255, .24) 0 1.1px, transparent 2.3px), radial-gradient(circle at 140px 20px, rgba(230, 220, 255, .24) 0 1px, transparent 2.2px), radial-gradient(circle at 110px 200px, rgba(230, 220, 255, .24) 0 1.2px, transparent 2.4px), radial-gradient(circle at 160px 120px, rgba(230, 220, 255, .24) 0 0.9px, transparent 2.1px); background-size: 190px 260px; }
-/* Outrun: the sky with a few stars and a striped sun low down, then a neon grid floor along the bottom, under the tab bar. */
-html[data-look="outrun"] .bg-layer::before { content: "";
-  background:
-    repeating-linear-gradient(transparent 0 10px, #2c0a3e 10px 14px) center bottom 25vh / 240px 54px no-repeat,
-    radial-gradient(circle closest-side, rgba(255, 196, 110, 0.3), rgba(255, 90, 150, 0.26) 70%, transparent 72%) center bottom 21vh / 240px 240px no-repeat,
-    radial-gradient(circle at 12px 20px, rgba(255, 255, 255, .2) 0 0.8px, transparent 1.6px), radial-gradient(circle at 90px 60px, rgba(255, 255, 255, .2) 0 0.6px, transparent 1.4px), radial-gradient(circle at 200px 30px, rgba(255, 255, 255, .2) 0 0.9px, transparent 1.7000000000000002px), radial-gradient(circle at 150px 140px, rgba(255, 255, 255, .2) 0 0.6px, transparent 1.4px), radial-gradient(circle at 40px 190px, rgba(255, 255, 255, .2) 0 0.7px, transparent 1.5px), radial-gradient(circle at 180px 250px, rgba(255, 255, 255, .2) 0 0.8px, transparent 1.6px), radial-gradient(circle at 100px 280px, rgba(255, 255, 255, .2) 0 0.6px, transparent 1.4px), radial-gradient(circle at 220px 180px, rgba(255, 255, 255, .2) 0 0.6px, transparent 1.4px) 0 0 / 240px 310px,
-    linear-gradient(#0a0420 0%, #160733 42%, #2c0a3e 68%, #3e0e48 78%, #0a0420 78.1%); }
-html[data-look="outrun"] .bg-layer::after { content: ""; top: auto; height: 22vh; left: -40%; right: -40%;
-  background: linear-gradient(rgba(255, 110, 220, 0.5), transparent 2px) top / 100% 3px no-repeat, repeating-linear-gradient(90deg, rgba(255, 79, 216, 0.34) 0 1.5px, transparent 1.5px 36px), repeating-linear-gradient(rgba(255, 79, 216, 0.34) 0 1.5px, transparent 1.5px 28px);
-  transform: perspective(160px) rotateX(55deg); transform-origin: top;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0.35), #000 50%); mask-image: linear-gradient(rgba(0, 0, 0, 0.35), #000 50%); }
-/* Lava Lamp: the lights are the blobs (rounder, with a firmer edge, rising and sinking further), two more on ::before. */
-html[data-look="lava"] .bg-layer { background-image: radial-gradient(closest-side, var(--light-1) 45%, transparent), radial-gradient(closest-side, var(--light-2) 45%, transparent), radial-gradient(closest-side, var(--light-3) 45%, transparent);
-  background-size: 64vw 34vh, 54vw 30vh, 46vw 26vh; background-position: 4vw 60vh, 52vw 8vh, 30vw 96vh; }
-html[data-look="lava"] .bg-layer::before { content: ""; background-image: radial-gradient(closest-side, rgba(200, 60, 255, 0.2) 45%, transparent), radial-gradient(closest-side, rgba(255, 90, 90, 0.24) 45%, transparent);
-  background-repeat: no-repeat; background-size: 50vw 28vh, 38vw 22vh; background-position: 60vw 70vh, 10vw 20vh; }
-/* Haze: wisps of smoke, long and thin, drifting up and across in two layers going opposite ways. */
-html[data-look="haze"] .bg-layer::before { content: ""; background-image: radial-gradient(50% 10% at 30% 40%, rgba(214, 200, 255, 0.14), transparent), radial-gradient(45% 8% at 70% 75%, rgba(230, 222, 240, 0.12), transparent);
-  background-repeat: no-repeat; background-size: 180% 140%; background-position: 0 0; }
-html[data-look="haze"] .bg-layer::after { content: ""; background-image: radial-gradient(48% 9% at 60% 30%, rgba(185, 232, 207, 0.12), transparent), radial-gradient(40% 8% at 25% 85%, rgba(214, 200, 255, 0.1), transparent);
-  background-repeat: no-repeat; background-size: 170% 150%; background-position: 100% 100%; }
-@media (prefers-reduced-motion: no-preference) {
-  html[data-look="sakura"] .bg-layer::before { animation: bg-petals 64s steps(256) infinite; }
-  html[data-look="fireflies"] .bg-layer::before { animation: bg-wander-a 80s steps(160) infinite, bg-blink 4.8s steps(12) infinite; }
-  html[data-look="fireflies"] .bg-layer::after { animation: bg-wander-b 96s steps(192) infinite, bg-blink 4.8s steps(12) -2.4s infinite; }
-  html[data-look="deepsea"] .bg-layer::before { animation: bg-rays 18s steps(36) infinite alternate; }
-  html[data-look="deepsea"] .bg-layer::after { animation: bg-rise 72s steps(288) infinite; }
-  html[data-look="frost"] .bg-layer::before { animation: bg-snow-far 60s steps(240) infinite; }
-  html[data-look="frost"] .bg-layer::after { animation: bg-snow-near 40s steps(200) infinite; }
-  html[data-look="nebula"] .bg-layer::after { animation: bg-twinkle 6s steps(12) infinite alternate; }
-  html[data-look="outrun"] .bg-layer::after { animation: bg-grid 2.4s steps(8) infinite; }
-  html[data-look="lava"] .bg-layer { animation: bg-lava 40s steps(80) infinite alternate; }
-  html[data-look="lava"] .bg-layer::before { animation: bg-lava-b 48s steps(96) infinite alternate; }
-  html[data-look="haze"] .bg-layer::before { animation: bg-haze-a 40s steps(80) infinite alternate; }
-  html[data-look="haze"] .bg-layer::after { animation: bg-haze-b 52s steps(104) infinite alternate; }
-}
-@keyframes bg-petals { to { background-position: 300px 900px; } }
-@keyframes bg-wander-a { to { background-position: 280px -400px; } }
-@keyframes bg-wander-b { to { background-position: -340px -360px; } }
-@keyframes bg-blink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
-@keyframes bg-rays { to { background-position: 100% 0; } }
-@keyframes bg-rise { to { background-position: 0 -720px; } }
-@keyframes bg-snow-far { to { background-position: 220px 900px; } }
-@keyframes bg-snow-near { to { background-position: -300px 1000px; } }
-@keyframes bg-twinkle { from { opacity: 0.2; } to { opacity: 1; } }
-@keyframes bg-grid { to { background-position: 0 0, 0 0, 0 28px; } }
-@keyframes bg-lava { to { background-position: 10vw 4vh, 44vw 66vh, 36vw 30vh; } }
-@keyframes bg-lava-b { to { background-position: 54vw 6vh, 22vw 80vh; } }
-@keyframes bg-haze-a { to { background-position: 100% 60%; } }
-@keyframes bg-haze-b { to { background-position: 0 20%; } }
-/* Under the viewer and the editors, the looks that paint .bg-layer their own way hide and still it too. */
 html:has(.viewer, .cropper) .bg-layer { background-image: none; animation-play-state: paused; }
+.scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; contain: strict; }
+.scene > *, .scene i, .scene svg { position: absolute; display: block; }
+html:has(.viewer, .cropper) .scene { display: none; }
+@media (prefers-reduced-motion: reduce) { .scene, .scene * { animation: none !important; } }
+.scene .sc-hills { left: 0; right: 0; bottom: 0; width: 100%; height: 28vh; }
+
+/* Sakura: a moon, drifting pink clouds, the blossom branch swaying, petals turning as they fall, mist over the hills. */
+.scene-sakura .moon { left: 9vw; top: 21vh; width: 66px; height: 66px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff3f7, #f3b9d0 70%); opacity: 0.2; box-shadow: 0 0 60px 24px rgba(255, 190, 215, 0.12); }
+.scene .cloud { border-radius: 50%; }
+.scene-sakura .c1 { width: 90vw; height: 18vh; left: -20vw; top: 14vh; background: radial-gradient(closest-side, rgba(255, 150, 195, 0.14), transparent); animation: bg-drift 38s ease-in-out infinite alternate; }
+.scene-sakura .c2 { width: 80vw; height: 15vh; right: -22vw; top: 30vh; background: radial-gradient(closest-side, rgba(190, 150, 255, 0.13), transparent); animation: bg-drift 46s ease-in-out infinite alternate-reverse; }
+@keyframes bg-drift { to { transform: translateX(22vw); } }
+.scene-sakura .branch { right: -26px; top: calc(var(--safe-top) + 10px); width: 250px; height: 165px; transform-origin: 100% 0; opacity: 0.55; animation: bg-sway 7s ease-in-out infinite alternate; }
+@keyframes bg-sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2deg); } }
+.scene .fall { top: -30px; animation-name: bg-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes bg-fall { to { transform: translateY(calc(100vh + 60px)); } }
+.scene-sakura .fall i { position: static; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #ffe3ee, #ff9cc5); animation: bg-flutter ease-in-out infinite alternate; }
+@keyframes bg-flutter { from { transform: translateX(-18px) rotate(0deg) rotateY(0deg); } to { transform: translateX(24px) rotate(200deg) rotateY(60deg); } }
+.scene-sakura .mist { left: -10vw; right: -10vw; bottom: 14vh; height: 14vh; background: radial-gradient(60% 50% at 50% 50%, rgba(255, 200, 225, 0.08), transparent 70%); animation: bg-drift 30s ease-in-out infinite alternate; }
+
+/* Nebula: clouds of colour slowly turning and swelling, a twinkling field of stars, the odd shooting star. */
+.scene-nebula .neb { left: 50%; top: 38%; width: 180vw; height: 180vw; margin: -90vw 0 0 -90vw; animation: bg-turn 140s linear infinite; }
+.scene-nebula .neb i { border-radius: 50%; animation: bg-breathe 14s ease-in-out infinite alternate; }
+.scene-nebula .n1 { width: 42%; height: 30%; left: 18%; top: 30%; background: radial-gradient(closest-side, rgba(255, 90, 190, 0.22), transparent); }
+.scene-nebula .n2 { width: 40%; height: 36%; left: 44%; top: 38%; background: radial-gradient(closest-side, rgba(90, 130, 255, 0.22), transparent); animation-delay: -5s; }
+.scene-nebula .n3 { width: 38%; height: 28%; left: 32%; top: 54%; background: radial-gradient(closest-side, rgba(150, 90, 255, 0.22), transparent); animation-delay: -9s; }
+@keyframes bg-turn { to { transform: rotate(360deg); } }
+@keyframes bg-breathe { from { transform: scale(0.9); } to { transform: scale(1.15); } }
+.scene .star { width: 1.5px; height: 1.5px; border-radius: 50%; background: #fff; opacity: 0.09; animation: bg-twinkle ease-in-out infinite alternate; }
+@keyframes bg-twinkle { from { opacity: 0.03; } to { opacity: 0.11; } }
+.scene-nebula .shoot { left: 64vw; top: 11vh; width: 140px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3)); opacity: 0; animation: bg-shoot 9s ease-in infinite; }
+.scene-nebula .shoot.s2 { left: 36vw; top: 27vh; animation-duration: 13s; animation-delay: -4.5s; }
+@keyframes bg-shoot { 0%, 88% { opacity: 0; transform: rotate(-25deg) translateX(0); } 90% { opacity: 1; } 100% { opacity: 0; transform: rotate(-25deg) translateX(-260px); } }
+
+/* Aurora Glass: northern lights, green, teal and violet curtains waving over a few stars. */
+.scene-aurora .sky { left: -15vw; right: -15vw; top: -5vh; height: 66vh; }
+.scene-aurora .cur { top: 0; height: 100%; border-radius: 50%; transform-origin: 50% 0; -webkit-mask: linear-gradient(90deg, transparent, #000 35%, #000 65%, transparent); mask: linear-gradient(90deg, transparent, #000 35%, #000 65%, transparent); animation: bg-wave ease-in-out infinite alternate; }
+.scene-aurora .k1 { left: 5%; width: 40%; background: linear-gradient(180deg, rgba(47, 216, 138, 0), rgba(47, 216, 138, 0.06) 40%, rgba(47, 216, 138, 0)); animation-duration: 9s; }
+.scene-aurora .k2 { left: 32%; width: 44%; background: linear-gradient(180deg, rgba(43, 184, 196, 0), rgba(43, 184, 196, 0.06) 45%, rgba(43, 184, 196, 0)); animation-duration: 12s; animation-delay: -4s; }
+.scene-aurora .k3 { left: 60%; width: 40%; background: linear-gradient(180deg, rgba(123, 107, 255, 0), rgba(123, 107, 255, 0.06) 50%, rgba(123, 107, 255, 0)); animation-duration: 10s; animation-delay: -7s; }
+@keyframes bg-wave { from { transform: skewX(-14deg) translateX(-8vw) scaleY(0.9); } to { transform: skewX(12deg) translateX(10vw) scaleY(1.1); } }
+
+/* Deep Forest: sunbeams through the trees, two layers of pines, fog rolling past, the odd falling leaf. */
+.scene-forest .ray { top: -10vh; width: 22vw; height: 80vh; background: linear-gradient(180deg, rgba(210, 255, 200, 0.1), rgba(210, 255, 200, 0) 80%); transform-origin: 50% 0; -webkit-mask: linear-gradient(90deg, transparent, #000 40%, #000 60%, transparent); mask: linear-gradient(90deg, transparent, #000 40%, #000 60%, transparent); animation: bg-shaft ease-in-out infinite alternate; }
+.scene-forest .r1 { left: 15vw; rotate: 18deg; animation-duration: 11s; }
+.scene-forest .r2 { left: 44vw; width: 15vw; rotate: 14deg; animation-duration: 8s; animation-delay: -3s; }
+.scene-forest .r3 { left: 67vw; width: 28vw; rotate: 20deg; animation-duration: 13s; animation-delay: -6s; }
+@keyframes bg-shaft { from { opacity: 0.35; } to { opacity: 1; } }
+.scene-forest .trees { left: -5vw; right: -5vw; bottom: 0; width: 110vw; height: 46vh; }
+.scene-forest .trees.back { animation: bg-parallax 40s ease-in-out infinite alternate; }
+@keyframes bg-parallax { to { transform: translateX(14px); } }
+.scene .fog { height: 14vh; border-radius: 50%; background: radial-gradient(closest-side, rgba(200, 240, 220, 0.09), transparent); }
+.scene-forest .f1 { width: 130vw; left: -50vw; bottom: 24vh; animation: bg-mist 34s ease-in-out infinite alternate; }
+.scene-forest .f2 { width: 110vw; left: 30vw; bottom: 14vh; animation: bg-mist 46s ease-in-out infinite alternate-reverse; }
+@keyframes bg-mist { to { transform: translateX(40vw); } }
+.scene-forest .leaf { top: -20px; width: 9px; height: 6px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #d6e88a, #6fb04a); opacity: 0.3; animation: bg-leaf linear infinite; }
+@keyframes bg-leaf { 0% { transform: translate(0, 0) rotate(0); } 50% { transform: translate(30px, 52vh) rotate(220deg); } 100% { transform: translate(-10px, 105vh) rotate(420deg); } }
+
+/* Deep Sea: light rays swaying from the surface, bubbles wobbling up, glowing plankton, a jellyfish pulsing as it drifts up. */
+.scene-deepsea .ray { top: -5vh; width: 18vw; height: 72vh; transform-origin: 50% 0; background: linear-gradient(180deg, rgba(160, 235, 255, 0.05), rgba(160, 235, 255, 0) 85%); -webkit-mask: linear-gradient(90deg, transparent, #000 40%, #000 60%, transparent); mask: linear-gradient(90deg, transparent, #000 40%, #000 60%, transparent); animation: bg-swing ease-in-out infinite alternate; }
+.scene-deepsea .r1 { left: 10vw; animation-duration: 7s; }
+.scene-deepsea .r2 { left: 36vw; width: 10vw; animation-duration: 9s; animation-delay: -3s; }
+.scene-deepsea .r3 { left: 59vw; width: 23vw; animation-duration: 8s; animation-delay: -5s; }
+.scene-deepsea .r4 { left: 82vw; width: 13vw; animation-duration: 10s; animation-delay: -2s; }
+@keyframes bg-swing { from { transform: rotate(-8deg); opacity: 0.5; } to { transform: rotate(9deg); opacity: 1; } }
+.scene-deepsea .bub { bottom: -20px; border-radius: 50%; border: 1px solid rgba(200, 245, 255, 0.15); background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 60%); animation: bg-bubble linear infinite; }
+@keyframes bg-bubble { 0% { transform: translate(0, 0); } 25% { transform: translate(8px, -27vh); } 50% { transform: translate(-6px, -54vh); } 75% { transform: translate(7px, -81vh); } 100% { transform: translate(0, -108vh); } }
+.scene-deepsea .pk { width: 3px; height: 3px; border-radius: 50%; background: rgba(143, 247, 232, 0.5); box-shadow: 0 0 6px 2px rgba(120, 240, 225, 0.22); opacity: 0.3; animation: bg-glow ease-in-out infinite alternate; }
+@keyframes bg-glow { from { opacity: 0.1; transform: translateY(0); } to { opacity: 0.18; transform: translateY(-14px); } }
+.scene-deepsea .jelly { left: 64vw; top: 66vh; width: 64px; height: 100px; opacity: 0.3; animation: bg-jelly 26s ease-in-out infinite alternate; }
+.scene-deepsea .jelly svg { width: 64px; height: 100px; transform-origin: 50% 20%; animation: bg-pulse 2.6s ease-in-out infinite; }
+@keyframes bg-jelly { to { transform: translate(-15vw, -40vh); } }
+@keyframes bg-pulse { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.12, 0.86); } }
+
+/* Frost: snow at three depths (a few big flakes close up), ice crystals in the corners, a cold shimmer. */
+.scene-frost .band { left: -15vw; right: -15vw; top: 5vh; height: 22vh; -webkit-mask: linear-gradient(180deg, transparent, #000 40%, #000 60%, transparent); mask: linear-gradient(180deg, transparent, #000 40%, #000 60%, transparent); background: linear-gradient(90deg, rgba(150, 170, 255, 0), rgba(150, 170, 255, 0.2), rgba(190, 240, 255, 0.16), rgba(150, 170, 255, 0)); animation: bg-shimmer 16s ease-in-out infinite alternate; }
+@keyframes bg-shimmer { from { transform: translateX(-15vw) skewY(-4deg); } to { transform: translateX(15vw) skewY(4deg); } }
+.scene-frost .flake { top: -20px; border-radius: 50%; background: #fff; animation: bg-snow linear infinite; }
+.scene-frost .flake.near { filter: blur(1.5px); }
+@keyframes bg-snow { 0% { transform: translate(0, 0); } 33% { transform: translate(14px, 35vh); } 66% { transform: translate(-10px, 70vh); } 100% { transform: translate(6px, 106vh); } }
+.scene-frost .crystal { width: 140px; height: 140px; opacity: 0.16; animation: bg-frost 9s ease-in-out infinite alternate; }
+.scene-frost .crystal.tl { left: -30px; top: -30px; }
+.scene-frost .crystal.br { right: -40px; bottom: 10vh; rotate: 180deg; animation-delay: -4s; }
+@keyframes bg-frost { from { opacity: 0.08; } to { opacity: 0.2; } }
+
+/* Fireflies: a summer night, a moon, fireflies wandering and blinking, two layers of grass in the wind. */
+.scene-fireflies .moon { right: 10vw; top: 13vh; width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fbfbe6, #d9dcb8); opacity: 0.22; box-shadow: 0 0 50px 20px rgba(220, 230, 170, 0.1); }
+.scene-fireflies .grass { left: -3vw; right: -3vw; bottom: 0; width: 106vw; height: 30vh; transform-origin: 50% 100%; animation: bg-wind 5s ease-in-out infinite alternate; }
+.scene-fireflies .grass.g2 { height: 23vh; animation-duration: 6.5s; animation-delay: -2s; }
+@keyframes bg-wind { from { transform: skewX(-3deg); } to { transform: skewX(4deg); } }
+.scene-fireflies .ff { width: 5px; height: 5px; border-radius: 50%; background: rgba(239, 255, 160, 0.7); box-shadow: 0 0 8px 3px rgba(220, 255, 120, 0.3); opacity: 0.3; animation-name: bg-wander, bg-blink; animation-timing-function: ease-in-out, ease-in-out; animation-iteration-count: infinite, infinite; animation-direction: alternate, alternate; }
+@keyframes bg-wander { 0% { transform: translate(0, 0); } 33% { transform: translate(26px, -30px); } 66% { transform: translate(-18px, -12px); } 100% { transform: translate(12px, 24px); } }
+@keyframes bg-blink { 0%, 40% { opacity: 0.04; } 60%, 100% { opacity: 0.42; } }
+
+/* Lava Lamp: real lava-lamp blobs that rise, stretch and melt together (blurred, then sharpened), over a warm glow. */
+.scene-lava .heat { left: 0; right: 0; bottom: 0; height: 30vh; background: radial-gradient(70% 70% at 50% 100%, rgba(255, 120, 60, 0.12), transparent 70%); animation: bg-hum 6s ease-in-out infinite alternate; }
+@keyframes bg-hum { from { opacity: 0.6; } to { opacity: 1; } }
+.scene-lava .goo { inset: 0; background: #170710; filter: blur(16px) contrast(16); opacity: 0.16; mix-blend-mode: screen; }
+.scene-lava .goo i { border-radius: 50%; animation: bg-lava ease-in-out infinite alternate; }
+.scene-lava .b1 { width: 44vw; height: 44vw; left: 5vw; top: 74vh; background: #ff7a3c; animation-duration: 19s; }
+.scene-lava .b2 { width: 34vw; height: 34vw; left: 54vw; top: 80vh; background: #ff3d8b; animation-duration: 23s; animation-delay: -8s; }
+.scene-lava .b3 { width: 28vw; height: 28vw; left: 31vw; top: 14vh; background: #ffb03c; animation-duration: 17s; animation-delay: -4s; animation-direction: alternate-reverse; }
+.scene-lava .b4 { width: 38vw; height: 38vw; left: 62vw; top: 24vh; background: #ff5a5a; animation-duration: 26s; animation-delay: -12s; animation-direction: alternate-reverse; }
+.scene-lava .b5 { width: 23vw; height: 23vw; left: 15vw; top: 47vh; background: #ff8f3c; animation-duration: 15s; animation-delay: -6s; }
+@keyframes bg-lava { 0% { transform: translate(0, 0) scale(1, 1); } 50% { transform: translate(8vw, -33vh) scale(0.85, 1.15); } 100% { transform: translate(-5vw, -62vh) scale(1.1, 0.9); } }
+
+/* Neon Night: a city skyline, windows flicking on and off, two neon signs that buzz, rain. */
+.scene-neon .city { left: 0; right: 0; bottom: 0; width: 100%; height: 50vh; }
+.scene-neon .win { width: 4px; height: 5px; background: rgba(255, 217, 138, 0.16); animation: bg-flick steps(1) infinite; }
+@keyframes bg-flick { 0%, 60% { opacity: 1; } 61%, 80% { opacity: 0.15; } 81%, 100% { opacity: 1; } }
+.scene-neon .sign { border-radius: 6px; opacity: 0.24; animation: bg-buzz 5s infinite; }
+.scene-neon .s1 { left: 11vw; bottom: 36vh; width: 46px; height: 14px; border: 2px solid #ff4fd8; box-shadow: 0 0 10px #ff4fd8; }
+.scene-neon .s2 { left: 68vw; bottom: 31vh; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #27d8ff; box-shadow: 0 0 10px #27d8ff; animation-delay: -2s; }
+@keyframes bg-buzz { 0%, 92%, 100% { opacity: 0.24; } 93% { opacity: 0.08; } 95% { opacity: 0.24; } 96% { opacity: 0.1; } }
+.scene-neon .rain { top: -60px; width: 1px; height: 46px; background: linear-gradient(180deg, rgba(180, 200, 255, 0), rgba(180, 200, 255, 0.15)); rotate: 12deg; animation: bg-rain linear infinite; }
+@keyframes bg-rain { to { transform: translateY(calc(100vh + 120px)); } }
+
+/* Outrun: a striped sunset sun, glowing mountains, a neon grid floor racing towards you, stars. */
+.scene-outrun .sky { inset: 0; background: linear-gradient(180deg, transparent 0 36%, rgba(74, 15, 92, 0.45) 56%, rgba(122, 26, 106, 0.38) 64%, transparent 64.2%); }
+.scene-outrun .sun { left: calc(50% - 90px); top: 40vh; width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(180deg, #ffe36b 0%, #ff9a5a 45%, #ff4fd8 100%);
+  -webkit-mask: linear-gradient(180deg, #000 0 52%, transparent 52% 56%, #000 56% 64%, transparent 64% 69%, #000 69% 76%, transparent 76% 82%, #000 82% 88%, transparent 88%);
+  mask: linear-gradient(180deg, #000 0 52%, transparent 52% 56%, #000 56% 64%, transparent 64% 69%, #000 69% 76%, transparent 76% 82%, #000 82% 88%, transparent 88%);
+  opacity: 0.17; animation: bg-sunset 14s ease-in-out infinite alternate; }
+@keyframes bg-sunset { from { transform: translateY(-8px); } to { transform: translateY(16px); } }
+.scene-outrun .mtn { left: 0; right: 0; top: 52vh; width: 100%; height: 12vh; }
+.scene-outrun .floor { left: -50vw; right: -50vw; top: 64vh; height: 50vh; transform: perspective(260px) rotateX(62deg); transform-origin: 50% 0;
+  background-image: linear-gradient(rgba(255, 79, 216, 0.7) 2px, transparent 2px), linear-gradient(90deg, rgba(95, 242, 255, 0.55) 2px, transparent 2px); background-size: 100% 40px, 40px 100%;
+  -webkit-mask: linear-gradient(180deg, transparent, #000 30%); mask: linear-gradient(180deg, transparent, #000 30%); opacity: 0.3; animation: bg-drive 1.6s linear infinite; }
+@keyframes bg-drive { to { background-position: 0 40px, 0 0; } }
+
+/* Daylight (the one light look since D90): a soft sky, a warm sun glowing in the corner, clouds drifting past. */
+.scene-daysky .sun { right: -60px; top: -60px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 236, 170, 0.8), rgba(255, 214, 140, 0.3) 45%, rgba(255, 214, 140, 0) 70%); animation: bg-warm 9s ease-in-out infinite alternate; }
+@keyframes bg-warm { from { transform: scale(0.95); opacity: 0.8; } to { transform: scale(1.06); opacity: 1; } }
+.scene-daysky .cloud2 { left: 0; width: 150px; height: 60px; animation: bg-cloud linear infinite; }
+.scene-daysky .cloud2 i { border-radius: 50%; background: #fff; filter: blur(6px); }
+@keyframes bg-cloud { from { transform: translateX(-260px); } to { transform: translateX(calc(100vw + 120px)); } }
 #app { min-height: 100dvh; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -1491,8 +1468,8 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pv { max-width: 688px; margin: 0 16px; padding: 12px; border-radius: 14px; display: grid; gap: 10px;
   background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0) 60%), var(--glass); border: 1px solid rgba(167, 139, 250, 0.3); }
 @media (min-width: 720px) { .pv { margin: 0 auto; } }
-.pv-cap { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #c4b5fd; }
-.pv-cap a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; color: #c4b5fd; text-decoration: none; }
+.pv-cap { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #d8ceff; }
+.pv-cap a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; color: #d8ceff; text-decoration: none; }
 .pv-cap a svg { width: 11px; height: 11px; }
 .pv-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--hairline); }
 .pv-row .thumb { width: 48px; height: 48px; border-radius: 9px; }
@@ -1697,7 +1674,6 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .ap-card.soon .look-sw { opacity: 0.55; }
 .look-aurora { --sw-bg: #03070a; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(47, 216, 138, 0.6), transparent 70%), radial-gradient(60% 70% at 100% 20%, rgba(43, 184, 196, 0.5), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(123, 107, 255, 0.5), transparent 70%); --sw-card: rgba(255, 255, 255, 0.08); --sw-grad: linear-gradient(100deg, #a6f0c1, #9fdcff, #cdbdff); }
 .look-neon { --sw-bg: #06041a; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(122, 60, 255, 0.7), transparent 70%), radial-gradient(60% 70% at 100% 20%, rgba(255, 63, 184, 0.55), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(39, 216, 255, 0.5), transparent 70%); --sw-card: rgba(170, 140, 255, 0.1); --sw-grad: linear-gradient(100deg, #6dffa8, #6bc8ff, #ff8fe0); }
-.look-pearl { --sw-bg: #08080c; --sw-lights: linear-gradient(120deg, rgba(255, 154, 168, 0.28), rgba(255, 242, 168, 0.16) 35%, rgba(159, 220, 255, 0.24) 70%, rgba(205, 189, 255, 0.3)); --sw-card: rgba(255, 255, 255, 0.08); --sw-grad: linear-gradient(100deg, #ffc9d2, #fff2a8, #a6f0c1, #9fdcff); }
 .look-forest { --sw-bg: #050807; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(47, 184, 106, 0.45), transparent 70%); --sw-card: #0c1410; --sw-grad: linear-gradient(100deg, #b6ffd4, #58e08c); }
 .look-sakura { --sw-bg: #130a13; --sw-lights: radial-gradient(8px 5px at 58% 22%, #ffc2da 60%, transparent), radial-gradient(7px 4px at 82% 46%, #ffc2da 60%, transparent), radial-gradient(70% 70% at 15% 0%, rgba(255, 150, 200, 0.55), transparent 70%), radial-gradient(60% 70% at 100% 90%, rgba(190, 160, 255, 0.45), transparent 70%); --sw-card: rgba(255, 200, 225, 0.1); --sw-grad: linear-gradient(100deg, #ffe0ec, #d8c4ff); }
 .look-fireflies { --sw-bg: #040b0b; --sw-lights: radial-gradient(circle at 20% 40%, #f4ff9a 0 2px, rgba(220, 255, 120, 0.4) 3px, transparent 8px), radial-gradient(circle at 70% 25%, #f4ff9a 0 1.5px, rgba(220, 255, 120, 0.4) 2.5px, transparent 7px), radial-gradient(circle at 85% 60%, #f4ff9a 0 2px, rgba(220, 255, 120, 0.35) 3px, transparent 8px), radial-gradient(80% 60% at 90% 0%, rgba(160, 200, 255, 0.3), transparent 70%), linear-gradient(#071418, #040b0b); --sw-card: rgba(200, 255, 170, 0.08); --sw-grad: linear-gradient(100deg, #f4ffb0, #a8ecb0); }
@@ -1706,11 +1682,8 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .look-nebula { --sw-bg: #05040c; --sw-lights: radial-gradient(circle at 20% 25%, #fff 0 1px, transparent 2px), radial-gradient(circle at 65% 15%, #fff 0 1px, transparent 2px), radial-gradient(circle at 85% 45%, #fff 0 1px, transparent 2px), radial-gradient(60% 60% at 30% 60%, rgba(255, 90, 190, 0.5), transparent 70%), radial-gradient(60% 60% at 75% 40%, rgba(90, 130, 255, 0.5), transparent 70%); --sw-card: rgba(200, 180, 255, 0.08); --sw-grad: linear-gradient(100deg, #ffd0ec, #9fdcff); }
 .look-outrun { --sw-bg: #0a0420; --sw-lights: linear-gradient(transparent 62%, #ff7ae0 62% 64%, transparent 64%), repeating-linear-gradient(90deg, rgba(255, 79, 216, 0.6) 0 1px, transparent 1px 14px) 0 100% / 100% 36% no-repeat, radial-gradient(circle at 50% 66%, #ffb36b 0 18%, transparent 19%), linear-gradient(#0a0420, #3a0f52 60%, #0a0420 64%); --sw-card: rgba(20, 6, 40, 0.6); --sw-grad: linear-gradient(100deg, #7ff4ff, #ff8ad8); }
 .look-lava { --sw-bg: #12060c; --sw-lights: radial-gradient(circle at 25% 75%, rgba(255, 122, 60, 0.9) 0 22%, transparent 42%), radial-gradient(circle at 75% 30%, rgba(255, 61, 139, 0.8) 0 18%, transparent 38%), radial-gradient(circle at 60% 95%, rgba(255, 176, 60, 0.8) 0 14%, transparent 32%); --sw-card: rgba(255, 200, 170, 0.1); --sw-grad: linear-gradient(100deg, #ffe08a, #ff9a6b); }
-.look-haze { --sw-bg: #0c0b10; --sw-lights: radial-gradient(90% 50% at 20% 30%, rgba(214, 200, 255, 0.45), transparent 70%), radial-gradient(90% 40% at 80% 75%, rgba(185, 232, 207, 0.35), transparent 70%); --sw-card: rgba(235, 228, 255, 0.1); --sw-grad: linear-gradient(100deg, #ece4ff, #b9e8cf); }
-.look-daymint { --sw-bg: #eef4f0; --sw-lights: radial-gradient(70% 70% at 10% 0%, rgba(88, 224, 140, 0.5), transparent 70%), radial-gradient(60% 70% at 100% 30%, rgba(120, 190, 255, 0.45), transparent 70%), radial-gradient(60% 60% at 50% 120%, rgba(255, 214, 120, 0.45), transparent 70%); --sw-card: rgba(255, 255, 255, 0.8); --sw-grad: linear-gradient(100deg, #13703f, #14657e); }
-.look-daypearl { --sw-bg: #f5f4f8; --sw-lights: linear-gradient(120deg, rgba(255, 154, 168, 0.35), rgba(255, 242, 168, 0.25) 35%, rgba(159, 220, 255, 0.32) 70%, rgba(205, 189, 255, 0.4)); --sw-card: rgba(255, 255, 255, 0.85); --sw-grad: linear-gradient(100deg, #a82c64, #4c3fc4); }
 .look-daysky { --sw-bg: #eef3fa; --sw-lights: radial-gradient(70% 70% at 100% 0%, rgba(255, 210, 120, 0.6), transparent 70%), radial-gradient(70% 70% at 0% 70%, rgba(120, 180, 255, 0.45), transparent 70%); --sw-card: rgba(255, 255, 255, 0.82); --sw-grad: linear-gradient(100deg, #1460b8, #0f6f80); }
-:is(.look-daymint, .look-daypearl, .look-daysky) .look-sw i { border-color: rgba(16, 32, 26, 0.15); }
+.look-daysky .look-sw i { border-color: rgba(16, 32, 26, 0.15); }
 /* Each top's little diagram. */
 .top-dia { display: grid; gap: 4px; align-content: start; height: 54px; padding: 7px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
 .top-dia i { display: block; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); }
@@ -1811,15 +1784,6 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 @keyframes tfx-grid-page { to { background-position: 0 0, 0 11px; } }
 @media (prefers-reduced-motion: no-preference) { .hero-photo .tfx-grid i.floor { animation-name: tfx-grid-page; } }
 
-/* Holo Pearl's pearly edges (D65): the stand-out cards get a rainbow rim instead of a plain one. The
-   rim is the rainbow drawn under the whole card, so the inside needs a solid pane over it (the
-   background colour) or the rainbow tints the words' background too (measured: 4.2 : 1). */
-html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile, .scard, .more-me, .ap-card, .pill) {
-  border-color: transparent;
-  background: linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box;
-}
-html[data-look="pearl"] :is(.banner.hero, .banner.strip, .tiles .tile) { background: var(--hero-glow) padding-box, linear-gradient(var(--glass), var(--glass)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
-html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-soft), var(--accent-soft)) padding-box, linear-gradient(var(--bg), var(--bg)) padding-box, var(--pearl-edge) border-box; }
 
 /* ---------- currencies (D66) ---------- */
 /* A purchase in another currency: a small tag with its sign, by the date. */
@@ -2109,7 +2073,6 @@ html[data-tone="light"] :is(.li-ic.teal, .data-mark.teal, .role.shop) { color: v
 html[data-tone="light"] :is(.li-ic.violet, .pv-cap, .pv-cap a, .pv-note a) { color: var(--violet-bright); }
 html[data-tone="light"] .li-ic.gem { color: #7a3fc0; }
 /* No drifting extras on the light looks: their lights alone. */
-html[data-tone="light"] .bg-layer::before, html[data-tone="light"] .bg-layer::after { content: none; }
 
 /* ---------- Posts, comments and the Feed (D77, 0.66.0) ----------
    A post is a glass card: who and when, its own photo edge to edge, the card for what it's about (a
@@ -2313,6 +2276,6 @@ html[data-tone="light"] :is(.duel-side.mine .duel-score, .your-chip.mine b, .abo
 }
 .data-card { border-color: transparent; border-radius: var(--r-group); }
 /* The red card's title, mixed a little towards the text colour: plain red read 4.4 : 1 over its own red wash. */
-.data-card.red > .cap { color: color-mix(in srgb, var(--danger) 80%, var(--text)); }
+.data-card.red > .cap { color: color-mix(in srgb, var(--danger) 62%, var(--text)); }
 /* A light card's rank (D72's deep shade): a little deeper since D87's lighter weight (Gems' #1 read 4.4 : 1). */
 html[data-tone="light"] .row.tier .rk { color: color-mix(in srgb, var(--t4) 30%, var(--text)); font-weight: 700; }

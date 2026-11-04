@@ -161,6 +161,8 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D87 | **The Apple-style redesign, stage A: the base design** (2026-11-04; the owner: "a full overhaul… it just looks like a vibe coded app — i want it to look like a real developed apple app… like the photos app", "go as far as you need", with the `apple-design` skill; a review of every screen against it, then mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8). The owner's picks: Leaderboard **B, calm cards** (of A grouped list, B, C photo grid; no List/Grid switch); the three new tops, **Compact** for new accounts; fonts **B**, Apple's SF Pro for words and SF Pro Rounded for scores (of SF only, SF + Rounded, New York + SF, SF + Unbounded); Settings moves to your photo (top right) and + sits beside the tab bar ("sure"). Also from the questions: every screen may be rearranged as long as every feature stays easy to find; Apple-clean structure and type, "the colour and fun living in the Looks, the Leaderboard colours and the animations"; sounds and ticks stay; battery is no concern (iPhone 17 Pro). Press feedback presses in (scale 0.97, list rows light up) in place of D20's lift, as in the mockups. Kept: D70 (a Look changes only colours and the background), every readability and accessibility test. Stages B (the Looks: Holo Pearl, Haze and two of the Daylights to go, the rest with smooth moving backgrounds) and C (the colour sets: Gems and Metals to go, Ember without its blue) follow, each with its own mockups. What changed is in §4 *The Apple-style base*. |
 | D88 | **Anton's photos on the website** (2026-11-04; the owner: "the pictures used are just coloured blobs … take the best pictures from my live account anton_godd"; after the trade-offs were explained (his photos, AI, stock; the personal side of "Made by Anton" with real buds; D63's rule), "use mine", yes to reading his live account, "use my real strain names"). **Reopens D63** ("products shown are all made up; nobody's data is used") with his OK, for his own account only. | **The website shows the owner's own cut-out photos, real strain names and real scores** in place of drawn nugs and made-up products: the hero's top five and tiles, the scroll story, Make it yours and Rate the stack. **Sellers, prices, weights and other people stay made up**; no source or country is shown with a strain; private and kept products are never used; the pictures carry nothing but the picture. Nobody else's data is ever used. Website only; the app is unchanged. See §4 *Anton's photos on the website*. |
 | D89 | **The website's full overhaul** (2026-11-04; the owner: "run a review of the website with [ui-ux-pro-max]. i want a full website overhaul"; his picks: "1. match the app" (Apple's fonts), "2. ok" (no reviews until real ones), then "go ahead" on https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T). | **The website matches the app's Apple-style design:** Apple's fonts (none downloaded); the hero's phone drawn as the app looks now (large title, Compact line, calm rows, the floating tab bar with the +), showing on the first screen; Rate the stack straight after the top; a new **Your stash is your business** section of four promises, each true in the app; drawn icons in place of emoji; sentence-case labels; a footer with Open the app, Create an account and Email us; hover feedback for a mouse and a tidier laptop layout. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *The website's full overhaul*. |
+| D90 | **The Apple-style redesign, stage B: the Looks** (2026-11-04; mockups https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe; the owner on them: "i like it"; his answers: one light look ("one"), Holo Pearl and Haze go ("ok"), no tilting the phone for now ("what ever you recommond"). From stage A's questions: his favourites, Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea, Frost, Fireflies, Lava Lamp, Neon Night, Outrun, with "nice moving background animations… little unique details"; battery is no concern (iPhone 17 Pro). Eleven looks: those ten and **Daylight** (Daylight Sky's key kept), each with a scene of its own that glides smoothly (in place of D64-D70's small steps). Looks that went show as their replacement, nothing rewritten: Holo Pearl and Haze as Aurora Glass, Daylight Mint and Pearl as Daylight. Kept: D70 (only colours and the background change), every readability test. What changed is in §4 *The Looks' scenes*. |
+
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1942,12 +1944,40 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   `settled` waits for) over a fading scrim. *Tests:* `header.spec.ts` (the photo opens Settings, the large title
   slides under the bar), `quality.spec.ts` (the Apple-style base on every main screen), `numbers.spec.ts` (Apple's
   fonts, nothing downloaded), `expectStatsFit` (the three tops).
+- **The Looks' scenes (D90, 0.79.0).** `components/Backdrop.tsx` draws the look on the screen's scene (following
+  `html[data-look]`, so a friend's look on their pages too, D74) in a fixed `.scene` over `.bg-layer` (the look's colour
+  and its three lights, which now drift smoothly too, `lights` with `ease-in-out`). Each look is a function of plain
+  pieces (`i`, `svg`), scattered the same way every time (`scatter`, a fixed seed): Sakura's moon, clouds, hills, mist,
+  swaying branch and 22 falling petals; Nebula's turning clouds, 60 stars and two shooting stars; Aurora's three
+  curtains over stars; Deep Forest's sunbeams, two rows of pines, fog and leaves; Deep Sea's rays, plankton, a pulsing
+  jellyfish and bubbles; Frost's shimmer, two ice crystals and 50 flakes at three depths; Fireflies' moon, 16 fireflies
+  and two layers of grass; Lava Lamp's blobs melting together (blur then contrast); Neon Night's skyline, 40 windows,
+  two buzzing signs and rain; Outrun's sky, sun, mountains and racing grid; Daylight's sun and drifting clouds. Styles in
+  `styles.css` ("The Looks' backgrounds"), every keyframe `bg-…`, mostly `transform` and `opacity`; nothing behind words
+  brighter than about a quarter white. Still with Reduce Motion; `display: none` under the viewer and croppers. The old
+  `.bg-layer::before` / `::after` paintings are gone. *Looks that went:* `LOOKS_MOVED` / `movedLook` (gems.ts), used by
+  `loadAppearance` (yours and a friend's) and look.js's `moved` (the phone's memory); `validateAppearance` refuses
+  them. *Tests:* `looks.spec.ts` (all eleven: chosen and saved, only colours change, a smooth scene, still with Reduce
+  Motion, hidden under the viewer, readable on every screen), `gems.test.ts`, `appearance.test.ts`.
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.79.0 — the Apple-style redesign, stage B: the Looks (D90)
+- Every Look's background glides smoothly now, with little details of its own: Sakura's swaying branch and falling
+  petals, Nebula's shooting stars, Aurora Glass's northern lights, Deep Forest's sunbeams and fog, Deep Sea's bubbles
+  and jellyfish, Frost's snow and ice, Fireflies' grass in the wind, Lava Lamp's melting blobs, Neon Night's city in
+  the rain, Outrun's racing grid, and Daylight's drifting clouds.
+- One light look, Daylight, in place of three. Holo Pearl and Haze have gone: anyone using one now sees Aurora Glass,
+  and anyone on Daylight Mint or Pearl sees Daylight.
+
+### Notes — the website's full overhaul is live
+- 0.78.0 (on dev 2026-11-04) went live on 2026-11-04 (release 0.78.0) and moves to Done. The first release run
+  failed on `sliders.spec.ts` (measured during the editor's fade-in), fixed in tests only (#197); the second passed
+  with no flaky tests. Notes only.
 
 ### Tests — the rating slider measured once the editor has faded in
 - `sliders.spec.ts` › "the bar doesn't move or resize…" measured the bar while the editor was still fading in

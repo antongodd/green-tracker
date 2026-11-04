@@ -43,19 +43,20 @@ test.afterAll(async () => {
 /** Holds every light still at the same moment, so two photos can be compared. */
 const holdLights = (at: number) =>
   page.evaluate((at) => {
-    for (const a of document.getAnimations()) if (/^lights$/.test((a as CSSAnimation).animationName)) (a.pause(), (a.currentTime = at));
+    // The lights and, since D90, the look's scene (its animations are all named bg-…), held at one moment.
+    for (const a of document.getAnimations()) if (/^(lights|bg-.*)$/.test((a as CSSAnimation).animationName)) (a.pause(), (a.currentTime = at));
   }, at);
 
 test('the lights are behind every screen, drifting, and stay put as you scroll', async () => {
   await page.goto('/');
   await expect(page.locator('.row')).toHaveCount(14);
   await settled();
-  // Three lights painted on the fixed background, drifting on one slow loop in small steps.
+  // Three lights painted on the fixed background, drifting on one slow loop (smoothly since D90; in small steps before).
   const layer = await page.evaluate(() => {
     const cs = getComputedStyle(document.querySelector('.bg-layer')!);
     return { lights: cs.backgroundImage.match(/radial-gradient/g)?.length ?? 0, anim: cs.animationName, timing: cs.animationTimingFunction };
   });
-  expect(layer).toEqual({ lights: 3, anim: 'lights', timing: 'steps(48)' });
+  expect(layer).toEqual({ lights: 3, anim: 'lights', timing: 'ease-in-out' });
   await holdLights(0);
   // The left gutter beside the stats: green-tinted at the top…
   const top = await colour(2, 130);

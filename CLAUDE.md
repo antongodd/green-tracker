@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D89 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D90 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -147,7 +147,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D90) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D91) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +171,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D89.
+- Reopen any decision D1–D90.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -250,15 +250,17 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Appearance pages (D71): Look `/more/look`, Leaderboard top `/more/top`, Leaderboard colours `/more/colours` (with
   Mark my #1); `/more/appearance` opens Settings. The top of the Leaderboard (hero, strip, tiles) glows with the look
   (`--hero-glow`); the glass hero must never take the product page's `.hero` styles (its `::before` fade made it black).
-- Light looks (D72): `daymint`, `daypearl`, `daysky` (`LIGHT_LOOKS`) set `html[data-tone="light"]`; anything with a colour
+- Light looks (D72): one since D90, Daylight (`daysky`, `LIGHT_LOOKS`), sets `html[data-tone="light"]`; anything with a colour
   of its own needs a light version under `html[data-tone="light"]` (end of `styles.css`), and the coloured rows are light
   cards there. `textBoxes` judges gradient text at both extremes. `daylight.spec.ts` sweeps screens with axe in each.
   The Look page lists them last, under *Light mode* (D73; the dark looks under *Dark mode*): two `radiogroup`s, one
   radio name. `LOOK_KEYS` keeps that order (`gems.test.ts`).
-- Looks (D70): fifteen since D72, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
+- Looks (D70): eleven since D90, chosen with `PUT /api/appearance` (`look`); the owner's rule is that a look changes only colours and
   the background, never a font, size or shape (`looks.spec.ts` compares every position and font with Aurora Glass). A
-  look's background is the lights plus `.bg-layer::before`/`::after`, moving only in `steps()`; name every keyframe
-  `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits for). Whatever drifts behind words
+  look's background is the lights on `.bg-layer` plus its scene (`.scene-<look>`, `components/Backdrop.tsx`, D90),
+  gliding smoothly; name every keyframe `bg-…` (a plankton `rise` once replaced the menus' `rise`, which `settled` waits
+  for). The looks that went (`LOOKS_MOVED`: Holo Pearl, Haze, Daylight Mint and Pearl) are refused by the API and show
+  as their replacement; a test can't save one. `holdLights` (`aurora.spec.ts`) holds the lights and every `bg-…`. Whatever drifts behind words
   must pass the readability tests at every moment, so keep it about as bright as Aurora's lights. A new look goes in
   `LOOK_KEYS`, `LOOK_BG` and `look.js` (`gems.test.ts` checks they agree); a new look or colour set needs **no
   migration** since D76 (the app checks them: `validateAppearance`; reading back, `loadAppearance` shows the default
@@ -376,9 +378,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.77.1 (2026-11-04): everything up to the website's overhaul so far (item 15) and the app's Apple-style
+- **Live:** 0.78.0 (2026-11-04): everything up to the website's full overhaul (item 15) and the app's Apple-style
   redesign, stage A (item 16).
-- **Dev:** 0.78.0 (2026-11-04): the website's full overhaul (to-do item 15), waiting for Anton's "go live".
+- **Dev:** 0.79.0 (2026-11-04): the app's Apple-style redesign, stage B, the Looks (item 16), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -413,22 +415,18 @@ Each is a job for its own conversation; the summary lists what each covers.
 14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
    effective age assurance", so in law children can use the app; for now the children's access assessment finds
    they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
-15. **The website, overhauled** (big; Anton, 2026-11-03/04, testing the design skills before using them on the app).
-   Live in 0.74.0–0.77.0 (see Done): Apple-style polish, five things to play with, Anton's own photos. **Next: the
-   full overhaul** from the ui-ux-pro-max review (2026-11-04): Anton chose Apple's fonts to match the app, no reviews
-   until there are real ones; the plan is the hero with the phone in view (redrawn as the new app), Rate the stack
-   earlier, a tighter story with drawn icons (no emoji), a "Your stash is your business" privacy block, one set of
-   install steps, a proper footer, a laptop pass with hover states. Mockups
-   https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T, "go ahead" (2026-11-04): **on dev** in 0.78.0 (2026-11-04),
-   D89. Waiting for "go live".
+15. ~~The website, overhauled~~: live in 0.74.0–0.78.0 (see Done). Later if Anton wants: a privacy page anyone can
+   open (the app's is behind sign-in), and reviews once there are real ones.
 16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
    - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
-   - **Stage B, the Looks:** Anton's favourites (Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea,
-     Frost, Fireflies, Lava Lamp, Neon Night, Outrun) refreshed with smooth, detailed moving backgrounds (battery is no
-     concern); Holo Pearl and Haze go (their users move to the default); light mode as one or two really good looks
-     instead of three (Anton doesn't use it). Next: mockups.
+   - **Stage B, the Looks:** **on dev** in 0.79.0 (2026-11-04), D90; mockups
+     https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe ("i like it"). His ten favourites with smooth backgrounds and
+     details of their own, one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as
+     Daylight). No tilting for now. Waiting for "go live".
+     Knock-on: the website's "Fifteen Looks. Pick yours." row (`site/public/index.html`, `site.js`) still lists the four
+     that went; to bring it to eleven (and the new descriptions) once stage B is live.
    - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
      without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
      Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora.
@@ -438,6 +436,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The website's full overhaul (from the ui-ux-pro-max review): Apple's fonts like the app, the phone drawn as the new app and on the first screen, Rate the stack second, "Your stash is your business" (four promises true in the app), drawn icons instead of emoji, calm labels, a footer with Open the app, Create an account and Email us, hover for a mouse (tried by Anton on the preview: "i like it") | 0.78.0 | D89 | 2026-11-04 | 2026-11-04 |
 | `apple-design` moved from this repository to Anton's Claude account (Settings › Customize › Skills), so all his projects can use it | (notes) | | 2026-11-04 | notes only |
 | The website, Anton's photos: his own cut-outs, strain names and scores in place of the drawn nugs (sellers, prices and people made up) | 0.77.0 | D88 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage A: Apple's fonts, large titles, the floating tab bar with the + beside it, Settings from your photo, calm cards, three new Leaderboard tops (Compact, Summary, Showcase), the product page's actions as one list, press-in feedback, springy sheets; the tab bar's four tabs made exactly equal in 0.77.1 (the release run caught "Leaderboard" widening its tab on the CI fonts) (not yet tried on Anton's iPhone) | 0.76.0, 0.77.1 | D87 | 2026-11-04 | 2026-11-04 |

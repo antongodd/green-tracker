@@ -36,17 +36,17 @@ describe('appearance settings (D48)', () => {
     // An app still open from before 0.54.0 sends no look or top: they take the defaults.
     expect((await b.req('PUT', '/api/appearance', { preset: 'prism', markFirst: true })).status).toBe(200);
     expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'prism', markFirst: true });
-    // Every look can be saved since D65; one that doesn't exist is refused.
-    expect((await b.req('PUT', '/api/appearance', { look: 'pearl', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
-    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'pearl', top: 'hero', preset: 'prism', markFirst: true });
-    expect((await b.req('PUT', '/api/appearance', { look: 'sepia', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(400);
+    // Every look can be saved; one that doesn't exist, or went in D90, is refused.
+    expect((await b.req('PUT', '/api/appearance', { look: 'neon', top: 'hero', preset: 'prism', markFirst: true })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'neon', top: 'hero', preset: 'prism', markFirst: true });
+    for (const look of ['sepia', 'pearl', 'haze', 'daymint', 'daypearl']) expect((await b.req('PUT', '/api/appearance', { look, top: 'hero', preset: 'prism', markFirst: true })).status, look).toBe(400);
     // D69's five sets can be saved (the database allows them since 0013_more_colours.sql).
     for (const preset of ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave']) {
       expect((await b.req('PUT', '/api/appearance', { look: 'aurora', top: 'hero', preset, markFirst: true })).status, preset).toBe(200);
       expect((await b.get('/api/appearance')).json.appearance, preset).toEqual({ look: 'aurora', top: 'hero', preset, markFirst: true });
     }
-    // D70's eight looks and D72's three light ones can be saved (the database allows them since 0014 and 0015).
-    for (const look of ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'haze', 'daymint', 'daypearl', 'daysky']) {
+    // D70's looks and the light one (Daylight since D90) can be saved.
+    for (const look of ['sakura', 'fireflies', 'deepsea', 'frost', 'nebula', 'outrun', 'lava', 'daysky']) {
       expect((await b.req('PUT', '/api/appearance', { look, top: 'hero', preset: 'cosmos', markFirst: true })).status, look).toBe(200);
       expect((await b.get('/api/appearance')).json.appearance, look).toEqual({ look, top: 'hero', preset: 'cosmos', markFirst: true });
     }

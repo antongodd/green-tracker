@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LIGHT_LOOKS, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, LOOK_BG, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
+import { bandEffect, bandName, bandRange, BOARD_TOP_KEYS, DEFAULT_APPEARANCE, LIGHT_LOOKS, LOOK_KEYS, LOOKS, NEW_LOOKS, PRESET_KEYS, PRESETS, READY_LOOKS, LOOK_BG, LOOKS_MOVED, movedLook, NEW_PRESETS, scoreBand, validateAppearance } from '../../shared/domain/gems';
 
 describe('Leaderboard colours by score (D48)', () => {
   it('four bands from 8.0 up; nothing below 8', () => {
@@ -87,14 +87,25 @@ describe('Leaderboard colours by score (D48)', () => {
     }
   });
 
-  it('all fifteen looks can be chosen since D72 (eight more in D70, three light ones in D72), the new ones marked New; anything else is refused', () => {
+  it('eleven looks since D90 (Holo Pearl, Haze, Daylight Mint and Pearl went; Daylight is the one light look), Daylight marked New; anything else is refused', () => {
     expect(READY_LOOKS).toEqual(LOOK_KEYS);
-    expect(LOOK_KEYS).toHaveLength(15);
-    expect(LIGHT_LOOKS).toEqual(['daymint', 'daypearl', 'daysky']);
-    expect([...NEW_LOOKS].sort()).toEqual(['daymint', 'daypearl', 'daysky', 'deepsea', 'fireflies', 'frost', 'haze', 'lava', 'nebula', 'outrun', 'sakura']);
+    expect(LOOK_KEYS).toHaveLength(11);
+    expect(LIGHT_LOOKS).toEqual(['daysky']);
+    expect(LOOKS.daysky.label).toBe('Daylight');
+    expect([...NEW_LOOKS]).toEqual(['daysky']);
     for (const look of LOOK_KEYS) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look })).toEqual({ ok: true, value: { ...DEFAULT_APPEARANCE, look } });
-    expect(LOOK_BG).toEqual({ aurora: '#03070a', neon: '#06041a', pearl: '#08080c', forest: '#050807', sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', haze: '#0c0b10', daymint: '#eef4f0', daypearl: '#f5f4f8', daysky: '#eef3fa' });
+    for (const look of ['pearl', 'haze', 'daymint', 'daypearl']) expect(validateAppearance({ ...DEFAULT_APPEARANCE, look }).ok, look).toBe(false);
+    expect(LOOK_BG).toEqual({ aurora: '#03070a', neon: '#06041a', forest: '#050807', sakura: '#130a13', fireflies: '#040b0b', deepsea: '#020a14', frost: '#060b12', nebula: '#05040c', outrun: '#0a0420', lava: '#12060c', daysky: '#eef3fa' });
     expect(new Set(LOOK_KEYS.map((l) => LOOKS[l].label)).size).toBe(LOOK_KEYS.length);
+  });
+
+  it('a look that went shows as its replacement (D90): Holo Pearl and Haze as Aurora Glass, Mint and Pearl as Daylight', () => {
+    expect(['pearl', 'haze', 'daymint', 'daypearl', 'sakura', 'daysky', 'sepia'].map(movedLook)).toEqual(['aurora', 'aurora', 'daysky', 'daysky', 'sakura', 'daysky', null]);
+    for (const look of Object.values(LOOKS_MOVED)) expect(LOOK_KEYS).toContain(look);
+    // The phone's memory (look.js) moves them the same way.
+    const js = readFileSync(new URL('../../client/public/look.js', import.meta.url), 'utf8');
+    const moved = Object.fromEntries([...js.match(/var moved = \{([^}]*)\}/)![1]!.matchAll(/(\w+): '(\w+)'/g)].map((m) => [m[1], m[2]]));
+    expect(moved).toEqual(LOOKS_MOVED);
   });
 
   it('the phone remembers every look (look.js knows each name and background); the database no longer lists them (D76)', () => {
