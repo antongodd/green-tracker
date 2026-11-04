@@ -59,8 +59,9 @@ test('loads nothing from anywhere else, breaks no rules of its own, and every si
   await expect(page.getByRole('link', { name: 'Open app' })).toBeHidden();
   expect(elsewhere).toEqual([]);
   expect(problems).toEqual([]);
-  // The stored fonts are the ones in use (not the fallbacks).
-  expect(await page.evaluate(() => [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')).sort())).toEqual(['Manrope', 'Unbounded']);
+  // D89: Apple's own fonts, as in the app: none is downloaded.
+  expect(await page.evaluate(() => [...document.fonts].map((f) => f.family))).toEqual([]);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('h1')!).fontFamily)).toMatch(/^-apple-system, BlinkMacSystemFont, "SF Pro Display"/);
   const signUps = page.getByRole('link', { name: 'Sign up free' });
   await expect(signUps).toHaveCount(2);
   for (const href of await signUps.evaluateAll((as) => as.map((a) => a.getAttribute('href')))) expect(href).toBe(`${APP}/signup`);
@@ -88,7 +89,7 @@ test('no accessibility problems, at the top and after scrolling through', async 
 // showing: Open app at the top, Sign up further down (D85).
 // Rate the stack (D86): only the top card's words (the ones under it are covered by it). The Looks' names run off
 // the side of the screen in their row: their own test judges the ones in sight.
-const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .asks, .label, .feat p, .card:last-child .ctop span, .card:last-child .cnm b, .card:last-child .cnm small, .step b, .step p, .step .n, .video figcaption, .other, .foot span';
+const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .asks, .label, .feat p, .card:last-child .ctop span, .card:last-child .cnm b, .card:last-child .cnm small, .step b, .step p, .step .n, .video figcaption, .other, .promises p, .foot span, .foot-links a';
 test('every word is readable over the moving lights, all the way down', async ({ page }) => {
   test.slow();
   await open(page);
@@ -197,7 +198,7 @@ test('the words match today’s app: an email and password, posts for approved f
   await expect(page.locator('.safari .url')).toHaveText([new URL(APP).host, new URL(APP).host]);
   await expect(page.locator('#install li').first()).toContainText('Opened this inside WhatsApp or Instagram? Open it in Safari first');
   // The picture of the app: the app's own words, a price called a price, no name cut short.
-  await expect(page.locator('.mini-h span')).toHaveText('All · Overall');
+  await expect(page.locator('.mini-strip')).toHaveText('31 products · 7.9 average · 4 countries');
   await expect(page.locator('.chip.c2')).toHaveText('£9.50/gprice');
   // Linux draws these names wider than an iPhone does: the names are kept short enough for both.
   for (const name of await page.locator('.mini .nm b').all()) expect(await name.evaluate((b) => b.scrollWidth <= b.clientWidth), await name.innerText()).toBe(true);
@@ -245,7 +246,7 @@ test('on a laptop everything lines up with the hero, and the three steps sit sid
   await noRise(page);
   const left = (sel: string) => page.locator(sel).first().evaluate((e) => Math.round(e.getBoundingClientRect().left));
   const hero = await left('h1');
-  for (const sel of ['#what', '#try', '#get', '.feats', '.rate', '.steps', '.other', '.final']) expect(await left(sel), sel).toBe(hero);
+  for (const sel of ['#what', '#try', '#get', '#private', '.feats', '.rate', '.promises', '.steps', '.other', '.final']) expect(await left(sel), sel).toBe(hero);
   const steps = await page.locator('#install ol > li').evaluateAll((ls) => ls.map((l) => Math.round(l.getBoundingClientRect().top)));
   expect(new Set(steps).size).toBe(1);
   // Each step's words start right under its title (no gap from stretching to the tallest step).
@@ -556,5 +557,49 @@ test('Anton’s photos: every one shows, small, with no hidden photo details', a
   }
   expect(elsewhere).toEqual([]);
   expect(problems).toEqual([]);
+});
+
+// D89 (0.78.0): the full overhaul from the ui-ux-pro-max review. Apple's fonts (above), the phone drawn as the app
+// looks since D87, Rate the stack straight after the top, a privacy section, drawn icons and a footer with ways on.
+test('the overhaul: the new order, the privacy promises, the new app on the phone, no emoji, a footer with ways on', async ({ page }) => {
+  await open(page);
+  // The order of the sections, top to bottom.
+  expect(await page.locator('main h2').allTextContents()).toEqual(['Rate the stack.', 'Your stash, sorted.', 'Fifteen Looks. Pick yours.', 'Your stash is your business.', 'On your iPhone in 20 seconds.', 'Roll one up and sign up.']);
+  // Four promises, each true in the app (D45, D77, D80, D84): followers by approval, what they see, no ads, export or delete.
+  const promises = page.locator('.promises li');
+  await expect(promises.locator('h3')).toHaveText(['Only friends you approve', 'You choose what they see', 'No ads, no tracking', 'Yours to take or delete']);
+  await expect(promises.nth(1)).toContainText('What you paid, where you got it and your notes are never shared.');
+  await expect(promises.nth(3)).toContainText('backups keep a copy for up to 30 days');
+  // The phone shows the app as it is now: a large title, the Compact line and the floating tab bar with the +.
+  await expect(page.locator('.mini .mt-l')).toHaveText('Leaderboard');
+  await expect(page.locator('.mini .mb-tabs > span')).toHaveCount(4);
+  await expect(page.locator('.mini .mb-plus')).toHaveCount(1);
+  // Drawn icons, never emoji, anywhere on the page.
+  expect(await page.locator('body').evaluate((b) => /\p{Extended_Pictographic}/u.test(b.textContent ?? ''))).toBe(false);
+  // Labels in sentence case, as in the app.
+  expect(await page.locator('.label').first().evaluate((l) => getComputedStyle(l).textTransform)).toBe('none');
+  // The footer: back to the app, an account, and Anton.
+  const foot = page.getByRole('navigation', { name: 'More' });
+  await expect(foot.getByRole('link', { name: 'Open the app' })).toHaveAttribute('href', `${APP}/`);
+  await expect(foot.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', `${APP}/signup`);
+  await expect(foot.getByRole('link', { name: 'Email us' })).toHaveAttribute('href', 'mailto:greentracker.help@gmail.com');
+  for (const link of await foot.getByRole('link').all()) expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  // On an iPhone the phone starts showing on the very first screen.
+  expect(await page.locator('.mini').evaluate((m) => m.getBoundingClientRect().top)).toBeLessThan(844 - 120);
+  await arrived(page);
+  expect((await new AxeBuilder({ page }).include('.promises').include('.foot').analyze()).violations.map((v) => v.id)).toEqual([]);
+});
+
+test('with a mouse, buttons answer the pointer hovering over them', async ({ browser }) => {
+  // A laptop with a mouse (the other tests' browser is a phone, which can't hover, so it rightly gets none).
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false })).newPage();
+  expect(await page.evaluate(() => matchMedia('(hover: hover)').matches)).toBe(true);
+  await open(page);
+  await arrived(page);
+  const ghost = page.getByRole('link', { name: 'Put it on my iPhone' });
+  const before = await ghost.evaluate((b) => getComputedStyle(b).backgroundColor);
+  await ghost.hover();
+  await expect.poll(() => ghost.evaluate((b) => getComputedStyle(b).backgroundColor)).not.toBe(before);
+  await page.context().close();
 });
 
