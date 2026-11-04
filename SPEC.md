@@ -157,6 +157,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D83 | **Sign-in hardening** (2026-11-03; review panel job 9, `reviews/2026-11-03/app-developer.md` findings 3 and 5). Changes D80's limits and password change with the owner's OK: "1. yes 2. yes", then "go ahead" (no mockups). | **Strangers can't lock you out:** the per-email limit (10 every 15 minutes) counts only **wrong** passwords; a right one never counts. A device an account has signed in on is remembered (cookie `gt_device`, 400 days, only its hash stored; also set the first time the app opens on a phone already signed in) and its wrong tries count on their own (10 every 15 minutes), so the owner's right password gets through on it even while strangers have the email waiting; it never signs anyone in by itself, and only for the accounts signed in on it. The answer for a wrong password and an unknown email stays the same. **Adding Face ID asks for your password** (Settings › Face ID: "Your password", Continue), unless this device signed in (with the password or Face ID) in the last 5 minutes: so the offer straight after sign-up stays one tap. **A forgotten password:** Settings › Password › **Forgot it? Use Face ID instead** (only with a passkey): a fresh Face ID check with one of your own passkeys replaces the current password; the risk (someone with your phone *and* its passcode) accepted by the owner as the only way back in until the app can send email. **After a password change:** "These can still sign in with Face ID", each passkey with Added / Last used and Remove, then Done. Passwords are still kept only as a salted PBKDF2 hash. A database change (0020, a new table). See §4 *Sign-in hardening*. |
 | D84 | **Trust basics for strangers** (2026-11-03; review panel job 7, `reviews/2026-11-03/sceptical-investor.md` findings 1, 3, 13, 14, `marketing-pro.md` finding 3 and Part 2 finding 5). Mockups https://claude.ai/artifact/4AM8rxjyHwrQvuSQxxVMZQ; the owner's answers: "all ur recomdnations", then "your picks - go ahead". **Reopens D63** (the website's "no age or legal note") with his OK. | **18+:** sign-up has an "I'm 18 or over and I agree to the house rules" tick on its first step (Continue waits for it; the server refuses a sign-up without it); an account from before is asked once ("One quick thing"), before anything else, with Sign out the only other way on (`users.adult_at`). **A privacy page and house rules** (Settings › About › Privacy, House rules, Contact; also opened over sign-up and the once screen): what's kept (the email, the password only as a hash, Face ID's key, what you add, a scrambled address and a code per phone against break-ins), where (Cloudflare: details in Western Europe, photos in North America, checked 2026-11-03; Cloudflare's logs up to 7 days), who sees what (you; followers per What followers see; anyone: your @name, and your profile photo to people you follow or ask to follow; Anton, to fix problems and deal with reports), that sign-up shows an email is taken, reports, Export and Delete (backups keep a copy up to 30 days, D1 Time Travel), 18+, the contact address. Five house rules: 18+, no selling or supplying, no personal details, no faces without a yes, be decent. **Report** on someone else's post (a ⋯ on it now), comment (the comment's ⋯) and profile (the ⋯ with Block): a reason in one tap (six); the post or comment is hidden for you at once ("You reported this … Show it"); for a person, "Also block" starts ticked. Only what you can see can be reported (D77's rule, the same 404). Nobody is told. Anton reads them with the `green-tracker-reports` recipe (read only; removes a post or comment only on his "yes"). **A photo limit:** 3,000 an account (product, Log and post photos), checked by the database on every Save (triggers) and before an upload; the editors warn from 2,900. **The website:** "18+" in the top line, an adults-only line and the contact address in the footer. A database change (0021: `users.adult_at`, `reports`, two triggers). See §4 *Trust basics*. |
 | D85 | **The website, polished in Apple's style** (2026-11-03; the owner: "run a overhaul review on our website, using the apple design skill. tell me some thigns you would change, make mockups - then execute"; a test of the new `apple-design` skill before using it on the app). Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga (Now, A recommended, B); built as A. | **Same words, colours, lights and steps; it now feels like an iPhone page:** buttons press in the moment they're touched; things move once when they arrive and then hold still (only the lights, slower, and the holo colours keep moving); the top bar gets its edge only once the page scrolls under it, and offers a green **Sign up** once the hero's buttons have gone; the four features as one grouped panel; card titles in the body font; an iPhone-style slider with marks where the colours change and a small pop when the row earns new ones; solid glass with Reduce Transparency and plainer cards with Increase Contrast. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *Website polish, Apple-style*. |
+| D86 | **New things on the website** (2026-11-04; the owner: "be more imaginative with this skill … add new things to the website, new well designed features", then "i like all of these 1 - 5"). Mockups https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct (ideas 1–5; all five chosen). | **Five things to play with, on top of D85:** (1) **Rate the stack** replaces the slider: drag or flick five made-up cards, the score following the card, then your own top shelf; Fire and Mids buttons too. (2) **Make it yours:** the app's fifteen Looks as swatches to swipe; the page's lights change to the one picked, and a little phone shows it. (3) **The phone you can pick up:** the hero's phone turns with a finger and springs back. (4) **The scroll story** replaces D85's grouped panel: the phone held beside the four features, showing each as you reach it. (5) **The install sheet:** "Put it on my iPhone" slides up a sheet with the three steps; the full steps and video stay below. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere and nothing is kept. See §4 *New things on the website*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1329,6 +1330,40 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
     down; axe waits for everything to arrive (`arrived`: a half-faded chip read as faint words).
   - *Couldn't check here*: the press feel, the blur and the Sign up swap on a real iPhone; Reduce Transparency and
     Increase Contrast in Safari.
+- **New things on the website (D86, 0.75.0).** Five things to play with, each built from an idea in the
+  `apple-design` skill, on top of D85. Shared helpers in `site.js`: `spring` (Apple's damping + response; starts from
+  the current value and speed, so anything can be grabbed mid-move; Reduce Motion jumps to the end), `project` (where
+  a flick comes to rest, Apple's formula), `rubber` (resistance past an edge), `tracker` (speed from the last 100ms).
+  *The phone you can pick up:* drag the hero's `.mini` sideways and it turns 1:1 (4px a degree, `--ty`; the mouse also
+  tilts it, `--tx`), the glare (`.mini::after`) following; past 28° it resists (`rubber`); let go and it springs back
+  with the finger's speed (a little overshoot only after a flick). An 8px sideways start before it takes the finger,
+  so a scroll stays a scroll (`touch-action: pan-y`). *The scroll story* (replaces D85's grouped panel): `.feats.story`,
+  the four features in the left column, a phone (`.pin`, sticky) on the right showing Leaderboard, Log, a brand page or
+  the Feed (`.s.on`, sharpening in) for whichever feature crosses the middle of the screen (`data-on`); back up plays
+  it in reverse; the words never pass behind it; at 320px the phone is smaller (`zoom`). *Make it yours:* a new
+  section after it: the app's fifteen Looks (names and descriptions from `LOOKS` in `shared/domain/gems.ts`) as a row
+  of swatches (`.lk`, `aria-pressed`) that snaps to the nearest; a tap or swipe sets the page's lights (`--lt1`–`--lt3`
+  on `<html>`, 1.4s colour change) and a little phone (`.pmini`); a light Look shows only on the little phone (the page
+  stays dark, no flash of white); not remembered. *Rate the stack* (replaces D85's slider): five made-up cards; drag
+  the top one and its score follows (`5.5 ± 4.5` across half its width), taking the holo colours from 8 (D48) or the
+  heat below (D30), with a Fire or Mids stamp; let go short and it springs back; thrown (projected past 35% of its
+  width) it flies off at the finger's speed, scored where it was let go plus a little for the throw; **Fire** (9.3)
+  and **Mids** (3.1) buttons do the same; each rating is read out (`#rate-now`, `aria-live`); after five, **Your top
+  shelf** (sorted, in the app's colours) and **Rate them again**. *The install sheet:* "Put it on my iPhone" (still a
+  link to `#install` without the script) slides up a glass sheet (`role="dialog"`, `aria-modal`) with the three steps
+  to swipe (`.pages`, dots), over a dimmed page made `inert`; drag it 1:1 (resisting above the top), a flick down,
+  Done, Escape or a tap outside closes it and gives the focus back; "The video and the full steps" closes it and goes
+  to them. Website only; nothing new loads from elsewhere; no data is kept.
+  - *Tests* (`website.spec.ts`): Rate the stack by the buttons (scores, order, colours, read-out words, axe,
+    readability, again) and by dragging (follows the finger, 9.1 and holo at 40%, springs back, thrown left is mids);
+    Make it yours (tap, swipe to the end, the lights and the little phone, the page stays dark, axe, the names
+    readable); **every word readable over the lights of all fifteen Looks** (three depths, three moments); the scroll
+    story (each screen in turn and back, the phone held still, the words beside it); the phone turning (20° for 80px,
+    resisting past 28°, back to 0); the sheet (opens, inert page, focus, axe, readable, swipe, Done, Escape, flick
+    down, the full steps). Changed: the video is scrolled to (the link opens the sheet now); both Safari drawings show
+    the real address; the slider's tests are gone.
+  - *Couldn't check here*: how the drags, flicks and springs feel under a finger on a real iPhone, and Safari's
+    momentum on the Looks row and the sheet's steps.
 - **The new look (D64, 0.54.0).** *Tokens:* the top of `client/src/styles.css` is Aurora Glass (the website's
   `site.css` colours): `--bg` #03070a, `--glass` (white 5%) and `--glass-edge` (white 13%) for cards (`--card-bg` is
   `--glass`), `--surface-1`/`--surface-3` stay solid for what must hide what's behind (sheets, toasts, the country
@@ -1845,6 +1880,11 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.75.0 — new things on the website (owner request, D86)
+- Rate the stack (flick five made-up cards, then your top shelf), Make it yours (the fifteen Looks change the page's
+  lights), a hero phone you can pick up and turn, the scroll story (the phone shows each feature as you reach it), and
+  "Put it on my iPhone" as a sheet. Replaces D85's slider and grouped panel. Website only; the app is unchanged.
 
 ### 0.74.0 — the website, polished in Apple's style (owner request, D85)
 - From a review against the new `apple-design` skill. Buttons press in as soon as they're touched; the phone, chips,
