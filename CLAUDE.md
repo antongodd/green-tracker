@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D86 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D87 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -144,7 +144,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D87) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D88) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -168,7 +168,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D86.
+- Reopen any decision D1–D87.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -204,14 +204,14 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
   `none`). Set an account's preset in a test with `PUT /api/appearance`. A new account starts on **Gems** and the **Slim
-  strip** since D71 (Aurora and the glass hero before): a test that names another set's colours or reads the hero
-  sets it first. Ten sets since D69; a set's effect (sun, plankton,
+  strip** (Compact since D87) since D71 (Aurora and the glass hero before): a test that names another set's colours or
+  reads another top sets it first. Ten sets since D69; a set's effect (sun, plankton,
   sparks, stars, grid; Metals' glints) comes from `bandEffect` and is drawn by `Effects` (`span.tfx`, never `.fx`: that's
   the currency tag), always clear of text: `appearance.spec.ts` checks no dot overlaps a row's text.
 - The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
-  `html[data-look=…]`). The stats at the top follow the account's `top` (glass hero, tiles, strip): every stat is a
-  `.tile` with `b` and `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with
-  `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
+  `html[data-look=…]`). The stats at the top follow the account's `top` (D87: `strip` Compact `.banner.strip`, `tiles`
+  Summary `.banner.summary`, `hero` Showcase: the Compact line plus `.board-showcase`): every stat is a `.tile` with `b` and
+  `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
   `holdLights` (`aurora.spec.ts`) before comparing two photos. All four looks (D65) can be saved; choose one in a test
   with `PUT /api/appearance`. The phone remembers the look in `localStorage['gt.look']` (`client/public/look.js`), so a
   test that changes it should put Aurora back at the end. Readability over a busy screen: measure only text below the
@@ -345,6 +345,15 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   never saves again, as saving it drops them). Report: a friend's post now has a ⋯ (`Actions for @x’s post`), and
   a person's page has a ⋯ even when followed (`Actions for @x`), so a test that counts ⋯ buttons or reads the header
   meets them. The pages over sign-up are dialogs, not a `<main>` (axe `landmark-no-duplicate-main`).
+- The Apple-style base (D87): the styles are one block in `styles.css` ("The Apple-style base", just before the light
+  tone; the Feed's and editors' bits at the very end). Fonts are Apple's (`-apple-system`, `ui-rounded`): Chromium
+  draws a stand-in, so a test checks the family named, never how it looks. The main screens' `h1` is `LargeTitle`
+  (`.ltitle`, inside `<main>`: outside it axe finds `region`); `.hdr.top` while scrolled under 36px. Settings has no tab:
+  your photo `.me-btn` ("Settings (@name)") is only on the four main tabs, so from anywhere else `goto('/more')` or
+  Back. Never give a card `backdrop-filter`: anything `position: fixed` inside it (the avatar cropper, a sheet) is then
+  placed in the card. Rows are 10px apart. A product page's actions are `.acts` (`Private` switch, Post, Return to
+  Log, Archive); Edit is only in the header. Press feedback presses in (`.is-pressed` scale 0.97; list rows light up
+  grey) in place of D20's lift. `textBoxes` reads a mixed colour (`color(srgb …)`, from `color-mix`) as rgba.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -358,8 +367,8 @@ small notes-only one. The "Green Tracker to-do list" conversation answers Anton'
 section, so it must always be current.
 
 - **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
-- **Dev:** 0.75.0 (2026-11-04): the website polished in Apple's style and five new things on it (to-do item 15),
-  waiting for Anton's "go live".
+- **Dev:** 0.76.0 (2026-11-04): the website polished in Apple's style and five new things on it (to-do item 15, 0.74.0–
+  0.75.0), and the app's Apple-style redesign, stage A (to-do item 16, 0.76.0); both waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -400,7 +409,21 @@ Each is a job for its own conversation; the summary lists what each covers.
    Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga. Then Anton asked for more imagination: **on dev** in
    0.75.0 (2026-11-04), D86, all five of https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct: Rate the stack, Make it
    yours (the Looks), the phone you can pick up, the scroll story, the install sheet. Waiting for "go live". Next: the
-   same on the app.
+   same on the app (item 16).
+16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
+   a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
+   each with its own mockups:
+   - **Stage A, the base design:** **on dev** in 0.76.0 (2026-11-04). Apple's fonts, large titles, the floating tab
+     bar, Settings from your photo, calm cards, the three new tops (Compact for new accounts), the product page's
+     actions, springy sheets. Waiting for "go live".
+   - **Stage B, the Looks:** Anton's favourites (Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea,
+     Frost, Fireflies, Lava Lamp, Neon Night, Outrun) refreshed with smooth, detailed moving backgrounds (battery is no
+     concern); Holo Pearl and Haze go (their users move to the default); light mode as one or two really good looks
+     instead of three (Anton doesn't use it). Next: mockups.
+   - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
+     without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
+     Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora.
+   - The website: its own job (item 15).
 
 ### Done (newest first)
 

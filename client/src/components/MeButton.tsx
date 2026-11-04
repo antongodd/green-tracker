@@ -4,8 +4,9 @@ import { linkTo } from '../router';
 import { useSession } from '../session';
 import { Avatar } from './Avatar';
 
-// You, in the top-right corner of the four main tabs (D25): your profile photo, or
-// your letter until you add one. Tapping it opens People with your card.
+// You, in the top-right corner of the main screens (D25): your profile photo, or your letter until
+// you add one. Since D87 it opens Settings (as the App Store's photo does); your profile card is at
+// the top of Settings.
 
 /**
  * Your thumbnail, fetched once per version and kept on the device as a blob URL,
@@ -43,23 +44,12 @@ export function useOwnThumb(version: string | undefined): string | undefined {
   return src;
 }
 
-/** `onHere` replaces the navigation on People itself (back to the top, search cleared). */
-export function MeButton(p: { onHere?: () => void }) {
+export function MeButton() {
   const { me } = useSession();
   const src = useOwnThumb(me.user?.photo?.version);
   if (!me.user) return null;
-  const go = linkTo('/people');
   return (
-    <a
-      class="hbtn me-btn"
-      href="/people"
-      aria-label={`Your profile (@${me.user.username})`}
-      onClick={(e) => {
-        if (!p.onHere) return go(e);
-        e.preventDefault();
-        p.onHere();
-      }}
-    >
+    <a class="hbtn me-btn" href="/more" aria-label={`Settings (@${me.user.username})`} onClick={linkTo('/more')}>
       <Avatar username={me.user.username} src={src} size="hd" />
     </a>
   );

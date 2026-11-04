@@ -22,8 +22,8 @@ self.addEventListener('install', (event) => {
       const html = await page.clone().text();
       const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);
       await cache.put('/', page);
-      // The fonts (D64, D65) are in /fonts/, not /assets/, and look.js (D65) is at the top: listed here so they're there offline too.
-      await cache.addAll([...new Set(assets), '/manifest.webmanifest', '/icons/icon-192.png', '/fonts/unbounded.woff2', '/fonts/manrope.woff2', '/fonts/sora.woff2', '/look.js']);
+      // look.js (D65) is at the top, not in /assets/: listed here so it's there offline too. (No fonts since D87: Apple's own.)
+      await cache.addAll([...new Set(assets), '/manifest.webmanifest', '/icons/icon-192.png', '/look.js']);
       await self.skipWaiting();
     })(),
   );
@@ -74,12 +74,6 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => caches.match('/').then((hit) => hit || Response.error())),
     );
-    return;
-  }
-
-  // The fonts (D64) never change at the same address: cache first, like the build files.
-  if (url.pathname.startsWith('/fonts/')) {
-    event.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
     return;
   }
 

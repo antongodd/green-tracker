@@ -207,7 +207,7 @@ test('within a visit People remembers your last list; a relaunch opens on Follow
   await owner.goto('/people');
   await owner.getByRole('tab', { name: /Requests/ }).click();
   await expect(owner.locator('.prow', { hasText: 'sid' })).toBeVisible(); // the stranger's request, with their letter
-  await owner.getByRole('link', { name: 'Settings', exact: true }).click();
+  await owner.getByRole('link', { name: 'Back' }).click(); // leave People without a reload (no photo button there since D87)
   await owner.getByRole('link', { name: /^Feed/ }).click();
   await owner.getByRole('link', { name: /^People/ }).click();
   await expect(owner.getByRole('tab', { name: /Requests/ })).toHaveAttribute('aria-selected', 'true');

@@ -146,10 +146,12 @@ export function Score(p: { value: number | null; label?: string; text?: string }
       </div>
     );
   }
+  // D87: Overall, the usual ranking, isn't written under every score (still read out by VoiceOver).
+  const label = p.label ?? 'Overall';
   return (
     <div class="score">
       <b>{p.text ?? formatScore(p.value)}</b>
-      <span class="cap">{p.label ?? 'Overall'}</span>
+      <span class={label === 'Overall' ? 'cap visually-hidden' : 'cap'}>{label}</span>
     </div>
   );
 }

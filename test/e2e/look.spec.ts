@@ -29,48 +29,41 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.context().close());
 
-test('a new account starts on Aurora Glass, the slim strip and Gems (D71); the glass hero shows the average big', async () => {
+test('a new account starts on Aurora Glass, Compact (the slim strip) and Gems (D71); Showcase and Summary (D87)', async () => {
   expect(await saved()).toEqual({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
   await page.goto('/');
   await expect(page.locator('.rows .row')).toHaveCount(12);
   await expect(page.locator('html')).toHaveAttribute('data-look', 'aurora');
   await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-gems\b/);
   await expect(page.locator('.banner.strip .tile')).toHaveCount(3);
-  // The rest of this file starts from D64's glass hero and Aurora colours.
+  await expect(page.locator('.board-showcase')).toHaveCount(0);
+  // The rest of this file starts from Showcase (the glass hero's saved name) and Aurora colours.
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
   await page.goto('/');
   await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-aurora\b/);
-  // The glass hero: the average big, products and total beside it, your #1 underneath.
-  const hero = page.locator('.banner.hero');
-  await expect(hero.locator('.tile.lead b')).toHaveText('9.5');
-  await expect(hero.locator('.tile:not(.lead) b')).toHaveText(['12', '999.5g']);
-  await expect(hero.locator('.foot')).toHaveText('Your #1 · Glass Kush 1');
-  await shot(page, '640-glass-hero');
-  // D71: it glows with the look, never the product page's dark fade (that made it plain black on the owner's
-  // iPhone): no fade over it, and the corner inside its edge is lit by the look's green, not near-black.
-  expect(await hero.evaluate((e) => getComputedStyle(e, '::before').content)).toBe('none');
-  const box = (await hero.boundingBox())!;
-  const png = Buffer.from(await page.screenshot({ clip: { x: box.x + 3, y: box.y + 3, width: 8, height: 8 }, animations: 'disabled' })).toString('base64');
-  const corner = await page.evaluate(async (png) => {
-    const img = new Image();
-    img.src = `data:image/png;base64,${png}`;
-    await img.decode();
-    const c = document.createElement('canvas');
-    [c.width, c.height] = [img.width, img.height];
-    const x = c.getContext('2d')!;
-    x.drawImage(img, 0, 0);
-    const d = x.getImageData(0, 0, c.width, c.height).data;
-    const sum = [0, 0, 0];
-    for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) sum[k]! += d[i + k]!;
-    return sum.map((v) => v / (d.length / 4));
-  }, png);
-  expect(corner[1]! - 7, `the hero's corner ${corner}`).toBeGreaterThan(15); // --bg is rgb(3, 7, 10)
+  // Showcase: the Compact line, then your top three as photo cards, #1 first.
+  await expect(page.locator('.banner.strip .tile b')).toHaveText(['12', '9.5', '999.5g']);
+  await expect(page.locator('.board-showcase .sc-card')).toHaveCount(3);
+  await expect(page.locator('.board-showcase .sc-pos')).toHaveText(['#1', '#2', '#3']);
+  await expect(page.locator('.board-showcase .sc-n').first()).toHaveText('Glass Kush 1');
+  await shot(page, '640-showcase');
+  // Summary: the average big, products and total beside it, the spread of scores, your #1 underneath; on glass.
+  expect(await put({ look: 'aurora', top: 'tiles', preset: 'aurora', markFirst: true })).toBe(200);
+  await page.goto('/');
+  const summary = page.locator('.banner.summary');
+  await expect(summary.locator('.tile.lead b')).toHaveText('9.5');
+  await expect(summary.locator('.tile:not(.lead) b')).toHaveText(['12', '999.5g']);
+  await expect(summary.locator('.spread-bar i').first()).toBeVisible();
+  await expect(summary.locator('.foot')).toHaveText('Your #1 · Glass Kush 1');
+  expect(await expectStatsFit(page)).toBe('tiles');
+  await shot(page, '640-summary');
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
 test('Settings shows the look, the top and the colours, each opening its own page (D71) where it is chosen and saved at once', async () => {
   await page.goto('/more');
   await expect(page.getByRole('link', { name: /^Look/ })).toContainText('Aurora Glass');
-  await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Glass hero');
+  await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Showcase');
   await expect(page.getByRole('link', { name: /Leaderboard colours/ })).toContainText('Aurora');
   await page.getByRole('link', { name: /^Look/ }).click();
   await expect(page).toHaveURL(/\/more\/look$/);
@@ -94,17 +87,17 @@ test('Settings shows the look, the top and the colours, each opening its own pag
   await expect(page).toHaveURL(/\/more\/top$/);
   await expect(page.locator('.hdr .title')).toHaveText('Leaderboard top');
   // The tops, the default first (D71), with the preview; nothing else.
-  await expect(page.locator('.tops .ap-name')).toHaveText(['Slim strip', 'Glass hero', 'Three tiles']);
-  await expect(page.getByRole('radio', { name: /Glass hero/ })).toBeChecked();
+  await expect(page.locator('.tops .ap-name')).toHaveText(['Compact', 'Showcase', 'Summary']);
+  await expect(page.getByRole('radio', { name: /Showcase/ })).toBeChecked();
   await expect(page.locator('input[name="look"], input[name="preset"]')).toHaveCount(0);
   await shot(page, '641-appearance-top');
   expect(await axe()).toEqual([]);
 
-  // Three tiles: the preview changes at once, it's saved, and the Leaderboard follows.
-  await page.getByRole('radio', { name: /Three tiles/ }).check();
-  await expect(page.locator('.ap-preview .tiles .tile')).toHaveCount(3);
+  // Summary: the preview changes at once, it's saved, and the Leaderboard follows.
+  await page.getByRole('radio', { name: /Summary/ }).check();
+  await expect(page.locator('.ap-preview .banner.summary .tile')).toHaveCount(3);
   await expect.poll(saved).toEqual({ look: 'aurora', top: 'tiles', preset: 'aurora', markFirst: true });
-  await page.getByRole('radio', { name: /Slim strip/ }).check();
+  await page.getByRole('radio', { name: /Compact/ }).check();
   await expect(page.locator('.ap-preview .banner.strip .tile')).toHaveCount(3);
   await expect.poll(saved).toEqual({ look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true });
   await page.goto('/more/colours');
@@ -116,7 +109,7 @@ test('Settings shows the look, the top and the colours, each opening its own pag
   await expect(page.locator('.banner.strip .tile')).toHaveCount(3);
   await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-neon\b/);
   await page.goto('/more');
-  await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Slim strip');
+  await expect(page.getByRole('link', { name: /Leaderboard top/ })).toContainText('Compact');
   await expect(page.getByRole('link', { name: /Leaderboard colours/ })).toContainText('Neon');
   // The one Appearance page's old address opens Settings.
   await page.goto('/more/appearance');
@@ -130,7 +123,7 @@ test('the Rank, colours and Type buttons stay above the top, whichever top, on t
     expect(await put({ look: 'aurora', top, preset: 'aurora', markFirst: true })).toBe(200);
     for (const path of ['/', '/log']) {
       await page.goto(path);
-      const stats = page.locator(top === 'tiles' ? '.tiles' : '.banner');
+      const stats = page.locator('.banner');
       await expect(stats).toBeVisible();
       // 0.63.3: measured mid-way through the page's slide-in (6px), the two boxes, read one after the other, were
       // caught at different moments and the buttons seemed to overlap the top by 5px (CI). Wait for it to finish.
@@ -142,21 +135,23 @@ test('the Rank, colours and Type buttons stay above the top, whichever top, on t
   expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
-test('the Log, a name’s page and the Leaderboard follow your top; the Log’s hero names where most came from', async () => {
-  await page.goto('/log');
-  const hero = page.locator('.banner.hero');
-  await expect(hero.locator('.tile.lead b')).toHaveText('12');
-  await expect(hero.locator('.tile:not(.lead) b')).toHaveText(['2', '999.5g']);
-  await expect(hero.locator('.foot')).toHaveText('Most from · 🇳🇱 Netherlands7');
-  await page.goto('/brands/Mediterrane');
-  await expect(page.locator('.banner.hero .tile.lead b')).toHaveText('9.5');
-  await expect(page.locator('.banner.hero .tile .cap')).toHaveText(['Products', 'Average', 'Spent']);
+test('the Log, a name’s page and the Leaderboard follow your top; the Log’s Summary names where most came from', async () => {
   expect(await put({ look: 'aurora', top: 'tiles', preset: 'aurora', markFirst: true })).toBe(200);
+  await page.goto('/log');
+  const summary = page.locator('.banner.summary');
+  await expect(summary.locator('.tile.lead b')).toHaveText('12');
+  await expect(summary.locator('.tile:not(.lead) b')).toHaveText(['2', '999.5g']);
+  await expect(summary.locator('.foot')).toHaveText('Most from · 🇳🇱 Netherlands7');
+  await page.goto('/brands/Mediterrane');
+  await expect(page.locator('.banner.summary .tile.lead b')).toHaveText('9.5');
+  await expect(page.locator('.banner.summary .tile .cap')).toHaveText(['Products', 'Average', 'Spent']);
+  // Showcase: the Leaderboard has its cards; the Log and a name's page, with no top three of their own, the line.
+  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
   for (const path of ['/', '/log', '/brands/Mediterrane']) {
     await page.goto(path);
-    await expect(page.locator('.tiles .tile'), path).toHaveCount(3);
+    await expect(page.locator('.banner.strip .tile'), path).toHaveCount(3);
+    await expect(page.locator('.board-showcase'), path).toHaveCount(path === '/' ? 1 : 0);
   }
-  expect(await put({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
 });
 
 test('every top fits, numbers and words inside their boxes, at 375 and 390 wide', async () => {
@@ -168,7 +163,8 @@ test('every top fits, numbers and words inside their boxes, at 375 and 390 wide'
       for (const path of ['/', '/log', '/brands/Mediterrane']) {
         await page.goto(path);
         await expect(page.locator('.tile').first()).toBeVisible();
-        expect(await expectStatsFit(page), `${top} ${width} ${path}`).toBe(top);
+        // D87: Showcase's cards are the Leaderboard's own; elsewhere it's the Compact line.
+        expect(await expectStatsFit(page), `${top} ${width} ${path}`).toBe(top === 'hero' && path !== '/' ? 'strip' : top);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${top} ${width} ${path}: nothing spills sideways`).toBe(true);
       }
     }
@@ -223,9 +219,10 @@ test('quick taps in Appearance: each choice stays chosen, and the last one is wh
 
 // D65 (0.55.0): the other three looks.
 const LOOKS = [
-  { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a', display: /^Unbounded/ },
-  { look: 'pearl', name: 'Holo Pearl', bg: 'rgb(8, 8, 12)', hex: '#08080c', display: /^Sora/ },
-  { look: 'forest', name: 'Deep Forest', bg: 'rgb(5, 8, 7)', hex: '#050807', display: /^Manrope/ },
+  // D87: every look in Apple's own fonts (D65 gave these three their own titles before).
+  { look: 'neon', name: 'Neon Night', bg: 'rgb(6, 4, 26)', hex: '#06041a', display: /^-apple-system/ },
+  { look: 'pearl', name: 'Holo Pearl', bg: 'rgb(8, 8, 12)', hex: '#08080c', display: /^-apple-system/ },
+  { look: 'forest', name: 'Deep Forest', bg: 'rgb(5, 8, 7)', hex: '#050807', display: /^-apple-system/ },
 ] as const;
 
 test('choosing a look in Appearance changes the whole app at once, its title font and the Home Screen bar, and saves it', async () => {
@@ -237,10 +234,10 @@ test('choosing a look in Appearance changes the whole app at once, its title fon
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), l.look).toBe(l.bg);
     expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe(l.hex);
     expect(await page.locator('.hdr .title').evaluate((e) => getComputedStyle(e).fontFamily), l.look).toMatch(l.display);
-    // Numbers stay Unbounded in every look.
+    // Numbers stay SF Pro Rounded in every look (D87).
     await page.goto('/');
-    await expect(page.locator('.banner.hero .tile.lead b')).toHaveText('9.5');
-    expect(await page.locator('.banner.hero .tile.lead b').evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/^Unbounded/);
+    await expect(page.locator('.banner.strip .tile', { hasText: 'average' }).locator('b')).toHaveText('9.5');
+    expect(await page.locator('.banner.strip .tile b').first().evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/^ui-rounded/);
     await page.goto('/more');
     await expect(page.getByRole('link', { name: /^Look/ })).toContainText(l.name);
     await shot(page, `642-look-${l.look}`);

@@ -158,6 +158,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D84 | **Trust basics for strangers** (2026-11-03; review panel job 7, `reviews/2026-11-03/sceptical-investor.md` findings 1, 3, 13, 14, `marketing-pro.md` finding 3 and Part 2 finding 5). Mockups https://claude.ai/artifact/4AM8rxjyHwrQvuSQxxVMZQ; the owner's answers: "all ur recomdnations", then "your picks - go ahead". **Reopens D63** (the website's "no age or legal note") with his OK. | **18+:** sign-up has an "I'm 18 or over and I agree to the house rules" tick on its first step (Continue waits for it; the server refuses a sign-up without it); an account from before is asked once ("One quick thing"), before anything else, with Sign out the only other way on (`users.adult_at`). **A privacy page and house rules** (Settings › About › Privacy, House rules, Contact; also opened over sign-up and the once screen): what's kept (the email, the password only as a hash, Face ID's key, what you add, a scrambled address and a code per phone against break-ins), where (Cloudflare: details in Western Europe, photos in North America, checked 2026-11-03; Cloudflare's logs up to 7 days), who sees what (you; followers per What followers see; anyone: your @name, and your profile photo to people you follow or ask to follow; Anton, to fix problems and deal with reports), that sign-up shows an email is taken, reports, Export and Delete (backups keep a copy up to 30 days, D1 Time Travel), 18+, the contact address. Five house rules: 18+, no selling or supplying, no personal details, no faces without a yes, be decent. **Report** on someone else's post (a ⋯ on it now), comment (the comment's ⋯) and profile (the ⋯ with Block): a reason in one tap (six); the post or comment is hidden for you at once ("You reported this … Show it"); for a person, "Also block" starts ticked. Only what you can see can be reported (D77's rule, the same 404). Nobody is told. Anton reads them with the `green-tracker-reports` recipe (read only; removes a post or comment only on his "yes"). **A photo limit:** 3,000 an account (product, Log and post photos), checked by the database on every Save (triggers) and before an upload; the editors warn from 2,900. **The website:** "18+" in the top line, an adults-only line and the contact address in the footer. A database change (0021: `users.adult_at`, `reports`, two triggers). See §4 *Trust basics*. |
 | D85 | **The website, polished in Apple's style** (2026-11-03; the owner: "run a overhaul review on our website, using the apple design skill. tell me some thigns you would change, make mockups - then execute"; a test of the new `apple-design` skill before using it on the app). Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga (Now, A recommended, B); built as A. | **Same words, colours, lights and steps; it now feels like an iPhone page:** buttons press in the moment they're touched; things move once when they arrive and then hold still (only the lights, slower, and the holo colours keep moving); the top bar gets its edge only once the page scrolls under it, and offers a green **Sign up** once the hero's buttons have gone; the four features as one grouped panel; card titles in the body font; an iPhone-style slider with marks where the colours change and a small pop when the row earns new ones; solid glass with Reduce Transparency and plainer cards with Increase Contrast. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *Website polish, Apple-style*. |
 | D86 | **New things on the website** (2026-11-04; the owner: "be more imaginative with this skill … add new things to the website, new well designed features", then "i like all of these 1 - 5"). Mockups https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct (ideas 1–5; all five chosen). | **Five things to play with, on top of D85:** (1) **Rate the stack** replaces the slider: drag or flick five made-up cards, the score following the card, then your own top shelf; Fire and Mids buttons too. (2) **Make it yours:** the app's fifteen Looks as swatches to swipe; the page's lights change to the one picked, and a little phone shows it. (3) **The phone you can pick up:** the hero's phone turns with a finger and springs back. (4) **The scroll story** replaces D85's grouped panel: the phone held beside the four features, showing each as you reach it. (5) **The install sheet:** "Put it on my iPhone" slides up a sheet with the three steps; the full steps and video stay below. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere and nothing is kept. See §4 *New things on the website*. |
+| D87 | **The Apple-style redesign, stage A: the base design** (2026-11-04; the owner: "a full overhaul… it just looks like a vibe coded app — i want it to look like a real developed apple app… like the photos app", "go as far as you need", with the `apple-design` skill; a review of every screen against it, then mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8). The owner's picks: Leaderboard **B, calm cards** (of A grouped list, B, C photo grid; no List/Grid switch); the three new tops, **Compact** for new accounts; fonts **B**, Apple's SF Pro for words and SF Pro Rounded for scores (of SF only, SF + Rounded, New York + SF, SF + Unbounded); Settings moves to your photo (top right) and + sits beside the tab bar ("sure"). Also from the questions: every screen may be rearranged as long as every feature stays easy to find; Apple-clean structure and type, "the colour and fun living in the Looks, the Leaderboard colours and the animations"; sounds and ticks stay; battery is no concern (iPhone 17 Pro). Press feedback presses in (scale 0.97, list rows light up) in place of D20's lift, as in the mockups. Kept: D70 (a Look changes only colours and the background), every readability and accessibility test. Stages B (the Looks: Holo Pearl, Haze and two of the Daylights to go, the rest with smooth moving backgrounds) and C (the colour sets: Gems and Metals to go, Ember without its blue) follow, each with its own mockups. What changed is in §4 *The Apple-style base*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1874,12 +1875,51 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   3,000 are waiting; it replies `photoCount`. `PhotoRoom` in `EditorPhotos` and the Composer. *Test servers only:*
   `POST /api/test/not-adult { username }`, `POST /api/test/fill-photos { username, product, count }`. *Tests:*
   `test/api/trust.test.ts`, `test/domain/trust.test.ts`, `migrations.test.ts` (0021), `test/e2e/trust.spec.ts` (core).
+- **The Apple-style base (D87, 0.76.0).** *Fonts:* `--font` and `--display` are SF Pro (`-apple-system`), `--num-font`
+  SF Pro Rounded (`ui-rounded`); no font files any more (`client/public/fonts` gone, nothing preloaded or cached by
+  `sw.js`), and every look uses them (Neon Night, Holo Pearl and Deep Forest had their own titles, D65). *Large
+  titles:* `Header` `large` on the Leaderboard, Log, Sources, Feed and Settings, with `LargeTitle` first in their
+  `<main>` (an `h1`); the bar is clear at the top (`.hdr.top`, from `useAtTop`, under 36px of scroll) and turns to
+  glass with the small title fading in as you scroll. No leaf in the bar (`leaf` brings it back). *Tab bar:* four tabs
+  (Settings left it) in a floating glass bar off the screen's edges, the tab you're on on a soft pill; a screen's `.fab`
+  is a round glass button beside it (`body:has(.fab) .nav` makes room). `MeButton` opens Settings ("Settings
+  (@name)"); Settings' card at the top opens People at your card; People has no photo button. *Calm surfaces:* in the
+  D87 block of `styles.css` (before the light tone): cards without outlines (`.row`, `.sect`, `.list`, `.fgroup`,
+  `.lrows`, `.empty`, `.seg`, `.post`), bigger radii (`--r-card` 22, `--r-group` 18), no ALL-CAPITALS labels
+  (`.cap` and the rest in sentence case; `rankByCaption` gives "Overall", "Taste"…), Settings' grouped lists with
+  inset hairlines and solid coloured icon squares (`.li-ic`), capsule buttons. Cards have no backdrop blur: it makes
+  anything fixed inside them (the avatar cropper, a sheet) sit inside the card. *Rows:* 62px photos, the strain as a
+  coloured word (no chip), the score in SF Pro Rounded 28px with "Overall" only read out (`.cap.visually-hidden`); the
+  colour sets' cards are unchanged until stage C. *Tops* (the saved names kept, so nobody's choice moves):
+  `strip` **Compact**, one line under the large title (the default since D71); `tiles` **Summary**, one glass card
+  with the average big, the others beside it, a bar of how the scores spread over the colour set's bands (`Spread`)
+  and your #1; `hero` **Showcase**, the Compact line and your top three as swipeable photo cards (`Showcase`,
+  `components/BoardTop.tsx`); a screen with no showcase (the Log, a friend's board) shows the Compact line. The Rank / Type
+  pills stay above the top (D71). *Product page:* Edit only at the top; Private, Post, Return to Log and Archive one
+  grouped list (`.acts`), Archive in red; a taller photo, the name as a large title. *Feed:* posts without a card,
+  photos rounded and inset. *Motion:* press-in (`.is-pressed`, D20's timing) with a spring back (`--bounce`) on rows, buttons, the + and the
+  Showcase cards, list rows lighting up instead; sheets rise from the bottom edge with iOS's curve (`--spring`, still the `rise` animation that
+  `settled` waits for) over a fading scrim. *Tests:* `header.spec.ts` (the photo opens Settings, the large title
+  slides under the bar), `quality.spec.ts` (the Apple-style base on every main screen), `numbers.spec.ts` (Apple's
+  fonts, nothing downloaded), `expectStatsFit` (the three tops).
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.76.0 — the Apple-style redesign, stage A: the base design (D87)
+- Apple's own fonts: SF Pro for words, SF Pro Rounded for scores. No fonts downloaded.
+- Big titles on the left of the main screens that slide under the bar as you scroll.
+- A floating glass tab bar of four tabs, with + as its own round button beside it. Settings opens from your photo,
+  top right; your card at the top of Settings opens People.
+- Calm cards without outlines, no capital-letter labels, Settings with coloured icon squares like the iPhone's own.
+- Leaderboard rows with bigger photos and rounded scores, "Overall" no longer written under each.
+- Three new tops: Compact (the default), Summary (with a bar of how your scores spread) and Showcase (your top three
+  as big photos you swipe). Your saved choice moves to its new top.
+- The product page: Edit at the top only, and its actions as one tidy list.
+- Things press in when you touch them and spring back; sheets rise from the bottom like the iPhone's.
 
 ### 0.75.0 — new things on the website (owner request, D86)
 - Rate the stack (flick five made-up cards, then your top shelf), Make it yours (the fifteen Looks change the page's

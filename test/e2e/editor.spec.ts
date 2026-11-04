@@ -49,7 +49,7 @@ test('every section heading has its icon, in the product and Log editors', async
   const order = await page.locator('.editor > *').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? (e.querySelector('#name') ? 'Name' : e.querySelector('[role=switch]') ? 'Private' : e.tagName)));
   expect(order.filter((x) => x !== 'BUTTON')).toEqual(['Name', 'Photos', 'The product', 'Ratings', 'Purchases', 'Notes', 'Leafly', 'Private']);
   await expect(page.locator('.switch-row .gh-ic svg')).toHaveCount(1);
-  expect(await color('.gh > .cap')).toBe('rgb(111, 233, 164)');
+  expect(await color('.gh > .cap')).toBe('color(srgb 0.945098 0.964706 0.952941 / 0.82)'); // grey, sentence case since D87 (green before)
   await shot(page, '90-editor-top');
   await page.goto(`/log/${entryId}/edit`);
   await expect(page.getByLabel('Name')).toBeVisible();

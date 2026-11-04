@@ -101,13 +101,13 @@ test('every main screen passes WCAG 2.1 AA checks', async () => {
   expect(found, found.join('\n')).toEqual([]);
 });
 
-// The glass look (D64, 0.54.0; D18's green wash before): every card on every main screen is a
-// pane of glass with a light edge, section titles are green, the bars have light lines, and the
-// active tab glows with a green-to-teal line (D35; was its bubble). Coloured rows keep their own.
-test('every main screen has the glass look', async () => {
+// The Apple-style base (D87, 0.76.0; the glass look of D64 before): every card on every main screen is a pane of
+// glass with no outline, section titles are in sentence case (no spaced-out capitals), the header has no hard line,
+// the tab bar floats as a rounded glass bar off the screen's edges, and the tab you're on sits on a soft pill.
+// Coloured rows keep their own.
+test('every main screen has the Apple-style base', async () => {
   // Rows that glow by score (D30) have their own colour and edge, checked in heat.spec.ts.
   const cards = '.row:not(.tier):not([data-heat]), .lrows, .sect, .fgroup, .list, .empty, .seg';
-  // Enough rated products that the Leaderboard has rows below the podium.
   for (const name of ['Plain Row A', 'Plain Row B', 'Plain Row C']) await post('/api/products', { ...emptyProductInput(), name, strainType: 'indica', ratings: { look: 3, smell: 3, taste: 3, burn: 3, high: 3 } });
   const found: string[] = [];
   const screens = ['/', '/log', '/people', '/more', `/products/${productId}`, `/products/${productId}/edit`, `/log/${entryId}`, '/more/passkeys', '/more/archive'];
@@ -117,24 +117,27 @@ test('every main screen has the glass look', async () => {
     await expect(page.locator(cards).first()).toBeVisible();
     const bad = await page.evaluate((sel) => {
       const out: string[] = [];
-      const light = (c: string) => c.replace(/\s/g, '').startsWith('rgba(255,255,255,0.');
+      const clear = (c: string) => c.replace(/\s/g, '') === 'rgba(0,0,0,0)';
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         const cs = getComputedStyle(el);
-        if (!light(cs.borderTopColor) || cs.backgroundColor.replace(/\s/g, '') !== 'rgba(255,255,255,0.05)') out.push(`card .${el.className}: ${cs.borderTopColor} ${cs.backgroundColor}`);
+        const outline = parseFloat(cs.borderTopWidth) > 0 && !clear(cs.borderTopColor);
+        if (outline || cs.backgroundColor.replace(/\s/g, '') !== 'rgba(255,255,255,0.05)') out.push(`card .${el.className}: ${cs.borderTopWidth} ${cs.borderTopColor} ${cs.backgroundColor}`);
       });
-      document.querySelectorAll<HTMLElement>('.lh.cap:not(.dng), .fgroup > .cap, .gh > .cap, .sect > .cap, .group-h').forEach((el) => {
-        if (getComputedStyle(el).color !== 'rgb(111, 233, 164)') out.push(`title "${el.textContent}": ${getComputedStyle(el).color}`);
+      document.querySelectorAll<HTMLElement>('.cap, .lh, .group-h, .tag').forEach((el) => {
+        const cs = getComputedStyle(el);
+        if (cs.textTransform === 'uppercase' || parseFloat(cs.letterSpacing) > 0.5) out.push(`"${el.textContent}" in spaced capitals`);
       });
       const dng = document.querySelector('.lh.cap.dng');
       if (dng && getComputedStyle(dng).color !== 'rgb(255, 107, 107)') out.push('Danger zone title should stay red');
       const hdr = document.querySelector('.hdr');
-      if (hdr && !light(getComputedStyle(hdr).borderBottomColor)) out.push('header line');
-      const bar = document.querySelector('.nav, .savebar');
-      if (bar && !light(getComputedStyle(bar).borderTopColor)) out.push('bottom bar line');
+      if (hdr && parseFloat(getComputedStyle(hdr).borderBottomWidth) > 0) out.push('a hard line under the header');
+      const nav = document.querySelector<HTMLElement>('.nav');
+      if (nav) {
+        const r = nav.getBoundingClientRect();
+        if (parseFloat(getComputedStyle(nav).borderTopLeftRadius) < 28 || r.left < 8 || innerWidth - r.right < 8 || innerHeight - r.bottom < 8) out.push('the tab bar should float');
+      }
       const tab = document.querySelector('.tab[aria-current="page"]');
-      // D35 (0.28.0): the active tab glows, with a line under its name (was D18's bubble); green to teal since D64.
-      if (tab && !getComputedStyle(tab, '::after').backgroundImage.startsWith('linear-gradient(90deg, rgb(111, 233, 164), rgb(127, 227, 227))')) out.push('active tab line');
-      if (tab && !getComputedStyle(tab.querySelector('svg')!).filter.includes('drop-shadow')) out.push('active tab glow');
+      if (tab && clear(getComputedStyle(tab).backgroundColor)) out.push('the tab you’re on has no pill');
       return out;
     }, cards);
     found.push(...bad.map((b) => `${path}: ${b}`));

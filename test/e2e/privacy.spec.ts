@@ -112,7 +112,7 @@ test('Open their view: your own board and pages as followers get them', async ()
   await expect(owner).toHaveURL(new RegExp(`/more/privacy/preview/p/${kushId}$`));
   await expect(owner.getByRole('heading', { level: 1, name: 'Shared Kush' })).toBeVisible();
   await expect(owner.locator('main')).not.toContainText('Morocco');
-  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveText('Settings');
+  await expect(owner.locator('.nav .tab[aria-current="page"]')).toHaveCount(0); // Settings has no tab since D87
   expect(await axe(owner)).toEqual([]);
   await owner.goto('/more/privacy');
   await flip('Country', true);

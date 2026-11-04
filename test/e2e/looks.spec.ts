@@ -107,7 +107,7 @@ test('a look changes only colours and the background: every font, size and shape
     before[path] = await layout(PARTS);
     expect(before[path]!.length, path).toBeGreaterThan(5);
   }
-  expect(before['/']![0], 'titles in Unbounded').toMatch(/Unbounded/);
+  expect(before['/']![0], 'titles in SF Pro (D87)').toMatch(/apple-system/);
   for (const l of NEW) {
     expect(await put(l.look)).toBe(200);
     for (const path of ['/', '/log', '/more', '/more/look', '/more/top', '/more/colours']) {

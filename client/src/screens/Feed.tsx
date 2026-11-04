@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Post } from '../../../shared/domain/posts';
 import { errorText } from '../api';
-import { Header, TabBar } from '../components/chrome';
+import { Header, LargeTitle, TabBar } from '../components/chrome';
 import { EmptyCard } from '../components/EmptyCard';
 import { InviteButton } from '../components/InviteButton';
 import { MeButton } from '../components/MeButton';
@@ -198,8 +198,9 @@ export function Feed() {
 
   return (
     <>
-      <Header title="Feed" leaf={false} left={people} right={<MeButton />} />
+      <Header title="Feed" large left={people} right={<MeButton />} />
       <main class="screen has-fab feed">
+        <LargeTitle title="Feed" />
         {list.error && !list.page && (
           <div class="empty">
             <h2>Couldn’t load the Feed</h2>
