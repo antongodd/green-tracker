@@ -590,13 +590,16 @@ test('the overhaul: the new order, the privacy promises, the new app on the phon
   expect((await new AxeBuilder({ page }).include('.promises').include('.foot').analyze()).violations.map((v) => v.id)).toEqual([]);
 });
 
-test('with a mouse, buttons answer the pointer hovering over them', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+test('with a mouse, buttons answer the pointer hovering over them', async ({ browser }) => {
+  // A laptop with a mouse (the other tests' browser is a phone, which can't hover, so it rightly gets none).
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false })).newPage();
+  expect(await page.evaluate(() => matchMedia('(hover: hover)').matches)).toBe(true);
   await open(page);
   await arrived(page);
   const ghost = page.getByRole('link', { name: 'Put it on my iPhone' });
   const before = await ghost.evaluate((b) => getComputedStyle(b).backgroundColor);
   await ghost.hover();
   await expect.poll(() => ghost.evaluate((b) => getComputedStyle(b).backgroundColor)).not.toBe(before);
+  await page.context().close();
 });
 

@@ -331,6 +331,8 @@
  "website.spec.ts › the words match today’s app: an email and password, posts for approved friends, one time throughout": 1.9,
  "website.spec.ts › with Reduce Motion on, nothing moves": 1.6,
  "website.spec.ts › with Reduce Transparency, nothing is frosted; with Increase Contrast, the cards are solid": 4.7,
+ "website.spec.ts › the overhaul: the new order, the privacy promises, the new app on the phone, no emoji, a footer with ways on": 3.9,
+ "website.spec.ts › with a mouse, buttons answer the pointer hovering over them": 4.5,
  "welcome.spec.ts › everything fits without scrolling on an iPhone 13–16 (390×844)": 3.5,
  "welcome.spec.ts › everything fits without scrolling on an iPhone SE (375×667)": 3.6,
  "welcome.spec.ts › readable: headline, words and the example rows, through the shimmer": 21.4,
