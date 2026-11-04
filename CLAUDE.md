@@ -370,9 +370,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
-- **Dev:** 0.77.0 (2026-11-04): the website polished in Apple's style, five new things on it and Anton's own photos
-  (to-do item 15, 0.74.0–0.75.0, 0.77.0), and the app's Apple-style redesign, stage A (to-do item 16, 0.76.0); both waiting for Anton's "go live".
+- **Live:** 0.77.1 (2026-11-04): everything up to the website's overhaul so far (item 15) and the app's Apple-style
+  redesign, stage A (item 16).
+- **Dev:** 0.77.1, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -407,20 +407,16 @@ Each is a job for its own conversation; the summary lists what each covers.
 14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
    effective age assurance", so in law children can use the app; for now the children's access assessment finds
    they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
-15. **The website, polished in Apple's style** (big; Anton, 2026-11-03, a test of the `apple-design` skill before
-   using it on the app): **on dev** in 0.74.0 (2026-11-03), D85. Buttons press in at once, things move once, Sign up
-   in the top bar, the features in one panel, an iPhone-style slider, Reduce Transparency and Increase Contrast.
-   Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga. Then Anton asked for more imagination: **on dev** in
-   0.75.0 (2026-11-04), D86, all five of https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct: Rate the stack, Make it
-   yours (the Looks), the phone you can pick up, the scroll story, the install sheet. Then Anton's own photos and
-   strain names in place of the drawn nugs: **on dev** in 0.77.0 (2026-11-04), D88. Waiting for "go live". Next: the
-   same on the app (item 16).
+15. **The website, overhauled** (big; Anton, 2026-11-03/04, testing the design skills before using them on the app).
+   Live in 0.74.0–0.77.0 (see Done): Apple-style polish, five things to play with, Anton's own photos. **Next: the
+   full overhaul** from the ui-ux-pro-max review (2026-11-04): Anton chose Apple's fonts to match the app, no reviews
+   until there are real ones; the plan is the hero with the phone in view (redrawn as the new app), Rate the stack
+   earlier, a tighter story with drawn icons (no emoji), a "Your stash is your business" privacy block, one set of
+   install steps, a proper footer, a laptop pass with hover states. Next: iPhone mockups, then "go ahead".
 16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
-   - **Stage A, the base design:** **on dev** in 0.76.0 (2026-11-04). Apple's fonts, large titles, the floating tab
-     bar, Settings from your photo, calm cards, the three new tops (Compact for new accounts), the product page's
-     actions, springy sheets. Waiting for "go live".
+   - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
    - **Stage B, the Looks:** Anton's favourites (Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea,
      Frost, Fireflies, Lava Lamp, Neon Night, Outrun) refreshed with smooth, detailed moving backgrounds (battery is no
      concern); Holo Pearl and Haze go (their users move to the default); light mode as one or two really good looks
@@ -434,6 +430,10 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The website, Anton's photos: his own cut-outs, strain names and scores in place of the drawn nugs (sellers, prices and people made up) | 0.77.0 | D88 | 2026-11-04 | 2026-11-04 |
+| The app's Apple-style redesign, stage A: Apple's fonts, large titles, the floating tab bar with the + beside it, Settings from your photo, calm cards, three new Leaderboard tops (Compact, Summary, Showcase), the product page's actions as one list, press-in feedback, springy sheets; the tab bar's four tabs made exactly equal in 0.77.1 (the release run caught "Leaderboard" widening its tab on the CI fonts) (not yet tried on Anton's iPhone) | 0.76.0, 0.77.1 | D87 | 2026-11-04 | 2026-11-04 |
+| The website, five things to play with: Rate the stack, Make it yours (the fifteen Looks), the phone you can pick up, the scroll story, the install sheet (tried by Anton on the preview; drags and flicks not yet confirmed on his iPhone) | 0.75.0 | D86 | 2026-11-04 | 2026-11-04 |
+| The website, polished in Apple's style: press-in buttons, things move once, Sign up in the top bar, Reduce Transparency and Increase Contrast | 0.74.0 | D85 | 2026-11-03 | 2026-11-04 |
 | Ofcom paperwork: the illegal content risk assessment (drugs supply medium, everything else low or negligible) and the children's access assessment (children can get past the tick, but aren't likely to use it, so no children's risk assessment for now), in `design/ofcom/`, with what Anton must still do (sign, keep, review by 2027-11-03); two new to-do items (13, 14) | (notes) | | 2026-11-03 | notes only |
 | Trust basics for strangers: "I'm 18 or over" at sign-up (older accounts asked once), a privacy page and house rules under Settings › About with the contact address greentracker.help@gmail.com, Report on posts, comments and profiles (hidden for you at once; Anton reads them with the reports recipe), a 3,000-photo limit, Delete account mentions the 30-day backups, 18+ on the website; Anton ran the Ofcom and ICO checkers and set a Cloudflare billing alert (the tick, report sheets and VoiceOver not yet checked on Anton's iPhone) | 0.73.0, 0.73.1 | D84 | 2026-11-03 | 2026-11-03 |
 | An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |

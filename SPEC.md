@@ -1925,6 +1925,12 @@ None.
 
 ## 6. Changelog
 
+### Notes — the website's overhaul so far and the app's redesign, stage A, are live
+- 0.74.0–0.77.1 went live on 2026-11-04 (release 0.77.1): the website's Apple-style polish (D85), five things to play
+  with (D86), Anton's photos (D88), and the app's Apple-style redesign, stage A (D87). The first release run failed on
+  `tabbar.spec.ts` (the tabs' widths on the CI fonts), fixed in 0.77.1 (#192); the second passed with no flaky tests.
+  Notes only.
+
 ### 0.77.1 — the tab bar's four tabs exactly equal
 - The floating tab bar (D87) shared its width with a plain `1fr`, which lets a tab whose name is wider than its share
   grow: on the CI machines' fonts "Leaderboard" widened its tab by 2px (`tabbar.spec.ts` failed in the 0.77.0 release
