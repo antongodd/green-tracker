@@ -376,9 +376,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.77.1 (2026-11-04): everything up to the website's overhaul so far (item 15) and the app's Apple-style
+- **Live:** 0.78.0 (2026-11-04): everything up to the website's full overhaul (item 15) and the app's Apple-style
   redesign, stage A (item 16).
-- **Dev:** 0.78.0 (2026-11-04): the website's full overhaul (to-do item 15), waiting for Anton's "go live".
+- **Dev:** 0.78.0, the same as live.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -413,14 +413,8 @@ Each is a job for its own conversation; the summary lists what each covers.
 14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
    effective age assurance", so in law children can use the app; for now the children's access assessment finds
    they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
-15. **The website, overhauled** (big; Anton, 2026-11-03/04, testing the design skills before using them on the app).
-   Live in 0.74.0–0.77.0 (see Done): Apple-style polish, five things to play with, Anton's own photos. **Next: the
-   full overhaul** from the ui-ux-pro-max review (2026-11-04): Anton chose Apple's fonts to match the app, no reviews
-   until there are real ones; the plan is the hero with the phone in view (redrawn as the new app), Rate the stack
-   earlier, a tighter story with drawn icons (no emoji), a "Your stash is your business" privacy block, one set of
-   install steps, a proper footer, a laptop pass with hover states. Mockups
-   https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T, "go ahead" (2026-11-04): **on dev** in 0.78.0 (2026-11-04),
-   D89. Waiting for "go live".
+15. ~~The website, overhauled~~: live in 0.74.0–0.78.0 (see Done). Later if Anton wants: a privacy page anyone can
+   open (the app's is behind sign-in), and reviews once there are real ones.
 16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
@@ -438,6 +432,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The website's full overhaul (from the ui-ux-pro-max review): Apple's fonts like the app, the phone drawn as the new app and on the first screen, Rate the stack second, "Your stash is your business" (four promises true in the app), drawn icons instead of emoji, calm labels, a footer with Open the app, Create an account and Email us, hover for a mouse (tried by Anton on the preview: "i like it") | 0.78.0 | D89 | 2026-11-04 | 2026-11-04 |
 | `apple-design` moved from this repository to Anton's Claude account (Settings › Customize › Skills), so all his projects can use it | (notes) | | 2026-11-04 | notes only |
 | The website, Anton's photos: his own cut-outs, strain names and scores in place of the drawn nugs (sellers, prices and people made up) | 0.77.0 | D88 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage A: Apple's fonts, large titles, the floating tab bar with the + beside it, Settings from your photo, calm cards, three new Leaderboard tops (Compact, Summary, Showcase), the product page's actions as one list, press-in feedback, springy sheets; the tab bar's four tabs made exactly equal in 0.77.1 (the release run caught "Leaderboard" widening its tab on the CI fonts) (not yet tried on Anton's iPhone) | 0.76.0, 0.77.1 | D87 | 2026-11-04 | 2026-11-04 |

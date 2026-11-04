@@ -1949,6 +1949,11 @@ None.
 
 ## 6. Changelog
 
+### Notes — the website's full overhaul is live
+- 0.78.0 (on dev 2026-11-04) went live on 2026-11-04 (release 0.78.0) and moves to Done. The first release run
+  failed on `sliders.spec.ts` (measured during the editor's fade-in), fixed in tests only (#197); the second passed
+  with no flaky tests. Notes only.
+
 ### Tests — the rating slider measured once the editor has faded in
 - `sliders.spec.ts` › "the bar doesn't move or resize…" measured the bar while the editor was still fading in
   (`enter`), when it reads 28.00006px tall instead of 28, so it failed on a busy machine (0.78.0's release run). It
