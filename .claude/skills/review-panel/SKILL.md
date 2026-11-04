@@ -62,5 +62,6 @@ Check it yourself before passing it on: anything that's plainly wrong about the 
   `node .claude/review-panel/make-page.mjs reviews/<folder>/summary.md <scratchpad>/<name>.html "App Review Panel"`
   (it puts the sceptic's view in its own panel; title "Website Review Panel" for the website).
 - In chat: the "In a nutshell" and the suggested to-do list, in a few lines. The sceptic's view stays separate.
-- Ask which items go on the to-do list; add the ones he picks to CLAUDE.md's to-do list.
+- Ask which items go on the to-do list; add the ones he picks to GT Ideas (recipe **ideas**: `from: claude`, a `take`
+  each).
 - Commit the `reviews/` folder in the same pull request as any notes (into `dev`, as usual).

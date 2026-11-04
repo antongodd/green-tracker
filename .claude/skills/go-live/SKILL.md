@@ -1,6 +1,6 @@
 ---
 name: go-live
-description: Take what's on Green Tracker's dev site to the live site. Use when Anton says "go live", and at the end of every small change. A release pull request from dev to main, merged with a merge commit, the live site checked, then the item moved to Done.
+description: Take what's on Green Tracker's dev site to the live site. Use when Anton says "go live", and at the end of every small change. A release pull request from dev to main, merged with a merge commit, the live site checked, then the item moved to Done and to Live in GT Ideas.
 ---
 
 # Going live
@@ -12,7 +12,7 @@ change.
 
 1. Fetch `dev` and `main`. List what's on `dev` and not on `main`: `git log --oneline origin/main..origin/dev`.
 2. For each item there, check Anton has agreed to it going live: a small change always has; a big change only once
-   he's said "go live" (CLAUDE.md's to-do list shows it **on dev**, waiting). **If a big change is waiting for his
+   he's said "go live" (GT Ideas shows its idea **On GT Dev**, waiting). **If a big change is waiting for his
    "go live"**, don't release: tell him what's waiting and ask whether it can go too.
 3. If a release pull request is already open (another conversation), don't open a second: wait for it, or add to it
    only if it's yours.
@@ -32,14 +32,15 @@ change.
 ## 3. The notes
 
 A notes-only pull request into `dev` (it skips the tests, so merge it at once):
-- CLAUDE.md: the **Live** and **Dev** lines; move each item that went live from the to-do list to **Done**, with its
-  version, decision, on-dev date and live date.
+- CLAUDE.md: the **Live** and **Dev** lines; add each item that went live to **Done**, with its version, decision,
+  on-dev date and live date.
 - `SPEC.md` changelog: a `Notes — <what> is live` entry.
+
+GT Ideas (recipe **ideas**): each idea that went live to `status: live`, and a `changes` row for each item.
 
 Then restart your working branch from the latest `dev`.
 
 ## 4. Tell Anton
 
 It's live, with exact iPhone steps to see it in the live app (from the Home Screen; close and reopen it if the old
-version shows), what couldn't be checked on a real iPhone, any flaky test you'll fix next, and what's next on the
-to-do list.
+version shows), what couldn't be checked on a real iPhone, any flaky test you'll fix next, and what's next in GT Ideas.

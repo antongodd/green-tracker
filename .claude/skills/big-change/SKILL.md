@@ -10,6 +10,9 @@ stops where you **wait for Anton**; everything else you do yourself.
 
 ## 1. Understand it
 
+0. If it's an idea in GT Ideas, mark it `talking` with its Job number (recipe **ideas**); if it isn't there, add it
+   first. Put your plan's questions in its `take` too, so Anton sees them on his phone.
+
 1. Read the decisions it touches in `SPEC.md` (table and §4), and any brief in `design/`. Never reopen a decision
    D1–D76 (or later) without asking.
 2. Ask the questions only Anton can answer, a few at a time, each with your recommendation. Explain knock-on effects
@@ -37,7 +40,8 @@ stops where you **wait for Anton**; everything else you do yourself.
    accessibility (never loosen those). A new browser spec joins the core set if a break would hurt data, privacy or the
    basics; refresh `test/e2e/timings.json` after adding a spec or a slow test.
 4. Notes in the same pull request: version (minor bump), `SPEC.md` decision row + §4 section + changelog entry,
-   CLAUDE.md (next decision number, new testing notes, the to-do item marked **on dev** with version and date).
+   CLAUDE.md (next decision number, new testing notes). In GT Ideas: `building` after "go ahead", then `dev` with the
+   version once it's merged.
 5. Local checks as in **small-change** step 1.5, plus `--repeat-each=3` for a new test that waits on an animation.
 
 ## 4. Onto GT Dev, then wait
