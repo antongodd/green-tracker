@@ -127,13 +127,13 @@
   // Swipe the row of Looks (it snaps to the nearest) or tap one: the page's lights slowly take its colours and the
   // little phone shows it. A light Look shows on the little phone only; the page stays dark (no flash of white).
   const LOOKS = {
-    aurora: ['#58e08c', '#40c4c4', '#8b7bff'], neon: ['#b06bff', '#ff5ab4', '#3fdcf0'], pearl: ['#ffb0cc', '#8fe0b0', '#8fcfff'],
+    aurora: ['#58e08c', '#40c4c4', '#8b7bff'], neon: ['#b06bff', '#ff5ab4', '#3fdcf0'],
     forest: ['#3fa866', '#2f8a5a', '#7fc896'], sakura: ['#f58cba', '#ff9fc8', '#b48cff'], fireflies: ['#b6e85a', '#2f9a72', '#d4f78a'],
     deepsea: ['#3fd6c4', '#2a7fd6', '#5fe0d0'], frost: ['#7cc8f0', '#9fd6ff', '#8ea8ff'], nebula: ['#a99bff', '#ff8ad8', '#5a7bff'],
-    outrun: ['#3fdcf0', '#ff4fd8', '#8b4fff'], lava: ['#ff9a40', '#ff5a6e', '#ffc04d'], haze: ['#8fd8ae', '#b8a8d8', '#c8b898'],
-    daymint: ['#5fcf94', '#7fd8c0', '#a8d8b8'], daypearl: ['#ffa8c8', '#a8d8ff', '#c8b8ff'], daysky: ['#6fb4f0', '#ffc080', '#8fc8ff'],
+    outrun: ['#3fdcf0', '#ff4fd8', '#8b4fff'], lava: ['#ff9a40', '#ff5a6e', '#ffc04d'],
+    daysky: ['#6fb4f0', '#ffc080', '#8fc8ff'],
   };
-  const LIGHT = { daymint: ['#eef4f0', '#ffffff', '#123322', '#1f8a52'], daypearl: ['#f5f4f8', '#ffffff', '#1c1a26', '#8a4fb0'], daysky: ['#eef3fa', '#ffffff', '#10223a', '#2a6fc0'] };
+  const LIGHT = { daysky: ['#eef3fa', '#ffffff', '#10223a', '#2a6fc0'] };
   const row = document.querySelector('.looks'), about = document.getElementById('look-about'), pmini = document.querySelector('.pmini');
   if (row && about) {
     const buttons = [...row.querySelectorAll('.lk')];
