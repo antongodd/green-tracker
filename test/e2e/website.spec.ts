@@ -428,7 +428,8 @@ test('every word is readable over the lights of every Look', async ({ page }) =>
       await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y);
       await page.waitForTimeout(600);
       const nav = await page.locator('.nav').evaluate((n) => n.getBoundingClientRect().bottom);
-      const boxes = (await textBoxes(page, WORDS)).filter((b) => b.y >= (y ? nav : 0) && b.y + b.h <= 844 && b.w > 1 && b.x >= 0 && b.x + b.w <= 390);
+      const shown = await page.locator('body').evaluate((body, sel) => [...body.querySelectorAll(sel)].map((e) => getComputedStyle(e).visibility === 'visible'), WORDS);
+      const boxes = (await textBoxes(page, WORDS)).filter((b, i) => shown[i] && b.y >= (y ? nav : 0) && b.y + b.h <= 844 && b.w > 1 && b.x >= 0 && b.x + b.w <= 390);
       failures.push(...(await contrastFailures(page, boxes, 3)).map((f) => `${look} at ${y}px: ${f}`));
     }
   }
