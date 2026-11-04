@@ -280,14 +280,6 @@ export function People() {
         title="People"
         leaf={false}
         left={<BackButton to="/feed" />}
-        right={
-          <MeButton
-            onHere={() => {
-              setQ('');
-              window.scrollTo(0, 0);
-            }}
-          />
-        }
       />
       <main class="screen">
         <div class="wrap" style={{ paddingTop: '12px' }}>

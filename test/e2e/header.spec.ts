@@ -2,14 +2,14 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { shot, signUp } from './helpers';
 
-// You in the header (D25): top right on the main tabs only (five: Sources and Settings since D61) — your photo, or your
-// letter until you add one. Tapping it opens People at your card.
+// You in the header (D25): top right on the main tabs only (four since D87: Settings left the tab bar) — your photo,
+// or your letter until you add one. Tapping it opens Settings (D87; People at your card before).
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
 let username: string;
 let productId: string;
-const MAIN = ['/', '/log', '/sources', '/feed', '/more'];
+const MAIN = ['/', '/log', '/sources', '/feed'];
 
 const me = () => page.locator('.hdr .me-btn');
 const tabBar = () => page.getByRole('navigation', { name: 'Main' });
@@ -39,13 +39,13 @@ test.beforeAll(async ({ browser }) => {
   );
 });
 
-test('your letter sits top right on the five main tabs (the Feed in People’s place, D77), with the title still centred, and nowhere else', async () => {
+test('your letter sits top right on the four main tabs (the Feed in People’s place, D77), with the title still centred, and nowhere else', async () => {
   for (const path of MAIN) {
     await page.goto(path);
     await expect(me(), path).toHaveCount(1);
     await expect(me().locator('.av'), path).toHaveText('H');
     await expect(me().locator('.av img'), path).toHaveCount(0);
-    await expect(me(), path).toHaveAccessibleName(`Your profile (@${username})`);
+    await expect(me(), path).toHaveAccessibleName(`Settings (@${username})`);
     const [title, button] = [(await page.locator('.hdr .title').boundingBox())!, (await me().boundingBox())!];
     expect(Math.abs(title.x + title.width / 2 - 195), `${path} title centred`).toBeLessThanOrEqual(1);
     expect(button.x + button.width, `${path} in the right corner`).toBeGreaterThan(360);
@@ -53,7 +53,7 @@ test('your letter sits top right on the five main tabs (the Feed in People’s p
     expect(button.height, `${path} tap target`).toBeGreaterThanOrEqual(44);
   }
   // Screens further in keep their corners for Back, Edit and ⋯.
-  for (const path of [`/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/more/archive', '/more/passkeys', '/more/blocked']) {
+  for (const path of ['/more', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/more/archive', '/more/passkeys', '/more/blocked']) {
     await page.goto(path);
     await expect(page.locator('.hdr')).toBeVisible();
     await expect(me(), path).toHaveCount(0);
@@ -88,7 +88,7 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
         });
     }).observe(document.body, { childList: true, subtree: true });
   });
-  for (const tab of ['Log', 'Sources', 'Feed', 'Settings', 'Leaderboard', 'Log', 'Leaderboard']) {
+  for (const tab of ['Log', 'Sources', 'Feed', 'Leaderboard', 'Log', 'Sources', 'Leaderboard']) {
     await tabBar().getByRole('link', { name: new RegExp(tab) }).click();
     await expect(tabBar().getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page');
     await expect(me().locator('.av img')).toHaveCount(1);
@@ -97,6 +97,22 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
   expect(log.length).toBeGreaterThanOrEqual(12);
   expect(log.filter((l) => !l.endsWith(':photo')), log.join(' ')).toEqual([]);
   await shot(page, '76-header-photo');
+});
+
+test('D87: tapping it opens Settings; the large title shows at the top and slides under the bar as you scroll', async () => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Leaderboard' })).toBeVisible();
+  await expect(page.locator('.hdr')).toHaveClass(/\btop\b/);
+  await expect(page.locator('.hdr .title span')).toHaveCSS('opacity', '0');
+  await me().click();
+  await expect(page).toHaveURL(/\/more$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+  await expect(tabBar().locator('[aria-current="page"]')).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await expect(page.locator('.hdr')).not.toHaveClass(/\btop\b/);
+  await expect(page.locator('.hdr .title span')).toHaveCSS('opacity', '1');
+  await expect(page.locator('.hdr .title span')).toHaveText('Settings');
+  await page.goto('/');
 });
 
 test('a new photo replaces it; removing it brings the letter back', async () => {
@@ -121,24 +137,13 @@ test('a new photo replaces it; removing it brings the letter back', async () => 
   await expect(me().locator('.av img')).toHaveCount(0);
 });
 
-test('tapping it opens People at your card; on People it goes back to the top and clears the search', async () => {
+test('D87: your card at the top of Settings opens People at your card', async () => {
   await page.goto('/log');
   await me().click();
+  await expect(page).toHaveURL(/\/more$/);
+  await page.locator('.more-me').click();
   await expect(page).toHaveURL(/\/people$/);
   // D77: People lives under the Feed, so the Feed tab stays lit.
   await expect(tabBar().getByRole('link', { name: /Feed/ })).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.me-card')).toBeInViewport();
-
-  await page.getByPlaceholder('Search usernames').fill('zz');
-  await expect(page.locator('.me-card')).toHaveCount(0);
-  await page.evaluate(() => {
-    document.querySelector<HTMLElement>('main')!.style.paddingBottom = '2000px';
-    window.scrollTo(0, 600);
-  });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
-  await me().click();
-  await expect(page).toHaveURL(/\/people$/);
-  await expect(page.getByPlaceholder('Search usernames')).toHaveValue('');
-  await expect(page.locator('.me-card')).toBeInViewport();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });

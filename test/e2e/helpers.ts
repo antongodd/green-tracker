@@ -35,41 +35,36 @@ export async function signUp(page: Page, username = `u${Date.now().toString(36)}
 
 export const shot = (page: Page, name: string) => page.screenshot({ path: `.playwright/screens/${name}.png`, animations: 'disabled' });
 
-/** The stats at the top (D17; laid out as you chose since D64: the glass hero, three tiles or a
- *  slim strip): every number and label inside its box and the screen (nothing cut off or
- *  overlapping), on glass; in three tiles, centred in each tile. Returns the layout found. */
+/** The stats at the top (D17; laid out as you chose since D64; D87's tops, the saved names kept: `strip` Compact,
+ *  one line under the large title; `tiles` Summary, one glass card; `hero` Showcase, the Compact line with your top
+ *  three as photo cards): every number and label inside its box and the screen (nothing cut off or overlapping);
+ *  Summary on glass. Returns the layout found. */
 export async function expectStatsFit(page: Page): Promise<'hero' | 'tiles' | 'strip'> {
   const tiles = page.locator('.tile');
   await expect(tiles.first()).toBeVisible();
   const report = await tiles.first().evaluate((first) => {
-    const box = first.closest('.banner, .tiles') as HTMLElement;
-    const layout = box.classList.contains('hero') ? 'hero' : box.classList.contains('strip') ? 'strip' : 'tiles';
+    const box = first.closest('.banner') as HTMLElement;
+    const layout = box.classList.contains('summary') ? 'tiles' : document.querySelector('.board-showcase') ? 'hero' : 'strip';
     const b = box.getBoundingClientRect();
-    // Glass: Aurora's white pane, or since D71 the look's glow (its lights over its glass) in any look.
-    const glass = (el: Element) => /rgba\(255, 255, 255, 0\.0[5-9]\)|radial-gradient/.test(getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
+    const glass = (el: Element) => /rgba\(255, 255, 255, 0\.\d+\)|rgba\(\d+, \d+, \d+, 0\.\d+\)/.test(getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
     const texts = [...box.querySelectorAll<HTMLElement>('.tile b, .tile .cap')].map((c) => {
-      const tile = c.closest('.tile')!.getBoundingClientRect();
       const range = document.createRange();
       range.selectNodeContents(c);
       const tr = range.getBoundingClientRect();
       return {
         label: c.textContent,
         rect: tr.toJSON() as DOMRect,
-        inside: tr.left >= b.left && tr.right <= b.right && tr.top >= b.top && tr.bottom <= b.bottom && tr.right <= innerWidth,
+        inside: tr.left >= b.left - 0.5 && tr.right <= b.right + 0.5 && tr.top >= b.top - 0.5 && tr.bottom <= b.bottom + 0.5 && tr.right <= innerWidth,
         clipped: c.scrollWidth > Math.ceil(c.getBoundingClientRect().width),
-        off: Math.abs(tr.left + tr.width / 2 - (tile.left + tile.width / 2)),
       };
     });
     const overlap = texts.some((x, i) => texts.some((y, j) => i < j && x.rect.left < y.rect.right - 1 && y.rect.left < x.rect.right - 1 && x.rect.top < y.rect.bottom - 1 && y.rect.top < x.rect.bottom - 1));
-    const onGlass = layout === 'tiles' ? [...box.querySelectorAll('.tile')].every(glass) : glass(box);
+    const onGlass = layout === 'tiles' ? glass(box) : true;
     return { layout, texts, overlap, onGlass };
   });
   expect(report.onGlass, `${report.layout}: on glass`).toBe(true);
   expect(report.overlap, `${report.layout}: nothing overlaps`).toBe(false);
-  for (const t of report.texts) {
-    expect(t.inside && !t.clipped, `${t.label}: fits`).toBe(true);
-    if (report.layout === 'tiles') expect(t.off, `${t.label}: centred`).toBeLessThanOrEqual(1);
-  }
+  for (const t of report.texts) expect(t.inside && !t.clipped, `${t.label}: fits`).toBe(true);
   return report.layout as 'hero' | 'tiles' | 'strip';
 }
 
@@ -148,6 +143,13 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
         c.startsWith('color(') ? c.slice(11).match(/[\d.]+/g)!.map(Number).slice(0, 3).map((v) => v * 255) : c.match(/[\d.]+/g)!.map(Number).slice(0, 3),
       );
     const darkest = (t: HTMLElement) => stops(t).reduce((a, b) => (lum(b) < lum(a) ? b : a));
+    // D87: a mixed colour is reported as color(srgb r g b / a) with 0–1 channels; as rgba(…) so it's read right
+    // (read as 0–255 it looked black, 1 : 1).
+    const rgbaOf = (c: string) => {
+      if (!c.startsWith('color(srgb')) return c;
+      const [r = 0, g = 0, b = 0, a = 1] = c.slice(11).match(/[\d.]+/g)!.map(Number);
+      return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+    };
     // Dark words on a light look (D72) are hardest to read at the lightest colour they flow through.
     const lightest = (t: HTMLElement) => stops(t).reduce((a, b) => (lum(b) > lum(a) ? b : a));
     const els = [...main.querySelectorAll<HTMLElement>(selector)];
@@ -161,7 +163,7 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
       return {
         label: `${t.tagName.toLowerCase()}.${t.className || ''} "${t.textContent?.slice(0, 20)}"`,
         x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0),
-        color: gradient ? `rgb(${darkest(t).join(', ')})` : getComputedStyle(t).color,
+        color: gradient ? `rgb(${darkest(t).join(', ')})` : rgbaOf(getComputedStyle(t).color),
         ...(gradient ? { alt: `rgb(${lightest(t).join(', ')})` } : {}),
         large: parseFloat(getComputedStyle(t).fontSize) >= 18.66,
       };

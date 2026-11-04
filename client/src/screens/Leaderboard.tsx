@@ -4,9 +4,10 @@ import { leaderboardEmptyState, leaderboardTiles, rankProducts, type ViewState }
 import type { Product } from '../../../shared/domain/product';
 import { productType, RATING_LABELS, type RatingKey } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
-import { BackButton, Header, TabBar } from '../components/chrome';
+import { BackButton, Header, LargeTitle, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
+import { Showcase, Spread } from '../components/BoardTop';
 import { ProductRow } from '../components/ProductRow';
 import { RowPhotos } from '../components/ProductPhotos';
 import { ColoursSheet } from '../components/Gems';
@@ -101,8 +102,9 @@ export function Leaderboard() {
 
   return (
     <>
-      <Header right={<MeButton />} />
+      <Header title="Leaderboard" large right={<MeButton />} />
       <main class="screen has-fab">
+        <LargeTitle title="Leaderboard" />
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">
@@ -120,7 +122,9 @@ export function Leaderboard() {
                 { value: formatWeightTotal(tiles.totalGrams ?? 0), label: 'Total' },
               ]}
               lead={1}
+              spread={view.rankBy !== 'price' && view.rankBy !== 'vfm' && rows.length > 0 && <Spread bands={rows.map((r) => r.band)} />}
               foot={rows[0] && <span class="who">Your #1 · <b>{rows[0].product.name}</b></span>}
+              showcase={<Showcase rows={rows} rankBy={view.rankBy} />}
             />
           </>
         )}

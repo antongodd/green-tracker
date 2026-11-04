@@ -3,8 +3,8 @@ import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
 import { settled, shot, signUp } from './helpers';
 
-// D20 (0.14.0): "Lift" press feedback on everything you can tap, and "Photo grows"
-// when a product is opened from a list (and on Back). One account for the file.
+// D20 (0.14.0): press feedback on everything you can tap ("Lift" until D87; since D87 it presses in, as on the
+// iPhone), and "Photo grows" when a product is opened from a list (and on Back). One account for the file.
 test.describe.configure({ mode: 'serial' });
 
 let context: BrowserContext;
@@ -78,7 +78,7 @@ const row = (name: string) => page.locator('.row', { hasText: name });
  */
 const screenSettled = () => page.locator('main.screen').evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
 
-test('holding a row lifts it after a moment; a quick tap still flashes; moving never lifts', async () => {
+test('holding a row presses it in after a moment (D87); a quick tap still flashes; moving never presses', async () => {
   await page.goto('/');
   const target = row('Row 5');
   await expect(target).toBeVisible();
@@ -102,7 +102,7 @@ test('holding a row lifts it after a moment; a quick tap still flashes; moving n
   await page.mouse.down();
   await expect(target).toHaveClass(/is-pressed/);
   expect(await page.evaluate(() => { const w = window as unknown as { __down: number; __lift: number }; return w.__lift - w.__down; })).toBeGreaterThanOrEqual(50);
-  await expect.poll(() => target.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a)).toBeCloseTo(1.03, 2);
+  await expect.poll(() => target.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a)).toBeCloseTo(0.97, 2);
   // Slide the finger away (like starting a scroll) and let go elsewhere: no lift, no open.
   await page.mouse.move(cx, cy + box.height + 12, { steps: 4 });
   await expect(target).not.toHaveClass(/is-pressed/);
@@ -139,7 +139,7 @@ test('rows inside a card light up instead of growing past its edge', async () =>
   await page.mouse.move(box.x + 40, box.y + box.height / 2);
   await page.mouse.down();
   await expect(item).toHaveClass(/is-pressed/);
-  await expect.poll(() => item.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgba(88, 224, 140, 0.12)');
+  await expect.poll(() => item.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgba(255, 255, 255, 0.075)'); // D87: a grey light, as in the iPhone's Settings (green before)
   expect(await item.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a)).toBeLessThanOrEqual(1.02);
   await page.mouse.move(box.x + 40, box.y - 60, { steps: 3 });
   await page.mouse.up();
@@ -434,7 +434,7 @@ test('swiping back (the browser’s Back) shows the list without its entrance fa
   expect(await fades()).toEqual(['/log']);
 
   // The app's own Back (no photo to fly here) keeps its fade too.
-  await page.locator('.nav a', { hasText: 'Settings' }).click();
+  await page.locator('.hdr .me-btn').click(); // Settings: your photo since D87
   await page.getByRole('link', { name: /Face ID/ }).click();
   await expect(page).toHaveURL(/passkeys/);
   await page.getByRole('link', { name: 'Back' }).click();

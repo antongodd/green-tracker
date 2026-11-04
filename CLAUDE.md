@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D84 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D88 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -25,7 +25,8 @@ file (and the recipes it touches) in the same pull request.
 https://green-tracker-site.green-tracker.workers.dev (from `main`); a preview at
 https://green-tracker-site-dev.green-tracker.workers.dev (from `dev`, locked like the dev site: on the Worker's **Access**
 tab the lock must cover **Production**, not "Previews only", which leaves the address open). It loads nothing from
-anywhere else (no tracking) and shows only made-up products. Its links to the app are absolute addresses. The app's
+anywhere else (no tracking). Since D88 it shows Anton's own cut-out photos, strain names and scores (from his
+account only, never private ones); sellers, prices and people stay made up, and nobody else's data is ever used. Its links to the app are absolute addresses. The app's
 one link to it is the Invite a friend message (D82).
 
 - One codebase. `wrangler.jsonc` has the live settings at the top and the dev site under `env.dev`; the dev build uses
@@ -144,7 +145,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D85) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D89) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -168,7 +169,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D84.
+- Reopen any decision D1–D88.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -204,14 +205,14 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
   `none`). Set an account's preset in a test with `PUT /api/appearance`. A new account starts on **Gems** and the **Slim
-  strip** since D71 (Aurora and the glass hero before): a test that names another set's colours or reads the hero
-  sets it first. Ten sets since D69; a set's effect (sun, plankton,
+  strip** (Compact since D87) since D71 (Aurora and the glass hero before): a test that names another set's colours or
+  reads another top sets it first. Ten sets since D69; a set's effect (sun, plankton,
   sparks, stars, grid; Metals' glints) comes from `bandEffect` and is drawn by `Effects` (`span.tfx`, never `.fx`: that's
   the currency tag), always clear of text: `appearance.spec.ts` checks no dot overlaps a row's text.
 - The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
-  `html[data-look=…]`). The stats at the top follow the account's `top` (glass hero, tiles, strip): every stat is a
-  `.tile` with `b` and `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with
-  `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
+  `html[data-look=…]`). The stats at the top follow the account's `top` (D87: `strip` Compact `.banner.strip`, `tiles`
+  Summary `.banner.summary`, `hero` Showcase: the Compact line plus `.board-showcase`): every stat is a `.tile` with `b` and
+  `.cap` in all three, so read them by label (`.tile` `hasText`), and check them with `expectStatsFit`. The lights are the animation `lights` on `.bg-layer` (painted on it, in steps); hold them still with
   `holdLights` (`aurora.spec.ts`) before comparing two photos. All four looks (D65) can be saved; choose one in a test
   with `PUT /api/appearance`. The phone remembers the look in `localStorage['gt.look']` (`client/public/look.js`), so a
   test that changes it should put Aurora back at the end. Readability over a busy screen: measure only text below the
@@ -260,6 +261,20 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   `LOOK_KEYS`, `LOOK_BG` and `look.js` (`gems.test.ts` checks they agree); a new look or colour set needs **no
   migration** since D76 (the app checks them: `validateAppearance`; reading back, `loadAppearance` shows the default
   for one it doesn't know).
+- Website polish (D85): things on the website arrive once (phone, rows, chips, blocks rising); call `arrived(page)` in
+  `website.spec.ts` before axe or anything judging colours, or a half-faded chip reads as faint words. Only `drift1`,
+  `drift2`, `holo` and `holo-text` may loop (a test lists them). The top bar holds Open app and Sign up in one spot,
+  one hidden (`visibility`) at a time: measure only the one showing (`>> visible=true`).
+- Website things to play with (D86): drag in a test with the mouse in small steps (`drag` in `website.spec.ts`;
+  Chromium sends pointer events); scroll the thing into view first (the hero's phone sits low). Rate the stack: wait
+  for a card to fly off (one fewer `.card`) before the next button press. A Look is picked by clicking its `.lk`; wait
+  for the lights' colour change (`CSSTransition`s) before judging words. Only the top card's words are in `WORDS`.
+  The sheet (`hidden` until opened) and the Looks' names (off the side of the screen) are judged in their own tests.
+  Anything with `hidden` needs `[hidden] { display: none !important }` (at the top of `site.css`): a `display` of its
+  own otherwise shows it.
+- Website photos (D88): `site/public/media/nugs/<strain>-s|l.webp`, made from Anton's cut-outs and re-encoded so they
+  carry only the picture (`website.spec.ts` reads each file's chunks). A new one: the same way (PIL, WebP, no
+  `exif`/`icc_profile`), never a straight copy of a photo. Never put anyone else's photos or names on the site.
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -334,6 +349,15 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   never saves again, as saving it drops them). Report: a friend's post now has a ⋯ (`Actions for @x’s post`), and
   a person's page has a ⋯ even when followed (`Actions for @x`), so a test that counts ⋯ buttons or reads the header
   meets them. The pages over sign-up are dialogs, not a `<main>` (axe `landmark-no-duplicate-main`).
+- The Apple-style base (D87): the styles are one block in `styles.css` ("The Apple-style base", just before the light
+  tone; the Feed's and editors' bits at the very end). Fonts are Apple's (`-apple-system`, `ui-rounded`): Chromium
+  draws a stand-in, so a test checks the family named, never how it looks. The main screens' `h1` is `LargeTitle`
+  (`.ltitle`, inside `<main>`: outside it axe finds `region`); `.hdr.top` while scrolled under 36px. Settings has no tab:
+  your photo `.me-btn` ("Settings (@name)") is only on the four main tabs, so from anywhere else `goto('/more')` or
+  Back. Never give a card `backdrop-filter`: anything `position: fixed` inside it (the avatar cropper, a sheet) is then
+  placed in the card. Rows are 10px apart. A product page's actions are `.acts` (`Private` switch, Post, Return to
+  Log, Archive); Edit is only in the header. Press feedback presses in (`.is-pressed` scale 0.97; list rows light up
+  grey) in place of D20's lift. `textBoxes` reads a mixed colour (`color(srgb …)`, from `color-mix`) as rgba.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -346,10 +370,9 @@ when an item is merged into `dev`, mark it **on dev** (with the version and date
 small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
 section, so it must always be current.
 
-- **Live:** 0.72.0 (2026-11-03): everything up to sign-in hardening (to-do item 9).
-- **Dev:** 0.73.1 (2026-11-03): trust basics for strangers (to-do item 7), waiting for Anton's "go live". The
-  contact address is greentracker.help@gmail.com (Anton's, made 2026-11-03; `CONTACT_EMAIL` and
-  `site/public/index.html`, kept in step by `test/domain/trust.test.ts`).
+- **Live:** 0.73.1 (2026-11-03): everything up to trust basics for strangers (to-do item 7).
+- **Dev:** 0.77.0 (2026-11-04): the website polished in Apple's style, five new things on it and Anton's own photos
+  (to-do item 15, 0.74.0–0.75.0, 0.77.0), and the app's Apple-style redesign, stage A (to-do item 16, 0.76.0); both waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -365,29 +388,54 @@ Each is a job for its own conversation; the summary lists what each covers.
    (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
    brand's own page.
 6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
-7. **Trust basics for strangers** (big): **on dev** in 0.73.0–0.73.1 (2026-11-03), D84. 18+ tick, privacy page, house
-   rules, Report, a 3,000-photo limit, 18+ on the website. Waiting for "go live". Anton made the contact email
-   (greentracker.help@gmail.com) and ran both checkers (2026-11-03): **Ofcom: yes**, the Online Safety Act applies (a
-   user-to-user service: an illegal content risk assessment, a children's access assessment, a children's risk
-   assessment if that finds children likely); **ICO: the fee applies** (tier one, £52, £47 by direct debit; paying is
-   Anton's to do). The Cloudflare billing alert is set ("Billing budget alert - Green Tracker spend", by email;
-   in the dashboard under Observability › Alerts › Platform Notifications, 2026-11-03). Later if he wants it: move the photos (now in North America) to Europe.
+7. ~~Trust basics for strangers~~: live in 0.73.0–0.73.1 (see Done). Ofcom: the Online Safety Act applies (its
+   paperwork is item 12); ICO: the fee applies (£52, paying is Anton's to do). Later if he wants it: move the photos
+   (now in North America) to Europe.
 8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
 9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
 10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
 11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
    email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
    Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
-12. **Ofcom paperwork** (notes only; Anton, 2026-11-03). Ofcom's checker says the Online Safety Act applies. Draft,
-   in plain English and from Ofcom's own guidance and what the app really does: the illegal content risk assessment
-   (with its records) and the children's access assessment (the 18+ tick, house rules, Report, Block, the website's
-   18+); a children's risk assessment only if that finds children are likely to use it. Kept in `design/`; Anton reads
-   and keeps them. Not legal advice: say so in them.
+12. ~~Ofcom paperwork~~: drafted 2026-11-03 in `design/ofcom/` (see Done). Anton still signs, dates and keeps them,
+   checks the 🔎 points on Ofcom's site, and looks at them again by 2027-11-03 or before a big change to what people
+   can share (`big-change` step 1).
+13. **Acting on reports** (from the Ofcom paperwork, 2026-11-03; Anton decides). Reports reach Anton only when he asks
+   (a weekly reminder, or a message when one arrives); there's no way to close an account that keeps breaking the
+   rules, though the house rules say Anton can; the house rules don't say how to complain about a decision (the
+   contact address). Ofcom expects reports dealt with swiftly and a route for complaints.
+14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
+   effective age assurance", so in law children can use the app; for now the children's access assessment finds
+   they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
+15. **The website, polished in Apple's style** (big; Anton, 2026-11-03, a test of the `apple-design` skill before
+   using it on the app): **on dev** in 0.74.0 (2026-11-03), D85. Buttons press in at once, things move once, Sign up
+   in the top bar, the features in one panel, an iPhone-style slider, Reduce Transparency and Increase Contrast.
+   Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga. Then Anton asked for more imagination: **on dev** in
+   0.75.0 (2026-11-04), D86, all five of https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct: Rate the stack, Make it
+   yours (the Looks), the phone you can pick up, the scroll story, the install sheet. Then Anton's own photos and
+   strain names in place of the drawn nugs: **on dev** in 0.77.0 (2026-11-04), D88. Waiting for "go live". Next: the
+   same on the app (item 16).
+16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
+   a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
+   each with its own mockups:
+   - **Stage A, the base design:** **on dev** in 0.76.0 (2026-11-04). Apple's fonts, large titles, the floating tab
+     bar, Settings from your photo, calm cards, the three new tops (Compact for new accounts), the product page's
+     actions, springy sheets. Waiting for "go live".
+   - **Stage B, the Looks:** Anton's favourites (Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea,
+     Frost, Fireflies, Lava Lamp, Neon Night, Outrun) refreshed with smooth, detailed moving backgrounds (battery is no
+     concern); Holo Pearl and Haze go (their users move to the default); light mode as one or two really good looks
+     instead of three (Anton doesn't use it). Next: mockups.
+   - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
+     without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
+     Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora.
+   - The website: its own job (item 15).
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Ofcom paperwork: the illegal content risk assessment (drugs supply medium, everything else low or negligible) and the children's access assessment (children can get past the tick, but aren't likely to use it, so no children's risk assessment for now), in `design/ofcom/`, with what Anton must still do (sign, keep, review by 2027-11-03); two new to-do items (13, 14) | (notes) | | 2026-11-03 | notes only |
+| Trust basics for strangers: "I'm 18 or over" at sign-up (older accounts asked once), a privacy page and house rules under Settings › About with the contact address greentracker.help@gmail.com, Report on posts, comments and profiles (hidden for you at once; Anton reads them with the reports recipe), a 3,000-photo limit, Delete account mentions the 30-day backups, 18+ on the website; Anton ran the Ofcom and ICO checkers and set a Cloudflare billing alert (the tick, report sheets and VoiceOver not yet checked on Anton's iPhone) | 0.73.0, 0.73.1 | D84 | 2026-11-03 | 2026-11-03 |
 | An outside design skill: `apple-design` (Apple-style motion, materials and type), for Claude to use when building or reviewing screens | (notes) | | 2026-11-03 | notes only |
 | Sign-in hardening: only wrong passwords count against an email, and a phone you've signed in on has its own tries (strangers can't lock you out); adding Face ID asks for your password (not straight after signing in); "Forgot it? Use Face ID instead" on Password; after a password change, the passkeys that can still sign in with Last used and Remove (Face ID prompts and the new screens not yet confirmed on Anton's iPhone) | 0.72.0 | D83 | 2026-11-03 | 2026-11-03 |
 | You against them, and Invite a friend: "You've had this too" with both photos, @names and scores on a friend's product page and post (same name, brand and type only), Compare with my board (a card for each subject, empty ones hidden), Invite a friend on the empty Feed and People (the share sheet with your @name and the website) (the real share sheet, profile photos in the cards and VoiceOver not yet checked on Anton's iPhone) | 0.71.0 | D82 | 2026-11-03 | 2026-11-03 |

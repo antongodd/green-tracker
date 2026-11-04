@@ -127,7 +127,7 @@ test('Leaderboard: rows sit as before (8px apart), VoiceOver gets "Photos of …
   await expect(row(owner, 'Bare Kush')).toBeVisible();
   const boxes = await owner.locator('.rows > a.row').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ top: r.top, bottom: r.bottom })));
   expect(boxes.length).toBe(2);
-  expect(Math.round(boxes[1]!.top - boxes[0]!.bottom)).toBe(8);
+  expect(Math.round(boxes[1]!.top - boxes[0]!.bottom)).toBe(10); // 10 since D87
   // One hidden button for the row with photos, none for the row without.
   await expect(owner.getByRole('button', { name: 'Photos of Gelato 41' })).toHaveCount(1);
   await expect(owner.getByRole('button', { name: 'Photos of Bare Kush' })).toHaveCount(0);

@@ -117,9 +117,9 @@ test('add, rate, price, switch type, make private, archive and restore a product
   // Tap it like a finger, at its spot on screen. Playwright's click() sometimes scrolls
   // the page first (116px here), which the app then rightly remembers, so the check
   // compared against a position the test itself had moved away from (0.18.1).
-  const edit = await page.locator('.sect').getByRole('link', { name: 'Edit' }).boundingBox();
-  expect(edit!.y).toBeGreaterThan(60);
-  expect(edit!.y + edit!.height).toBeLessThan(844 - 60);
+  // Edit is at the top since D87 (no second Edit at the foot of the page).
+  const edit = await page.locator('.hdr').getByRole('link', { name: 'Edit' }).boundingBox();
+  await expect(page.locator('main').getByRole('link', { name: 'Edit' })).toHaveCount(0);
   await page.mouse.click(edit!.x + edit!.width / 2, edit!.y + edit!.height / 2);
   await expect(page).toHaveURL(/\/edit$/);
   await page.getByRole('button', { name: 'Cancel' }).click();
@@ -161,7 +161,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('dialog').getByRole('button', { name: 'Archive' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('.row')).toHaveCount(1);
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('link', { name: /^Settings \(@/ }).click();
   await expect(page.getByRole('link', { name: /Archive\s*1/ })).toBeVisible();
   await page.getByRole('link', { name: /Archive/ }).click();
   await expect(page.locator('.row')).toContainText('Gelato 41 OG');

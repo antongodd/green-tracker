@@ -12,7 +12,7 @@ import { scoreHeat } from '../../../shared/domain/heat';
 import { errorText } from '../api';
 import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
 import { asPurchases, formatIsoDate } from '../components/ProductRow';
-import { ExternalIcon, LockIcon, PostIcon, ReturnIcon } from '../icons';
+import { BoxIcon, ExternalIcon, LockIcon, PostIcon, ReturnIcon } from '../icons';
 import { cachedProduct, cachedProducts, changeMark, changing, fetchProduct, fetchProducts, setFlag } from '../products';
 import { boardPlace } from '../../../shared/domain/leaderboard';
 import { pageClass, useAppearance } from '../components/Gems';
@@ -305,10 +305,8 @@ export function Profile(p: { id: string }) {
               Bring back
             </button>
           ) : (
-            <>
-              <a class="btn primary" href={`${path}/edit`} onClick={linkTo(`${path}/edit`)}>
-                Edit
-              </a>
+            /* D87: Edit lives at the top (as in Apple's apps); the rest is one grouped list, Archive last in red. */
+            <div class="acts">
               <label class="switch-row">
                 <span>
                   Private
@@ -317,18 +315,19 @@ export function Profile(p: { id: string }) {
                 <input type="checkbox" role="switch" class="switch" {...switchAttr()} checked={product.private} disabled={busy} onChange={(e) => toggle('private', e.currentTarget.checked)} />
               </label>
               {/* D77: post it to your followers (a Private one asks first, in the composer). */}
-              <a class="btn secondary" href={`/feed/new/p/${encodeURIComponent(product.id)}`} onClick={linkTo(`/feed/new/p/${encodeURIComponent(product.id)}`)}>
+              <a class="act" href={`/feed/new/p/${encodeURIComponent(product.id)}`} onClick={linkTo(`/feed/new/p/${encodeURIComponent(product.id)}`)}>
                 <PostIcon />
                 Post
               </a>
-              <button class="btn secondary" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
+              <button class="act" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
                 <ReturnIcon />
                 Return to Log
               </button>
-              <button class="btn danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
+              <button class="act danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
+                <BoxIcon />
                 Archive
               </button>
-            </>
+            </div>
           )}
           {error && (
             <p class="error" role="alert">

@@ -67,7 +67,8 @@ test.afterAll(() => page.context().close());
 test('Return to Log sits in Actions between Private and Archive, and asks first', async () => {
   await page.goto(`/products/${ids.Zkittlez}`);
   await expect(page.getByRole('heading', { level: 1, name: 'Zkittlez' })).toBeVisible();
-  await expect(actions().locator('.btn')).toHaveText(['Edit', 'Post', 'Return to Log', 'Archive']);
+  // D87: one grouped list (Edit is at the top).
+  await expect(actions().locator('.acts > *')).toHaveText([/^Private/, 'Post', 'Return to Log', 'Archive']);
   await expect(actions().getByRole('button', { name: 'Return to Log' }).locator('svg')).toHaveCount(1);
   await actions().getByRole('button', { name: 'Return to Log' }).click();
   const sheet = page.getByRole('dialog', { name: 'Return “Zkittlez” to your Log?' });

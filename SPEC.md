@@ -156,6 +156,10 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D82 | **You against them, and Invite a friend** (2026-11-03; review panel job 8, `reviews/2026-11-03/stoner.md` finding 3 and `marketing-pro.md` finding 4, reworked with the owner: the same product is the same strain name **and** the same brand (Source) **and** the same type, "same name ≠ same product"; never "same strain, different brand" (confusing); mockups https://claude.ai/artifact/WnkMg4Q8VHsYwhsQ6FYYSH. The owner's picks: **1A** a card under the photo on their product page; **2B** your score inside a post's product card; **3B** Compare as a card for each subject; **4B** the Invite link goes to the **website**; "You've both had" kept, "but if they have nothing dont show an empty box or the number 0, just simply show nothing"; favourite = the most products (ties: the higher average); with Source not shared, their top picks without the "haven't tried"; a concentrate needs the same kind; your private products count on your side. Then "i dont like when it says 'you___, them___'… maybe displaying the profile pictures, or the usernames": he picked **C**, each person's photo and @name with their score). Narrows D63's "no link to it from the app": the Invite message carries the website's address (and nothing else in the app links to it). | **"You've had this too"**: on a friend's product page, a card under the photo with each person's photo, @name and Overall (yours, then theirs) and **Your page ›**; in a friend's post's product card, your photo and your score under theirs. Only for the **same product**: name, Source and type equal with capitals, accents, spaces and punctuation not counting (D59's `nameKey`); a concentrate also the same kind, an Other type the same words; no Source (theirs not shared, or empty) → nothing. Your side is your Leaderboard (not archived, not returned to the Log; private counted, since only you see it); where you have two of the same, your higher score. **Compare** (a **Compare with my board** button above a friend's Leaderboard, `/u/<them>/compare`, titled "@you vs @them", in their look like their other pages): **Average** (and products), **Number 1**, **Favourites** (type, and brand when Source is shared), **You've both had**, **Brands you've both tried** (each side's products and average), **@them's top picks you haven't tried** (their best rated, up to 5, not the same product as one of yours; with Source off just "@them's top picks" and a line saying why); a card with nothing in it isn't shown. **Invite a friend** (the share icon): on the empty Feed (first) and on People under the search box (hidden while searching): the iPhone share sheet with "Follow me on Green Tracker: @you" and https://green-tracker-site.green-tracker.workers.dev (the public website, never the locked preview); without a share sheet it copies the message. **Privacy:** worked out on the server from exactly what their Privacy shares (`shareProducts`, D45) and your own products; never prices, purchases, suppliers, notes, dates, the Log, private, archived or returned products; strangers and requests waiting get nothing (403), a block 404; nobody is told. **No database change**; Export, Restore and what followers receive unchanged. See §4 *You against them*. |
 | D83 | **Sign-in hardening** (2026-11-03; review panel job 9, `reviews/2026-11-03/app-developer.md` findings 3 and 5). Changes D80's limits and password change with the owner's OK: "1. yes 2. yes", then "go ahead" (no mockups). | **Strangers can't lock you out:** the per-email limit (10 every 15 minutes) counts only **wrong** passwords; a right one never counts. A device an account has signed in on is remembered (cookie `gt_device`, 400 days, only its hash stored; also set the first time the app opens on a phone already signed in) and its wrong tries count on their own (10 every 15 minutes), so the owner's right password gets through on it even while strangers have the email waiting; it never signs anyone in by itself, and only for the accounts signed in on it. The answer for a wrong password and an unknown email stays the same. **Adding Face ID asks for your password** (Settings › Face ID: "Your password", Continue), unless this device signed in (with the password or Face ID) in the last 5 minutes: so the offer straight after sign-up stays one tap. **A forgotten password:** Settings › Password › **Forgot it? Use Face ID instead** (only with a passkey): a fresh Face ID check with one of your own passkeys replaces the current password; the risk (someone with your phone *and* its passcode) accepted by the owner as the only way back in until the app can send email. **After a password change:** "These can still sign in with Face ID", each passkey with Added / Last used and Remove, then Done. Passwords are still kept only as a salted PBKDF2 hash. A database change (0020, a new table). See §4 *Sign-in hardening*. |
 | D84 | **Trust basics for strangers** (2026-11-03; review panel job 7, `reviews/2026-11-03/sceptical-investor.md` findings 1, 3, 13, 14, `marketing-pro.md` finding 3 and Part 2 finding 5). Mockups https://claude.ai/artifact/4AM8rxjyHwrQvuSQxxVMZQ; the owner's answers: "all ur recomdnations", then "your picks - go ahead". **Reopens D63** (the website's "no age or legal note") with his OK. | **18+:** sign-up has an "I'm 18 or over and I agree to the house rules" tick on its first step (Continue waits for it; the server refuses a sign-up without it); an account from before is asked once ("One quick thing"), before anything else, with Sign out the only other way on (`users.adult_at`). **A privacy page and house rules** (Settings › About › Privacy, House rules, Contact; also opened over sign-up and the once screen): what's kept (the email, the password only as a hash, Face ID's key, what you add, a scrambled address and a code per phone against break-ins), where (Cloudflare: details in Western Europe, photos in North America, checked 2026-11-03; Cloudflare's logs up to 7 days), who sees what (you; followers per What followers see; anyone: your @name, and your profile photo to people you follow or ask to follow; Anton, to fix problems and deal with reports), that sign-up shows an email is taken, reports, Export and Delete (backups keep a copy up to 30 days, D1 Time Travel), 18+, the contact address. Five house rules: 18+, no selling or supplying, no personal details, no faces without a yes, be decent. **Report** on someone else's post (a ⋯ on it now), comment (the comment's ⋯) and profile (the ⋯ with Block): a reason in one tap (six); the post or comment is hidden for you at once ("You reported this … Show it"); for a person, "Also block" starts ticked. Only what you can see can be reported (D77's rule, the same 404). Nobody is told. Anton reads them with the `green-tracker-reports` recipe (read only; removes a post or comment only on his "yes"). **A photo limit:** 3,000 an account (product, Log and post photos), checked by the database on every Save (triggers) and before an upload; the editors warn from 2,900. **The website:** "18+" in the top line, an adults-only line and the contact address in the footer. A database change (0021: `users.adult_at`, `reports`, two triggers). See §4 *Trust basics*. |
+| D85 | **The website, polished in Apple's style** (2026-11-03; the owner: "run a overhaul review on our website, using the apple design skill. tell me some thigns you would change, make mockups - then execute"; a test of the new `apple-design` skill before using it on the app). Mockups https://claude.ai/artifact/3LCt7ZjfbYwPNed7c122ga (Now, A recommended, B); built as A. | **Same words, colours, lights and steps; it now feels like an iPhone page:** buttons press in the moment they're touched; things move once when they arrive and then hold still (only the lights, slower, and the holo colours keep moving); the top bar gets its edge only once the page scrolls under it, and offers a green **Sign up** once the hero's buttons have gone; the four features as one grouped panel; card titles in the body font; an iPhone-style slider with marks where the colours change and a small pop when the row earns new ones; solid glass with Reduce Transparency and plainer cards with Increase Contrast. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *Website polish, Apple-style*. |
+| D86 | **New things on the website** (2026-11-04; the owner: "be more imaginative with this skill … add new things to the website, new well designed features", then "i like all of these 1 - 5"). Mockups https://claude.ai/artifact/86BpBY9d4FbeghqL5CrSct (ideas 1–5; all five chosen). | **Five things to play with, on top of D85:** (1) **Rate the stack** replaces the slider: drag or flick five made-up cards, the score following the card, then your own top shelf; Fire and Mids buttons too. (2) **Make it yours:** the app's fifteen Looks as swatches to swipe; the page's lights change to the one picked, and a little phone shows it. (3) **The phone you can pick up:** the hero's phone turns with a finger and springs back. (4) **The scroll story** replaces D85's grouped panel: the phone held beside the four features, showing each as you reach it. (5) **The install sheet:** "Put it on my iPhone" slides up a sheet with the three steps; the full steps and video stay below. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere and nothing is kept. See §4 *New things on the website*. |
+| D87 | **The Apple-style redesign, stage A: the base design** (2026-11-04; the owner: "a full overhaul… it just looks like a vibe coded app — i want it to look like a real developed apple app… like the photos app", "go as far as you need", with the `apple-design` skill; a review of every screen against it, then mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8). The owner's picks: Leaderboard **B, calm cards** (of A grouped list, B, C photo grid; no List/Grid switch); the three new tops, **Compact** for new accounts; fonts **B**, Apple's SF Pro for words and SF Pro Rounded for scores (of SF only, SF + Rounded, New York + SF, SF + Unbounded); Settings moves to your photo (top right) and + sits beside the tab bar ("sure"). Also from the questions: every screen may be rearranged as long as every feature stays easy to find; Apple-clean structure and type, "the colour and fun living in the Looks, the Leaderboard colours and the animations"; sounds and ticks stay; battery is no concern (iPhone 17 Pro). Press feedback presses in (scale 0.97, list rows light up) in place of D20's lift, as in the mockups. Kept: D70 (a Look changes only colours and the background), every readability and accessibility test. Stages B (the Looks: Holo Pearl, Haze and two of the Daylights to go, the rest with smooth moving backgrounds) and C (the colour sets: Gems and Metals to go, Ember without its blue) follow, each with its own mockups. What changed is in §4 *The Apple-style base*. |
+| D88 | **Anton's photos on the website** (2026-11-04; the owner: "the pictures used are just coloured blobs … take the best pictures from my live account anton_godd"; after the trade-offs were explained (his photos, AI, stock; the personal side of "Made by Anton" with real buds; D63's rule), "use mine", yes to reading his live account, "use my real strain names"). **Reopens D63** ("products shown are all made up; nobody's data is used") with his OK, for his own account only. | **The website shows the owner's own cut-out photos, real strain names and real scores** in place of drawn nugs and made-up products: the hero's top five and tiles, the scroll story, Make it yours and Rate the stack. **Sellers, prices, weights and other people stay made up**; no source or country is shown with a strain; private and kept products are never used; the pictures carry nothing but the picture. Nobody else's data is ever used. Website only; the app is unchanged. See §4 *Anton's photos on the website*. |
 ### Design approvals (Phase 1, 2026-09-23)
 
 Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6Hx).
@@ -1303,6 +1307,80 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   - *Couldn't check here*: playback and sound on a real iPhone (the test browser can't decode H.264), and whether the
     ⋯ menu matches iOS 26.
 
+- **Website polish, Apple-style (D85, 0.74.0).** From a review of the website against the `apple-design` skill
+  (Apple's WWDC design talks). *Press:* every `.btn` scales to 0.96 and dims the moment it's pressed (`:active`, 80ms in,
+  a softer let-go on `--settle`, a critically damped curve); `site.js` listens for `touchstart` so Safari shows
+  `:active`; tap highlight off. *Moves once:* the phone appears (`appear`: opacity and blur, no move, so the chips'
+  test still sees it where it rests), its rows slide in, the chips `materialise` one by one, the hero button's shine
+  crosses once, each install step's picture plays its moment once when it comes into view (`.seen`); no float, pulse,
+  or endless tap and pop. Only the lights (`drift1`/`drift2`, now 32–48 s a drift) and the holo colours (`holo`,
+  `holo-text`, slower) loop. Blocks rise 14px in 0.6s (was 24px, 0.8s). *Top bar:* no line at the top; `.edge` (a
+  hairline and soft shadow) once scrolled; `.nav-act` holds Open app and a green **Sign up** (`/signup`) in one spot,
+  swapped (`.join`) once the hero's buttons have scrolled above the screen, back again on the way up. *Features:*
+  `.feats.group`, one glass panel with the four as rows (icon beside, hairlines between; two by two on a laptop).
+  *Type:* card titles (`h3`) in Manrope 800, 18px; small text tracked slightly looser. *Slider:* iPhone-style (a 6px
+  track filled green to the thumb via `--fill`, a 28px white thumb that grows a little while held, marks at 8, 9 and
+  9.5 in `.ticks`); the row gets `.pop` (a 3.5% swell) when its band changes, not under Reduce Motion. *Settings:*
+  `prefers-reduced-transparency` makes the glass solid (no `backdrop-filter`); `prefers-contrast: more` makes cards
+  solid, edges and quieter words brighter. The Android/computer note is plain text (no dashed box); the footer's first
+  line is brighter. Words, colours, lights, video, steps and links are unchanged; nothing new loads from elsewhere.
+  - *Tests* (`website.spec.ts`): only drift and holo loop, and nothing else still runs once arrived; a press scales the
+    button and sliding off cancels it; the bar's `edge` and `join` follow the scroll; the slider's fill, pop and three
+    marks; Reduce Transparency (no frosted surface) and Increase Contrast (solid cards, axe clean, via CDP
+    `Emulation.setEmulatedMedia`). Changed: Open app is checked at the top and Sign up after scrolling; the readability
+    sweep judges the bar's showing button at every depth; the 44-point check covers the bar at the top and further
+    down; axe waits for everything to arrive (`arrived`: a half-faded chip read as faint words).
+  - *Couldn't check here*: the press feel, the blur and the Sign up swap on a real iPhone; Reduce Transparency and
+    Increase Contrast in Safari.
+- **Anton's photos on the website (D88, 0.77.0).** The drawn nugs (`.nug.n2`…, still used by `og.html`) give way
+  to the owner's own cut-outs (Remove background, D26) from his live account `anton_godd`: chosen from his public
+  products (never private or kept ones) with a cut-out, read once, read-only, through Cloudflare's D1 and R2 APIs.
+  `site/public/media/nugs/<strain>-s.webp` (96px, rows and chips) and `-l.webp` (440px, the cards and the story's
+  photos, `loading="lazy"` below the top), re-encoded from the PNG cut-out with only the picture inside (no EXIF, XMP
+  or colour profile; the cut-outs held only an empty EXIF stub). **Real strain names and his real Overall scores**
+  (`overall()`, rounded): the hero's top five (Mega Z Emerald 9.5, Super Boof 9.5, Tide 9.3, California OG 9.2, Lemon
+  Popperz 9.1), its tiles (31 products, average 7.9, 4 countries); the story's screens; the little phone in Make it
+  yours; Rate the stack's five cards (Cherry Popperz, White Runtz, Zkittlez, Watermelon Zkittlez, Orange Diesel; the
+  visitor gives the scores). Subtitles are the type and strain type ("Flower · Hybrid"), never a source or country.
+  **Sellers stay made up** (Highland Greens, The Green Room) and so do the examples' prices, weights and people
+  (@sam, @jo). `img.nug` sits on a soft dark tile; `.card img.bud` floats with a drop shadow.
+  - *Tests* (`website.spec.ts`): every picture is a WebP whose chunks are only the picture (`VP8`, `VP8L`, `VP8X`,
+    `ALPH`; proved by adding an EXIF one, which fails), small (under 10 kB / 70 kB), and every one the page names
+    loads from the site itself; Rate the stack's tests use the new names.
+- **New things on the website (D86, 0.75.0).** Five things to play with, each built from an idea in the
+  `apple-design` skill, on top of D85. Shared helpers in `site.js`: `spring` (Apple's damping + response; starts from
+  the current value and speed, so anything can be grabbed mid-move; Reduce Motion jumps to the end), `project` (where
+  a flick comes to rest, Apple's formula), `rubber` (resistance past an edge), `tracker` (speed from the last 100ms).
+  *The phone you can pick up:* drag the hero's `.mini` sideways and it turns 1:1 (4px a degree, `--ty`; the mouse also
+  tilts it, `--tx`), the glare (`.mini::after`) following; past 28° it resists (`rubber`); let go and it springs back
+  with the finger's speed (a little overshoot only after a flick). An 8px sideways start before it takes the finger,
+  so a scroll stays a scroll (`touch-action: pan-y`). *The scroll story* (replaces D85's grouped panel): `.feats.story`,
+  the four features in the left column, a phone (`.pin`, sticky) on the right showing Leaderboard, Log, a brand page or
+  the Feed (`.s.on`, sharpening in) for whichever feature crosses the middle of the screen (`data-on`); back up plays
+  it in reverse; the words never pass behind it; at 320px the phone is smaller (`zoom`). *Make it yours:* a new
+  section after it: the app's fifteen Looks (names and descriptions from `LOOKS` in `shared/domain/gems.ts`) as a row
+  of swatches (`.lk`, `aria-pressed`) that snaps to the nearest; a tap or swipe sets the page's lights (`--lt1`–`--lt3`
+  on `<html>`, 1.4s colour change) and a little phone (`.pmini`); a light Look shows only on the little phone (the page
+  stays dark, no flash of white); not remembered. *Rate the stack* (replaces D85's slider): five made-up cards; drag
+  the top one and its score follows (`5.5 ± 4.5` across half its width), taking the holo colours from 8 (D48) or the
+  heat below (D30), with a Fire or Mids stamp; let go short and it springs back; thrown (projected past 35% of its
+  width) it flies off at the finger's speed, scored where it was let go plus a little for the throw; **Fire** (9.3)
+  and **Mids** (3.1) buttons do the same; each rating is read out (`#rate-now`, `aria-live`); after five, **Your top
+  shelf** (sorted, in the app's colours) and **Rate them again**. *The install sheet:* "Put it on my iPhone" (still a
+  link to `#install` without the script) slides up a glass sheet (`role="dialog"`, `aria-modal`) with the three steps
+  to swipe (`.pages`, dots), over a dimmed page made `inert`; drag it 1:1 (resisting above the top), a flick down,
+  Done, Escape or a tap outside closes it and gives the focus back; "The video and the full steps" closes it and goes
+  to them. Website only; nothing new loads from elsewhere; no data is kept.
+  - *Tests* (`website.spec.ts`): Rate the stack by the buttons (scores, order, colours, read-out words, axe,
+    readability, again) and by dragging (follows the finger, 9.1 and holo at 40%, springs back, thrown left is mids);
+    Make it yours (tap, swipe to the end, the lights and the little phone, the page stays dark, axe, the names
+    readable); **every word readable over the lights of all fifteen Looks** (three depths, three moments); the scroll
+    story (each screen in turn and back, the phone held still, the words beside it); the phone turning (20° for 80px,
+    resisting past 28°, back to 0); the sheet (opens, inert page, focus, axe, readable, swipe, Done, Escape, flick
+    down, the full steps). Changed: the video is scrolled to (the link opens the sheet now); both Safari drawings show
+    the real address; the slider's tests are gone.
+  - *Couldn't check here*: how the drags, flicks and springs feel under a finger on a real iPhone, and Safari's
+    momentum on the Looks row and the sheet's steps.
 - **The new look (D64, 0.54.0).** *Tokens:* the top of `client/src/styles.css` is Aurora Glass (the website's
   `site.css` colours): `--bg` #03070a, `--glass` (white 5%) and `--glass-edge` (white 13%) for cards (`--card-bg` is
   `--glass`), `--surface-1`/`--surface-3` stay solid for what must hide what's behind (sheets, toasts, the country
@@ -1813,12 +1891,78 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   3,000 are waiting; it replies `photoCount`. `PhotoRoom` in `EditorPhotos` and the Composer. *Test servers only:*
   `POST /api/test/not-adult { username }`, `POST /api/test/fill-photos { username, product, count }`. *Tests:*
   `test/api/trust.test.ts`, `test/domain/trust.test.ts`, `migrations.test.ts` (0021), `test/e2e/trust.spec.ts` (core).
+- **The Apple-style base (D87, 0.76.0).** *Fonts:* `--font` and `--display` are SF Pro (`-apple-system`), `--num-font`
+  SF Pro Rounded (`ui-rounded`); no font files any more (`client/public/fonts` gone, nothing preloaded or cached by
+  `sw.js`), and every look uses them (Neon Night, Holo Pearl and Deep Forest had their own titles, D65). *Large
+  titles:* `Header` `large` on the Leaderboard, Log, Sources, Feed and Settings, with `LargeTitle` first in their
+  `<main>` (an `h1`); the bar is clear at the top (`.hdr.top`, from `useAtTop`, under 36px of scroll) and turns to
+  glass with the small title fading in as you scroll. No leaf in the bar (`leaf` brings it back). *Tab bar:* four tabs
+  (Settings left it) in a floating glass bar off the screen's edges, the tab you're on on a soft pill; a screen's `.fab`
+  is a round glass button beside it (`body:has(.fab) .nav` makes room). `MeButton` opens Settings ("Settings
+  (@name)"); Settings' card at the top opens People at your card; People has no photo button. *Calm surfaces:* in the
+  D87 block of `styles.css` (before the light tone): cards without outlines (`.row`, `.sect`, `.list`, `.fgroup`,
+  `.lrows`, `.empty`, `.seg`, `.post`), bigger radii (`--r-card` 22, `--r-group` 18), no ALL-CAPITALS labels
+  (`.cap` and the rest in sentence case; `rankByCaption` gives "Overall", "Taste"…), Settings' grouped lists with
+  inset hairlines and solid coloured icon squares (`.li-ic`), capsule buttons. Cards have no backdrop blur: it makes
+  anything fixed inside them (the avatar cropper, a sheet) sit inside the card. *Rows:* 62px photos, the strain as a
+  coloured word (no chip), the score in SF Pro Rounded 28px with "Overall" only read out (`.cap.visually-hidden`); the
+  colour sets' cards are unchanged until stage C. *Tops* (the saved names kept, so nobody's choice moves):
+  `strip` **Compact**, one line under the large title (the default since D71); `tiles` **Summary**, one glass card
+  with the average big, the others beside it, a bar of how the scores spread over the colour set's bands (`Spread`)
+  and your #1; `hero` **Showcase**, the Compact line and your top three as swipeable photo cards (`Showcase`,
+  `components/BoardTop.tsx`); a screen with no showcase (the Log, a friend's board) shows the Compact line. The Rank / Type
+  pills stay above the top (D71). *Product page:* Edit only at the top; Private, Post, Return to Log and Archive one
+  grouped list (`.acts`), Archive in red; a taller photo, the name as a large title. *Feed:* posts without a card,
+  photos rounded and inset. *Motion:* press-in (`.is-pressed`, D20's timing) with a spring back (`--bounce`) on rows, buttons, the + and the
+  Showcase cards, list rows lighting up instead; sheets rise from the bottom edge with iOS's curve (`--spring`, still the `rise` animation that
+  `settled` waits for) over a fading scrim. *Tests:* `header.spec.ts` (the photo opens Settings, the large title
+  slides under the bar), `quality.spec.ts` (the Apple-style base on every main screen), `numbers.spec.ts` (Apple's
+  fonts, nothing downloaded), `expectStatsFit` (the three tops).
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.77.1 — the tab bar's four tabs exactly equal
+- The floating tab bar (D87) shared its width with a plain `1fr`, which lets a tab whose name is wider than its share
+  grow: on the CI machines' fonts "Leaderboard" widened its tab by 2px (`tabbar.spec.ts` failed in the 0.77.0 release
+  run). Now `minmax(0, 1fr)` (each exactly a quarter), the names a touch tighter (`-0.02em`, one line) and the bar's
+  side padding 3px, so "Leaderboard" fits its quarter on those fonts too. Reproduced by drawing the names at the CI
+  size (11.58px here): failed before, passes after.
+
+### 0.77.0 — Anton's photos on the website (owner request, D88)
+- The website's nugs are now the owner's own cut-out photos, with his real strain names and scores (his top five on
+  the hero's phone; five more on Rate the stack). Sellers stay made up. Website only.
+
+### 0.76.0 — the Apple-style redesign, stage A: the base design (D87)
+- Apple's own fonts: SF Pro for words, SF Pro Rounded for scores. No fonts downloaded.
+- Big titles on the left of the main screens that slide under the bar as you scroll.
+- A floating glass tab bar of four tabs, with + as its own round button beside it. Settings opens from your photo,
+  top right; your card at the top of Settings opens People.
+- Calm cards without outlines, no capital-letter labels, Settings with coloured icon squares like the iPhone's own.
+- Leaderboard rows with bigger photos and rounded scores, "Overall" no longer written under each.
+- Three new tops: Compact (the default), Summary (with a bar of how your scores spread) and Showcase (your top three
+  as big photos you swipe). Your saved choice moves to its new top.
+- The product page: Edit at the top only, and its actions as one tidy list.
+- Things press in when you touch them and spring back; sheets rise from the bottom like the iPhone's.
+
+### 0.75.0 — new things on the website (owner request, D86)
+- Rate the stack (flick five made-up cards, then your top shelf), Make it yours (the fifteen Looks change the page's
+  lights), a hero phone you can pick up and turn, the scroll story (the phone shows each feature as you reach it), and
+  "Put it on my iPhone" as a sheet. Replaces D85's slider and grouped panel. Website only; the app is unchanged.
+
+### 0.74.0 — the website, polished in Apple's style (owner request, D85)
+- From a review against the new `apple-design` skill. Buttons press in as soon as they're touched; the phone, chips,
+  shine and step pictures move once instead of looping; the lights drift at half the speed; the top bar shows its
+  edge only when the page is under it and swaps Open app for Sign up once you've scrolled past the hero; the four
+  features in one panel; an iPhone-style slider with marks at 8, 9 and 9.5; Reduce Transparency and Increase Contrast
+  respected. Website only (`site/`); the app is unchanged.
+
+### Notes — trust basics for strangers are live
+- 0.73.0–0.73.1 (on dev 2026-11-03) went live on 2026-11-03 (release 0.73.1) and move to Done. The release check
+  caught `more.spec.ts` still counting 16 Settings rows (19 with About), fixed in #184 (tests only). Notes only.
 
 ### 0.73.1 — the contact address (owner request)
 - The privacy page, house rules, Settings › About › Contact and the website show greentracker.help@gmail.com

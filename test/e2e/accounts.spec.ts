@@ -81,7 +81,7 @@ test('create an account with email and password, Face ID once, sign out and in b
   // Signed in: the app shell. No recovery codes anywhere.
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('link', { name: /^Settings \(@/ }).click();
   await expect(page.getByText(`@${username}`)).toBeVisible();
   await expect(page.getByRole('link', { name: new RegExp(`Email\\s*${email.replace('.', '\\.')}`) })).toBeVisible();
   await expect(page.getByRole('link', { name: /^Face ID\s*1\b/ })).toBeVisible();
@@ -95,7 +95,7 @@ test('create an account with email and password, Face ID once, sign out and in b
   await expect(page.getByRole('link', { name: 'Leaderboard', exact: true })).toHaveAttribute('aria-current', 'page');
 
   // Lose the phone: sign out and wipe the authenticator; the email and password still get you in.
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('link', { name: /^Settings \(@/ }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await cdp.send('WebAuthn.clearCredentials', { authenticatorId });
   await page.getByRole('link', { name: 'Sign in' }).click();
@@ -130,8 +130,8 @@ test('create an account with email and password, Face ID once, sign out and in b
   await expect(removes).toHaveCount(0);
   await shot(page, '08-passkeys');
 
-  // Sign out everywhere, confirmed.
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  // Sign out everywhere, confirmed (back to Settings: the passkeys page has no photo button).
+  await page.getByRole('link', { name: 'Back' }).click();
   await page.getByRole('button', { name: 'Sign out everywhere' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Sign out everywhere' }).click();
   await expect(page).toHaveURL(/\/signin$/);
@@ -181,7 +181,7 @@ test('Not now: no passkey, and the password signs you in', async ({ page }) => {
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByRole('button', { name: 'Not now' }).click();
   await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('link', { name: /^Settings \(@/ }).click();
   await expect(page.getByRole('link', { name: /^Face ID\s*0\b/ })).toBeVisible();
 });
 

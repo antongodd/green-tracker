@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { ApiError, api, errorText, type Passkey } from '../api';
 import { PasswordField } from '../components/inputs';
-import { BackButton, Header, Sheet, TabBar } from '../components/chrome';
+import { BackButton, Header, LargeTitle, Sheet, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
@@ -120,8 +120,9 @@ export function More() {
   return (
     <>
       {/* D61: the Settings tab (More before it). */}
-      <Header title="Settings" right={<MeButton />} />
+      <Header title="Settings" large />
       <main class="screen">
+        <LargeTitle title="Settings" />
         {/* D38 (0.31.0): you at the top, then the settings with icon tiles, like the iPhone's Settings. */}
         <div class="wrap more-top">
           <a class="more-me" href="/people" onClick={linkTo('/people')}>
