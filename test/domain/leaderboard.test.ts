@@ -224,8 +224,8 @@ describe('Product pages: place and badge (D22, D48)', () => {
 
 describe('rankByCaption', () => {
   it('says VALUE under a value-for-money score, never VFM (0.69.9)', () => {
-    expect(rankByCaption('vfm')).toBe('VALUE');
-    expect(rankByCaption('overall')).toBe('OVERALL');
-    expect(rankByCaption('price')).toBe('PRICE');
+    expect(rankByCaption('vfm')).toBe('Value');
+    expect(rankByCaption('overall')).toBe('Overall');
+    expect(rankByCaption('price')).toBe('Price');
   });
 });

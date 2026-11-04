@@ -88,8 +88,8 @@ test('their board is in their look, top and colours; the key says whose; your ph
   await expect(html(fan)).toHaveAttribute('data-look', 'outrun');
   expect(await fan.locator('meta[name="theme-color"]').getAttribute('content')).toBe(LOOK_BG.outrun);
   // Their top: two tiles (Products and Average), not your slim strip.
-  await expect(fan.locator('.tiles.two .tile')).toHaveCount(2);
-  await expect(fan.locator('.banner')).toHaveCount(0);
+  await expect(fan.locator('.banner.summary .tile')).toHaveCount(2); // Summary (`tiles`, D87)
+  await expect(fan.locator('.banner.strip')).toHaveCount(0);
   // Their colours: Metals, and no crown or halo (they turned Mark my #1 off).
   await expect(fan.locator('.row.tier.pal-metals')).toHaveCount(2);
   await expect(fan.locator('.row.tier.pal-gems')).toHaveCount(0);
@@ -128,7 +128,7 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   await expect(fan.locator('main')).toHaveAttribute('class', /pal-metals/);
   await fan.getByRole('link', { name: 'Acme' }).click();
   await expect(fan.locator('.brand-lead')).toBeVisible();
-  await expect(fan.locator('.tiles.two')).toBeVisible();
+  await expect(fan.locator('.banner.summary')).toBeVisible();
   await expect(fan.locator('.row.tier.pal-metals')).toHaveCount(2);
   await fan.goBack();
   await expect(fan.locator('.gem-badge')).toBeVisible();
@@ -165,14 +165,14 @@ test('someone you don’t follow stays in your look; so does your own board as f
   await owner.goto('/more/privacy/preview');
   await expect(owner.locator('.row', { hasText: 'Alpha' })).toBeVisible();
   await expect(html(owner)).toHaveAttribute('data-look', 'outrun');
-  await expect(owner.locator('.tiles.two')).toBeVisible();
+  await expect(owner.locator('.banner.summary')).toBeVisible();
 });
 
 test('a light look: the iPhone’s own controls follow theirs, then yours come back', async () => {
   expect(await appearance(owner, { look: 'daysky', top: 'hero', preset: 'gems', markFirst: true })).toBe(200);
   await fan.goto('/people');
   await go(fan, `/u/${ownerName}`);
-  await expect(fan.locator('.banner.hero')).toBeVisible();
+  await expect(fan.locator('.banner.strip')).toBeVisible(); // Showcase (`hero`): on a friend's board, the Compact line (D87)
   await expect(html(fan)).toHaveAttribute('data-look', 'daysky');
   await expect(html(fan)).toHaveAttribute('data-tone', 'light');
   expect(await fan.locator('meta[name="color-scheme"]').getAttribute('content')).toBe('light');

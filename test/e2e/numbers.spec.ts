@@ -2,17 +2,17 @@ import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { signUp } from './helpers';
 
-// D28 (0.21.0), D64 (0.54.0): scores, ranks, stats tiles, colour badge numbers, rating values and
-// value for money use Unbounded, stored with the app (the owner found D28's rounded numbers too
-// soft); titles and product names use it too. Prices, amounts and words keep the text font,
-// Manrope. Both fonts are really drawn, not a fallback.
+// D28 (0.21.0), D64 (0.54.0), D87 (0.76.0): scores, ranks, stats, colour badge numbers, rating values and
+// value for money use SF Pro Rounded (ui-rounded, the owner's pick of four, as in Fitness); titles,
+// product names, prices, amounts and words use SF Pro (-apple-system). Both are Apple's own, already
+// on the iPhone: nothing is downloaded (Chromium here draws its stand-in).
 let page: Page;
 let id = '';
 
 const family = (sel: string) => page.locator(sel).first().evaluate((e) => getComputedStyle(e).fontFamily);
-const rounded = async (sel: string) => expect(await family(sel), sel).toMatch(/^Unbounded, -apple-system/);
-const usual = async (sel: string) => expect(await family(sel), sel).toMatch(/^Manrope, -apple-system/);
-const display = async (sel: string) => expect(await family(sel), sel).toMatch(/^Unbounded, "Arial Black"/);
+const rounded = async (sel: string) => expect(await family(sel), sel).toMatch(/^ui-rounded, "SF Pro Rounded"/);
+const usual = async (sel: string) => expect(await family(sel), sel).toMatch(/^-apple-system, BlinkMacSystemFont, "SF Pro Text"/);
+const display = async (sel: string) => expect(await family(sel), sel).toMatch(/^-apple-system, BlinkMacSystemFont, "SF Pro Display"/);
 
 test.beforeAll(async ({ browser }) => {
   page = await (await browser.newContext()).newPage();
@@ -24,7 +24,7 @@ test.afterAll(async () => {
   await page.context().close();
 });
 
-test('scores, ranks and tiles use Unbounded; prices and names keep the text font', async () => {
+test('scores, ranks and tiles use SF Pro Rounded; prices and names keep SF Pro', async () => {
   await page.goto('/');
   await expect(page.locator('.row', { hasText: 'Round Kush' })).toBeVisible();
   for (const sel of ['.row .score b', '.row .rk', '.tile b']) await rounded(sel);
@@ -40,23 +40,21 @@ test('on the product page and in the editor too', async () => {
   for (const sel of ['.hero-score b', '.gem-badge .n', '.rbar .v', '.vfm b']) await rounded(sel);
   for (const sel of ['.hero-price', '.purchase .u']) await usual(sel);
   await display('.hero h1');
-  await display('.hdr .title');
+  await usual('.hdr .title');
   await page.goto(`/products/${id}/edit`);
   await expect(page.locator('.rate-top .val').first()).toBeVisible();
   await rounded('.rate-top .val');
   await usual('.rate-top .l');
 });
 
-test('the two fonts are stored with the app and really drawn (D64)', async () => {
+test('D87: Apple’s own fonts, so the app downloads no font at all', async () => {
+  const asked: string[] = [];
+  page.on('request', (r) => {
+    if (r.resourceType() === 'font') asked.push(r.url());
+  });
   await page.goto('/');
   await expect(page.locator('.row', { hasText: 'Round Kush' })).toBeVisible();
-  const loaded = await page.evaluate(async () => {
-    await document.fonts.ready;
-    return ['700 20px Unbounded', '600 16px Manrope'].map((f) => document.fonts.check(f));
-  });
-  expect(loaded).toEqual([true, true]);
-  for (const f of ['unbounded', 'manrope']) {
-    const r = await page.request.get(`/fonts/${f}.woff2`);
-    expect(r.status(), f).toBe(200);
-  }
+  await page.evaluate(() => document.fonts.ready);
+  expect(asked).toEqual([]);
+  expect(await page.evaluate(() => document.fonts.size)).toBe(0);
 });

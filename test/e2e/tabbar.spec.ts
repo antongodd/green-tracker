@@ -1,9 +1,9 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { contrastFailures, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
 
-// D35 (0.28.0): the tab bar's icons (P1's podium, notebook, people, dots; the Smokes tab went in
-// 0.50.0, D60) are slim outlines; the tab you're on shows its solid icon, in green, glowing, with a
-// short glowing green line under its name, in place of D18's green bubble. The follow requests number is on the Feed tab since D77 (People moved into the Feed).
+// D35 (0.28.0): the tab bar's icons are slim outlines; the tab you're on shows its solid icon, in green. D87: four tabs
+// (Settings is your photo, top right) in a floating glass bar, the tab you're on on a soft pill (no glow or line any
+// more), the screen's + a round button beside the bar. The follow requests number is on the Feed tab since D77.
 test.describe.configure({ mode: 'serial' });
 let page: Page, fan: Page;
 let name = '';
@@ -27,8 +27,8 @@ const tabs = () =>
         icon: svg.classList.contains('tab-on') ? 'solid' : svg.classList.contains('tab-off') ? 'outline' : '?',
         outlined: [...svg.querySelectorAll('path')].some((d) => d.getAttribute('stroke') === 'currentColor'),
         glow: getComputedStyle(svg).filter.includes('drop-shadow'),
-        line: after.content !== 'none' && after.backgroundImage.startsWith('linear-gradient(90deg, rgb(111, 233, 164)') ? after.width : null,
-        bubble: getComputedStyle(t, '::before').content !== 'none',
+        line: after.content !== 'none' && after.display !== 'none' ? after.width : null,
+        pill: getComputedStyle(t).backgroundColor.replace(/\s/g, '') !== 'rgba(0,0,0,0)',
         color: getComputedStyle(t).color,
       };
     }),
@@ -39,16 +39,26 @@ test.beforeAll(async ({ browser }) => {
   ({ page: fan, name: fanName } = await person(browser, 'fan'));
 });
 
-test('five tabs: Sources third, Settings last (D61), each a fifth of the bar', async () => {
+test('four tabs in a floating bar (D87): Sources third, Feed last, each a quarter of it; the + beside it', async () => {
   await page.goto('/');
   // Wait for the bar itself: on a busy machine the app is still starting when the page loads (0.36.0 CI).
-  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'Sources', 'Feed', 'Settings']);
-  expect((await tabs()).map((t) => t.label)).toEqual(['Leaderboard', 'Log', 'Sources', 'Feed', 'Settings']);
+  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'Sources', 'Feed']);
+  const bar = (await page.locator('.nav').boundingBox())!;
+  const fab = (await page.getByRole('button', { name: 'Add a product' }).boundingBox())!;
+  expect(bar.x, 'off the left edge').toBeGreaterThanOrEqual(10);
+  expect(844 - (bar.y + bar.height), 'off the bottom edge').toBeGreaterThanOrEqual(8);
+  expect(fab.x, 'the + is beside the bar').toBeGreaterThan(bar.x + bar.width);
+  expect(Math.abs(fab.y + fab.height / 2 - (bar.y + bar.height / 2)), 'level with it').toBeLessThanOrEqual(1);
   const widths = await page.locator('.nav .tab').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width));
-  for (const w of widths) expect(w).toBeCloseTo(390 / 5, 0);
+  for (const w of widths) expect(w).toBeCloseTo(widths[0]!, 0);
   // Each name fits its tab.
-  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > 390 / 5).map((e) => e.textContent));
+  const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > e.parentElement!.getBoundingClientRect().width).map((e) => e.textContent));
   expect(clipped).toEqual([]);
+  // Without a + (Sources), the bar takes the width.
+  await page.goto('/sources');
+  await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(/^Sources/);
+  const wide = (await page.locator('.nav').boundingBox())!;
+  expect(wide.width).toBeGreaterThan(bar.width + 60);
 });
 
 test('the old Smokes addresses open the Leaderboard', async () => {
@@ -58,16 +68,15 @@ test('the old Smokes addresses open the Leaderboard', async () => {
   }
 });
 
-for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/sources', 'Sources'], ['/feed', 'Feed'], ['/more', 'Settings']] as const) {
-  test(`on ${label}: only its tab is solid, glowing and underlined; the others are outlines`, async () => {
+for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/sources', 'Sources'], ['/feed', 'Feed']] as const) {
+  test(`on ${label}: only its tab is solid, green and on a pill; the others are outlines`, async () => {
     await page.goto(path);
     await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(new RegExp(`^${label}`));
     for (const t of await tabs()) {
-      expect(t.bubble, t.label).toBe(false);
       if (t.label === label) {
-        expect(t, t.label).toMatchObject({ current: true, icon: 'solid', outlined: false, glow: true, line: '18px', color: 'rgb(111, 233, 164)' });
+        expect(t, t.label).toMatchObject({ current: true, icon: 'solid', outlined: false, glow: false, line: null, pill: true, color: 'rgb(111, 233, 164)' });
       } else {
-        expect(t, t.label).toMatchObject({ current: false, icon: 'outline', outlined: true, glow: false, line: null, color: 'rgba(241, 246, 243, 0.7)' });
+        expect(t, t.label).toMatchObject({ current: false, icon: 'outline', outlined: true, glow: false, line: null, pill: false, color: 'rgba(241, 246, 243, 0.7)' });
       }
     }
     if (label === 'Leaderboard') await shot(page, '95-tabbar');
@@ -113,6 +122,7 @@ test('tab names are readable, current and not', async () => {
   for (const path of ['/log', '/feed']) {
     await page.goto(path);
     await page.locator('.nav .tab[aria-current="page"]').waitFor();
+    await settled(page);
     expect(await contrastFailures(page, await textBoxes(page, '.nav .tab-l'), 1), path).toEqual([]);
   }
 });

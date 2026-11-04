@@ -1,25 +1,32 @@
 import type { ComponentChildren } from 'preact';
-import { BackIcon, BoardIcon, BoardLineIcon, FeedIcon, FeedLineIcon, LeafGlass, LogIcon, LogLineIcon, SettingsIcon, SettingsLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
+import { useEffect, useState } from 'preact/hooks';
+import { BackIcon, BoardIcon, BoardLineIcon, FeedIcon, FeedLineIcon, LeafGlass, LogIcon, LogLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
 import { back, linkTo } from '../router';
 import { useSession } from '../session';
 import { Tick } from './Tick';
 
 /**
  * Header (brief §8): equal-width side slots keep the title optically centred.
- * Empty slots keep their space (visibility: hidden). `icon` replaces the leaf before
- * the title (a friend's photo beside @username, D23); the main tabs put your own
- * photo on the right (MeButton, D25).
+ * Empty slots keep their space (visibility: hidden). `icon` goes before the title (a friend's photo
+ * beside @username, D23); the main screens put your own photo on the right (MeButton, D25: Settings
+ * since D87).
+ *
+ * D87: the main screens have Apple's large title (`LargeTitle`, first in their `<main>`). With `large`
+ * the bar is clear at the top; as you scroll the big title slides under it, the bar turns to glass and
+ * the small title fades in (`.hdr.top` while you're at the top). The leaf is gone from the bar (`leaf`
+ * brings it back where it's wanted).
  */
-export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChildren; left?: ComponentChildren; right?: ComponentChildren }) {
+export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChildren; left?: ComponentChildren; right?: ComponentChildren; large?: boolean }) {
   // D47: on the dev site an orange DEV label sits after the title on every screen.
   const dev = useSession().me.site === 'dev';
+  const atTop = useAtTop(!!p.large);
   return (
-    <header class="hdr">
+    <header class={`hdr${p.large ? ' large' : ''}${p.large && atTop ? ' top' : ''}`}>
       <div class="bar">
         <div class={`slot${p.left ? '' : ' hidden'}`}>{p.left}</div>
         <div class="title">
-          {p.icon ?? (p.leaf !== false && <LeafGlass />)}
-          <span>{p.title ?? 'Green Tracker'}</span>
+          {p.icon ?? (p.leaf === true && <LeafGlass />)}
+          <span aria-hidden={p.large ? 'true' : undefined}>{p.title ?? 'Green Tracker'}</span>
           {dev && (
             <b class="dev-badge" aria-label="Dev site">
               DEV
@@ -30,6 +37,24 @@ export function Header(p: { title?: string; leaf?: boolean; icon?: ComponentChil
       </div>
     </header>
   );
+}
+
+/** True while the page is scrolled (nearly) to the top: the large title is showing (D87). */
+function useAtTop(on: boolean): boolean {
+  const [top, setTop] = useState(true);
+  useEffect(() => {
+    if (!on) return;
+    const check = () => setTop(window.scrollY < 36);
+    check();
+    window.addEventListener('scroll', check, { passive: true });
+    return () => window.removeEventListener('scroll', check);
+  }, [on]);
+  return top;
+}
+
+/** A main screen's large title (D87): its name, big on the left, first in its `<main>`. */
+export function LargeTitle(p: { title: string }) {
+  return <h1 class="ltitle">{p.title}</h1>;
 }
 
 /** Goes back in the app's history when there is some (so screens can restore); otherwise to `to`. */
@@ -47,7 +72,8 @@ export function BackButton(p: { to: string; label?: string }) {
   );
 }
 
-/** `more` is the Settings tab (D61); its screens keep their /more addresses. `feed` took People's place (D77). */
+/** `more` is Settings (D61): no tab since D87 (your photo, top right, opens it); its screens keep their /more
+ *  addresses. `feed` took People's place (D77). */
 export type Tab = 'leaderboard' | 'log' | 'sources' | 'feed' | 'more';
 
 /** Each tab: its solid icon (the tab you're on) and its outline (the others), D35. */
@@ -56,7 +82,6 @@ const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Lin
   { key: 'log', label: 'Log', path: '/log', Icon: LogIcon, Line: LogLineIcon },
   { key: 'sources', label: 'Sources', path: '/sources', Icon: SourcesIcon, Line: SourcesLineIcon },
   { key: 'feed', label: 'Feed', path: '/feed', Icon: FeedIcon, Line: FeedLineIcon },
-  { key: 'more', label: 'Settings', path: '/more', Icon: SettingsIcon, Line: SettingsLineIcon },
 ];
 
 /**
@@ -77,6 +102,7 @@ function again(key: Tab, path: string) {
   };
 }
 
+/** D87: a floating glass bar of four tabs; a screen's + (`.fab`) sits beside it as its own round button. */
 export function TabBar(p: { active: Tab | null }) {
   const { me } = useSession();
   const requests = me.pendingRequests ?? 0;

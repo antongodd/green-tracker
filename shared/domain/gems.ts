@@ -115,13 +115,14 @@ export const LOOKS: Record<Look, { label: string; description: string }> = {
   daysky: { label: 'Daylight Sky', description: 'A clear blue morning, a warm glow' },
 };
 
-/** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. */
+/** The top of the Leaderboard (D64), also used by the Log, a friend's board and a name's page. D87 kept the saved
+ *  names and gave them new tops: `strip` Compact, `hero` Showcase, `tiles` Summary. */
 export type BoardTop = 'hero' | 'tiles' | 'strip';
 export const BOARD_TOP_KEYS = ['strip', 'hero', 'tiles'] as const satisfies readonly BoardTop[];
 export const BOARD_TOPS: Record<BoardTop, { label: string; description: string }> = {
-  hero: { label: 'Glass hero', description: 'One big card' },
-  tiles: { label: 'Three tiles', description: 'Side by side' },
-  strip: { label: 'Slim strip', description: 'One line, more rows' },
+  hero: { label: 'Showcase', description: 'Your top three as big photos' },
+  tiles: { label: 'Summary', description: 'One card, how your scores spread' },
+  strip: { label: 'Compact', description: 'One line, more rows' },
 };
 
 export interface Appearance {

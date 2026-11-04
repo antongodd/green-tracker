@@ -1,17 +1,14 @@
 /* Green Tracker — tokens and components from the design brief (§3–§6) and the
    approved Phase-1 mockups. Use only these tokens; no one-off colours. */
 
-/* The new look's fonts (D64), stored with the app (font-src 'self'; kept offline by sw.js). */
-@font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
-@font-face { font-family: "Manrope"; src: url("/fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
-/* Holo Pearl's titles (D65): only downloaded when that look is on. */
-@font-face { font-family: "Sora"; src: url("/fonts/sora.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
+/* Fonts (D87): Apple's own, already on every iPhone, so nothing is downloaded. SF Pro for words and titles,
+   SF Pro Rounded (ui-rounded) for scores and numbers, as in Fitness and Weather. Before D87: Unbounded and Manrope. */
 
 :root {
   color-scheme: dark;
   /* The new look (D64, 0.54.0): Aurora Glass, the website's look (D63) in the app. A blue-black
      background with drifting green, teal and violet lights (.bg-layer), frosted-glass cards,
-     Unbounded for titles and numbers, Manrope for words. Each look (html[data-look]) is a set
+     Apple's own fonts since D87. Each look (html[data-look]) is a set
      of these tokens: Aurora Glass, where everyone starts, lives here on :root; the other three
      (D65) override them just below. */
   --bg: #03070a;
@@ -65,14 +62,14 @@
   --star: #ffd36b; /* the cover's ring and star (D52), the crown's gold */
   --warning: #f0a93b;
   --glow: rgba(88, 224, 140, 0.65); /* the chosen tab's and the add button's glow (each D70 look has its own) */
-  --font: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  /* Titles (D64): Unbounded, wide and bold, as on the website. */
-  --display: "Unbounded", "Arial Black", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Titles (D87): SF Pro, bold, tightened as it grows (Apple's large titles). */
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
   --display-w: 700;
-  /* Scores, ranks, tiles and badges: Unbounded since D64 (the owner found D28's rounded numbers
-     too soft). Prices, amounts, dates and words keep the text font. */
-  --num-font: "Unbounded", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Scores, ranks and stats (D87, the owner's pick of four): SF Pro Rounded, as in Fitness and Weather.
+     Prices, amounts, dates and words keep the text font. */
+  --num-font: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: calc(44px + var(--safe-top));
@@ -97,7 +94,6 @@ html[data-look="neon"] {
   --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(122, 60, 255, 0.32), transparent 60%), radial-gradient(100% 90% at 100% 100%, rgba(255, 63, 184, 0.24), transparent 60%);
   --light-1: rgba(122, 60, 255, 0.34); --light-2: rgba(255, 63, 184, 0.24); --light-3: rgba(39, 216, 255, 0.2);
   --sticky-bg: rgba(6, 4, 26, 0.6); --controls-bg: rgba(6, 4, 26, 0.3);
-  --display-w: 800;
 }
 /* Holo Pearl: near-black, calmer pastel lights, pearly rainbow edges on the stand-out cards, Sora titles. */
 html[data-look="pearl"] {
@@ -116,7 +112,6 @@ html[data-look="pearl"] {
   --hero-wash: linear-gradient(120deg, rgba(255, 154, 168, 0.12), rgba(255, 242, 168, 0.07) 30%, rgba(166, 240, 193, 0.09) 55%, rgba(159, 220, 255, 0.11) 78%, rgba(205, 189, 255, 0.14));
   --light-1: rgba(255, 154, 168, 0.16); --light-2: rgba(159, 220, 255, 0.16); --light-3: rgba(205, 189, 255, 0.18);
   --sticky-bg: rgba(8, 8, 12, 0.6); --controls-bg: rgba(8, 8, 12, 0.3);
-  --display: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 /* Deep Forest: the green look before D64, tidied, with the new numbers; Manrope titles. */
 html[data-look="forest"] {
@@ -135,7 +130,6 @@ html[data-look="forest"] {
   --hero-wash: radial-gradient(120% 90% at 0% 0%, rgba(88, 224, 140, 0.16), transparent 60%);
   --light-1: rgba(47, 184, 106, 0.2); --light-2: rgba(64, 196, 196, 0.13); --light-3: rgba(47, 184, 106, 0.08);
   --sticky-bg: rgba(5, 8, 7, 0.6); --controls-bg: rgba(5, 8, 7, 0.3);
-  --display: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif; --display-w: 800;
 }
 
 /* Eight more looks (D70, 0.60.0). The owner's rule: a look changes only colours and the background
@@ -705,7 +699,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 /* ---------- action sheet ---------- */
 .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.55); }
 .sheet { position: fixed; left: 8px; right: 8px; bottom: calc(var(--safe-bottom) + 8px); z-index: 41; display: grid; gap: 8px; max-width: 520px; margin: 0 auto; }
-.sheet .grp { background: var(--surface-3); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+.sheet .grp { background: var(--surface-3); border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
 .sheet .ttl { padding: 14px 16px; text-align: center; font-size: 13px; color: var(--text-2); border-bottom: 1px solid var(--hairline); }
 .sheet .ttl strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 2px; }
 .sheet .opt { display: flex; align-items: center; justify-content: center; width: 100%; height: 56px; font-size: 18px; color: var(--accent-bright); background: none; border: 0; border-top: 1px solid var(--hairline); }
@@ -713,8 +707,10 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 .sheet .opt.dng { color: var(--danger); }
 .sheet .opt.bold { font-weight: 600; color: var(--text); }
 @media (prefers-reduced-motion: no-preference) {
-  .sheet { animation: rise 0.2s ease-out; }
-  @keyframes rise { from { transform: translateY(24px); opacity: 0; } }
+  /* D87: a sheet rises from the bottom edge and settles like an iPhone's (the scrim fades in under it). */
+  .sheet { animation: rise 0.45s cubic-bezier(0.32, 0.72, 0, 1); }
+  .scrim { animation: fade 0.3s ease-out; }
+  @keyframes rise { from { transform: translateY(calc(100% + 24px)); } }
 }
 
 .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 16px); transform: translateX(-50%); z-index: 50; padding: 10px 16px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--hairline-strong); font-size: 14px; }
@@ -1890,6 +1886,178 @@ html[data-look="pearl"] .pill.active { background: linear-gradient(var(--accent-
 .room.full { background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 
 
+/* ========== The Apple-style base (D87, 0.76.0) ==========
+   The owner: make it look like an app Apple made (Photos, Settings). The rules, everywhere:
+   - Large titles: the main screens' name big on the left; the bar above is clear until you scroll,
+     then it turns to glass and the small title fades in (Header `large`, `.hdr.top`).
+   - A floating glass tab bar (four tabs) with the screen's + as its own round button beside it.
+   - Calm surfaces: no outlines round cards, no ALL-CAPITALS labels; hierarchy from size and weight.
+   - Things react the instant you touch them and settle with a spring; sheets rise and menus grow from
+     the button you pressed.
+   A Look still changes only colours and the background (D70). */
+:root {
+  --nav-h: calc(78px + var(--safe-bottom) * 0.6);
+  --spring: cubic-bezier(0.32, 0.72, 0, 1); /* iOS sheets: fast out, long gentle settle */
+  --bounce: cubic-bezier(0.34, 1.4, 0.64, 1); /* a little overshoot, for things you pressed or flicked */
+  --r-card: 22px;
+  --r-group: 18px;
+  --large-h: 52px;
+}
+
+/* ---------- header and large title ---------- */
+.hdr { border-bottom: 0; transition: background-color 0.25s ease, -webkit-backdrop-filter 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease; box-shadow: 0 0.5px 0 var(--bar-line); }
+.hdr .title { font-family: var(--font); font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+.hdr .title span { transition: opacity 0.2s ease, transform 0.35s var(--spring); }
+.hdr.top { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+.hdr.top::before { background: transparent; }
+.hdr.top .title span { opacity: 0; transform: translateY(6px); }
+.ltitle { max-width: 720px; margin: 0 auto; padding: 4px 20px 2px; box-sizing: border-box; font-family: var(--display); font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.025em; color: var(--text); }
+.screen > .ltitle { position: relative; z-index: 1; }
+.hbtn { color: var(--accent-bright); font-size: 17px; }
+.me-btn { padding: 0 12px 0 8px; }
+.me-btn .av { box-shadow: 0 0 0 2px var(--bar-solid), 0 4px 14px rgba(0, 0, 0, 0.35); }
+
+/* ---------- the floating tab bar and the + beside it ---------- */
+.nav { left: 14px; right: 14px; bottom: max(10px, calc(var(--safe-bottom) - 12px)); padding: 0 5px; border-radius: 31px; border: 0; max-width: 560px; margin: 0 auto;
+  background: var(--bar); -webkit-backdrop-filter: blur(26px) saturate(180%); backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 0.5px var(--hairline-strong), 0 10px 30px rgba(0, 0, 0, 0.4); }
+.nav::after { display: none; }
+body:has(.fab) .nav { right: 86px; }
+.nav .tabs { height: 62px; align-items: center; }
+.tab { height: 52px; border-radius: 26px; gap: 2px; padding-bottom: 0; color: var(--text-2); transition: background-color 0.25s ease, transform 0.4s var(--bounce); }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--accent-bright); background: var(--glass-strong); }
+.tab[aria-current="page"] svg { filter: none; }
+.tab[aria-current="page"]::after { display: none; }
+.tab-l { font-size: 10px; font-weight: 600; letter-spacing: 0; }
+.tab .badge { top: 2px; border-color: transparent; }
+.fab { right: max(14px, calc(50vw - 280px)); bottom: max(10px, calc(var(--safe-bottom) - 12px)); width: 62px; height: 62px; color: var(--accent-bright);
+  background: var(--bar); -webkit-backdrop-filter: blur(26px) saturate(180%); backdrop-filter: blur(26px) saturate(180%);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 0.5px var(--hairline-strong), 0 10px 30px rgba(0, 0, 0, 0.4); transition: transform 0.45s var(--bounce); z-index: 21; }
+.fab svg { width: 28px; height: 28px; }
+.screen.has-fab { padding-bottom: calc(var(--nav-h) + 24px); }
+
+/* ---------- calm labels: sentence case, no spaced-out capitals ---------- */
+.cap, .gh-ov > span, .data-tile span, .pv-score span, .latest, .tag-latest, .new-tag, .in-log, .lock-tag, .log-tag, .tag { text-transform: none; letter-spacing: 0; }
+.cap { font-size: 12px; font-weight: 500; }
+.lh.cap { padding: 22px 32px 7px; font-size: 13px; font-weight: 500; color: var(--text-2); max-width: 720px; margin: 0 auto; box-sizing: border-box; }
+.lh.cap.dng { color: var(--danger); }
+.fgroup > .cap, .gh > .cap { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.cdrop .cap, .pv-cap, .privacy section > h2.lh { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+.group-h { text-transform: none; letter-spacing: -0.01em; }
+
+/* ---------- rows: calm cards ---------- */
+.rows { gap: 10px; }
+.row { grid-template-columns: 18px 62px minmax(0, 1fr) minmax(48px, max-content); gap: 12px; min-height: 82px; padding: 10px 16px 10px 10px; border-radius: var(--r-card); border-color: transparent;
+  transition: transform 0.45s var(--bounce), background-color 0.2s ease; }
+.row:not(.tier).is-pressed { border-color: transparent; }
+.row[data-heat] { border-color: transparent; background: linear-gradient(100deg, color-mix(in srgb, var(--heat) 16%, transparent), transparent 65%), var(--glass); }
+.row .rk { font-size: 15px; font-weight: 600; letter-spacing: 0; }
+.row.tier .rk { font-size: 15px; }
+.row .thumb { width: 62px; height: 62px; border-radius: 15px; }
+.row .name { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+.row .mid { gap: 2px; }
+.row .meta { font-size: 14px; }
+.row .tag { height: auto; padding: 0; border: 0; background: none; font-size: 14px; font-weight: 500; }
+.score b { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.score .cap { font-size: 12px; font-weight: 500; }
+.row.first { box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 40%, transparent), 0 0 22px 2px color-mix(in srgb, var(--halo) 40%, transparent); }
+
+/* ---------- the three tops (D87): Compact, Summary, Showcase ---------- */
+/* Compact (`strip`): one quiet line under the large title, no card. */
+.banner.strip { justify-content: flex-start; gap: 0; min-height: 0; margin: 0 20px 10px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; flex-wrap: wrap; }
+.banner.strip .tile { gap: 4px; }
+.banner.strip .tile + .tile { padding-left: 0; border-left: 0; }
+.banner.strip .tile + .tile::before { content: "·"; margin: 0 7px; color: var(--text-2); font-size: 15px; }
+.banner.strip .tile b { font-size: 15px; font-weight: 700; background: none; -webkit-text-fill-color: currentColor; color: var(--text); }
+.banner.strip .tile .cap { font-size: 15px; font-weight: 400; color: var(--text-2); }
+/* Summary (`tiles`): one glass card like Apple Fitness's: the lead number big, the others beside it,
+   the spread bar and your #1 underneath. */
+.banner.summary { position: relative; display: grid; padding: 16px 18px 14px; border-radius: 26px; border: 0; margin-top: 6px;
+  background: var(--glass-strong); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.18); }
+.banner.summary .stats { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 6px 12px; }
+.banner.summary .tile { background: none; border: 0; padding: 0; box-shadow: none; }
+.banner.summary .tile.lead { grid-column: 1; grid-row: 1 / span var(--side-rows, 2); align-self: end; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 4px; text-align: left; }
+.banner.summary .tile.lead b { font-size: 60px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; }
+.banner.summary .tile.lead .cap { font-size: 14px; font-weight: 600; }
+.banner.summary .tile:not(.lead) { grid-column: 2; justify-self: end; display: flex; align-items: baseline; gap: 5px; }
+.banner.summary .tile:not(.lead) b { font-size: 19px; line-height: 1; font-weight: 800; }
+.banner.summary .tile:not(.lead) .cap { font-size: 14px; text-transform: lowercase; }
+.banner.summary .tile b { background: none; -webkit-text-fill-color: currentColor; color: var(--text); }
+.banner.summary .foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--hairline-strong); font-size: 14px; color: var(--text-2); min-width: 0; }
+.banner.summary .foot .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner.summary .foot b { color: var(--text); font-weight: 600; }
+.spread { margin-top: 14px; }
+.spread-bar { display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; }
+.spread-bar i { display: block; min-width: 6px; }
+.spread i[class*="band"] { background: linear-gradient(90deg, var(--t1), var(--t2)); }
+.spread i.below { background: var(--hairline-strong); }
+.spread-leg { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 12px; color: var(--text-2); }
+.spread-leg span { display: inline-flex; align-items: center; gap: 5px; }
+.spread-leg i { width: 8px; height: 8px; border-radius: 50%; }
+/* Showcase (`hero`): your top three as big photo cards, swiped sideways, snapping to each. */
+.board-showcase { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 20px; padding: 4px 20px 14px; max-width: 720px; margin: 0 auto; box-sizing: border-box; scrollbar-width: none; overscroll-behavior-x: contain; }
+.board-showcase::-webkit-scrollbar { display: none; }
+.sc-card { position: relative; flex: none; width: min(72vw, 300px); aspect-ratio: 7 / 8; border-radius: 26px; overflow: hidden; scroll-snap-align: start; color: #fff; text-decoration: none; background: var(--surface-2); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4); transition: transform 0.45s var(--bounce); isolation: isolate; }
+.sc-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.sc-card img.cut { object-fit: contain; background: var(--surface-1); }
+.sc-card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 0.82)); }
+.sc-cap { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; align-items: flex-end; gap: 10px; }
+.sc-t { flex: 1; min-width: 0; display: grid; gap: 2px; justify-items: start; }
+.sc-pos { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; margin-bottom: 4px; border-radius: 12px; font-family: var(--num-font); font-size: 13px; font-weight: 800; background: rgba(255, 255, 255, 0.2); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.sc-n { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-m { font-size: 14px; color: rgba(255, 255, 255, 0.82); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-s { font-family: var(--num-font); font-size: 40px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; }
+.sc-card[class*="band"] .sc-s { color: var(--t3); }
+/* Appearance's preview shows them small. */
+.ap-preview .banner.summary .tile.lead b { font-size: 44px; }
+.ap-preview .banner.strip { margin: 0 0 10px; }
+
+/* ---------- cards, sections, buttons ---------- */
+/* No backdrop blur on cards: it would make anything fixed inside one (a cropper, a sheet) sit in the card. */
+.sect { border: 0; border-radius: var(--r-group); padding: 16px; gap: 12px; margin-top: 12px; }
+.sect > .cap, .sect > h2.cap, .sect > .lh.cap { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+.btn { height: 50px; border-radius: 25px; font-size: 17px; letter-spacing: -0.01em; transition: transform 0.45s var(--bounce), filter 0.2s ease; }
+.kv { font-size: 16px; gap: 12px 16px; }
+/* A product page's actions (D87): one grouped list, Archive last in red. */
+.acts { display: grid; margin: -4px -16px -4px; }
+.acts > * { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; margin: 0; width: 100%; box-sizing: border-box; border: 0; background: none; color: var(--accent-bright); font: inherit; font-size: 17px; text-align: left; text-decoration: none; position: relative; }
+.acts > * + *::before { content: ""; position: absolute; top: 0; left: 16px; right: 0; border-top: 0.5px solid var(--hairline-strong); }
+.acts > .switch-row { color: var(--text); justify-content: space-between; }
+.acts svg { width: 21px; height: 21px; flex: none; }
+.acts .danger { color: var(--danger); }
+.acts > :disabled { opacity: 0.45; }
+/* The product page's top: the photo taller, edge to edge; the name as a large title. */
+.poster { min-height: calc(var(--header-h) + 440px); }
+.hero h1 { font-size: 32px; line-height: 1.12; letter-spacing: -0.025em; font-weight: 700; }
+.hero-score b { font-size: 58px; font-weight: 800; letter-spacing: -0.03em; }
+.hero-score .cap { font-size: 13px; }
+.hero-line { font-size: 15px; }
+.hero-line .tag { height: auto; padding: 0; border: 0; background: none; font-size: 15px; font-weight: 500; }
+
+.lrows, .seg, .empty { border-color: transparent; }
+.lrows { border-radius: var(--r-group); }
+.empty { border-radius: var(--r-card); }
+.seg { border-radius: 12px; }
+
+/* ---------- grouped lists (Settings and the like), as in the iPhone's own Settings ---------- */
+.list { border: 0; border-radius: var(--r-group); }
+.li { min-height: 50px; font-size: 17px; border-top: 0; position: relative; transition: background-color 0.2s ease; }
+.li + .li::before, .li:not(:first-child)::before { content: ""; position: absolute; top: 0; left: 16px; right: 0; border-top: 0.5px solid var(--hairline-strong); }
+.li:has(.li-ic):not(:first-child)::before { left: 58px; }
+.li .v { font-size: 17px; }
+.li .sub { font-size: 14px; }
+.li-ic { width: 30px; height: 30px; border-radius: 8px; color: #fff; }
+.li-ic svg { width: 18px; height: 18px; }
+.li-ic.green { background: #2a9d4f; color: #fff; }
+.li-ic.amber { background: #e07b00; color: #fff; }
+.li-ic.teal { background: #1b8ea3; color: #fff; }
+.li-ic.red { background: #d93a31; color: #fff; }
+.li-ic.violet { background: #5856d6; color: #fff; }
+.li-ic.gem { background: linear-gradient(135deg, #2a9d4f, #3a7bd5 50%, #8e44d6); color: #fff; }
+.more-me { border: 0; border-radius: var(--r-card); }
+.more-me .who b { font-family: var(--font); font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+
 /* ---------- the light tone (D72): the three Daylights ----------
    Everything that had a dark colour of its own (made for the dark looks) takes a light one here.
    The photo viewer, cropper and cut-out tools stay black, as photos look best on black. */
@@ -2109,3 +2277,42 @@ html[data-tone="light"] .post-photo, html[data-tone="light"] .compose-photo { ba
 .cmp-note { font-size: 13px; color: var(--text-2); }
 .cmp-note.out { margin: 12px 16px 0; }
 html[data-tone="light"] :is(.duel-side.mine .duel-score, .your-chip.mine b, .about .your-chip b, .too-head a) { color: color-mix(in srgb, var(--accent) 55%, var(--text)); }
+
+/* ---------- D87 (continued): the Feed's posts and the editors, as in Photos ---------- */
+.post { background: none; border: 0; border-radius: 0; overflow: visible; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.post-photo { margin: 0 8px; border-radius: 24px; overflow: hidden; }
+.post .row.about { border-radius: 18px; }
+.fgroup { border: 0; border-radius: var(--r-group); }
+.me-links .link-btn { display: inline-flex; align-items: center; margin: -8px 0 -12px; text-decoration: none; }
+/* The Leaderboard top picker's little drawings (D87): Compact a line of text, Showcase big photo cards side by side,
+   Summary one card with a spread bar under it. */
+.top-strip .top-dia i:first-child { height: 4px; width: 70%; border-radius: 2px; background: rgba(255, 255, 255, 0.45); }
+.top-hero .top-dia { grid-template-columns: 2fr 1fr; }
+.top-hero .top-dia i:first-child, .top-hero .top-dia i:nth-child(2) { height: 28px; border-radius: 6px; background: linear-gradient(140deg, rgba(166, 240, 193, 0.6), rgba(64, 196, 196, 0.45)); }
+.top-hero .top-dia i:nth-child(2) { background: linear-gradient(140deg, rgba(205, 189, 255, 0.55), rgba(64, 196, 196, 0.4)); }
+.top-hero .top-dia i:nth-child(3) { grid-column: 1 / -1; display: block; }
+.top-hero .top-dia i:nth-child(4) { display: none; }
+.top-tiles .top-dia { grid-template-columns: 1fr; }
+.top-tiles .top-dia i:first-child { height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); }
+.top-tiles .top-dia i:nth-child(2) { height: 4px; background: linear-gradient(90deg, #b3a8ff 0 20%, #6fe8e8 20% 55%, #6ff0a8 55% 70%, rgba(255, 255, 255, 0.25) 70%); }
+.top-tiles .top-dia i:nth-child(3) { height: 5px; }
+.top-tiles .top-dia i:nth-child(4) { display: none; }
+/* Small grey words straight on a look's moving background (section titles, the Compact line's words, captions):
+   a touch brighter than --text-2, so they stay readable over every look's lights at every moment (D87). */
+.cap, .lh.cap:not(.dng), .fgroup > .cap, .gh > .cap, .banner.strip .tile .cap, .spread-leg { color: color-mix(in srgb, var(--text) 82%, transparent); }
+/* Press feedback (D87, in place of D20's lift): what you touch presses in a little and springs back when you let go,
+   as on the iPhone; list rows (Settings, the Log, People) light up instead, without moving. press.ts still decides
+   when (.is-pressed after a moment; a scroll never presses). */
+.acts > .is-pressed, .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .prow .who.is-pressed { background-color: var(--glass-strong); }
+.row:not(.tier).is-pressed, .scard.is-pressed { border-color: transparent; }
+@media (prefers-reduced-motion: no-preference) {
+  .row.is-pressed, .scard.is-pressed, .sc-card.is-pressed, .btn.is-pressed { transform: scale(0.97); box-shadow: none; transition-duration: 0.1s; }
+  .fab.is-pressed { transform: scale(0.88); transition-duration: 0.1s; }
+  .pill.is-pressed, .seg button.is-pressed, .pcell.is-pressed, .add-cell.is-pressed, .addrow.is-pressed { transform: scale(0.95); }
+  .lrow.is-pressed, .li.is-pressed, .cp-row.is-pressed, .prow .who.is-pressed { transform: none; }
+}
+.data-card { border-color: transparent; border-radius: var(--r-group); }
+/* The red card's title, mixed a little towards the text colour: plain red read 4.4 : 1 over its own red wash. */
+.data-card.red > .cap { color: color-mix(in srgb, var(--danger) 80%, var(--text)); }
+/* A light card's rank (D72's deep shade): a little deeper since D87's lighter weight (Gems' #1 read 4.4 : 1). */
+html[data-tone="light"] .row.tier .rk { color: color-mix(in srgb, var(--t4) 30%, var(--text)); font-weight: 700; }

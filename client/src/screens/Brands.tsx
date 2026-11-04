@@ -7,7 +7,7 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
-import { BackButton, Header, TabBar, type Tab } from '../components/chrome';
+import { BackButton, Header, LargeTitle, TabBar, type Tab } from '../components/chrome';
 import { Tiles } from '../components/Controls';
 import { EmptyCard } from '../components/EmptyCard';
 import { MeButton } from '../components/MeButton';
@@ -82,8 +82,9 @@ export function BrandsList() {
   if (sort === 'average') shown.sort((a, b) => (a.average === b.average ? 0 : a.average === null ? 1 : b.average === null ? -1 : b.average - a.average) || a.name.localeCompare(b.name));
   return (
     <>
-      <Header title="Sources" right={<MeButton />} />
+      <Header title="Sources" large right={<MeButton />} />
       <main class="screen">
+        <LargeTitle title="Sources" />
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">

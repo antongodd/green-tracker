@@ -7,7 +7,7 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
-import { Header, TabBar } from '../components/chrome';
+import { Header, LargeTitle, TabBar } from '../components/chrome';
 import { MeButton } from '../components/MeButton';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ChevronRight, PlusIcon, TypeMark } from '../icons';
@@ -109,8 +109,9 @@ export function Log() {
 
   return (
     <>
-      <Header right={<MeButton />} />
+      <Header title="Log" large right={<MeButton />} />
       <main class="screen has-fab">
+        <LargeTitle title="Log" />
         {!ready && !error && <Skeleton kind="log" />}
         {error && !ready && (
           <div class="empty">
