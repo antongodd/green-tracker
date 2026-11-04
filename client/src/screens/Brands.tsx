@@ -18,9 +18,11 @@ import { Skeleton } from '../components/Skeleton';
 import { TypeMark } from '../icons';
 import { cachedProducts, fetchProducts } from '../products';
 import { cameFrom, linkTo } from '../router';
+import { useWants } from '../wants';
+import { Halves, WantList, WantSheet } from '../components/Wants';
 
 /** Your products (not archived), from the cache at once and fresh from the server. */
-function useProducts(): { products: Product[] | null; error: string; setProducts: (f: (list: Product[] | null) => Product[] | null) => void } {
+export function useProducts(): { products: Product[] | null; error: string; setProducts: (f: (list: Product[] | null) => Product[] | null) => void } {
   const [products, setProducts] = useState<Product[] | null>(cachedProducts);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -32,7 +34,7 @@ function useProducts(): { products: Product[] | null; error: string; setProducts
 }
 
 /** A Sources card's picture: its best product's first photo (a cut-out without its box), else the type's mark. */
-function CardPhoto(p: { product: Product }) {
+export function CardPhoto(p: { product: Product }) {
   const first = p.product.photos[0];
   const def = productType(p.product.productType);
   return (
@@ -66,11 +68,18 @@ const SORTS: { key: Sort; label: string }[] = [
  * best product (by Overall; the type's mark without one), the name and its average, how many
  * products and what you spent on it (D62), the best one, and Brand / Bought here. Archived ones left out.
  */
+let lastHalf: 'tried' | 'want' = 'tried'; // D92: the half you were on, kept while the app is open
+
 export function BrandsList() {
   const { products, error } = useProducts();
   const main = useCurrency();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('products');
+  // D92: Tried | To try, and the + adds a source you want to try.
+  const { wants, error: wantsError } = useWants();
+  const [half, setHalfNow] = useState(lastHalf);
+  const setHalf = (h: 'tried' | 'want') => setHalfNow((lastHalf = h));
+  const [adding, setAdding] = useState(false);
   const names = (products ? usedNames(products) : []).map((n) => {
     const named = productsNamed(products!, n.key).map((r) => r.product);
     const top = rankProducts(named, { filter: 'all', rankBy: 'overall' })[0]!;
@@ -85,19 +94,23 @@ export function BrandsList() {
       <Header title="Sources" large right={<MeButton />} />
       <main class="screen">
         <LargeTitle title="Sources" />
-        {!products && !error && <Skeleton kind="board" />}
-        {error && !products && (
+        <div class="wrap halves-wrap">
+          <Halves label="Sources" value={half} tried={names.length} want={(wants ?? []).filter((w) => w.kind === 'source').length} wantLabel="To try" onChange={setHalf} />
+        </div>
+        {half === 'want' && <WantList kind="source" wants={wants} error={wantsError} onAdd={() => setAdding(true)} />}
+        {half === 'tried' && !products && !error && <Skeleton kind="board" />}
+        {half === 'tried' && error && !products && (
           <div class="empty">
             <h2>Couldn’t load your products</h2>
             <p>{error}</p>
           </div>
         )}
-        {products && names.length === 0 && (
+        {half === 'tried' && products && names.length === 0 && (
           <EmptyCard art="filter" title="No brands or suppliers yet">
             <p>Add a brand to a product, or a supplier to a purchase, and it shows here.</p>
           </EmptyCard>
         )}
-        {names.length > 0 && (
+        {half === 'tried' && names.length > 0 && (
           <>
             <div class="wrap brands-top">
               <label for="brand-search" class="visually-hidden">
@@ -135,7 +148,21 @@ export function BrandsList() {
           </>
         )}
       </main>
-      <TabBar active="sources" />
+      <TabBar active="sources" add={{ label: 'Add a source to try', onAdd: () => setAdding(true) }} />
+      {adding && (
+        <WantSheet
+          kind="source"
+          known={(typed) => {
+            const n = names.find((x) => x.key === nameKey(typed));
+            return n ? `You’ve had ${n.products} ${n.products === 1 ? 'product' : 'products'} from ${n.name}.` : null;
+          }}
+          onClose={() => setAdding(false)}
+          onAdded={() => {
+            setAdding(false);
+            setHalf('want');
+          }}
+        />
+      )}
     </>
   );
 }

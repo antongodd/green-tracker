@@ -9,6 +9,7 @@ import type { Product } from '../../shared/domain/product';
 import { api, ApiError, type Me } from './api';
 import { discardUpload, loadImage, renderThumb, uploadSet } from './images';
 import { clearEntryCache, fetchEntries } from './logEntries';
+import { clearWantsCache, fetchWants } from './wants';
 import { clearProductCache, fetchArchived, fetchProducts } from './products';
 import { fetchPrivacy } from './privacy';
 
@@ -39,7 +40,7 @@ const fromBase64 = (s: string, type = 'image/jpeg') => {
 
 /** Builds the export: all your data, photos embedded (cropped and originals). */
 export async function buildExport(username: string, progress: Progress): Promise<File> {
-  const [active, archived, entries, me, privacy, mine] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchPrivacy(), ownPosts()]);
+  const [active, archived, entries, me, privacy, mine, wants] = await Promise.all([fetchProducts(), fetchArchived(), fetchEntries(), api<Me>('GET', '/auth/me'), fetchPrivacy(), ownPosts(), fetchWants()]);
   const products: Product[] = [...active, ...archived];
   const profile = me.user?.photo ?? null;
   const photos = products.reduce((n, p) => n + p.photos.length, 0) + entries.reduce((n, e) => n + (e.photo ? 1 : 0) + (e.kept?.photos.length ?? 0), 0) + (profile ? 1 : 0) + mine.reduce((n, p) => n + p.photos.length, 0);
@@ -137,6 +138,8 @@ export async function buildExport(username: string, progress: Progress): Promise
     // D66: your main currency, which the purchases' rates are into.
     ...(me.currency && { money: { currency: me.currency } }),
     posts: exportPosts,
+    // D92: your Want to try lists.
+    wants: wants.map((w) => ({ kind: w.kind, name: w.name, note: w.note, createdAt: w.createdAt })),
     profilePhoto: profile ? await embed({ id: 'profile', ...profile, cutout: false }, (v) => ownProfilePhotoUrl(profile.version, v)) : null,
   };
   const date = file.exportedAt.slice(0, 10);
@@ -244,6 +247,7 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
     if (summary.file.privacy) payload.privacy = summary.file.privacy;
     if (summary.file.appearance) payload.appearance = summary.file.appearance;
     if (summary.file.money) payload.money = summary.file.money;
+    if (summary.file.wants) payload.wants = summary.file.wants; // D92
     // D77: each post's photo as its own set (the cropped image and a fresh thumbnail; no original).
     if (summary.file.posts) {
       payload.posts = [];
@@ -267,4 +271,5 @@ export async function restore(summary: ExportSummary, progress: Progress): Promi
   }
   clearProductCache();
   clearEntryCache();
+  clearWantsCache();
 }

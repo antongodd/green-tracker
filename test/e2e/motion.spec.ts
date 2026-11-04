@@ -427,11 +427,11 @@ test('swiping back (the browser’s Back) shows the list without its entrance fa
   expect(await page.locator('main.screen').evaluate((el) => el.getAnimations().length)).toBe(0);
 
   // The next change of screen fades in as usual, and the list it leaves doesn't replay.
-  await page.locator('.nav a', { hasText: 'Log' }).click();
-  await expect(page).toHaveURL(/\/log$/);
-  await expect.poll(fades).toEqual(['/log']);
+  await page.locator('.nav a', { hasText: 'Strainz' }).click();
+  await expect(page).toHaveURL(/\/strainz$/);
+  await expect.poll(fades).toEqual(['/strainz']);
   await page.waitForTimeout(300);
-  expect(await fades()).toEqual(['/log']);
+  expect(await fades()).toEqual(['/strainz']);
 
   // The app's own Back (no photo to fly here) keeps its fade too.
   await page.locator('.hdr .me-btn').click(); // Settings: your photo since D87

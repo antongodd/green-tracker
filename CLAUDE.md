@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D91 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D92 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -138,7 +138,7 @@ The browser tests are shared between six machines at once, each with an equal sh
 (`scripts/e2e-shard.mjs`, from the measured seconds in `test/e2e/timings.json`; the repository is public, so it's
 free). After adding or removing a spec file or a slow test, refresh the timings from a full local run (see
 `scripts/e2e-timings.mjs`); a test not in the file counts as 15 seconds, so nothing is ever left out. The core set is
-the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log, photos, the
+the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log and Strainz, photos, the
 editors asking before discarding (`keepediting`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
 
 ## Every change
@@ -147,7 +147,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D92) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D93) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +171,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D91.
+- Reopen any decision D1–D92.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -231,6 +231,16 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   `hasTouch: true` (`test/e2e/zoom.spec.ts`). A double-tap must send its touch events together (`doubleTap`): sent one
   by one, a busy machine spreads them past the 300ms window. `textBoxes` hides the text it measures: screenshot before
   it, not after.
+- Strainz (D92): the tab bar is Leaderboard, **Strainz**, Sources, Feed (the Log tab went); `/log` is reached from
+  Strainz (*Your Log*, Back to Strainz) and keeps the Strainz tab, like a Log entry's page. `TabBar` draws the + (`.fab`)
+  on every screen with the bar (`add` gives its label and action; default **Add a product**), so a friend's page and
+  Settings have one too and the bar is the same width everywhere. No button opens `/log/new` any more: a test reaches it
+  with `history.pushState` + a `popstate` event (no reload; `keepediting.spec.ts`, `sounds.spec.ts`). Return to Log is
+  labelled **Move to Tried, not rated**. A strain is the product's Name by `nameKey`; names are capitalised when saved,
+  so use different capitals (`ZKITTLEZ`) to show they're matched. Strainz and Sources open on **Tried** after a reload
+  (the half is kept only while the app is open): click the **Want to try** / **To try** tab after `goto`. Want to try in
+  a test: `POST /api/wants` `{ kind: 'strain' | 'source', name, note? }`; a product save answers `tickedOff`. The Want
+  to try sheet's box is `getByLabel('Strain', { exact: true })` (the Strainz tab matches otherwise).
 - Return to Log (D50): a returned entry's product is *kept* (`log_entries.kept_product_id`) and hidden by `NOT_KEPT` in
   `server/routes/products.ts`. Any new query that lists products or serves their photos must use it too.
 - Sounds and ticks (D56): each sound played sends a `gt-sound` event (`{ moment, set }`); collect them with an init
@@ -383,7 +393,8 @@ section, so it must always be current.
 
 - **Live:** 0.80.0 (2026-11-04): everything up to the app's Apple-style redesign, finished (item 16, stage C: the
   Leaderboard colours).
-- **Dev:** the same as live.
+- **Dev:** 0.81.0 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), waiting for Anton's
+  "go live" after he tries it on GT Dev.
 
 ### To-do list (suggested order; Anton decides)
 
@@ -428,6 +439,15 @@ Each is a job for its own conversation; the summary lists what each covers.
    - ~~Stage C, the Leaderboard colours~~: live in 0.80.0 (see Done). Later if Anton wants: the website showing the
      new colour sets.
    - The website: its own job (item 15).
+17. **Strainz** (big; Anton, 2026-11-04; D92): **on dev in 0.81.0 (2026-11-04)**, waiting for Anton to try it on GT
+   Dev and say "go live". A Strainz tab in the Log's place (strains as cards like Sources, a strain's page, Compare,
+   Rename, the Log's unrated entries under *Tried, not rated*), Want to try lists (strains, and sources on Sources),
+   the + beside the bar on every screen. Mockups https://claude.ai/artifact/987zYn5kvJgDSphKFaXGAr. Anton wants to
+   try Rename on GT Dev before deciding more.
+18. **Friends' strains** (later; Anton, 2026-11-04): "3 friends have tried Zkittlez", or your strains against a
+   friend's. Changes what followers see, so it's a big change of its own (privacy, `big-change` step 1). Also later
+   if he wants: Want to try lists his followers can see, and the website's "Log" screen in its scroll story showing
+   Strainz.
 
 ### Done (newest first)
 

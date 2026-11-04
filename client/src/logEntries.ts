@@ -3,6 +3,8 @@ import type { LogEntry, LogEntryInput } from '../../shared/domain/logEntry';
 import type { Product, ProductInput } from '../../shared/domain/product';
 import { api, SAVE_TIMEOUT_MS } from './api';
 import { cacheProduct, forgetProduct } from './products';
+import type { Want } from '../../shared/domain/wants';
+import { noteTickedOff } from './wants';
 
 /** Save gives up after 20 seconds (0.69.2). */
 const LIMIT = { timeoutMs: SAVE_TIMEOUT_MS };
@@ -50,8 +52,9 @@ export async function deleteEntry(id: string): Promise<void> {
 
 /** Promotion: one atomic call creates the product and removes the entry. */
 export async function promoteEntry(id: string, input: ProductInput): Promise<Product> {
-  const r = await api<{ product: Product }>('POST', `/log/${encodeURIComponent(id)}/promote`, input, LIMIT);
+  const r = await api<{ product: Product; tickedOff?: Pick<Want, 'kind' | 'name'>[] }>('POST', `/log/${encodeURIComponent(id)}/promote`, input, LIMIT);
   forget(id);
+  noteTickedOff(r.tickedOff); // D92
   return cacheProduct(r.product);
 }
 

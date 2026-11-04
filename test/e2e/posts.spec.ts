@@ -65,7 +65,7 @@ test.beforeAll(async ({ browser }) => {
 test('the tab bar has Feed in People’s place; People is the button at the top of the Feed', async () => {
   await owner.goto('/');
   const tabs = owner.getByRole('navigation', { name: 'Main' }).getByRole('link');
-  await expect(tabs).toHaveText(['Leaderboard', 'Log', 'Sources', 'Feed']); // Settings: your photo, top right (D87)
+  await expect(tabs).toHaveText(['Leaderboard', 'Strainz', 'Sources', 'Feed']); // Settings: your photo, top right (D87)
   await owner.getByRole('link', { name: 'Feed' }).click();
   await expect(owner).toHaveURL(/\/feed$/);
   await expect(owner.getByRole('heading', { name: 'Nothing here yet' })).toBeVisible();

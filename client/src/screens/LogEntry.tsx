@@ -94,7 +94,7 @@ export function LogEntryPage(p: { id: string }) {
             <Skeleton kind="product" />
           )}
         </main>
-        <TabBar active="log" />
+        <TabBar active="strainz" />
       </>
     );
   }
@@ -214,7 +214,7 @@ export function LogEntryPage(p: { id: string }) {
           )}
         </section>
       </main>
-      <TabBar active="log" />
+      <TabBar active="strainz" />
       {viewing && photo && <PhotoViewer photos={[photo]} start={0} onClose={() => setViewing(false)} />}
       {confirmDelete && (
         <Sheet

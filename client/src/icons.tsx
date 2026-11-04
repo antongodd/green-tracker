@@ -194,6 +194,9 @@ const tabLine = (d: string) =>
 export const LogLineIcon = tabLine('M6.3 3.35h11.2a1.65 1.65 0 0 1 1.65 1.65v14.5a1.65 1.65 0 0 1-1.65 1.65H6.3a1.45 1.45 0 0 1-1.45-1.45V4.8A1.45 1.45 0 0 1 6.3 3.35Z M8.85 8h7.3 M8.85 12h7.3 M8.85 16h4.3');
 export const PeopleLineIcon = tabLine('M9 11.1a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z M2.35 19.9c0-3.1 3-5.1 6.65-5.1s6.65 2 6.65 5.1Z M16.1 4.6a3.2 3.2 0 0 1 0 6.2 M17.7 14.9c2.3.5 4 2.1 4 4.4v.6h-2.9');
 // Sources and Settings (D61, 0.51.0): a shop front and a gear, in place of More's three dots.
+// Strainz (D92), in the Log's place: the flower leaf, solid on its tab and an outline elsewhere.
+export const StrainzIcon = icon(FLOWER);
+export const StrainzLineIcon = tabLine(FLOWER);
 export const SourcesLineIcon = tabLine('M4 9.5 5.5 4h13L20 9.5 M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0 M5.5 12v8h13v-8 M10 20v-4.5h4V20');
 export const SettingsLineIcon = tabLine('M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.6a7.5 7.5 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.6h4.2l.4-2.6a7.5 7.5 0 0 0 2.6-1.5l2.3 1 2-3.4Z');
 

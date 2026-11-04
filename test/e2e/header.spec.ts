@@ -9,7 +9,7 @@ test.describe.configure({ mode: 'serial' });
 let page: Page;
 let username: string;
 let productId: string;
-const MAIN = ['/', '/log', '/sources', '/feed'];
+const MAIN = ['/', '/strainz', '/sources', '/feed'];
 
 const me = () => page.locator('.hdr .me-btn');
 const tabBar = () => page.getByRole('navigation', { name: 'Main' });
@@ -53,7 +53,7 @@ test('your letter sits top right on the four main tabs (the Feed in People’s p
     expect(button.height, `${path} tap target`).toBeGreaterThanOrEqual(44);
   }
   // Screens further in keep their corners for Back, Edit and ⋯.
-  for (const path of ['/more', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/more/archive', '/more/passkeys', '/more/blocked']) {
+  for (const path of ['/more', '/log', `/products/${productId}`, `/products/${productId}/edit`, '/products/new', '/log/new', '/more/archive', '/more/passkeys', '/more/blocked']) {
     await page.goto(path);
     await expect(page.locator('.hdr')).toBeVisible();
     await expect(me(), path).toHaveCount(0);
@@ -88,7 +88,7 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
         });
     }).observe(document.body, { childList: true, subtree: true });
   });
-  for (const tab of ['Log', 'Sources', 'Feed', 'Leaderboard', 'Log', 'Sources', 'Leaderboard']) {
+  for (const tab of ['Strainz', 'Sources', 'Feed', 'Leaderboard', 'Strainz', 'Sources', 'Leaderboard']) {
     await tabBar().getByRole('link', { name: new RegExp(tab) }).click();
     await expect(tabBar().getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page');
     await expect(me().locator('.av img')).toHaveCount(1);
@@ -138,7 +138,7 @@ test('a new photo replaces it; removing it brings the letter back', async () => 
 });
 
 test('D87: your card at the top of Settings opens People at your card', async () => {
-  await page.goto('/log');
+  await page.goto('/strainz');
   await me().click();
   await expect(page).toHaveURL(/\/more$/);
   await page.locator('.more-me').click();

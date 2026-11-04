@@ -7,6 +7,7 @@ import { randomId } from '../lib/crypto';
 import { fail, jsonBody } from '../lib/http';
 import { deleteLater, imageKeys, PHOTO_COLUMNS, planPhotoWrites, setKeys, toPhotoRecord, type PhotoRow } from '../lib/photos';
 import { requireUser } from '../lib/session';
+import { tickOffWrites } from '../lib/wants';
 import { createProductWrites, load, loadOne, parseProduct, updateProductWrites } from './products';
 
 // Loose Log entries: yours only (every query is scoped by user_id; another user's
@@ -159,14 +160,17 @@ log.post('/:id/promote', async (c) => {
   const saved = entry.kept
     ? { id: entry.kept.id, ...(await updateProductWrites(db, userId, entry.kept.id, input, { adoptFromLogEntry: entryId })) }
     : await createProductWrites(db, userId, input, { adoptFromLogEntry: entryId });
+  // D92: the wants it ticks off go with it.
+  const tick = await tickOffWrites(db, userId, input);
   await db.batch([
     ...saved.statements,
+    ...tick.statements,
     // D77: the entry's posts move to the product, so their cards start showing its score.
     db.prepare('UPDATE posts SET product_id = ?1, log_entry_id = NULL WHERE log_entry_id = ?2 AND user_id = ?3').bind(saved.id, entryId, userId),
     db.prepare('DELETE FROM log_entries WHERE id = ?1 AND user_id = ?2').bind(entryId, userId),
   ]);
   deleteLater(c.executionCtx, c.env.PHOTOS, saved.unusedKeys);
-  return c.json({ product: await loadOne(db, userId, saved.id) }, 201);
+  return c.json({ product: await loadOne(db, userId, saved.id), tickedOff: tick.ticked }, 201);
 });
 
 /**
