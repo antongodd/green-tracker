@@ -1966,6 +1966,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — the website's Looks row is live
+- 0.79.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.79.1, #202), with no flaky tests. Notes only.
+
 ### 0.79.1 — the website's Looks row shows the eleven Looks
 - The website's "Fifteen Looks. Pick yours." row still listed the four Looks that went in 0.79.0 (Holo Pearl, Haze,
   Daylight Mint, Daylight Pearl). It's now "Eleven Looks. Pick yours.", in the app's order, with the app's names and
