@@ -7,3 +7,6 @@ dist/
 client/public/ai/ort-wasm-*.wasm
 site/public/version.txt
 site/video/out/
+
+# Security audit runs (describe vulnerabilities; never commit)
+.security-audit/
