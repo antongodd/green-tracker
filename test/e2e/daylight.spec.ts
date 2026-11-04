@@ -13,9 +13,9 @@ const ids: Record<string, string> = {};
 
 // D90: one light look, Daylight (Mint and Pearl went; its name inside is still Daylight Sky's).
 const DAYLIGHTS = [{ look: 'daysky', name: 'Daylight', bg: 'rgb(238, 243, 250)' }] as const;
-const PRESETS = ['gems', 'aurora', 'cosmos', 'deepsea', 'ember', 'metals', 'neon', 'prism', 'sunset', 'synthwave'] as const;
+const PRESETS = ['aurora', 'candy', 'cosmos', 'deepsea', 'ember', 'medals', 'neon', 'prism', 'storm', 'sunset', 'synthwave', 'toxic'] as const;
 
-const put = (look: string, preset = 'gems', top = 'strip') =>
+const put = (look: string, preset = 'aurora', top = 'strip') =>
   page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, { look, top, preset, markFirst: true });
 const axe = async () => {
   await settled(page);
@@ -80,9 +80,10 @@ test('the app starts dark; choosing a Daylight makes it light, the iPhone’s ow
   expect(await put('aurora')).toBe(200);
 });
 
-test('light cards in every colour set: a white card with the colours at its edge, and every word on it readable', async () => {
-  test.slow(); // ten sets, each photographed through its motion
-  for (const preset of PRESETS) {
+// Twelve sets since D91, in two halves (each photographed through its motion).
+for (const half of [PRESETS.slice(0, 6), PRESETS.slice(6)]) test(`light cards in every colour set (${half[0]} to ${half.at(-1)}): a white card with the colours at its edge, and every word on it readable`, async () => {
+  test.slow();
+  for (const preset of half) {
     expect(await put('daysky', preset)).toBe(200);
     await page.goto('/');
     await expect(page.locator('.rows .row.tier')).toHaveCount(4);
@@ -91,7 +92,7 @@ test('light cards in every colour set: a white card with the colours at its edge
     const boxes = await textBoxes(page, '.row .name, .row .meta, .row .score b, .row .score .cap, .row .rk');
     const worst = await contrastFailures(page, boxes, 6);
     expect(worst, `${preset}:\n${worst.join('\n')}`).toEqual([]);
-    if (preset === 'gems' || preset === 'synthwave') await shot(page, `720-daylight-cards-${preset}`);
+    if (preset === 'aurora' || preset === 'synthwave') await shot(page, `720-daylight-cards-${preset}`);
   }
   expect(await put('aurora')).toBe(200);
 });

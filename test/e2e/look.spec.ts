@@ -29,12 +29,12 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.context().close());
 
-test('a new account starts on Aurora Glass, Compact (the slim strip) and Gems (D71); Showcase and Summary (D87)', async () => {
-  expect(await saved()).toEqual({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
+test('a new account starts on Aurora Glass, Compact (the slim strip) and Aurora (D91); Showcase and Summary (D87)', async () => {
+  expect(await saved()).toEqual({ look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true });
   await page.goto('/');
   await expect(page.locator('.rows .row')).toHaveCount(12);
   await expect(page.locator('html')).toHaveAttribute('data-look', 'aurora');
-  await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-gems\b/);
+  await expect(page.locator('.rows .row').first()).toHaveClass(/\bpal-aurora\b/);
   await expect(page.locator('.banner.strip .tile')).toHaveCount(3);
   await expect(page.locator('.board-showcase')).toHaveCount(0);
   // The rest of this file starts from Showcase (the glass hero's saved name) and Aurora colours.

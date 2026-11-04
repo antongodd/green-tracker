@@ -83,7 +83,7 @@ describe('a post', () => {
   it('keeps the caption’s line breaks and gives the owner their own card', async () => {
     expect(p.caption).toBe('First line\nsecond line');
     expect(p.mine).toBe(true);
-    expect(p.about).toMatchObject({ kind: 'product', name: 'Post Kush', score: 9, href: `/products/${product.id}`, source: 'Posted Source', preset: 'gems' });
+    expect(p.about).toMatchObject({ kind: 'product', name: 'Post Kush', score: 9, href: `/products/${product.id}`, source: 'Posted Source', preset: 'aurora' });
   });
 
   it('is its own copy of the photo: the cropped image, never the original, and not changed by a later crop', async () => {

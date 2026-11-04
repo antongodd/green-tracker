@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D90 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D91 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -147,7 +147,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D91) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D92) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +171,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D90.
+- Reopen any decision D1–D91.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -206,11 +206,14 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
   10 an hour per address, so keep sign-ups per file modest.
 - Leaderboard colours (D48): rows carry `tier band1`…`band4 pal-<preset>` and `first`; product pages `data-band` (1–4 or
-  `none`). Set an account's preset in a test with `PUT /api/appearance`. A new account starts on **Gems** and the **Slim
-  strip** (Compact since D87) since D71 (Aurora and the glass hero before): a test that names another set's colours or
-  reads another top sets it first. Ten sets since D69; a set's effect (sun, plankton,
-  sparks, stars, grid; Metals' glints) comes from `bandEffect` and is drawn by `Effects` (`span.tfx`, never `.fx`: that's
-  the currency tag), always clear of text: `appearance.spec.ts` checks no dot overlaps a row's text.
+  `none`). Set an account's preset in a test with `PUT /api/appearance`. A new account starts on **Aurora** (D91; Gems
+  from D71) and the **Slim strip** (Compact since D87): a test that names another set's colours or reads another top sets
+  it first. Twelve sets since D91 (Gems and Metals went: `PRESETS_MOVED`, refused by the API, shown as Aurora; a backup
+  naming one restores as Aurora). Every set's effect comes from `bandEffect` (`EFFECTS`, more pieces band by band:
+  `COUNTS` in `components/Gems.tsx`) and is drawn by `Effects` (`span.tfx tfx-<effect>`, never `.fx`: that's the currency
+  tag; read the kind from `classList[1]`). Small pieces keep to the strips along a row's edges (`appearance.spec.ts`
+  checks none overlaps a row's text); a faint wash that may pass behind words has the class `glow`, and the readability
+  tests judge every pixel at every moment, so nothing bright may cross a word (Storm's rain was redrawn for it).
 - The new look (D64): tokens at the top of `styles.css` (Aurora Glass on `:root`; a later look overrides them under
   `html[data-look=…]`). The stats at the top follow the account's `top` (D87: `strip` Compact `.banner.strip`, `tiles`
   Summary `.banner.summary`, `hero` Showcase: the Compact line plus `.board-showcase`): every stat is a `.tile` with `b` and
@@ -380,7 +383,8 @@ section, so it must always be current.
 
 - **Live:** 0.79.1 (2026-11-04): everything up to the app's Apple-style redesign, stage B, the Looks (item 16), and
   the website's Looks row brought to the eleven.
-- **Dev:** the same as live. Next: stage C, the Leaderboard colours (mockups with Anton).
+- **Dev:** 0.80.0 (2026-11-04): the app's Apple-style redesign, stage C, the Leaderboard colours (item 16), waiting for
+  Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -422,11 +426,11 @@ Each is a job for its own conversation; the summary lists what each covers.
    each with its own mockups:
    - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
    - ~~Stage B, the Looks~~: live in 0.79.0 (see Done); the website's Looks row followed in 0.79.1.
-   - **Stage C, the Leaderboard colours:** Anton's favourites (Sunset first, then Synthwave, Prism, Neon, Ember
-     without the blue in the middle, Deep Sea, Cosmos, Aurora) with more little details and animations; Gems and
-     Metals go (their users move to the default, Aurora). New accounts start on Aurora Glass and Aurora. Every set
-     gets details of its own, growing from 8.0 to a full show at 9.5 (Anton, 2026-11-04). He wants mockups of
-     Ember's middle band (White-hot, Deep red or Gold, in place of Blue flame) and of new sets to add. Mockups https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz (2026-11-04: the eight refreshed, Ember's three options with White-hot recommended, four new sets: Toxic recommended, Medals, Storm, Candy). Next: Anton's picks and "go ahead".
+   - **Stage C, the Leaderboard colours:** **on dev** in 0.80.0 (2026-11-04), D91; mockups
+     https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz ("i also really like the little animations"). Twelve sets, each
+     with details growing from 8.0 to 9.5: his eight (Ember's middle band Gold, his pick) and Candy, Medals, Storm and
+     Toxic (all four his picks); Gems and Metals went (shown as Aurora); new accounts start on Aurora. Waiting for
+     "go live".
    - The website: its own job (item 15).
 
 ### Done (newest first)

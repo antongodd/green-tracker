@@ -5,7 +5,7 @@ import { contrastFailures, heroTextBoxes, shot, signUp, settled } from './helper
 
 // D22 (0.16.0), D48 (0.41.0): a product whose row has a colour (earned by its score) carries it
 // onto its own page, following the Leaderboard's filter and Rank by; on a friend's board too.
-// The badge names the colour and the place ("Amethyst · #3 on your Leaderboard"), a holo card
+// The badge names the colour and the place ("#3 on your Leaderboard"), a holo card
 // like its row; #1 wears the crown. Below 8: an ordinary page. Two people in two browsers.
 test.describe.configure({ mode: 'serial' });
 
@@ -58,8 +58,8 @@ test.beforeAll(async ({ browser }) => {
   ];
   for (const [name, over] of seed) ids[name] = (await post(owner, '/api/products', P({ name, ...over }))).product.id;
   await post(owner, `/api/products/${ids.Gone}/archived`, { value: true });
-  // These tests name Gems' colours (D48); everyone starts on Aurora since D64.
-  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'gems', markFirst: true })).toBe(200);
+  // These tests name Aurora's colours, where everyone starts (D91).
+  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'aurora', markFirst: true })).toBe(200);
   await post(fan, `/api/people/u/${ownerName}/follow`, {});
   await post(owner, `/api/people/requests/${fanName}/approve`, {});
 });
@@ -93,7 +93,6 @@ const pieces = (page: Page) =>
       score: getComputedStyle(score).backgroundClip === 'text',
       sweep: getComputedStyle(photo, '::before').content !== 'none',
       sweepDelay: Number(anim(photo, 'tier-arrive', '::before')?.effect?.getTiming().delay ?? 0),
-      glints: main.querySelectorAll('.glint').length,
     };
   });
 
@@ -102,13 +101,13 @@ const open = async (page: Page, path: string) => {
   await expect(page.locator('.hero h1')).toBeVisible();
 };
 
-test('each colour carries onto its page: Rainbow, Amethyst, Sapphire, Emerald; #1 wears the crown', async () => {
+test('each colour carries onto its page: Aurora, Violet, Lagoon, Jade; #1 wears the crown', async () => {
   const expected = [
-    ['Secret', { band: '4', badge: '#1 on your Leaderboard', crown: true, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Alpha', { band: '4', badge: '#2 on your Leaderboard', crown: false, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Charlie', { band: '3', badge: '#3 on your Leaderboard', crown: false, holo: true, haze: '0.12', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250, glints: 0 }],
-    ['Delta', { band: '2', badge: '#5 on your Leaderboard', crown: false, holo: true, haze: '0.09', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
-    ['Echo', { band: '1', badge: '#6 on your Leaderboard', crown: false, holo: true, haze: '0.06', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0, glints: 0 }],
+    ['Secret', { band: '4', badge: '#1 on your Leaderboard', crown: true, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250 }],
+    ['Alpha', { band: '4', badge: '#2 on your Leaderboard', crown: false, holo: true, haze: '0.14', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250 }],
+    ['Charlie', { band: '3', badge: '#3 on your Leaderboard', crown: false, holo: true, haze: '0.12', hazeMs: 5000, score: true, sweep: true, sweepDelay: 250 }],
+    ['Delta', { band: '2', badge: '#5 on your Leaderboard', crown: false, holo: true, haze: '0.09', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0 }],
+    ['Echo', { band: '1', badge: '#6 on your Leaderboard', crown: false, holo: true, haze: '0.06', hazeMs: 5000, score: true, sweep: false, sweepDelay: 0 }],
   ] as const;
   for (const [name, want] of expected) {
     await open(owner, `/products/${ids[name]}`);
@@ -122,28 +121,12 @@ test('each colour carries onto its page: Rainbow, Amethyst, Sapphire, Emerald; #
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('main')).toHaveAttribute('data-band', 'none'); // the list has arrived
     const got = await pieces(owner);
-    expect({ badge: got.badge, haze: got.haze, glints: got.glints }, name).toEqual({ badge: null, haze: null, glints: 0 });
+    expect({ badge: got.badge, haze: got.haze }, name).toEqual({ badge: null, haze: null });
   }
 });
 
-test('in Metals, Diamond twinkles clear of every piece of text; axe finds nothing on the colour pages', async () => {
-  expect(await appearance(owner, { preset: 'metals', markFirst: true })).toBe(200);
-  await open(owner, `/products/${ids.Charlie}`);
-  await expect(owner.locator('main')).toHaveAttribute('data-band', '3');
-  await expect(owner.locator('.gem-badge')).toHaveText('#3 on your Leaderboard');
-  await expect(owner.locator('.glint')).toHaveCount(3);
-  const overlaps = await owner.locator('main').evaluate((main) => {
-    const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
-    return [...main.querySelectorAll<HTMLElement>('.glint')].flatMap((g) => {
-      const r = g.getBoundingClientRect();
-      return texts.filter((t) => r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top).map(() => g.className);
-    });
-  });
-  expect(overlaps).toEqual([]);
-  await open(owner, `/products/${ids.Delta}`);
-  await expect(owner.locator('.gem-badge')).toHaveText('#5 on your Leaderboard');
-  await expect(owner.locator('.glint')).toHaveCount(0);
-  expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+test('axe finds nothing on the colour pages', async () => {
+  expect(await appearance(owner, { preset: 'aurora', markFirst: true })).toBe(200);
   for (const name of ['Secret', 'Charlie', 'Delta', 'Echo']) {
     await open(owner, `/products/${ids[name]}`);
     await expect(owner.locator('.gem-badge')).toBeVisible();
@@ -160,26 +143,27 @@ const effect = (page: Page) =>
     if (!fx) return null;
     const r = fx.getBoundingClientRect();
     const texts = [...main.querySelectorAll<HTMLElement>('.hero h1, .hero-score b, .hero-score .cap, .hero-line > *, .hero-price, .gem-badge')].map((t) => t.getBoundingClientRect());
-    return { kind: fx.className.replace('tfx tfx-', ''), clear: texts.every((t) => t.top >= r.bottom), moving: fx.getAnimations({ subtree: true }).length > 0 };
+    return { kind: fx.classList[1]!.replace('tfx-', ''), clear: texts.every((t) => t.top >= r.bottom), moving: fx.getAnimations({ subtree: true }).length > 0 };
   });
 
-// D69: each new set's effect on Secret 9.7 (no photo), Alpha 9.5 (a photo) and Charlie 9.3 (an edible, no photo).
-// One test per set: all five in one ran past its time limit with 4 workers sharing the machine.
-const PAGE_EFFECTS: [string, string, string | null][] = [['sunset', 'sun', null], ['deepsea', 'plankton', 'plankton'], ['ember', 'sparks', null], ['cosmos', 'stars', 'stars'], ['synthwave', 'grid', 'grid']];
-for (const [preset, top, third] of PAGE_EFFECTS) {
+// D69 (every set since D91): each set's effect on Secret 9.7 (no photo), Alpha 9.5 (a photo) and Charlie 9.3 (an
+// edible, no photo). One test per set: all in one ran past its time limit with 4 workers sharing the machine.
+const PAGE_EFFECTS: [string, string][] = [['aurora', 'ribbons'], ['candy', 'sprinkles'], ['cosmos', 'stars'], ['deepsea', 'plankton'], ['ember', 'sparks'], ['medals', 'glitter'],
+  ['neon', 'tubes'], ['prism', 'beams'], ['storm', 'rain'], ['sunset', 'sun'], ['synthwave', 'grid'], ['toxic', 'goo']];
+for (const [preset, kind] of PAGE_EFFECTS) {
   test(`D69: ${preset} draws its effect on the page, clear of every word and readable`, async () => {
     test.slow(); // 3 pages, photographed at 4 moments each
     expect(await appearance(owner, { preset, markFirst: true })).toBe(200);
-    for (const [name, kind] of [['Secret', top], ['Alpha', top], ['Charlie', third]] as const) {
+    for (const name of ['Secret', 'Alpha', 'Charlie'] as const) {
       await open(owner, `/products/${ids[name]}`);
       await expect(owner.locator('main')).toHaveAttribute('data-band', name === 'Charlie' ? '3' : '4');
-      expect(await effect(owner), `${preset} ${name}`).toEqual(kind ? { kind, clear: true, moving: true } : null);
+      expect(await effect(owner), `${preset} ${name}`).toEqual({ kind, clear: true, moving: true });
       await settled(owner);
       if (name !== 'Charlie') await shot(owner, `91-effect-page-${preset}-${name}`);
       const worst = await contrastFailures(owner, await heroTextBoxes(owner), 4);
       expect(worst, `${preset} ${name}:\n${worst.join('\n')}`).toEqual([]);
     }
-    expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+    expect(await appearance(owner, { preset: 'aurora', markFirst: true })).toBe(200);
   });
 }
 
@@ -190,7 +174,7 @@ test('D69: Reduce Motion holds a page\'s effect still', async () => {
   await expect(owner.locator('main')).toHaveAttribute('data-band', '4');
   expect(await effect(owner)).toEqual({ kind: 'grid', clear: true, moving: false });
   await owner.emulateMedia({ reducedMotion: 'no-preference' });
-  expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+  expect(await appearance(owner, { preset: 'aurora', markFirst: true })).toBe(200);
 });
 
 test('the page follows your Type and Rank by, also when opened from the Log; an uncoloured #1 wears gold', async () => {
@@ -207,7 +191,7 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
   await expect(owner.locator('main')).toHaveAttribute('data-band', 'none');
   await expect(owner.locator('.gem-badge')).toHaveCount(0);
 
-  // Flower by Taste: only Delta has a Taste (9), so it tops that list in Amethyst, with the crown — from the Log as well.
+  // Flower by Taste: only Delta has a Taste (9), so it tops that list in Violet, with the crown — from the Log as well.
   await owner.goto('/');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('taste');
   await expect(owner.locator('.row')).toHaveCount(1);
@@ -242,14 +226,14 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
 });
 
 test('#1 unmarked: no crown or halo on the row or the page, the colour stays', async () => {
-  expect(await appearance(owner, { preset: 'gems', markFirst: false })).toBe(200);
+  expect(await appearance(owner, { preset: 'aurora', markFirst: false })).toBe(200);
   await owner.goto('/');
   await expect(owner.locator('.row.tier')).toHaveCount(6);
   await expect(owner.locator('.row.first, .rank-crown')).toHaveCount(0);
   await open(owner, `/products/${ids.Secret}`);
   await expect(owner.locator('.gem-badge')).toHaveText('#1 on your Leaderboard');
   await expect(owner.locator('.gem-badge svg')).toHaveCount(0);
-  expect(await appearance(owner, { preset: 'gems', markFirst: true })).toBe(200);
+  expect(await appearance(owner, { preset: 'aurora', markFirst: true })).toBe(200);
 });
 
 test('text stays readable on every colour page throughout the motion', async () => {
@@ -282,7 +266,7 @@ test('a friend’s product page gets its colour and place on their board, worked
   await fan.locator('.row', { hasText: 'Alpha' }).click();
   await expect(fan.locator('.gem-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('data-band', '4');
-  expect(await pieces(fan)).toMatchObject({ crown: true, haze: '0.14', score: true, sweep: true, glints: 0 });
+  expect(await pieces(fan)).toMatchObject({ crown: true, haze: '0.14', score: true, sweep: true });
   // The Poster (D27) on their page too, without a price.
   await expect(fan.locator('.poster .hero-photo')).toBeVisible();
   await expect(fan.locator('.hero-price')).toHaveCount(0);
@@ -298,12 +282,12 @@ test('a friend’s product page gets its colour and place on their board, worked
   // The owner's preset, not the fan's (D74; the fan's own before).
   expect(await appearance(fan, { preset: 'prism', markFirst: true })).toBe(200);
   await fan.goto(`/u/${ownerName}`);
-  await expect(fan.locator('.row.tier.pal-gems')).toHaveCount(5);
+  await expect(fan.locator('.row.tier.pal-aurora')).toHaveCount(5);
   await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(0);
   expect(await appearance(owner, { preset: 'prism', markFirst: true })).toBe(200);
   await open(fan, `/u/${ownerName}/p/${ids.Delta}`);
   await expect(fan.locator('.gem-badge')).toHaveText('#4 on their Leaderboard');
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.locator('.row.tier.pal-prism')).toHaveCount(5);
-  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'gems', markFirst: true })).toBe(200);
+  for (const p of [owner, fan]) expect(await appearance(p, { preset: 'aurora', markFirst: true })).toBe(200);
 });

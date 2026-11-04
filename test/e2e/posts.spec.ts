@@ -155,7 +155,7 @@ test('from the Feed’s + button: what’s it about, then just a photo needs a p
 });
 
 test('a friend’s page: Leaderboard | Posts, in their look; /u/<them>/posts opens on Posts', async () => {
-  await call(owner, 'PUT', '/api/appearance', { look: 'neon', top: 'strip', preset: 'gems', markFirst: true });
+  await call(owner, 'PUT', '/api/appearance', { look: 'neon', top: 'strip', preset: 'aurora', markFirst: true });
   await fan.goto(`/u/${ownerName}`);
   await expect(fan.getByRole('tab', { name: 'Leaderboard' })).toHaveAttribute('aria-selected', 'true');
   await expect(fan.locator('.row').first()).toBeVisible();
@@ -167,7 +167,7 @@ test('a friend’s page: Leaderboard | Posts, in their look; /u/<them>/posts ope
   await shot(fan, 'posts-06-friend-posts');
   await fan.reload();
   await expect(fan.getByRole('tab', { name: 'Posts' })).toHaveAttribute('aria-selected', 'true');
-  await call(owner, 'PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
+  await call(owner, 'PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true });
 });
 
 test('your own page from People: the same two tabs, your posts with Edit and Delete', async () => {
@@ -214,7 +214,7 @@ test('several photos (D78): add the product’s second photo, post, then swipe t
 for (const look of ['aurora', 'daysky'] as const) {
   test(`readable and accessible in ${look}: the Feed, a post’s page and the composer`, async () => {
     test.slow();
-    await call(fan, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'gems', markFirst: true });
+    await call(fan, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'aurora', markFirst: true });
     await fan.goto('/feed');
     await expect(fan.locator('.post').first()).toBeVisible();
     await expect(fan.locator('.post-photo img').first()).toHaveJSProperty('complete', true);
@@ -234,5 +234,5 @@ for (const look of ['aurora', 'daysky'] as const) {
 }
 
 test.afterAll(async () => {
-  await call(fan, 'PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'gems', markFirst: true });
+  await call(fan, 'PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true });
 });
