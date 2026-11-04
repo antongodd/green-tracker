@@ -114,15 +114,17 @@ function PriceHistory(p: { product: Product }) {
 }
 
 /** Which list a profile was opened from, so its tab and Back fallback match (brief §10.2). */
-const origin = new Map<string, 'log' | 'leaderboard'>();
+// D92: from Strainz (a strain's page) or the Log, the product belongs to the Strainz tab; Back goes to where it was.
+const origin = new Map<string, string>();
 
 export function Profile(p: { id: string }) {
-  const [from] = useState(() => {
+  const [backTo] = useState(() => {
     const came = cameFrom();
-    if (came === '/log') origin.set(p.id, 'log');
-    else if (came === '/' || came === '/products/new') origin.set(p.id, 'leaderboard');
-    return origin.get(p.id) ?? 'leaderboard';
+    if (came === '/log' || came?.startsWith('/strainz')) origin.set(p.id, came);
+    else if (came === '/' || came === '/products/new') origin.set(p.id, '/');
+    return origin.get(p.id) ?? '/';
   });
+  const from = backTo === '/' ? 'leaderboard' : 'strainz';
   const [product, setProduct] = useState<Product | undefined>(cachedProduct(p.id));
   const [error, setError] = useState('');
   const [confirmArchive, setConfirmArchive] = useState(false);
@@ -180,7 +182,7 @@ export function Profile(p: { id: string }) {
     setBusy(false);
   }
 
-  /** Return to Log (D50): it becomes a Log entry again, keeping everything else hidden; its page opens. */
+  /** Return to Log (D50; "Move to Tried, not rated" since D92): it becomes a Log entry again, keeping everything else hidden; its page opens. */
   async function moveToLog() {
     setConfirmReturn(false);
     setBusy(true);
@@ -188,8 +190,8 @@ export function Profile(p: { id: string }) {
     try {
       const entry = await returnToLog(p.id);
       play('log');
-      // The product is gone from your list: Back from the entry goes to the Log, not here.
-      replaceHistory('/log');
+      // The product is gone from your list: Back from the entry goes to Strainz, where it now shows, not here.
+      replaceHistory('/strainz');
       navigate(`/log/${entry.id}`);
     } catch (e) {
       setError(errorText(e));
@@ -233,7 +235,7 @@ export function Profile(p: { id: string }) {
   const shown = details.filter(([, v]) => v);
   const ranked = list ? [...list.filter((x) => x.id !== product.id), product] : null;
   const place = ranked && !product.archived ? boardPlace(ranked, product.id, view) : null;
-  const back = product.archived ? '/more/archive' : from === 'log' ? '/log' : '/';
+  const back = product.archived ? '/more/archive' : backTo;
 
   return (
     <>
@@ -321,7 +323,7 @@ export function Profile(p: { id: string }) {
               </a>
               <button class="act" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
                 <ReturnIcon />
-                Return to Log
+                Move to Tried, not rated
               </button>
               <button class="act danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
                 <BoxIcon />
@@ -340,9 +342,9 @@ export function Profile(p: { id: string }) {
       {photos.overlays}
       {confirmReturn && (
         <Sheet
-          title={`Return “${product.name}” to your Log?`}
-          message="It leaves your Leaderboard and followers’ view. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
-          options={[{ label: 'Return to Log', tick: true, onSelect: moveToLog }]}
+          title={`Move “${product.name}” to Tried, not rated?`}
+          message="It leaves your Leaderboard and followers’ view, and shows on Strainz under Tried, not rated. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
+          options={[{ label: 'Move to Tried, not rated', tick: true, onSelect: moveToLog }]}
           onCancel={() => setConfirmReturn(false)}
         />
       )}

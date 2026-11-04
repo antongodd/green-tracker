@@ -75,7 +75,8 @@ test('the fan sees a read-only leaderboard: @username header, two tiles, Source 
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' })).toHaveClass(/\btier band2 pal-aurora\b/);
   await expect(fan.locator('.row', { hasText: 'Wedding Cake' }).locator('.meta')).toHaveText('Jungle Boys');
   await expect(fan.locator('.row', { hasText: 'Hash Rosin' }).locator('.meta')).toHaveCount(0);
-  await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(0);
+  // D92: the + is beside the bar on every screen; on a friend's board it adds one of your own.
+  await expect(fan.getByRole('button', { name: 'Add a product' })).toHaveCount(1);
   await expect(fan.getByRole('img', { name: 'Private' })).toHaveCount(0);
   await expect(fan.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
   // Rank by never offers Price or Value for money.
@@ -99,7 +100,7 @@ test('their profile shows identity, ratings and details only — no price, notes
   for (const hidden of ['Price history', 'Value for money', 'Private notes', 'Leafly', 'Secret Shop', '£']) {
     await expect(fan.getByText(hidden)).toHaveCount(0);
   }
-  for (const action of ['Edit', 'Archive', 'Private', 'Return to Log']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
+  for (const action of ['Edit', 'Archive', 'Private', 'Move to Tried, not rated']) await expect(fan.getByRole('button', { name: action })).toHaveCount(0);
   await expect(fan.getByRole('link', { name: 'Edit' })).toHaveCount(0);
   await shot(fan, '53-their-profile');
   await fan.getByRole('link', { name: 'Back' }).click();

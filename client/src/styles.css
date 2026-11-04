@@ -1732,6 +1732,9 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .tfx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; --fall: 12px; --sweep: -480px; }
 .tfx i { position: absolute; display: block; }
 .hero-photo .tfx { z-index: 1; inset: var(--header-h) 0 auto; height: 170px; --fall: 200px; --sweep: -1100px; }
+/* 0.81.1: the effect fades out towards its box's bottom edge, so no line or band (Sunset's horizon, Neon's tubes,
+   Ember's heat…) stops there in a hard line across the photo (Anton's screenshot). heroedge.spec.ts checks every set. */
+.hero-photo .tfx { -webkit-mask-image: linear-gradient(180deg, #000 0, #000 50%, transparent 88%); mask-image: linear-gradient(180deg, #000 0, #000 50%, transparent 88%); }
 /* Small round things: stars, plankton, dust, bubbles. */
 :is(.tfx-plankton, .tfx-stars, .tfx-sun, .tfx-ribbons, .tfx-grid) i:is(:not([class]), .big, .bub, .mote, .st) { width: 3px; height: 3px; border-radius: 50%; }
 .tfx-plankton i:not([class]) { background: var(--t5); box-shadow: 0 0 6px 1px var(--t1); }
@@ -1962,7 +1965,7 @@ label.btn:has(input:disabled) { opacity: 0.4; }
   background: var(--bar); -webkit-backdrop-filter: blur(26px) saturate(180%); backdrop-filter: blur(26px) saturate(180%);
   box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 0.5px var(--hairline-strong), 0 10px 30px rgba(0, 0, 0, 0.4); }
 .nav::after { display: none; }
-body:has(.fab) .nav { right: 86px; }
+.nav { right: 86px; } /* D92: the + is beside the bar on every screen with it, so the bar is always this wide */
 .nav .tabs { height: 62px; align-items: center; grid-auto-columns: minmax(0, 1fr); } /* each tab exactly a quarter, however long its name (a plain 1fr let "Leaderboard" widen its tab) */
 .tab { height: 52px; border-radius: 26px; gap: 2px; padding-bottom: 0; color: var(--text-2); transition: background-color 0.25s ease, transform 0.4s var(--bounce); }
 .tab svg { width: 24px; height: 24px; }
@@ -2365,3 +2368,59 @@ html[data-tone="light"] :is(.duel-side.mine .duel-score, .your-chip.mine b, .abo
 .data-card.red > .cap { color: color-mix(in srgb, var(--danger) 62%, var(--text)); }
 /* A light card's rank (D72's deep shade): a little deeper since D87's lighter weight (Gems' #1 read 4.4 : 1). */
 html[data-tone="light"] .row.tier .rk { color: color-mix(in srgb, var(--t4) 30%, var(--text)); font-weight: 700; }
+
+/* ---------- Strainz and Want to try (D92) ---------- */
+.halves-wrap { padding-top: 4px; padding-bottom: 4px; }
+.halves .n { margin-left: 2px; }
+.role.once { background: var(--accent-soft); color: var(--accent-bright); }
+.strainz-lead { padding: 0 2px; }
+.unrated { margin-top: 18px; }
+.unrated .group-h, .strain-group { position: static; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; max-width: 720px; margin: 0 auto; }
+.scard.plain .sub { color: var(--text-2); }
+.log-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--card-edge); background: var(--glass); color: var(--text); text-decoration: none; font-weight: 600; }
+.log-link .ll-text { display: grid; gap: 2px; }
+.log-link .small { font-weight: 400; }
+.log-link .chev { width: 18px; height: 18px; color: var(--text-3); flex: none; }
+/* The Want to try sheet and Rename: at the top, clear of the keyboard, like Edit caption. */
+.want-sheet { bottom: auto; top: calc(var(--safe-top) + 72px); }
+.want-sheet .pad { padding: 16px; display: grid; gap: 12px; }
+.want-sheet .lbl { margin: 0; font-size: 17px; font-weight: 700; }
+.want-sheet .small { margin: 0; }
+.want-sheet .hint { color: var(--accent-bright); }
+.list.wants { margin: 0; padding: 0; list-style: none; }
+.list.wants .want { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--hairline); }
+.list.wants .want:first-child { border-top: 0; }
+.list.wants .w-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.list.wants .w-name { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.list.wants .w-note { font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }
+.list.wants .btn.sm { width: auto; flex: none; height: 36px; padding: 0 12px; font-size: 14px; }
+/* A strain's page. */
+.strain-top { padding-top: 8px; }
+.strain-hero { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; }
+.strain-hero .scard-ph { height: 96px; }
+.strain-hero .sh-text { display: grid; gap: 6px; min-width: 0; }
+.sh-name { margin: 0; font-family: var(--display); font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.sh-type { font-size: 14px; color: var(--text-2); }
+.strain-place b { color: var(--text); }
+.facts { margin: 0; border-radius: 14px; border: 1px solid var(--card-edge); background: var(--glass); overflow: hidden; }
+.facts div { display: flex; justify-content: space-between; gap: 16px; padding: 11px 14px; border-top: 1px solid var(--hairline); font-size: 15px; }
+.facts div:first-child { border-top: 0; }
+.facts dt { color: var(--text-2); flex: none; }
+.facts dd { margin: 0; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.pick-sheet .pick-list { max-height: min(50vh, 420px); overflow-y: auto; }
+.sheet .opt.pick { justify-content: space-between; padding: 0 18px; text-decoration: none; font-size: 17px; }
+.sheet .opt.pick .num { color: var(--text-2); }
+.pick-sheet .pick-list .opt.pick:first-child { border-top: 0; }
+/* Two strains side by side. */
+table.vs { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 14px; border: 1px solid var(--card-edge); background: var(--glass); overflow: hidden; table-layout: fixed; }
+table.vs thead th { padding: 14px 10px 10px; vertical-align: top; font-size: 16px; }
+table.vs thead th a { display: block; margin-top: 8px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+table.vs thead .scard-ph { height: 72px; }
+table.vs thead td { width: 34%; }
+table.vs tbody th { font-size: 12px; font-weight: 500; color: var(--text-2); text-align: center; padding: 10px 4px; border-top: 1px solid var(--hairline); }
+table.vs tbody td { padding: 10px 12px; font-weight: 600; border-top: 1px solid var(--hairline); }
+table.vs tbody td:first-child { text-align: left; }
+table.vs tbody td:last-child { text-align: right; }
+table.vs .win { color: var(--accent-bright); }
+/* A want ticked off: a short message over the screen you land on. */
+.toast.ticked { width: max-content; max-width: calc(100% - 32px); border-radius: 16px; text-align: center; line-height: 1.4; border-color: var(--accent); }

@@ -100,7 +100,11 @@ test('editing a product: a swipe back asks; after Save, leaving doesn’t', asyn
 
 test('a Log entry: Cancel asks once changed, new or saved', async () => {
   await page.goto('/log');
-  await page.getByRole('button', { name: 'Add a Log entry' }).click();
+  // D92: no button leads to a new Log entry any more; its address still opens one.
+  await page.evaluate(() => {
+    history.pushState({ depth: 1 }, '', '/log/new');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
   await page.getByLabel('Name').fill('Mystery');
   await page.getByRole('button', { name: 'Cancel' }).click();
   await sheet('Discard this entry?').getByRole('button', { name: 'Discard' }).click();

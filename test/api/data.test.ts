@@ -62,7 +62,7 @@ describe('restore (brief §13)', () => {
     };
     const res = await b.post('/api/data/restore', payload);
     expect(res.status, JSON.stringify(res.json)).toBe(200);
-    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, profilePhoto: 'kept', posts: 'kept' });
+    expect(res.json).toEqual({ products: 2, logEntries: 1, photos: 2, profilePhoto: 'kept', posts: 'kept', wants: 'kept' });
 
     const products = [...(await b.get('/api/products')).json.products, ...(await b.get('/api/products?archived=1')).json.products] as Product[];
     expect(products.map((p) => p.name).sort()).toEqual(['Restored Archived', 'Restored Flower']);
@@ -92,7 +92,7 @@ describe('restore (brief §13)', () => {
       privacy: { shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareSmokeCounts: true, shareMostUsed: true, shareSmokes: true, shareProfilePhoto: true },
     });
     expect(res.status, JSON.stringify(res.json)).toBe(200);
-    expect(res.json).toEqual({ products: 1, logEntries: 1, photos: 0, profilePhoto: 'kept', posts: 'kept' });
+    expect(res.json).toEqual({ products: 1, logEntries: 1, photos: 0, profilePhoto: 'kept', posts: 'kept', wants: 'kept' });
     expect((await b.get('/api/privacy')).json.privacy).toEqual({ shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true });
   });
 

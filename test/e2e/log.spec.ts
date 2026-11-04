@@ -104,14 +104,16 @@ test('the Type filter is shared with the Leaderboard; empty groups are not drawn
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page.getByLabel('Type', { exact: true })).toHaveValue('edibles');
   await page.getByLabel('Type', { exact: true }).selectOption('all');
-  await page.getByRole('link', { name: 'Log', exact: true }).click();
+  // D92: the Log is no longer a tab: Strainz, then Your Log.
+  await page.getByRole('link', { name: 'Strainz', exact: true }).click();
+  await page.getByRole('link', { name: /Your Log/ }).click();
   await expect(page.locator('.group-h')).toHaveCount(5);
 });
 
 test('a product row opens its profile, which returns to the Log', async () => {
   await group('United States').getByRole('link', { name: /Gelato 41/ }).click();
   await expect(page.getByRole('heading', { name: 'Gelato 41' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Log', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('link', { name: 'Strainz', exact: true })).toHaveAttribute('aria-current', 'page');
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/log$/);
 });
@@ -141,8 +143,8 @@ test('delete a loose entry behind a confirmation', async () => {
   await expect(tile('Total')).toHaveText('36g');
 });
 
-test('add a new loose entry', async () => {
-  await page.getByRole('button', { name: 'Add a Log entry' }).click();
+test('add a new loose entry (D92: no button leads here any more; its address still works)', async () => {
+  await page.goto('/log/new');
   await page.getByLabel('Name').fill('sour diesel');
   await page.getByLabel('Product type').selectOption('edibles');
   await expect(page.getByLabel('Amount (mg THC)')).toBeVisible();

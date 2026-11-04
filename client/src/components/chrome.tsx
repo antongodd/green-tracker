@@ -1,7 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { BackIcon, BoardIcon, BoardLineIcon, FeedIcon, FeedLineIcon, LeafGlass, LogIcon, LogLineIcon, SourcesIcon, SourcesLineIcon } from '../icons';
-import { back, linkTo } from '../router';
+import { BackIcon, BoardIcon, BoardLineIcon, FeedIcon, FeedLineIcon, LeafGlass, PlusIcon, SourcesIcon, SourcesLineIcon, StrainzIcon, StrainzLineIcon } from '../icons';
+import { back, linkTo, navigate } from '../router';
 import { useSession } from '../session';
 import { Tick } from './Tick';
 
@@ -74,12 +74,12 @@ export function BackButton(p: { to: string; label?: string }) {
 
 /** `more` is Settings (D61): no tab since D87 (your photo, top right, opens it); its screens keep their /more
  *  addresses. `feed` took People's place (D77). */
-export type Tab = 'leaderboard' | 'log' | 'sources' | 'feed' | 'more';
+export type Tab = 'leaderboard' | 'strainz' | 'sources' | 'feed' | 'more';
 
 /** Each tab: its solid icon (the tab you're on) and its outline (the others), D35. */
 const TABS: { key: Tab; label: string; path: string; Icon: typeof BoardIcon; Line: typeof BoardIcon }[] = [
   { key: 'leaderboard', label: 'Leaderboard', path: '/', Icon: BoardIcon, Line: BoardLineIcon },
-  { key: 'log', label: 'Log', path: '/log', Icon: LogIcon, Line: LogLineIcon },
+  { key: 'strainz', label: 'Strainz', path: '/strainz', Icon: StrainzIcon, Line: StrainzLineIcon },
   { key: 'sources', label: 'Sources', path: '/sources', Icon: SourcesIcon, Line: SourcesLineIcon },
   { key: 'feed', label: 'Feed', path: '/feed', Icon: FeedIcon, Line: FeedLineIcon },
 ];
@@ -102,28 +102,46 @@ function again(key: Tab, path: string) {
   };
 }
 
-/** D87: a floating glass bar of four tabs; a screen's + (`.fab`) sits beside it as its own round button. */
-export function TabBar(p: { active: Tab | null }) {
+/** What the + beside the bar does on a screen (D92): its label (read out) and what it opens. */
+export interface AddAction {
+  label: string;
+  onAdd: () => void;
+}
+/** Anywhere without a + of its own (Settings, a friend's page…), the + adds a product (D92, the owner). */
+const ADD_PRODUCT: AddAction = { label: 'Add a product', onAdd: () => navigate('/products/new') };
+
+/**
+ * D87: a floating glass bar of four tabs, and the + beside it as its own round button. D92: the + is on every screen
+ * with the bar, always in the same place, so the bar never changes width (it once widened on Sources and Settings).
+ * Each main tab's + does its own thing (`add`); everywhere else it adds a product.
+ */
+export function TabBar(p: { active: Tab | null; add?: AddAction }) {
   const { me } = useSession();
   const requests = me.pendingRequests ?? 0;
   const fresh = !requests && !!me.feedNew && p.active !== 'feed';
+  const add = p.add ?? ADD_PRODUCT;
   return (
-    <nav class="nav" aria-label="Main">
-      <div class="tabs">
-        {TABS.map(({ key, label, path, Icon, Line }) => (
-          <a key={key} class="tab" href={path} onClick={p.active === key ? again(key, path) : linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
-            {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
-            <span class="tab-l">{label}</span>
-            {key === 'feed' && requests > 0 && (
-              <span class="badge" aria-label={`${requests} follow ${requests === 1 ? 'request' : 'requests'}`}>
-                {requests}
-              </span>
-            )}
-            {key === 'feed' && fresh && <span class="badge dot" aria-label="Something new" />}
-          </a>
-        ))}
-      </div>
-    </nav>
+    <>
+      <nav class="nav" aria-label="Main">
+        <div class="tabs">
+          {TABS.map(({ key, label, path, Icon, Line }) => (
+            <a key={key} class="tab" href={path} onClick={p.active === key ? again(key, path) : linkTo(path)} aria-current={p.active === key ? 'page' : undefined}>
+              {p.active === key ? <Icon class="tab-on" /> : <Line class="tab-off" />}
+              <span class="tab-l">{label}</span>
+              {key === 'feed' && requests > 0 && (
+                <span class="badge" aria-label={`${requests} follow ${requests === 1 ? 'request' : 'requests'}`}>
+                  {requests}
+                </span>
+              )}
+              {key === 'feed' && fresh && <span class="badge dot" aria-label="Something new" />}
+            </a>
+          ))}
+        </div>
+      </nav>
+      <button type="button" class="fab" aria-label={add.label} onClick={add.onAdd}>
+        <PlusIcon />
+      </button>
+    </>
   );
 }
 

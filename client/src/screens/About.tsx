@@ -9,7 +9,7 @@ import { useSession } from '../session';
 // Trust basics for strangers (D84): the privacy page, the house rules, and the 18+ tick. Every sentence on the
 // privacy page must stay true: when what's kept, where, or who sees it changes, change it here too (SPEC §4).
 
-export const PRIVACY_UPDATED = '3 November 2026';
+export const PRIVACY_UPDATED = '4 November 2026';
 
 /** A page from Settings (with Back), or over sign-up (with Close, so nothing typed there is lost). */
 function AboutPage(p: { title: string; onClose?: () => void; children: ComponentChildren }) {
@@ -53,7 +53,7 @@ export function PrivacyNotice(p: { onClose?: () => void }) {
           <b>Face ID</b>: only a key your iPhone makes. Your face never leaves your phone.
         </li>
         <li>
-          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, notes, photos, posts, comments, 🔥s and settings.
+          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, Want to try lists (only you see them), notes, photos, posts, comments, 🔥s and settings.
         </li>
         <li>
           <b>To stop break-ins</b>: a scrambled form of your internet address (never the address itself) to limit how many tries can be made, and a random code for each phone you’ve signed in on.
@@ -80,7 +80,7 @@ export function PrivacyNotice(p: { onClose?: () => void }) {
       <p>If you report something, Anton sees what you reported and your @name. The person isn’t told who reported them.</p>
       <h2>Export and delete</h2>
       <p>
-        Export your products, Log, photos and posts any time (Settings, Export). Delete account removes everything at once, and your photos straight away. A copy stays in the app’s backups for up to <b>30 days</b>, then it’s gone for good.
+        Export your products, Log, Want to try lists, photos and posts any time (Settings, Export). Delete account removes everything at once, and your photos straight away. A copy stays in the app’s backups for up to <b>30 days</b>, then it’s gone for good.
       </p>
       <h2>For adults only</h2>
       <p>You must be 18 or over to use Green Tracker.</p>

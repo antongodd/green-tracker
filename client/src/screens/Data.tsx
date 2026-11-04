@@ -87,6 +87,10 @@ export function ExportScreen() {
               </li>
               <li class="yes">
                 <CheckIcon />
+                <span>Your Want to try lists</span>
+              </li>
+              <li class="yes">
+                <CheckIcon />
                 <span>
                   Every photo<small>cropped and original, cut-outs too</small>
                 </span>
@@ -197,7 +201,7 @@ export function RestoreScreen() {
       <main class="screen">
         <div class="wrap stack data" style={{ paddingTop: '16px' }}>
           <DataHero tint="teal" icon={<DownloadIcon />} title="Restore from a file">
-            Replaces your products, Log, photos and posts (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.
+            Replaces your products, Log, photos, posts and Want to try lists (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.
           </DataHero>
           {!summary && picker}
           {summary && f && (
@@ -319,7 +323,7 @@ export function DeleteAccount() {
               </li>
               <li class="gone">
                 <CrossIcon />
-                <span>Your whole Log</span>
+                <span>Your whole Log, and your Want to try lists</span>
               </li>
               <li class="gone">
                 <CrossIcon />

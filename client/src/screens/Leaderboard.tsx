@@ -14,7 +14,7 @@ import { ColoursSheet } from '../components/Gems';
 import { PlusIcon } from '../icons';
 import { EmptyCard } from '../components/EmptyCard';
 import { cachedProducts, fetchArchived, fetchProducts, setFlag } from '../products';
-import { cameFrom, linkTo, navigate } from '../router';
+import { cameFrom, linkTo } from '../router';
 import { restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
@@ -139,9 +139,6 @@ export function Leaderboard() {
           </div>
         )}
       </main>
-      <button class="fab" aria-label="Add a product" onClick={() => navigate('/products/new')}>
-        <PlusIcon />
-      </button>
       <TabBar active="leaderboard" />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
       {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}

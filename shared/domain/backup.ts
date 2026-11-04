@@ -11,6 +11,8 @@ import { validatePrivacy, type Privacy } from './privacy';
 import { validateAppearance, type Appearance } from './gems';
 import { isCurrencyCode } from './currency';
 import { POST_PHOTOS_MAX, validateCaption } from './posts';
+import { validateWantInput, WANT_LIMITS, type WantKind } from './wants';
+import { nameKey } from './names';
 
 export const EXPORT_FORMAT = 'green-tracker-export';
 export const EXPORT_VERSION = 1;
@@ -75,6 +77,16 @@ export interface ExportFile {
   money?: Money;
   /** D77: your posts (not comments or fires). Absent in files made before 0.66.0: restoring one leaves yours alone. */
   posts?: ExportPost[];
+  /** D92: your Want to try lists (strains and sources). Absent in files made before 0.81.0: restoring one leaves yours alone. */
+  wants?: ExportWant[];
+}
+
+/** D92: a want in the file. */
+export interface ExportWant {
+  kind: WantKind;
+  name: string;
+  note: string | null;
+  createdAt: number;
 }
 
 /**
@@ -137,9 +149,28 @@ export interface RestorePayload {
   money?: Money;
   /** D77: absent → leave your posts alone; otherwise they replace yours. */
   posts?: RestorePost[];
+  /** D92: absent → leave your lists alone; otherwise they replace yours. */
+  wants?: ExportWant[];
 }
 
-export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, posts: 5000 } as const;
+export const RESTORE_LIMITS = { products: 5000, logEntries: 5000, posts: 5000, wants: WANT_LIMITS.perAccount } as const;
+
+/** D92: the file's wants, each checked like one added on the phone; the same name twice on a list is kept once. */
+function readWants(raw: unknown): ExportWant[] | null {
+  if (!Array.isArray(raw) || raw.length > RESTORE_LIMITS.wants) return null;
+  const out: ExportWant[] = [];
+  const seen = new Set<string>();
+  for (const w of raw as Record<string, unknown>[]) {
+    if (!w || typeof w !== 'object' || !isTime(w.createdAt)) return null;
+    const v = validateWantInput(w);
+    if (!v.ok) return null;
+    const key = `${v.value.kind}:${nameKey(v.value.name)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ ...v.value, createdAt: w.createdAt });
+  }
+  return out;
+}
 
 const isIndex = (v: unknown, length: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < length;
 const optText = (v: unknown, max = 200) => v === null || (typeof v === 'string' && v.length <= max);
@@ -203,6 +234,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
       if (!ok) return bad('A post in the file couldn’t be read.');
     }
   }
+  if (f.wants !== undefined && readWants(f.wants) === null) return bad('The Want to try lists in the file couldn’t be read.');
   return { ok: true, value: raw as ExportFile };
 }
 
@@ -281,7 +313,13 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
       posts.push({ caption: caption.value, createdAt: raw.createdAt, editedAt: (raw.editedAt as number | null) ?? null, about: a, aboutName: (raw.aboutName as ExportPost['aboutName']) ?? null, uploads: ups as string[] });
     }
   }
-  const extra = { ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}), ...(money ? { money: { currency: money.currency } } : {}), ...(posts ? { posts } : {}) };
+  let wants: ExportWant[] | undefined;
+  if (r.wants !== undefined) {
+    const w = readWants(r.wants);
+    if (w === null) return bad('The Want to try lists couldn’t be read.');
+    wants = w;
+  }
+  const extra = { ...(wants ? { wants } : {}), ...(privacy ? { privacy } : {}), ...(appearance ? { appearance } : {}), ...(money ? { money: { currency: money.currency } } : {}), ...(posts ? { posts } : {}) };
   if (r.profilePhoto === undefined) return { ok: true, value: { products, logEntries, ...extra } };
   if (r.profilePhoto === null) return { ok: true, value: { products, logEntries, profilePhoto: null, ...extra } };
   const pp = r.profilePhoto as Record<string, unknown>;

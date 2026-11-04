@@ -1,7 +1,9 @@
 // Client access to your products, with a small in-memory cache so going back
 // to a list or profile draws instantly while the fresh copy loads.
 import type { Product, ProductInput } from '../../shared/domain/product';
+import type { Want } from '../../shared/domain/wants';
 import { api, SAVE_TIMEOUT_MS } from './api';
+import { noteTickedOff } from './wants';
 
 /** Save gives up after 20 seconds (0.69.2). */
 const LIMIT = { timeoutMs: SAVE_TIMEOUT_MS };
@@ -66,13 +68,28 @@ export async function fetchProduct(id: string): Promise<Product> {
 
 export async function saveProduct(id: string | null, input: ProductInput): Promise<Product> {
   if (id) changing(id);
-  const r = id ? await api<{ product: Product }>('PUT', `/products/${encodeURIComponent(id)}`, input, LIMIT) : await api<{ product: Product }>('POST', '/products', input, LIMIT);
+  type Saved = { product: Product; tickedOff?: Pick<Want, 'kind' | 'name'>[] };
+  const r = id ? await api<Saved>('PUT', `/products/${encodeURIComponent(id)}`, input, LIMIT) : await api<Saved>('POST', '/products', input, LIMIT);
+  // D92: a strain or source on your Want to try list leaves it, and says so.
+  noteTickedOff(r.tickedOff);
   return remember(r.product);
 }
 
 export async function setFlag(id: string, flag: 'private' | 'archived', value: boolean): Promise<Product> {
   changing(id);
   return remember((await api<{ product: Product }>('POST', `/products/${encodeURIComponent(id)}/${flag}`, { value })).product);
+}
+
+/**
+ * Rename a strain (D92): every product and Log entry with its name takes the new one. Each product is marked as
+ * changing first (D55), so an older load can't put the old name back; then everything is fetched fresh.
+ */
+export async function renameStrain(from: string, to: string, ids: readonly string[]): Promise<{ name: string }> {
+  ids.forEach(changing);
+  const r = await api<{ name: string; tickedOff?: Pick<Want, 'kind' | 'name'>[] }>('POST', '/products/rename-strain', { from, to }, LIMIT);
+  noteTickedOff(r.tickedOff);
+  await fetchProducts();
+  return r;
 }
 
 /** Forget everything (sign-out), so the next account never sees this one's data. */

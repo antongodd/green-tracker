@@ -195,7 +195,7 @@ test('the page follows your Type and Rank by, also when opened from the Log; an 
   await owner.goto('/');
   await owner.getByLabel('Rank by', { exact: true }).selectOption('taste');
   await expect(owner.locator('.row')).toHaveCount(1);
-  await owner.getByRole('link', { name: 'Log', exact: true }).click();
+  await owner.goto('/log'); // D92: the Log is reached from Strainz now
   await owner.locator('.lrow', { hasText: 'Delta' }).click();
   await expect(owner.locator('.gem-badge')).toHaveText('#1 in Flower by Taste');
   await expect(owner.locator('.gem-badge svg')).toHaveCount(1);

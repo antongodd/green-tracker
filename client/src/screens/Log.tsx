@@ -7,14 +7,13 @@ import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
 import { errorText } from '../api';
-import { Header, LargeTitle, TabBar } from '../components/chrome';
-import { MeButton } from '../components/MeButton';
+import { BackButton, Header, TabBar } from '../components/chrome';
 import { ControlRow, Tiles } from '../components/Controls';
 import { ChevronRight, PlusIcon, TypeMark } from '../icons';
 import { EmptyCard } from '../components/EmptyCard';
 import { cachedEntries, fetchEntries } from '../logEntries';
 import { cachedProducts, fetchProducts } from '../products';
-import { cameFrom, linkTo, navigate, openPlainRow, openRow } from '../router';
+import { cameFrom, linkTo, openPlainRow, openRow } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { loadView, saveView } from '../viewState';
 import { Skeleton } from '../components/Skeleton';
@@ -109,9 +108,9 @@ export function Log() {
 
   return (
     <>
-      <Header title="Log" large right={<MeButton />} />
-      <main class="screen has-fab">
-        <LargeTitle title="Log" />
+      {/* D92: no longer a tab: reached from Strainz (Your Log), with Back to it. */}
+      <Header title="Log" left={<BackButton to="/strainz" />} />
+      <main class="screen">
         {!ready && !error && <Skeleton kind="log" />}
         {error && !ready && (
           <div class="empty">
@@ -140,10 +139,10 @@ export function Log() {
             />}
             {rows.length === 0 ? (
               <EmptyCard art="log" title="Your Log is empty">
-                <p>Everything you try goes here. Add a quick entry, or add a product to your Leaderboard.</p>
-                <a class="btn primary" style={{ width: 'auto' }} href="/log/new" onClick={linkTo('/log/new')}>
+                <p>Everything you try goes here: add a product and it shows here, grouped by country.</p>
+                <a class="btn primary" style={{ width: 'auto' }} href="/products/new" onClick={linkTo('/products/new')}>
                   <PlusIcon />
-                  Add a Log entry
+                  Add a product
                 </a>
               </EmptyCard>
             ) : groups.length === 0 ? (
@@ -178,10 +177,7 @@ export function Log() {
           </>
         )}
       </main>
-      <button class="fab" aria-label="Add a Log entry" onClick={() => navigate('/log/new')}>
-        <PlusIcon />
-      </button>
-      <TabBar active="log" />
+      <TabBar active="strainz" />
       {photosOf?.kind === 'product' && <RowPhotos product={photosOf.product} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
       {/* A Log entry's own photo, as on its page: no bar. */}
       {photosOf?.kind === 'loose' && photosOf.entry.photo && <PhotoViewer photos={[shownFromRecord(photosOf.entry.photo)]} start={0} onClose={() => setPhotosOf(null)} />}
