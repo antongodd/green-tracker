@@ -27,7 +27,7 @@ test.beforeAll(async ({ browser }) => {
     const blob = await new Promise<Blob>((r) => c.toBlob((b) => r(b!), 'image/jpeg', 0.9));
     const f = new FormData();
     for (const k of ['original', 'cropped', 'thumb']) f.append(k, blob, `${k}.jpg`);
-    const up = (await (await fetch('/api/uploads', { method: 'POST', body: f })).json()).upload;
+    const up = ((await (await fetch('/api/uploads', { method: 'POST', body: f })).json()) as { upload: string }).upload;
     const r = await fetch('/api/products', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
