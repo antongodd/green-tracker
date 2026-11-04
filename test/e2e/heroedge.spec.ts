@@ -42,7 +42,7 @@ test.afterAll(async () => {
 
 /** The biggest difference (0–255) in any colour channel between two screenshots of the same size. */
 const biggestDifference = (a: Buffer, b: Buffer) =>
-  page.evaluate(async ([a, b]) => {
+  page.evaluate(async ({ a, b }) => {
     const load = async (s: string) => {
       const img = new Image();
       img.src = `data:image/png;base64,${s}`;
@@ -58,7 +58,7 @@ const biggestDifference = (a: Buffer, b: Buffer) =>
     let most = 0;
     for (let i = 0; i < p.length; i += 4) for (let k = 0; k < 3; k++) most = Math.max(most, Math.abs(p[i + k]! - q[i + k]!));
     return most;
-  }, [a.toString('base64'), b.toString('base64')] as const);
+  }, { a: a.toString('base64'), b: b.toString('base64') });
 
 for (const preset of PRESET_KEYS) {
   test(`${preset}: no line across the photo where the effect's box ends`, async () => {
