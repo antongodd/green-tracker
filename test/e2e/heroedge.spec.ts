@@ -33,7 +33,7 @@ test.beforeAll(async ({ browser }) => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ ...p, name: 'Edge', ratings: { look: 9.6, smell: 9.5, taste: 9.6, burn: 9.5 }, photos: [{ upload: up, crop: null }] }),
     });
-    return (await r.json()).product.id as string;
+    return ((await r.json()) as { product: { id: string } }).product.id;
   }, emptyProductInput());
 });
 test.afterAll(async () => {
