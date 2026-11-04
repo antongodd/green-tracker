@@ -7,7 +7,7 @@ import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
 import { formatDay, notRated, sortStrains, STRAIN_SORTS, strainPath, strainRank, strainsOf, strainTypeLabel, type Strain, type StrainSort } from '../../../shared/domain/strains';
 import { errorText } from '../api';
-import { BackButton, Header, LargeTitle, TabBar } from '../components/chrome';
+import { BackButton, Header, LargeTitle, Sheet, TabBar } from '../components/chrome';
 import { Tiles } from '../components/Controls';
 import { EmptyCard } from '../components/EmptyCard';
 import { MeButton } from '../components/MeButton';
@@ -19,17 +19,24 @@ import { cachedEntries, fetchEntries } from '../logEntries';
 import { useCurrency } from '../money';
 import { renameStrain } from '../products';
 import { linkTo, navigate } from '../router';
-import { useWants } from '../wants';
-import { Halves, WantList, WantSheet, type Half } from '../components/Wants';
+import { removeWant, useWants } from '../wants';
+import { WantList, WantSheet } from '../components/Wants';
+import type { Want } from '../../../shared/domain/wants';
+import type { PhotoRecord } from '../../../shared/domain/photo';
+import type { ComponentChildren } from 'preact';
 import { CardPhoto, useProducts } from './Brands';
 import type { LogEntry } from '../../../shared/domain/logEntry';
 
-// Strainz (D92): your products grouped by strain (the product's Name), in the Log's place in the tab bar. Two
-// halves: Tried (cards like Sources, then the Log entries you never rated) and Want to try (private).
+// Strainz (D92): your products grouped by strain (the product's Name), in the Log's place in the tab bar. Since
+// D93 (the owner's pick, option A "Shelves"): your favourite on top, then rows that scroll sideways (Your favourites,
+// Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring for its average.
+// See all opens a shelf's whole list: the cards (`StrainzAll`), your Want to try list, or the Log.
 
 const enc = encodeURIComponent;
-let lastHalf: Half = 'tried'; // the half you were on, kept while the app is open
-let lastSort: StrainSort = 'average';
+const SHELF_MAX = 10;
+type Shelf = 'average' | 'tried' | 'recent';
+const SHELF_TITLE: Record<Shelf, string> = { average: 'Your favourites', tried: 'Most tried', recent: 'Recently tried' };
+export const strainzListPath = (shelf: Shelf | 'want') => `/strainz/list/${shelf}`;
 
 /** Your Log entries, from the cache at once and fresh from the server. */
 function useEntries(): LogEntry[] | null {
@@ -51,17 +58,217 @@ function strainLine(s: Strain<Product>): string {
 /** The picture of a strain: its best product's (else its first's). */
 const cover = (s: Strain<Product>) => s.best?.product ?? s.products[0]!;
 
-/** The Strainz tab (D92). */
+/** A photo in a circle (a cut-out whole), else the type's mark. */
+function RoundPhoto(p: { photo: PhotoRecord | null | undefined; productType: string }) {
+  const def = productType(p.productType);
+  return <span class={`sring-ph${p.photo?.cutout ? ' cut' : ''}`}>{p.photo ? <img src={photoUrl(p.photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</span>;
+}
+
+/** D93: a strain's round photo with a ring filled to its average out of 10, the average on the ring. */
+function StrainRing(p: { strain: Strain<Product>; size?: 'big' }) {
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  const v = p.strain.average === null ? 0 : p.strain.average / 10;
+  const photo = cover(p.strain);
+  return (
+    <span class={`sring${p.size ? ` ${p.size}` : ''}`}>
+      <svg viewBox="0 0 96 96" aria-hidden="true">
+        <circle class="track" cx="48" cy="48" r={r} />
+        <circle class="fill" cx="48" cy="48" r={r} stroke-dasharray={`${(c * v).toFixed(1)} ${c.toFixed(1)}`} />
+      </svg>
+      <RoundPhoto photo={photo.photos[0]} productType={photo.productType} />
+      {p.strain.average !== null && <span class="sring-v num">{formatScore(p.strain.average)}</span>}
+    </span>
+  );
+}
+
+/** How often you've had it, read out (the shelf shows ×1, ×2…, the owner's pick). */
+const timesTried = (n: number) => (n === 1 ? 'tried once' : n === 2 ? 'tried twice' : `tried ${n} times`);
+
+/** One strain on a shelf: its ring, name and how often you've had it; opens its page. */
+function Pick(p: { strain: Strain<Product> }) {
+  const s = p.strain;
+  const n = s.products.length;
+  const label = `${s.name}, ${s.average === null ? 'unranked' : `average ${formatScore(s.average)}`}, ${timesTried(n)}`;
+  return (
+    <li class="pick">
+      <a href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))} aria-label={label}>
+        <StrainRing strain={s} />
+        <span class="pk-n">{s.name}</span>
+        <span class="pk-m" aria-hidden="true">×{n}</span>
+      </a>
+    </li>
+  );
+}
+
+/** A shelf: its title, See all, and a row that scrolls sideways. */
+function ShelfRow(p: { id: string; title: string; all: string; allLabel?: string; children: ComponentChildren }) {
+  return (
+    <section class="shelf" aria-labelledby={`shelf-${p.id}`}>
+      <div class="shelf-h">
+        <h2 id={`shelf-${p.id}`}>{p.title}</h2>
+        <a href={p.all} onClick={linkTo(p.all)} aria-label={`${p.allLabel ?? 'See all'}: ${p.title}`}>
+          {p.allLabel ?? 'See all'}
+        </a>
+      </div>
+      <ul class="rail" aria-label={p.title}>
+        {p.children}
+      </ul>
+    </section>
+  );
+}
+
+/** The Strainz tab (D92; shelves since D93). */
 export function StrainzList() {
   const { products, error } = useProducts();
   const entries = useEntries();
-  const { wants, error: wantsError } = useWants();
-  const [half, setHalfNow] = useState<Half>(lastHalf);
-  const [sort, setSortNow] = useState<StrainSort>(lastSort);
-  const [query, setQuery] = useState('');
+  const { wants } = useWants();
   const [adding, setAdding] = useState(false);
-  const setHalf = (h: Half) => setHalfNow((lastHalf = h));
-  const setSort = (s: StrainSort) => setSortNow((lastSort = s));
+  const [open, setOpen] = useState<Want | null>(null);
+  const [removeError, setRemoveError] = useState('');
+  const strains = products ? strainsOf(products) : [];
+  const unrated = entries ? notRated(entries, strains) : [];
+  const mine = (wants ?? []).filter((w) => w.kind === 'strain');
+  const known = (name: string) => {
+    const s = strains.find((x) => x.key === nameKey(name));
+    return s ? `You’ve tried ${s.name}: ${s.products.length} ${s.products.length === 1 ? 'product' : 'products'}.` : null;
+  };
+  const shelf = (by: Shelf) => sortStrains(strains, by).slice(0, SHELF_MAX);
+  const favourite = sortStrains(strains, 'average')[0];
+  const nothing = products && strains.length === 0 && unrated.length === 0 && mine.length === 0;
+  return (
+    <>
+      <Header title="Strainz" large right={<MeButton />} />
+      <main class="screen">
+        <LargeTitle title="Strainz" />
+        {!products && !error && <Skeleton kind="board" />}
+        {error && !products && (
+          <div class="empty">
+            <h2>Couldn’t load your products</h2>
+            <p>{error}</p>
+          </div>
+        )}
+        {nothing && (
+          <EmptyCard art="podium" title="No strains yet">
+            <p>Add a product and its name becomes a strain here, with your average, how many you’ve tried and more. Heard of one you want to try? Tap +.</p>
+            <a class="btn primary" style={{ width: 'auto' }} href="/products/new" onClick={linkTo('/products/new')}>
+              Add a product
+            </a>
+          </EmptyCard>
+        )}
+        {products && !nothing && (
+          <div class="shelves">
+            {favourite?.average != null && (
+              <a class="fav-card" href={strainPath(favourite.name)} onClick={linkTo(strainPath(favourite.name))}>
+                <StrainRing strain={favourite} size="big" />
+                <span class="fav-t">
+                  <span class="fav-k">Your favourite strain</span>
+                  <span class="fav-n">{favourite.name}</span>
+                  <span class="fav-m">
+                    {formatScore(favourite.average)} average · {strains.length} {strains.length === 1 ? 'strain' : 'strains'} tried
+                  </span>
+                </span>
+              </a>
+            )}
+            {strains.length > 0 && (
+              <ShelfRow id="average" title={SHELF_TITLE.average} all={strainzListPath('average')}>
+                {shelf('average').map((s) => (
+                  <Pick key={s.key} strain={s} />
+                ))}
+              </ShelfRow>
+            )}
+            {strains.length > 1 && (
+              <ShelfRow id="tried" title={SHELF_TITLE.tried} all={strainzListPath('tried')}>
+                {shelf('tried').map((s) => (
+                  <Pick key={s.key} strain={s} />
+                ))}
+              </ShelfRow>
+            )}
+            {mine.length > 0 && (
+              <ShelfRow id="want" title="Want to try" all={strainzListPath('want')}>
+                {mine.slice(0, SHELF_MAX).map((w) => (
+                  <li key={w.id} class="pick">
+                    <button type="button" onClick={() => setOpen(w)} aria-label={`${w.name}, on your Want to try list`}>
+                      <span class="sring dash" aria-hidden="true">
+                        ?
+                      </span>
+                      <span class="pk-n">{w.name}</span>
+                      <span class="pk-m">On your list</span>
+                    </button>
+                  </li>
+                ))}
+                <li class="pick">
+                  <button type="button" onClick={() => setAdding(true)}>
+                    <span class="sring dash" aria-hidden="true">
+                      +
+                    </span>
+                    <span class="pk-n">Add one</span>
+                  </button>
+                </li>
+              </ShelfRow>
+            )}
+            {strains.length > 1 && (
+              <ShelfRow id="recent" title={SHELF_TITLE.recent} all={strainzListPath('recent')}>
+                {shelf('recent').map((s) => (
+                  <Pick key={s.key} strain={s} />
+                ))}
+              </ShelfRow>
+            )}
+            {unrated.length > 0 && (
+              <ShelfRow id="unrated" title="Unranked" all="/log" allLabel="Your Log">
+                {unrated.slice(0, SHELF_MAX).map((u) => (
+                  <li key={u.key} class="pick">
+                    <a href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)} aria-label={`${u.name}, unranked`}>
+                      <span class="sring dash">
+                        <RoundPhoto photo={u.entry.photo} productType={u.entry.productType} />
+                      </span>
+                      <span class="pk-n">{u.name}</span>
+                      <span class="pk-m">Unranked</span>
+                    </a>
+                  </li>
+                ))}
+              </ShelfRow>
+            )}
+            {removeError && (
+              <p class="error wrap" role="alert">
+                {removeError}
+              </p>
+            )}
+          </div>
+        )}
+      </main>
+      <TabBar active="strainz" add={{ label: 'Add a strain to try', onAdd: () => setAdding(true) }} />
+      {adding && <WantSheet kind="strain" known={known} onClose={() => setAdding(false)} onAdded={() => setAdding(false)} />}
+      {open && (
+        <Sheet
+          title={open.name}
+          message={open.note ?? 'On your Want to try list. It leaves by itself when you add a product with this name.'}
+          options={[
+            {
+              label: 'Remove from list',
+              danger: true,
+              onSelect: () => {
+                const w = open;
+                setOpen(null);
+                setRemoveError('');
+                removeWant(w.id).catch((e) => setRemoveError(errorText(e)));
+              },
+            },
+          ]}
+          onCancel={() => setOpen(null)}
+        />
+      )}
+    </>
+  );
+}
+
+/** See all (D93): one shelf's whole list as cards, with search and the sorts; Your favourites also lists the Log
+ *  entries you never rated. */
+export function StrainzAll(p: { shelf: Shelf }) {
+  const { products, error } = useProducts();
+  const entries = useEntries();
+  const [sort, setSort] = useState<StrainSort>(p.shelf);
+  const [query, setQuery] = useState('');
   const strains = products ? strainsOf(products) : [];
   const unrated = entries ? notRated(entries, strains) : [];
   const shown = sortStrains(
@@ -69,133 +276,116 @@ export function StrainzList() {
     sort,
   );
   const shownUnrated = unrated.filter((u) => matchesName(u.name, query));
-  const wantCount = (wants ?? []).filter((w) => w.kind === 'strain').length;
+  return (
+    <>
+      <Header title={SHELF_TITLE[p.shelf]} left={<BackButton to="/strainz" />} />
+      <main class="screen">
+        {!products && !error && <Skeleton kind="board" />}
+        {error && !products && (
+          <div class="empty">
+            <h2>Couldn’t load your products</h2>
+            <p>{error}</p>
+          </div>
+        )}
+        {products && strains.length === 0 && (
+          <EmptyCard art="podium" title="No strains yet">
+            <p>Add a product and its name becomes a strain here.</p>
+          </EmptyCard>
+        )}
+        {products && strains.length > 0 && (
+          <>
+            <div class="wrap brands-top">
+              <label for="strain-search" class="visually-hidden">
+                Search strains
+              </label>
+              <input id="strain-search" class="input" type="text" placeholder="Search strains" autoComplete="off" value={query} onInput={(e) => setQuery(e.currentTarget.value)} />
+              <div class="brand-sort" role="group" aria-label="Sort">
+                {STRAIN_SORTS.map((s) => (
+                  <button type="button" key={s.key} class={`pill${sort === s.key ? ' active' : ''}`} aria-pressed={sort === s.key} onClick={() => setSort(s.key)}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div class="scards">
+              {shown.map((s) => (
+                <a class="scard" key={s.key} href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))}>
+                  <CardPhoto product={cover(s)} />
+                  <span class="scard-top">
+                    <span class="nm">{s.name}</span>
+                    <span class="avg">
+                      <span class="visually-hidden">Average </span>
+                      {s.average === null ? '–' : formatScore(s.average)}
+                    </span>
+                  </span>
+                  <span class="sub">{strainLine(s)}</span>
+                  {s.products.length === 1 && (
+                    <span class="meta roles">
+                      <span class="role once">Tried once</span>
+                    </span>
+                  )}
+                </a>
+              ))}
+              {shown.length === 0 && <p class="scards-none">No matching strains</p>}
+            </div>
+            {p.shelf === 'average' && shownUnrated.length > 0 && (
+              <section class="unrated" aria-labelledby="unrated-h">
+                <h2 id="unrated-h" class="group-h wrap">
+                  <span class="gname">Unranked</span>
+                  <span class="n num">{shownUnrated.length}</span>
+                </h2>
+                <div class="scards">
+                  {shownUnrated.map((u) => {
+                    const def = productType(u.entry.productType);
+                    const ph = u.entry.photo;
+                    return (
+                      <a class="scard plain" key={u.key} href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)}>
+                        <span class={`scard-ph${ph?.cutout ? ' cut' : ''}`}>{ph ? <img src={photoUrl(ph, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</span>
+                        <span class="scard-top">
+                          <span class="nm">{u.name}</span>
+                        </span>
+                        <span class="sub">Unranked{u.count > 1 ? ` · ×${u.count}` : ''}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+            <div class="wrap">
+              <a class="log-link" href="/log" onClick={linkTo('/log')}>
+                <span class="ll-text">
+                  <span class="ll-t">Your Log</span>
+                  <span class="small">Everything you’ve tried, by country</span>
+                </span>
+                <ChevronRight class="chev" />
+              </a>
+            </div>
+          </>
+        )}
+      </main>
+      <TabBar active="strainz" />
+    </>
+  );
+}
+
+/** See all on Want to try (D93): your whole list, with its notes and Remove. */
+export function StrainzWants() {
+  const { products } = useProducts();
+  const { wants, error } = useWants();
+  const [adding, setAdding] = useState(false);
+  const strains = products ? strainsOf(products) : [];
   const known = (name: string) => {
     const s = strains.find((x) => x.key === nameKey(name));
     return s ? `You’ve tried ${s.name}: ${s.products.length} ${s.products.length === 1 ? 'product' : 'products'}.` : null;
   };
-  const favourite = sortStrains(strains, 'average')[0];
   return (
     <>
-      <Header title="Strainz" large right={<MeButton />} />
+      <Header title="Want to try" left={<BackButton to="/strainz" />} />
       <main class="screen">
-        <LargeTitle title="Strainz" />
-        <div class="wrap halves-wrap">
-          <Halves label="Strainz" value={half} tried={strains.length + unrated.length} want={wantCount} wantLabel="Want to try" onChange={setHalf} />
-        </div>
-        {half === 'want' ? (
-          <WantList kind="strain" wants={wants} error={wantsError} onAdd={() => setAdding(true)} />
-        ) : (
-          <>
-            {!products && !error && <Skeleton kind="board" />}
-            {error && !products && (
-              <div class="empty">
-                <h2>Couldn’t load your products</h2>
-                <p>{error}</p>
-              </div>
-            )}
-            {products && strains.length === 0 && unrated.length === 0 && (
-              <EmptyCard art="podium" title="No strains yet">
-                <p>Add a product and its name becomes a strain here, with your average, how many you’ve tried and more.</p>
-                <a class="btn primary" style={{ width: 'auto' }} href="/products/new" onClick={linkTo('/products/new')}>
-                  Add a product
-                </a>
-              </EmptyCard>
-            )}
-            {products && (strains.length > 0 || unrated.length > 0) && (
-              <>
-                <div class="wrap brands-top">
-                  <label for="strain-search" class="visually-hidden">
-                    Search strains
-                  </label>
-                  <input id="strain-search" class="input" type="text" placeholder="Search strains" autoComplete="off" value={query} onInput={(e) => setQuery(e.currentTarget.value)} />
-                  {strains.length > 0 && (
-                    <div class="brand-sort" role="group" aria-label="Sort">
-                      {STRAIN_SORTS.map((s) => (
-                        <button type="button" key={s.key} class={`pill${sort === s.key ? ' active' : ''}`} aria-pressed={sort === s.key} onClick={() => setSort(s.key)}>
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {favourite?.average != null && (
-                    <p class="lead strainz-lead">
-                      <b class="num">{strains.length}</b> {strains.length === 1 ? 'strain' : 'strains'} · your favourite <b>{favourite.name}</b>
-                    </p>
-                  )}
-                </div>
-                {strains.length > 0 && (
-                  <div class="scards">
-                    {shown.map((s) => (
-                      <a class="scard" key={s.key} href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))}>
-                        <CardPhoto product={cover(s)} />
-                        <span class="scard-top">
-                          <span class="nm">{s.name}</span>
-                          <span class="avg">
-                            <span class="visually-hidden">Average </span>
-                            {s.average === null ? '–' : formatScore(s.average)}
-                          </span>
-                        </span>
-                        <span class="sub">{strainLine(s)}</span>
-                        {s.products.length === 1 && (
-                          <span class="meta roles">
-                            <span class="role once">Tried once</span>
-                          </span>
-                        )}
-                      </a>
-                    ))}
-                    {shown.length === 0 && <p class="scards-none">No matching strains</p>}
-                  </div>
-                )}
-                {shownUnrated.length > 0 && (
-                  <section class="unrated" aria-labelledby="unrated-h">
-                    <h2 id="unrated-h" class="group-h wrap">
-                      <span class="gname">Tried, not rated</span>
-                      <span class="n num">{shownUnrated.length}</span>
-                    </h2>
-                    <div class="scards">
-                      {shownUnrated.map((u) => {
-                        const def = productType(u.entry.productType);
-                        const ph = u.entry.photo;
-                        return (
-                          <a class="scard plain" key={u.key} href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)}>
-                            <span class={`scard-ph${ph?.cutout ? ' cut' : ''}`}>{ph ? <img src={photoUrl(ph, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</span>
-                            <span class="scard-top">
-                              <span class="nm">{u.name}</span>
-                            </span>
-                            <span class="sub">Not rated{u.count > 1 ? ` · ${u.count} times` : ''}</span>
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
-                <div class="wrap">
-                  <a class="log-link" href="/log" onClick={linkTo('/log')}>
-                    <span class="ll-text">
-                      <span class="ll-t">Your Log</span>
-                      <span class="small">Everything you’ve tried, by country</span>
-                    </span>
-                    <ChevronRight class="chev" />
-                  </a>
-                </div>
-              </>
-            )}
-          </>
-        )}
+        <WantList kind="strain" wants={wants} error={error} onAdd={() => setAdding(true)} />
       </main>
       <TabBar active="strainz" add={{ label: 'Add a strain to try', onAdd: () => setAdding(true) }} />
-      {adding && (
-        <WantSheet
-          kind="strain"
-          known={known}
-          onClose={() => setAdding(false)}
-          onAdded={() => {
-            setAdding(false);
-            setHalf('want');
-          }}
-        />
-      )}
+      {adding && <WantSheet kind="strain" known={known} onClose={() => setAdding(false)} onAdded={() => setAdding(false)} />}
     </>
   );
 }

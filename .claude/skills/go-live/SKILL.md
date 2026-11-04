@@ -21,8 +21,9 @@ change.
 
 1. Open a pull request from `dev` into `main`, titled `Release <version>: <what>`, listing in plain words everything
    going live.
-2. Merge it with a **merge commit (not squash)** once its **test** check is green (every browser test, about 5
-   minutes). If a test fails, read the log: a real break gets a fix into `dev` first; then the release pull request
+2. Merge it with a **merge commit (not squash)** once its own run is green (every browser test, about 5
+   minutes). **Never turn on auto-merge for a release**: the push run on `dev` already passed "test" for the same
+   commit, so it merges before the full run has finished (0.81.1 did). If a test fails, read the log: a real break gets a fix into `dev` first; then the release pull request
    picks it up.
 3. Check the push run on `main` finished green, **deploy** included, with **"Live site serves this build"**.
 4. Look at the browser tests' log of the release run for tests marked **flaky**; note each one for your next change

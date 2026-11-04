@@ -182,7 +182,7 @@ export function Profile(p: { id: string }) {
     setBusy(false);
   }
 
-  /** Return to Log (D50; "Move to Tried, not rated" since D92): it becomes a Log entry again, keeping everything else hidden; its page opens. */
+  /** Return to Log (D50; "Move to Tried, not rated" in D92, "Move to Unranked" since 0.82.0): it becomes a Log entry again, keeping everything else hidden; its page opens. */
   async function moveToLog() {
     setConfirmReturn(false);
     setBusy(true);
@@ -323,7 +323,7 @@ export function Profile(p: { id: string }) {
               </a>
               <button class="act" onClick={() => setConfirmReturn(true)} disabled={busy || !online}>
                 <ReturnIcon />
-                Move to Tried, not rated
+                Move to Unranked
               </button>
               <button class="act danger" onClick={() => setConfirmArchive(true)} disabled={busy}>
                 <BoxIcon />
@@ -342,9 +342,9 @@ export function Profile(p: { id: string }) {
       {photos.overlays}
       {confirmReturn && (
         <Sheet
-          title={`Move “${product.name}” to Tried, not rated?`}
-          message="It leaves your Leaderboard and followers’ view, and shows on Strainz under Tried, not rated. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
-          options={[{ label: 'Move to Tried, not rated', tick: true, onSelect: moveToLog }]}
+          title={`Move “${product.name}” to Unranked?`}
+          message="It leaves your Leaderboard and followers’ view, and shows on Strainz under Unranked. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back."
+          options={[{ label: 'Move to Unranked', tick: true, onSelect: moveToLog }]}
           onCancel={() => setConfirmReturn(false)}
         />
       )}

@@ -5,7 +5,7 @@ import type { ExportFile } from '../../shared/domain/backup';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
 import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
-// Return to Log (D50, 0.43.0; "Move to Tried, not rated" since D92): a product page's Actions card offers it (between
+// Return to Log (D50, 0.43.0; "Move to Unranked" since D92): a product page's Actions card offers it (between
 // Private and Archive). It asks first, then the product is a Log entry again and its page
 // opens, with a "Kept from your Leaderboard" card listing what's kept, hidden. Add to
 // leaderboard brings it all back; Delete entry says the kept data goes too.
@@ -64,15 +64,15 @@ test.beforeAll(async ({ browser }) => {
 });
 test.afterAll(() => page.context().close());
 
-test('Move to Tried, not rated (Return to Log) sits in Actions between Private and Archive, and asks first', async () => {
+test('Move to Unranked (Return to Log) sits in Actions between Private and Archive, and asks first', async () => {
   await page.goto(`/products/${ids.Zkittlez}`);
   await expect(page.getByRole('heading', { level: 1, name: 'Zkittlez' })).toBeVisible();
   // D87: one grouped list (Edit is at the top).
-  await expect(actions().locator('.acts > *')).toHaveText([/^Private/, 'Post', 'Move to Tried, not rated', 'Archive']);
-  await expect(actions().getByRole('button', { name: 'Move to Tried, not rated' }).locator('svg')).toHaveCount(1);
-  await actions().getByRole('button', { name: 'Move to Tried, not rated' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Move “Zkittlez” to Tried, not rated?' });
-  await expect(sheet).toContainText('It leaves your Leaderboard and followers’ view, and shows on Strainz under Tried, not rated. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back.');
+  await expect(actions().locator('.acts > *')).toHaveText([/^Private/, 'Post', 'Move to Unranked', 'Archive']);
+  await expect(actions().getByRole('button', { name: 'Move to Unranked' }).locator('svg')).toHaveCount(1);
+  await actions().getByRole('button', { name: 'Move to Unranked' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Move “Zkittlez” to Unranked?' });
+  await expect(sheet).toContainText('It leaves your Leaderboard and followers’ view, and shows on Strainz under Unranked. Its ratings, purchases, notes and photos are kept, hidden, for when you add it back.');
   await settled(page);
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
@@ -86,8 +86,8 @@ test('it becomes a Log entry: its page opens, with what it keeps; it’s off the
   await page.goto('/');
   await expect(page.locator('.row', { hasText: 'Zkittlez' })).toBeVisible();
   await page.locator('.row', { hasText: 'Zkittlez' }).click();
-  await actions().getByRole('button', { name: 'Move to Tried, not rated' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Move to Tried, not rated' }).click();
+  await actions().getByRole('button', { name: 'Move to Unranked' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Move to Unranked' }).click();
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
   ids['Zkittlez entry'] = page.url().split('/').pop()!;
   await expect(page.getByRole('heading', { level: 1, name: 'Zkittlez' })).toBeVisible();
@@ -101,10 +101,10 @@ test('it becomes a Log entry: its page opens, with what it keeps; it’s off the
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await shot(page, '49-returned-entry-kept');
 
-  // Back goes to Strainz (D92), where it's under Tried, not rated, and still in the Log.
+  // Back goes to Strainz (D92), where it's under Unranked, and still in the Log.
   await page.locator('.hdr').getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/strainz$/);
-  await expect(page.locator('.unrated .nm')).toHaveText(['Zkittlez']);
+  await expect(page.getByRole('list', { name: 'Unranked', exact: true }).locator('.pk-n')).toHaveText(['Zkittlez']);
   await page.goto('/log');
   await expect(page.locator('.lrow', { hasText: 'Zkittlez' })).toBeVisible();
   await page.goto('/');
@@ -176,15 +176,15 @@ test('not on an archived product; offline it waits for the connection', async ()
   await call('POST', `/api/products/${ids['Stays Put']}/archived`, { value: true });
   await page.goto(`/products/${ids['Stays Put']}`);
   await expect(actions().getByRole('button', { name: 'Bring back' })).toBeVisible();
-  await expect(actions().getByRole('button', { name: 'Move to Tried, not rated' })).toHaveCount(0);
+  await expect(actions().getByRole('button', { name: 'Move to Unranked' })).toHaveCount(0);
   await call('POST', `/api/products/${ids['Stays Put']}/archived`, { value: false });
 
   await page.goto(`/products/${ids.Zkittlez}`);
-  await expect(actions().getByRole('button', { name: 'Move to Tried, not rated' })).toBeEnabled();
+  await expect(actions().getByRole('button', { name: 'Move to Unranked' })).toBeEnabled();
   await page.context().setOffline(true);
-  await expect(actions().getByRole('button', { name: 'Move to Tried, not rated' })).toBeDisabled();
+  await expect(actions().getByRole('button', { name: 'Move to Unranked' })).toBeDisabled();
   await page.context().setOffline(false);
-  await expect(actions().getByRole('button', { name: 'Move to Tried, not rated' })).toBeEnabled();
+  await expect(actions().getByRole('button', { name: 'Move to Unranked' })).toBeEnabled();
 });
 
 test('the product page’s Actions stay readable', async () => {

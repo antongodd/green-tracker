@@ -22,7 +22,7 @@ export interface StrainProduct {
   archived?: boolean;
 }
 
-/** A Log entry with no Leaderboard product of its name: "Tried, not rated" (D92, the Log folded in). */
+/** A Log entry with no Leaderboard product of its name: "Unranked" (D92, the Log folded in; "Tried, not rated" until 0.82.0). */
 export interface StrainEntry {
   id: string;
   name: string;
@@ -148,7 +148,7 @@ export function strainRank(list: readonly Strain<StrainProduct>[], key: string):
 }
 
 /**
- * Log entries with no product of their name (D92): "Tried, not rated", one per name (the newest entry
+ * Log entries with no product of their name (D92): "Unranked", one per name (the newest entry
  * opens), newest first. An entry whose name is also a product's counts towards nothing: the strain
  * already shows.
  */
