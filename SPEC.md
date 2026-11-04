@@ -1925,6 +1925,13 @@ None.
 
 ## 6. Changelog
 
+### 0.77.1 — the tab bar's four tabs exactly equal
+- The floating tab bar (D87) shared its width with a plain `1fr`, which lets a tab whose name is wider than its share
+  grow: on the CI machines' fonts "Leaderboard" widened its tab by 2px (`tabbar.spec.ts` failed in the 0.77.0 release
+  run). Now `minmax(0, 1fr)` (each exactly a quarter), the names a touch tighter (`-0.02em`, one line) and the bar's
+  side padding 3px, so "Leaderboard" fits its quarter on those fonts too. Reproduced by drawing the names at the CI
+  size (11.58px here): failed before, passes after.
+
 ### 0.77.0 — Anton's photos on the website (owner request, D88)
 - The website's nugs are now the owner's own cut-out photos, with his real strain names and scores (his top five on
   the hero's phone; five more on Rate the stack). Sellers stay made up. Website only.
