@@ -17,7 +17,7 @@ building part. Since D76 neither needs a migration.
 - The background glides smoothly since D90 (in `steps()` before; battery is no worry for the owner), on `transform` and
   `opacity` where it can; name every keyframe `bg-…`; still with Reduce Motion; hidden under the
   viewer and the editors (copy how an existing look does it).
-- Everyone starts on Aurora Glass, the Slim strip and Gems (D71); a light look is only ever chosen (D72).
+- Everyone starts on Aurora Glass, the Slim strip and Aurora's colours (D91); a light look is only ever chosen (D72).
 
 ## A new Look: every place
 
@@ -37,13 +37,13 @@ building part. Since D76 neither needs a migration.
 
 | Where | What |
 |---|---|
-| `shared/domain/gems.ts` | `Preset` type; `PRESET_KEYS` (Gems first, then A to Z by label); `NEW_PRESETS`; `PRESETS` (label, description, four band names); `EFFECTS` if it has its own effect (and the `Effect` type for a new one) |
+| `shared/domain/gems.ts` | `Preset` type; `PRESET_KEYS` (Aurora first, then A to Z by label); `NEW_PRESETS`; `PRESETS` (label, description, four band names); `EFFECTS` (every set has one since D91; the `Effect` type for a new one); a set that goes gets a line in `PRESETS_MOVED` (what it shows as) |
 | `client/src/styles.css` | `.pal-<key>.band1` … `band4` (`--t1`…`--t6`, `--dark`), and their light versions under `html[data-tone="light"]` |
-| `client/src/components/Gems.tsx` | a new effect is drawn by `Effects` (`span.tfx`, never `.fx`), always clear of the words |
+| `client/src/components/Gems.tsx` | a new effect is drawn by `Effects` (`span.tfx`, never `.fx`) with its pieces per band in `COUNTS`: small pieces in the strips along the edges, faint washes marked `glow` (judged by the readability tests); its styles and page versions in the effects block of `styles.css` |
 | `test/domain/gems.test.ts` | order, New marks, band names, the effect's bands |
 | `test/api/appearance.test.ts` | the new key can be saved |
 | `test/e2e/appearance.spec.ts` | its band names and colours; its effect, band by band (no dot overlaps a row's words) |
-| `test/e2e/gems.spec.ts` | an effect on a product page, if it has one |
+| `test/e2e/gems.spec.ts` | its effect on a product page (`PAGE_EFFECTS`) |
 | `test/e2e/daylight.spec.ts` | `PRESETS` list: its light cards |
 
 ## Then

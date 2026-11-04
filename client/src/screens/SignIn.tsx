@@ -23,7 +23,7 @@ function Showcase() {
     <figure class="showcase">
       <div class="fan" aria-hidden="true">
         {EXAMPLES.map(({ product, score }, i) => {
-          // Three of the colours (D48) in the starting preset: Rainbow with the #1 mark, Amethyst, Sapphire.
+          // Three of the colours (D48) in the starting preset: Aurora with the #1 mark, Violet, Lagoon (D91).
           const look = { band: scoreBand('overall', score), first: i === 0 };
           return (
             <div key={product.id} class={`row${rowClass(look, DEFAULT_APPEARANCE)} eg eg${i + 1}`}>

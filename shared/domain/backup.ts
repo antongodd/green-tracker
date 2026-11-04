@@ -188,7 +188,7 @@ export function checkExportFile(raw: unknown): Result<ExportFile> {
     if (k !== undefined && (!k || typeof k !== 'object' || !Array.isArray(k.photos) || !k.photos.every(photoOk) || !isTime(k.createdAt))) return bad('A Log entry in the file couldn’t be read.');
   }
   if (f.privacy !== undefined && !validatePrivacy(f.privacy).ok) return bad('The privacy settings in the file couldn’t be read.');
-  if (f.appearance !== undefined && !validateAppearance(f.appearance).ok) return bad('The appearance settings in the file couldn’t be read.');
+  if (f.appearance !== undefined && !validateAppearance(f.appearance, { moved: true }).ok) return bad('The appearance settings in the file couldn’t be read.');
   if (f.money !== undefined && !validMoney(f.money)) return bad('The main currency in the file couldn’t be read.');
   if (f.profilePhoto !== undefined && f.profilePhoto !== null && !(photoOk(f.profilePhoto) && (f.profilePhoto as { crop: unknown }).crop !== null)) return bad('The profile photo in the file couldn’t be read.');
   if (f.posts !== undefined) {
@@ -258,7 +258,7 @@ export function validateRestore(raw: unknown): Result<RestorePayload> {
   }
   let appearance: Appearance | undefined;
   if (r.appearance !== undefined) {
-    const av = validateAppearance(r.appearance);
+    const av = validateAppearance(r.appearance, { moved: true });
     if (!av.ok) return bad('The appearance settings couldn’t be read.');
     appearance = av.value;
   }

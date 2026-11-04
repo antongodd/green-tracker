@@ -44,7 +44,7 @@ test('export everything, restore it after changes, then delete the account', asy
 
   // D48: your Leaderboard colours travel with your data.
   const putAppearance = (a: object) => page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
-  expect(await putAppearance({ preset: 'metals', markFirst: false })).toBe(200);
+  expect(await putAppearance({ preset: 'medals', markFirst: false })).toBe(200);
   await page.reload();
 
   // Export: one JSON file, photos embedded, no social or security data.
@@ -63,7 +63,7 @@ test('export everything, restore it after changes, then delete the account', asy
   expect(Buffer.from(keeper.photos[0]!.original, 'base64').subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
   expect(json.products.find((p) => p.name === 'Old Favourite')!.archived).toBe(true);
   expect(json.logEntries.map((e) => [e.name, e.amount, !!e.photo])).toEqual([['Quick One', 1, true]]);
-  expect(json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: false });
+  expect(json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'medals', markFirst: false });
   const text = readFileSync(path, 'utf8');
   for (const key of ['follows', 'followers', 'blocks', 'passkeys', 'recovery', 'email', 'password', 'gt.view', 'rankBy', 'smokes']) expect(text).not.toContain(`"${key}`);
 
@@ -93,7 +93,7 @@ test('export everything, restore it after changes, then delete the account', asy
   await expect(page.locator('.row')).toContainText('Keeper');
   // The file's colours are back, straight away (Keeper is #1 and #1 isn't marked in the file).
   await expect(page.locator('.row.first')).toHaveCount(0);
-  expect(await page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: false });
+  expect(await page.evaluate(async () => ((await (await fetch('/api/appearance')).json()) as { appearance: unknown }).appearance)).toEqual({ look: 'aurora', top: 'strip', preset: 'medals', markFirst: false });
   await expect(page.locator('.row .thumb img')).toHaveJSProperty('complete', true);
   await page.locator('.row').click();
   await expect(page.getByText('My notes')).toBeVisible();

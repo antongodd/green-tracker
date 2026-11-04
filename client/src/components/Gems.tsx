@@ -1,8 +1,7 @@
 // Leaderboard colours (D48, 0.41.0): a row's colour is earned by its score, in your preset
-// (ten since D69), and your #1 can wear a crown and a halo. A product page carries
-// its row's colour: a holo badge, a haze and a flowing score; Rainbow and the 9.0 band also
-// sweep the photo as it opens; Metals' Diamond twinkles, and D69's sets each have an effect
-// of their own (Effects). Styled in styles.css.
+// (twelve since D91), and your #1 can wear a crown and a halo. A product page carries
+// its row's colour: a holo badge, a haze and a flowing score; the top two bands also
+// sweep the photo as it opens; every set has an effect of its own (Effects, D91). Styled in styles.css.
 import { createContext, type ComponentChildren, type JSX } from 'preact';
 import { useContext, useLayoutEffect, useRef } from 'preact/hooks';
 import { bandEffect, bandName, bandRange, DEFAULT_APPEARANCE, PRESETS, type Appearance, type Band, type Effect } from '../../../shared/domain/gems';
@@ -43,7 +42,7 @@ type Look = Pick<RankedRow<RankableProduct>, 'band' | 'first'>;
 /** Whether this row wears the #1 mark (crown and halo). */
 export const marked = (look: Look, a: Appearance): boolean => look.first && a.markFirst;
 
-/** Extra classes for a row: `tier band3 pal-gems` for a colour, `first` for the #1 mark. */
+/** Extra classes for a row: `tier band3 pal-aurora` for a colour, `first` for the #1 mark. */
 export function rowClass(look: Look, a: Appearance): string {
   return `${look.band ? ` tier band${look.band} pal-${a.preset}` : ''}${marked(look, a) ? ' first' : ''}`;
 }
@@ -61,49 +60,78 @@ const at = (where: Where, i: number, extra: Record<string, string> = {}): JSX.CS
 };
 const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 
+/** How many little things each effect draws, band 1 (8.0) to band 4 (9.5): a hint growing to a full show (D91). */
+const COUNTS: Record<Effect, readonly [number, number, number, number]> = {
+  ribbons: [1, 2, 3, 3], sprinkles: [2, 4, 6, 9], stars: [2, 5, 8, 12], plankton: [2, 4, 6, 10], sparks: [2, 4, 7, 10], glitter: [2, 3, 5, 7],
+  tubes: [1, 2, 3, 3], beams: [1, 2, 3, 3], rain: [3, 5, 8, 12], sun: [2, 3, 5, 6], grid: [0, 0, 3, 5], goo: [2, 4, 6, 8],
+};
+
+/** Dots at the strip positions (row) or across the photo's upper part (page). */
+const dots = (n: number, where: Where, cls: (i: number) => string | undefined = () => undefined, extra: (i: number) => Record<string, string> = () => ({}), prefix = 'd', from = 0) =>
+  range(n).map((i) => <i key={`${prefix}${i}`} class={cls(i)} style={at(where, from + i, extra(i))} />);
+/** Things that rise from the bottom edge (sparks, goo), or fall from the top (rain). */
+const fromEdge = (n: number, where: Where, edge: 'bottom' | 'top', cls?: string, from = 0) =>
+  range(n).map((j) => {
+    const i = from + j;
+    const [x] = DOTS[where][i]!;
+    const top = edge === 'top' ? (where === 'page' ? '-6%' : '-10px') : where === 'page' ? '96%' : 'calc(100% - 4px)';
+    return <i key={`${edge}${i}`} class={cls} style={{ left: `${x}%`, top, '--d': `${1.6 + (i % 4) * 0.5}s`, '--dl': `-${((i * 0.7) % 2.4).toFixed(1)}s`, '--dx': `${(i % 5) * 3 - 6}px` }} />;
+  });
+
+/**
+ * Every piece an effect draws (D91). Pieces with `glow` are faint washes that may pass behind words (the readability
+ * tests judge them at every moment); every other piece keeps to the strips along a row's edges, clear of the words.
+ */
 function effectDots(effect: Effect, band: Band, where: Where): JSX.Element[] {
+  const n = COUNTS[effect][band - 1]!;
+  const full = band === 4;
   switch (effect) {
-    case 'sun':
-      return [<i key="s" />];
-    case 'plankton':
-      return range(band === 4 ? 10 : 6).map((i) => <i key={i} style={at(where, i, { '--d': `${6 + (i % 3) * 2}s` })} />);
+    case 'ribbons':
+      return [...range(n).map((i) => <i key={`r${i}`} class={`rib r${i + 1}`} />), ...(full ? [<i key="c" class="glow curtain" />, ...dots(5, where, () => 'st', undefined, 's')] : [])];
+    case 'sprinkles':
+      return [...dots(n, where, (i) => `spr s${i % 3}`), ...(full ? [<i key="w" class="glow swirl" />] : [])];
     case 'stars': {
-      const stars = range([0, 0, 5, 8, 12][band]!).map((i) => <i key={i} class={i % 4 === 1 ? 'big' : undefined} style={at(where, i)} />);
-      return band === 4 ? [<i key="n" class="nebula" />, ...stars] : stars;
+      const stars = dots(n, where, (i) => (i % 4 === 1 ? 'big' : undefined));
+      return full ? [<i key="n" class="glow nebula" />, <i key="s" class="shoot" />, ...stars] : stars;
     }
+    case 'plankton':
+      return [...dots(n, where, (i) => (i % 3 === 0 ? 'bub' : undefined), (i) => ({ '--d': `${6 + (i % 3) * 2}s` })), ...(full ? [<i key="r" class="glow ray" />, <i key="j" class="glow jelly" />] : [])];
     case 'sparks':
-      return [
-        <i key="h" class="heat" />,
-        ...range(10).map((i) => {
-          const [x] = DOTS[where][i]!;
-          return <i key={i} style={{ left: `${x}%`, top: where === 'page' ? '96%' : 'calc(100% - 4px)', '--d': `${1.6 + (i % 4) * 0.5}s`, '--dl': `-${((i * 0.7) % 2.4).toFixed(1)}s`, '--dx': `${(i % 5) * 3 - 6}px` }} />;
-        }),
-      ];
+      return [...(full ? [<i key="h" class="glow heat" />] : []), ...fromEdge(n, where, 'bottom')];
+    case 'glitter':
+      return [...dots(n, where, () => 'gl'), ...(full ? dots(3, where, () => 'leaf', (i) => ({ '--d': `${5 + i}s` }), 'l', 9) : [])];
+    case 'tubes':
+      return [...range(n).map((i) => <i key={`t${i}`} class={`tube t${i + 1}${band >= 3 ? ' hum' : ''}`} />), ...(full ? [<i key="b" class="glow buzz" />] : [])];
+    case 'beams':
+      return [...range(n).map((i) => <i key={`b${i}`} class={`glow beam b${i + 1}`} />), ...(full ? dots(4, where, () => 'spk', undefined, 'k') : [])];
+    case 'rain': {
+      // Drops along the top edge and splashes along the bottom; at 9.5 lightning round the edge (never over the words).
+      const drops = Math.ceil((n * 2) / 3);
+      return [...fromEdge(drops, where, 'top', 'drop'), ...fromEdge(n - drops, where, 'bottom', 'splash', drops), ...(full ? [<i key="f" class="glow flash" />, <i key="b" class="bolt" />] : [])];
+    }
+    case 'sun':
+      return [...(full ? [<i key="s" class="glow sunball" />, <i key="h" class="horizon" />] : []), ...dots(n, where, () => 'mote', (i) => ({ '--d': `${5 + (i % 3) * 1.5}s` }))];
     case 'grid':
-      return band === 4 ? [<i key="s" class="sun" />, <i key="f" class="floor" />] : [<i key="f" class="floor" />];
-    default:
-      return [];
+      return [
+        <i key="l" class="glow scan" />,
+        ...(band >= 2 ? [<i key="f" class="floor" />] : []),
+        ...(full ? [<i key="s" class="sun" />] : []),
+        ...dots(n, where, () => 'st'),
+      ];
+    case 'goo':
+      return [...(full ? [<i key="o" class="glow ooze" />, <i key="d1" class="drip d1" />, <i key="d2" class="drip d2" />, <i key="d3" class="drip d3" />] : []), ...fromEdge(n, where, 'bottom', 'goo')];
   }
 }
 
 /**
- * What a coloured card shows besides its colours (bandEffect): Metals' Diamond twinkles (three
- * glints in the corners), and D69's sets draw their sun, plankton, sparks, stars or grid, all clear
- * of the words. Reduce Motion holds them still (the glints, which only twinkle, go).
+ * What a coloured card shows besides its colours (bandEffect): since D91 every set draws its own, growing band by
+ * band, all clear of the words (or faint enough to pass the readability tests). Reduce Motion holds them still.
  */
 export function Effects(p: { band: Band | null; appearance: Appearance; where?: Where }) {
   const effect = bandEffect(p.appearance.preset, p.band);
   if (!effect || !p.band) return null;
-  if (effect === 'glints')
-    return (
-      <>
-        <span class="glint g1" aria-hidden="true" />
-        <span class="glint g2" aria-hidden="true" />
-        <span class="glint g3" aria-hidden="true" />
-      </>
-    );
   return (
-    <span class={`tfx tfx-${effect}`} aria-hidden="true">
+    <span class={`tfx tfx-${effect} fb${p.band}`} aria-hidden="true">
       {effectDots(effect, p.band, p.where ?? 'row')}
     </span>
   );
@@ -114,7 +142,7 @@ export function RankCrown(p: { look: Look; appearance: Appearance }) {
   return marked(p.look, p.appearance) ? <CrownIcon class="rank-crown" label="Number 1" /> : null;
 }
 
-/** Classes for a product page's <main>: its row's colour (`tiered band3 pal-gems`) and the #1 mark. */
+/** Classes for a product page's <main>: its row's colour (`tiered band3 pal-aurora`) and the #1 mark. */
 export function pageClass(place: Look | null, a: Appearance): string {
   if (!place) return '';
   return `${place.band ? ` tiered band${place.band} pal-${a.preset}` : ''}${marked(place, a) ? ' first' : ''}`;

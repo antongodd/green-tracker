@@ -25,47 +25,55 @@ export function scoreBand(rankBy: RankBy, value: number | null): Band | null {
   return null;
 }
 
-export type Preset = 'aurora' | 'neon' | 'gems' | 'prism' | 'metals' | 'sunset' | 'deepsea' | 'ember' | 'cosmos' | 'synthwave';
-/** In the order Appearance lists them (D71): Gems, everyone's first colours, then A to Z by name. */
-export const PRESET_KEYS = ['gems', 'aurora', 'cosmos', 'deepsea', 'ember', 'metals', 'neon', 'prism', 'sunset', 'synthwave'] as const satisfies readonly Preset[];
-/** Marked New in Appearance (D69: only the newest five; Aurora and Neon lost theirs). */
-export const NEW_PRESETS: readonly Preset[] = ['sunset', 'deepsea', 'ember', 'cosmos', 'synthwave'];
+export type Preset = 'aurora' | 'neon' | 'prism' | 'sunset' | 'deepsea' | 'ember' | 'cosmos' | 'synthwave' | 'toxic' | 'medals' | 'storm' | 'candy';
+/** In the order Appearance lists them (D91): Aurora, everyone's first colours, then A to Z by name. */
+export const PRESET_KEYS = ['aurora', 'candy', 'cosmos', 'deepsea', 'ember', 'medals', 'neon', 'prism', 'storm', 'sunset', 'synthwave', 'toxic'] as const satisfies readonly Preset[];
+/** Marked New in Appearance (D91: the four new sets). */
+export const NEW_PRESETS: readonly Preset[] = ['candy', 'medals', 'storm', 'toxic'];
+/**
+ * The colour sets that went in D91 (the owner: Gems and Metals go) and the set each now shows as. Saved choices aren't
+ * rewritten: they're read as their replacement (`movedPreset`), like the looks that went in D90.
+ */
+export const PRESETS_MOVED: Readonly<Record<string, Preset>> = { gems: 'aurora', metals: 'aurora' };
+/** A saved preset as it shows today: itself, its replacement (D91), or null for one this build doesn't know. */
+export function movedPreset(v: string): Preset | null {
+  if ((PRESET_KEYS as readonly string[]).includes(v)) return v as Preset;
+  return PRESETS_MOVED[v] ?? null;
+}
 
 export const PRESETS: Record<Preset, { label: string; description: string; bands: readonly [string, string, string, string] }> = {
-  aurora: { label: 'Aurora', description: 'Jade, Lagoon, Violet, Aurora', bands: ['Jade', 'Lagoon', 'Violet', 'Aurora'] },
-  neon: { label: 'Neon', description: 'Lime, Electric, Hot pink, Neon', bands: ['Lime', 'Electric', 'Hot pink', 'Neon'] },
-  gems: { label: 'Gems', description: 'Emerald, Sapphire, Amethyst, Rainbow', bands: ['Emerald', 'Sapphire', 'Amethyst', 'Rainbow'] },
-  prism: { label: 'Prism', description: 'One rainbow that grows stronger', bands: ['Prism', 'Prism', 'Prism', 'Prism'] },
-  metals: { label: 'Metals', description: 'Emerald, Rose gold, Diamond, Rainbow', bands: ['Emerald', 'Rose gold', 'Diamond', 'Rainbow'] },
-  sunset: { label: 'Sunset', description: 'Peach, Coral, Magenta, Golden hour', bands: ['Peach', 'Coral', 'Magenta', 'Golden hour'] },
-  deepsea: { label: 'Deep Sea', description: 'Seafoam, Reef, Abyss, Glow', bands: ['Seafoam', 'Reef', 'Abyss', 'Glow'] },
-  ember: { label: 'Ember', description: 'Ember, Flame, Blue flame, Inferno', bands: ['Ember', 'Flame', 'Blue flame', 'Inferno'] },
-  cosmos: { label: 'Cosmos', description: 'Moonlight, Stardust, Nebula, Supernova', bands: ['Moonlight', 'Stardust', 'Nebula', 'Supernova'] },
-  synthwave: { label: 'Synthwave', description: 'Arcade, Laser, Chrome, Synthwave', bands: ['Arcade', 'Laser', 'Chrome', 'Synthwave'] },
+  aurora: { label: 'Aurora', description: 'Ribbons of northern light under the stars', bands: ['Jade', 'Lagoon', 'Violet', 'Aurora'] },
+  candy: { label: 'Candy', description: 'Sprinkles falling, a swirl of candy stripes', bands: ['Bubblegum', 'Mint', 'Lemon', 'Sugar rush'] },
+  cosmos: { label: 'Cosmos', description: 'Stars, a shooting star and a nebula', bands: ['Moonlight', 'Stardust', 'Nebula', 'Supernova'] },
+  deepsea: { label: 'Deep Sea', description: 'Bubbles, plankton and a jellyfish', bands: ['Seafoam', 'Reef', 'Abyss', 'Glow'] },
+  ember: { label: 'Ember', description: 'Sparks rising, a glow of heat', bands: ['Ember', 'Flame', 'Gold', 'Inferno'] },
+  medals: { label: 'Medals', description: 'Bronze to gold glitter, gold leaf falling', bands: ['Bronze', 'Silver', 'Gold', '24 carat'] },
+  neon: { label: 'Neon', description: 'Neon tubes that hum and flicker', bands: ['Lime', 'Electric', 'Hot pink', 'Neon'] },
+  prism: { label: 'Prism', description: 'Beams of light and sparkles', bands: ['Prism', 'Prism', 'Prism', 'Prism'] },
+  storm: { label: 'Storm', description: 'Rain getting heavier, then lightning', bands: ['Drizzle', 'Rain', 'Thunder', 'Lightning'] },
+  sunset: { label: 'Sunset', description: 'Golden dust, a rising sun and its stripes', bands: ['Peach', 'Coral', 'Magenta', 'Golden hour'] },
+  synthwave: { label: 'Synthwave', description: 'Screen lines, a neon grid and a setting sun', bands: ['Arcade', 'Laser', 'Chrome', 'Synthwave'] },
+  toxic: { label: 'Toxic', description: 'Acid green bubbles that drip', bands: ['Sour', 'Acid', 'Radioactive', 'Toxic'] },
 };
 
 /**
- * Something drawn on a coloured card besides its colours, kept clear of the words: Metals'
- * Diamond twinkles (D48), and each of D69's sets has its own. Sunset: a sun glowing behind the
- * photo at 9.5. Deep Sea: glowing plankton drifting by from 9.0 (more at 9.5). Ember: sparks
- * and a flicker of heat at 9.5. Cosmos: twinkling stars from 8.5, more band by band, and a
- * nebula at 9.5. Synthwave: a neon grid floor from 9.0 and a striped sun setting into it at 9.5.
+ * Something drawn on a coloured card besides its colours, kept clear of the words (D69; every set since D91, a hint at
+ * 8.0 growing to a full show at 9.5). Aurora: ribbons of light, a curtain and stars at 9.5. Candy: sprinkles, a
+ * turning swirl at 9.5. Cosmos: stars, a shooting star and a nebula at 9.5. Deep Sea: bubbles and plankton, a
+ * jellyfish in a ray of light at 9.5. Ember: sparks, heat at 9.5. Medals: glitter, gold leaf at 9.5. Neon: tubes,
+ * humming from 9.0, glowing and flickering at 9.5. Prism: beams of light, sparkles at 9.5. Storm: rain, lightning at
+ * 9.5. Sunset: golden dust, the sun and its stripes at 9.5. Synthwave: screen lines, the grid from 8.5, stars from
+ * 9.0, the sun at 9.5. Toxic: bubbles, drips at 9.5.
  */
-export type Effect = 'glints' | 'sun' | 'plankton' | 'sparks' | 'stars' | 'grid';
-const EFFECTS: Partial<Record<Preset, { effect: Effect; from: Band }>> = {
-  metals: { effect: 'glints', from: 3 },
-  sunset: { effect: 'sun', from: 4 },
-  deepsea: { effect: 'plankton', from: 3 },
-  ember: { effect: 'sparks', from: 4 },
-  cosmos: { effect: 'stars', from: 2 },
-  synthwave: { effect: 'grid', from: 3 },
+export type Effect = 'ribbons' | 'sprinkles' | 'stars' | 'plankton' | 'sparks' | 'glitter' | 'tubes' | 'beams' | 'rain' | 'sun' | 'grid' | 'goo';
+export const EFFECTS: Record<Preset, Effect> = {
+  aurora: 'ribbons', candy: 'sprinkles', cosmos: 'stars', deepsea: 'plankton', ember: 'sparks', medals: 'glitter',
+  neon: 'tubes', prism: 'beams', storm: 'rain', sunset: 'sun', synthwave: 'grid', toxic: 'goo',
 };
 
-/** A band's effect in a preset, or null. Metals' glints are Diamond's alone (band 3, not Rainbow). */
+/** A band's effect in a preset (every band has one since D91), or null without a band. */
 export function bandEffect(preset: Preset, band: Band | null): Effect | null {
-  const e = EFFECTS[preset];
-  if (!e || band === null || band < e.from || (e.effect === 'glints' && band !== 3)) return null;
-  return e.effect;
+  return band === null ? null : EFFECTS[preset];
 }
 
 /** A band's name in a preset: "Amethyst", "Rose gold", "Prism". */
@@ -142,21 +150,27 @@ export interface Appearance {
   markFirst: boolean;
 }
 
-/** What an account has before it saves any choice (D71: the slim strip and Gems; D64's were the glass hero and Aurora). */
-export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'strip', preset: 'gems', markFirst: true };
+/** What an account has before it saves any choice (D91: Aurora's colours; D71's were the slim strip and Gems, D64's the glass hero and Aurora). */
+export const DEFAULT_APPEARANCE: Appearance = { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true };
 
 /**
  * A whole Appearance object, checked: a look you can choose, a known top and preset, and a boolean.
  * A look or top that's missing (a backup from before 0.54.0, or an app still open from before)
- * takes the default; anything else wrong is refused.
+ * takes the default; anything else wrong is refused. With `moved` (a backup being restored), a look or colour set
+ * that went (D90, D91) reads as its replacement; saving one through the app is refused.
  */
-export function validateAppearance(raw: unknown): { ok: true; value: Appearance } | { ok: false; message: string } {
+export function validateAppearance(raw: unknown, opts: { moved?: boolean } = {}): { ok: true; value: Appearance } | { ok: false; message: string } {
   const bad = { ok: false, message: 'The appearance settings couldn’t be read.' } as const;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return bad;
   const r = raw as Record<string, unknown>;
-  const look = r.look === undefined ? DEFAULT_APPEARANCE.look : r.look;
+  let look = r.look === undefined ? DEFAULT_APPEARANCE.look : r.look;
   const top = r.top === undefined ? DEFAULT_APPEARANCE.top : r.top;
+  let preset = r.preset;
+  if (opts.moved) {
+    if (typeof look === 'string') look = movedLook(look) ?? look;
+    if (typeof preset === 'string') preset = movedPreset(preset) ?? preset;
+  }
   if (!READY_LOOKS.includes(look as Look) || !BOARD_TOP_KEYS.includes(top as BoardTop)) return bad;
-  if (!PRESET_KEYS.includes(r.preset as Preset) || typeof r.markFirst !== 'boolean') return bad;
-  return { ok: true, value: { look: look as Look, top: top as BoardTop, preset: r.preset as Preset, markFirst: r.markFirst } };
+  if (!PRESET_KEYS.includes(preset as Preset) || typeof r.markFirst !== 'boolean') return bad;
+  return { ok: true, value: { look: look as Look, top: top as BoardTop, preset: preset as Preset, markFirst: r.markFirst } };
 }

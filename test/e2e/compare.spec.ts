@@ -51,7 +51,7 @@ async function person(browser: Browser, prefix: string) {
   const name = await signUp(page, `${prefix}${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`);
   return { page, name };
 }
-const look = (page: Page, look: string) => call(page, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'gems', markFirst: true });
+const look = (page: Page, look: string) => call(page, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'aurora', markFirst: true });
 
 test.beforeAll(async ({ browser }) => {
   ({ page: mira, name: miraName } = await person(browser, 'mira'));

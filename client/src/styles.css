@@ -716,8 +716,8 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
      band3 9.0–9.4  a card (80% → 90%), flowing;
      band4 9.5–10   the full card (70% → 86%, as the old 1st place) with a band of light.
    The rank number and score take the colours (the score flowing from band 2 up). The dark layers keep
-   the text readable through the colours (measured by the readability tests). Only Metals'
-   Diamond twinkles (.glint). Reduce Motion keeps the colours, stops the motion and the glints. */
+   the text readable through the colours (measured by the readability tests). Every set has its own
+   effect (.tfx, D91). Reduce Motion keeps the colours and stops the motion. */
 .row.tier { position: relative; isolation: isolate; overflow: hidden; border: 1.5px solid transparent; }
 .row.tier, .tiered, .swatch, .gem-badge { --tier-speed: 5s; --sheen: 0.18; --dark: 12, 20, 16;
   --tier-grad: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1));
@@ -726,12 +726,7 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
 /* The presets' colours, shared by the rows, product pages, the Colours key and Appearance.
    --dark tints the layer over a holo card. Gems' Sapphire and Amethyst (D49): a brighter blue and a
    softer lilac, under near-neutral layers (the violet-tinted one made Amethyst a purple slab on iPhone). */
-.pal-prism[class*="band"], .pal-gems.band4, .pal-metals.band4 { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; }
-.pal-gems.band1, .pal-metals.band1 { --t1: #5ff2b0; --t2: #2fd893; --t3: #a8ffd9; --t4: #19b877; --t5: #7dffc8; --t6: #34e0a0; }
-.pal-gems.band2 { --t1: #a4c8ff; --t2: #7fb0ff; --t3: #d3e4ff; --t4: #5e98ff; --t5: #b8d6ff; --t6: #8dbaff; --dark: 10, 16, 26; }
-.pal-gems.band3 { --t1: #d4b8ff; --t2: #b598f0; --t3: #e6d6ff; --t4: #9a7ee0; --t5: #c6a8fa; --t6: #dccaff; --dark: 12, 14, 22; }
-.pal-metals.band2 { --t1: #ffd9cc; --t2: #f2a996; --t3: #ffe6dc; --t4: #d98a78; --t5: #f6c1b0; --t6: #e09a88; --dark: 28, 12, 10; }
-.pal-metals.band3 { --t1: #dff4ff; --t2: #a9dcff; --t3: #e9e0ff; --t4: #8fd0ff; --t5: #c6f3ff; --t6: #b8c8ff; --dark: 8, 16, 28; }
+.pal-prism[class*="band"] { --t1: #ff9aa8; --t2: #ffc996; --t3: #fff2a8; --t4: #a6f0c1; --t5: #9fdcff; --t6: #cdbdff; }
 .row.tier.band1, .swatch.band1 { --d1: 0.9; --d2: 0.95; }
 .row.tier.band2, .swatch.band2 { --d1: 0.86; --d2: 0.93; }
 .row.tier.band3, .swatch.band3 { --d1: 0.8; --d2: 0.9; }
@@ -758,15 +753,6 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
    (Appearance → Mark my #1). */
 .rank-crown { position: absolute; left: 50%; top: -17px; translate: -50% 0; width: 15px; height: 15px; color: #ffd36b; filter: drop-shadow(0 0 4px rgba(255, 211, 107, 0.6)); }
 .row.first { --halo: var(--t2, #ffd36b); box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 40%, transparent), 0 0 18px 1px color-mix(in srgb, var(--halo) 50%, transparent); }
-/* Diamond's glints (Metals): tiny four-point stars in the row's corners, clear of all text,
-   twinkling in turn. */
-.glint { position: absolute; z-index: -1; width: 10px; height: 10px; pointer-events: none; opacity: 0; }
-.glint::before, .glint::after { content: ""; position: absolute; left: 50%; top: 50%; border-radius: 1px; background: #fff; translate: -50% -50%; }
-.glint::before { width: 2px; height: 10px; }
-.glint::after { width: 10px; height: 2px; }
-.glint.g1 { left: 4px; top: 4px; }
-.glint.g2 { right: 6px; top: 4px; }
-.glint.g3 { left: 62px; bottom: 2px; }
 @media (prefers-reduced-motion: no-preference) {
   .row.tier:not(.band1), .swatch[class*="band"]:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite; }
   .row.tier:not(.band1) .score b { animation: tier-flow-text var(--tier-speed) linear infinite; }
@@ -774,15 +760,10 @@ html.arrived-still .screen, html.arrived-still .fullscreen { animation: none; }
   .row.first { animation: first-halo 3.2s ease-in-out infinite; }
   /* A coloured #1 keeps its colour's motion and breathes too. */
   .row.tier.first:not(.band1) { animation: tier-flow-holo var(--tier-speed) linear infinite, first-halo 3.2s ease-in-out infinite; }
-  .glint.g1 { animation: tier-glint 2.9s ease-in-out infinite; }
-  .glint.g2 { animation: tier-glint 3.7s ease-in-out 1.1s infinite; }
-  .glint.g3 { animation: tier-glint 4.3s ease-in-out 2.3s infinite; }
 }
-@media (prefers-reduced-motion: reduce) { .glint { display: none; } }
 @keyframes tier-flow-holo { from { background-position: 0 0, 0% 0, 0% 0; } to { background-position: 0 0, 100% 0, 100% 0; } }
 @keyframes tier-flow-text { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 @keyframes tier-sheen { 0% { background-position: 120% 0; } 60%, 100% { background-position: -60% 0; } }
-@keyframes tier-glint { 0%, 70%, 100% { opacity: 0; scale: 0.4; } 80% { opacity: 0.9; scale: 1; } 90% { opacity: 0.4; scale: 0.8; } }
 @keyframes first-halo {
   0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 30%, transparent), 0 0 12px 0 color-mix(in srgb, var(--halo) 35%, transparent); }
   50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--halo) 50%, transparent), 0 0 24px 3px color-mix(in srgb, var(--halo) 60%, transparent); }
@@ -903,8 +884,8 @@ div.hero-photo { cursor: default; }
    A product whose row has a colour (under the current filter and Rank by) carries it onto
    its page: a holo badge naming the colour and place, a haze flowing through the bottom
    of the photo behind the details (stronger band by band), a score flowing through the
-   colours; from 9.0 the shimmer across the photo and one sweep as the page opens; Metals'
-   Diamond twinkles. Reduce Motion keeps the colours; no motion, sweep or glints. */
+   colours; from 9.0 the shimmer across the photo and one sweep as the page opens; the set's
+   effect in the photo (D91). Reduce Motion keeps the colours; no motion or sweep. */
 .tiered .poster.cut .hero-photo, .tiered .poster.plain .hero-photo { background: radial-gradient(120% 70% at 50% 30%, color-mix(in srgb, var(--t2) 22%, transparent), transparent 60%), var(--surface-1); }
 .tiered.band1 { --haze: 0.06; } .tiered.band2 { --haze: 0.09; } .tiered.band3 { --haze: 0.12; } .tiered.band4 { --haze: 0.14; }
 .tiered .hero::after { content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: -130px; bottom: 0; pointer-events: none;
@@ -926,11 +907,6 @@ div.hero-photo { cursor: default; }
 .gem-badge.plain { --t1: #ffe79a; --t2: #f5c451; --t3: #fff3c4; --t4: #e0a83a; --t5: #ffd977; --t6: #c9922e; --dark: 24, 16, 4; }
 .gem-badge svg { width: 15px; height: 15px; flex: none; margin-left: -2px; color: #ffd36b; }
 .gem-badge .n, .gem-badge .gem { font-weight: 800; color: var(--t2); background: var(--tier-light); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-/* Diamond's glints: in the photo below the header, clear of all text. */
-.hero-photo .glint { z-index: 2; }
-.hero-photo .glint.g1 { left: 16px; top: calc(var(--header-h) + 16px); }
-.hero-photo .glint.g2 { left: auto; right: 18px; top: calc(var(--header-h) + 24px); }
-.hero-photo .glint.g3 { left: auto; bottom: auto; right: 30px; top: calc(var(--header-h) + 150px); }
 @media (prefers-reduced-motion: no-preference) {
   .tiered .hero::after { animation: tier-flow-text var(--tier-speed) linear infinite; }
   .tiered .hero-photo::after { animation: tier-sheen calc(var(--tier-speed) * 0.9) ease-in-out infinite; }
@@ -1721,8 +1697,8 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-deepsea.band4 { --t1: #5ff2e0; --t2: #6fd6ff; --t3: #c8fff6; --t4: #8f9bff; --t5: #a8fff2; --t6: #6fffc8; --dark: 4, 12, 20; }
 .pal-ember.band1 { --t1: #ffb07a; --t2: #e8864e; --t3: #ffd4b0; --t4: #d06a3a; --t5: #ffc49a; --t6: #f09a62; --dark: 24, 12, 8; }
 .pal-ember.band2 { --t1: #ffc36b; --t2: #ff9a3c; --t3: #ffe0a8; --t4: #ff7a2c; --t5: #ffd28a; --t6: #ffae4f; --dark: 24, 14, 6; }
-.pal-ember.band3 { --t1: #8fd8ff; --t2: #5ab4ff; --t3: #d0f0ff; --t4: #4a8cff; --t5: #a8e4ff; --t6: #74c8ff; --dark: 6, 10, 24; }
-.pal-ember.band4 { --t1: #ffe08a; --t2: #ff9a3c; --t3: #fff0c0; --t4: #ff6a3c; --t5: #8fd8ff; --t6: #ffc36b; --dark: 22, 10, 6; }
+.pal-ember.band3 { --t1: #ffd36b; --t2: #f2b84b; --t3: #fff0c0; --t4: #e0a030; --t5: #ffe08a; --t6: #ffc84d; --dark: 24, 16, 4; }
+.pal-ember.band4 { --t1: #ffe08a; --t2: #ff9a3c; --t3: #fff0c0; --t4: #ff6a3c; --t5: #ffd28a; --t6: #ffc36b; --dark: 22, 10, 6; }
 .pal-cosmos.band1 { --t1: #dfe6ff; --t2: #bcc8f0; --t3: #f2f5ff; --t4: #a6b4e0; --t5: #d0daff; --t6: #c4ceee; --dark: 10, 12, 20; }
 .pal-cosmos.band2 { --t1: #c8d4ff; --t2: #9fb0ff; --t3: #ece8ff; --t4: #8a9cf0; --t5: #b8c4ff; --t6: #d8ccff; --dark: 8, 10, 22; }
 .pal-cosmos.band3 { --t1: #d08cff; --t2: #b07cff; --t3: #f0d0ff; --t4: #ff8cd8; --t5: #c4a8ff; --t6: #e6a8ff; --dark: 12, 10, 22; }
@@ -1731,57 +1707,157 @@ label.btn:has(input:disabled) { opacity: 0.4; }
 .pal-synthwave.band2 { --t1: #ff6fd8; --t2: #e040c0; --t3: #ffb8ec; --t4: #d84cc0; --t5: #ff8ce0; --t6: #f058cc; --dark: 20, 8, 18; }
 .pal-synthwave.band3 { --t1: #e8ecff; --t2: #b8c0e8; --t3: #ffffff; --t4: #9aa4d8; --t5: #d8deff; --t6: #c8b8ff; --dark: 12, 12, 22; }
 .pal-synthwave.band4 { --t1: #ff74b4; --t2: #ffb36b; --t3: #ffe9a0; --t4: #d68cff; --t5: #5fd8ff; --t6: #ff7ad0; --dark: 18, 6, 20; }
+/* D91: four new sets. */
+.pal-toxic.band1 { --t1: #d4ff8a; --t2: #b6f55a; --t3: #ecffc4; --t4: #9be040; --t5: #e0ff9f; --t6: #c4f76b; --dark: 10, 18, 6; }
+.pal-toxic.band2 { --t1: #8aff7a; --t2: #4fe85a; --t3: #c8ffc0; --t4: #3fd04f; --t5: #a8ff9f; --t6: #6bf06b; --dark: 6, 18, 8; }
+.pal-toxic.band3 { --t1: #f0ff5a; --t2: #d4f53c; --t3: #faffc0; --t4: #c4e830; --t5: #f5ff8f; --t6: #e2ff4f; --dark: 18, 18, 4; }
+.pal-toxic.band4 { --t1: #b6ff3c; --t2: #f0ff5a; --t3: #e4ccff; --t4: #7dff6b; --t5: #eaff8a; --t6: #c07bff; --dark: 10, 14, 10; }
+.pal-medals.band1 { --t1: #f0b890; --t2: #d08a5a; --t3: #ffd8c0; --t4: #b87048; --t5: #f4c4a0; --t6: #e09a70; --dark: 24, 12, 6; }
+.pal-medals.band2 { --t1: #e8eef4; --t2: #c0ccd8; --t3: #ffffff; --t4: #a8b4c4; --t5: #dfe6ee; --t6: #cad4e0; --dark: 12, 14, 18; }
+.pal-medals.band3 { --t1: #ffd36b; --t2: #f2b84b; --t3: #fff0c0; --t4: #e0a030; --t5: #ffe08a; --t6: #ffc84d; --dark: 22, 16, 4; }
+.pal-medals.band4 { --t1: #fff0c0; --t2: #ffd36b; --t3: #ffffff; --t4: #f2b84b; --t5: #ffe9a8; --t6: #ffc84d; --dark: 20, 14, 4; }
+.pal-storm.band1 { --t1: #c8d8f0; --t2: #a0b4d8; --t3: #e8f0ff; --t4: #8aa0c8; --t5: #d0dcf0; --t6: #b4c4e0; --dark: 10, 12, 20; }
+.pal-storm.band2 { --t1: #9fc8ff; --t2: #6fa8f0; --t3: #d0e4ff; --t4: #5a90e0; --t5: #b0d4ff; --t6: #80b4f8; --dark: 6, 10, 22; }
+.pal-storm.band3 { --t1: #b8a8ff; --t2: #8f7bf0; --t3: #e0d8ff; --t4: #7a68e0; --t5: #c8bcff; --t6: #a090f8; --dark: 10, 8, 24; }
+.pal-storm.band4 { --t1: #f0f4ff; --t2: #9fc8ff; --t3: #ffffff; --t4: #b8a8ff; --t5: #fff6c0; --t6: #80b4f8; --dark: 8, 10, 22; }
+.pal-candy.band1 { --t1: #ffd0e4; --t2: #ffb0d0; --t3: #ffe8f2; --t4: #ff9ac4; --t5: #ffc8de; --t6: #ffbcd6; --dark: 24, 12, 18; }
+.pal-candy.band2 { --t1: #b8f4d8; --t2: #8ae8c0; --t3: #e0fff0; --t4: #6fdcae; --t5: #a8f0d0; --t6: #9ae8c4; --dark: 6, 18, 14; }
+.pal-candy.band3 { --t1: #fff0a0; --t2: #ffe070; --t3: #fff8d0; --t4: #ffd04f; --t5: #fff4b8; --t6: #ffe68a; --dark: 22, 18, 6; }
+.pal-candy.band4 { --t1: #ff9ad0; --t2: #fff0a0; --t3: #a8f0d0; --t4: #b8c8ff; --t5: #ffc8a0; --t6: #e0b0ff; --dark: 18, 12, 20; }
 
-/* Their effects (D69): a layer behind the words (z-index -1 inside the card, like Diamond's glints),
-   drawn only where no text is: on a row, the thin strips along its top and bottom edges and the
-   space round the photo; on a product page, the upper part of the photo, above the name. */
-.tfx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+/* Their effects (D69; every set since D91, a hint at 8.0 growing to a full show at 9.5): a layer behind the words
+   (z-index -1 inside the card). The small pieces keep to the thin strips along a row's top and bottom edges and the
+   space round the photo; a `.glow` is a faint wash that may pass behind words, judged by the readability tests. On a
+   product page, the upper part of the photo, above the name. Reduce Motion holds them all still. */
+.tfx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; --fall: 12px; --sweep: -480px; }
 .tfx i { position: absolute; display: block; }
-.hero-photo .tfx { z-index: 1; inset: var(--header-h) 0 auto; height: 170px; }
-/* Sunset: a low sun glowing behind the photo (on a page, from the top corner). */
-.tfx-sun i { left: 67px; top: 50%; width: 76px; height: 76px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 211, 107, 0.75), rgba(255, 111, 168, 0.35) 55%, transparent 72%); }
-.hero-photo .tfx-sun i { left: auto; right: -70px; top: -40px; width: 240px; height: 240px; translate: none; background: radial-gradient(circle, rgba(255, 211, 107, 0.45), rgba(255, 111, 168, 0.18) 50%, transparent 70%); }
-/* Deep Sea: plankton (Cosmos: stars) — small dots that glow. */
-.tfx-plankton i, .tfx-stars i { width: 3px; height: 3px; border-radius: 50%; }
-.tfx-plankton i { background: var(--t5); box-shadow: 0 0 6px 1px var(--t1); }
-.tfx-stars i { background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.9); }
+.hero-photo .tfx { z-index: 1; inset: var(--header-h) 0 auto; height: 170px; --fall: 200px; --sweep: -1100px; }
+/* Small round things: stars, plankton, dust, bubbles. */
+:is(.tfx-plankton, .tfx-stars, .tfx-sun, .tfx-ribbons, .tfx-grid) i:is(:not([class]), .big, .bub, .mote, .st) { width: 3px; height: 3px; border-radius: 50%; }
+.tfx-plankton i:not([class]) { background: var(--t5); box-shadow: 0 0 6px 1px var(--t1); }
+.tfx-plankton i.bub { width: 5px; height: 5px; box-sizing: border-box; border: 1px solid var(--t3); box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.5); }
+:is(.tfx-stars, .tfx-ribbons, .tfx-grid) i:is(:not([class]), .big, .st) { background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.9); }
 .tfx-stars i.big { width: 4px; height: 4px; }
-/* Cosmos at 9.5: a pink and blue nebula, faint, round the photo (on a page, across the top). */
-.tfx-stars i.nebula { left: 0; top: 0; width: 130px; height: 100%; border-radius: 0; box-shadow: none; background: radial-gradient(45% 60% at 30% 50%, rgba(255, 140, 200, 0.4), transparent 70%), radial-gradient(45% 60% at 60% 50%, rgba(127, 184, 255, 0.35), transparent 70%); }
+.tfx-grid i.st { width: 2px; height: 2px; }
+.tfx-sun i.mote { width: 4px; height: 4px; background: radial-gradient(circle, #ffe8b0, rgba(255, 179, 107, 0.4) 60%, transparent); }
+/* Aurora: ribbons of northern light along the edges; at 9.5 a curtain behind the photo and stars. */
+.tfx-ribbons i.rib { height: 3px; width: 38%; border-radius: 3px; filter: blur(1px); opacity: 0.85; background: linear-gradient(90deg, transparent, var(--t1), var(--t5), transparent); }
+.tfx-ribbons i.r1 { left: 30%; top: 2px; } .tfx-ribbons i.r2 { left: 46%; bottom: 2px; } .tfx-ribbons i.r3 { left: 62%; top: 4px; width: 28%; }
+.tfx-ribbons i.curtain { left: 34px; top: -20%; width: 76px; height: 140%; filter: blur(8px); opacity: 0.6;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--t1) 50%, transparent), color-mix(in srgb, var(--t4) 45%, transparent), transparent); }
+.hero-photo .tfx-ribbons i.curtain { left: 8%; width: 55%; top: -10%; height: 120%; opacity: 0.45; }
+/* Candy: sprinkles tumbling along the edges; at 9.5 a swirl of stripes turning behind the photo. */
+.tfx-sprinkles i.spr { width: 2px; height: 5px; border-radius: 2px; translate: -50% -50%; background: var(--t1); rotate: 40deg; }
+.tfx-sprinkles i.s1 { background: var(--t3); rotate: -30deg; } .tfx-sprinkles i.s2 { background: var(--t5); rotate: 75deg; }
+.tfx-sprinkles i.swirl { left: 70px; top: 50%; width: 96px; height: 96px; translate: -50% -50%; border-radius: 50%; opacity: 0.5;
+  background: repeating-conic-gradient(color-mix(in srgb, var(--t1) 55%, transparent) 0 15deg, color-mix(in srgb, var(--t3) 45%, transparent) 15deg 30deg, color-mix(in srgb, var(--t5) 50%, transparent) 30deg 45deg);
+  -webkit-mask: radial-gradient(closest-side, #000 40%, transparent); mask: radial-gradient(closest-side, #000 40%, transparent); }
+.hero-photo .tfx-sprinkles i.swirl { left: auto; right: -60px; top: -60px; width: 240px; height: 240px; translate: none; opacity: 0.35; }
+/* Cosmos: stars, more band by band; at 9.5 a nebula and a shooting star along the top. */
+.tfx-stars i.nebula { left: 0; top: 0; width: 130px; height: 100%; border-radius: 0; box-shadow: none; background: radial-gradient(45% 60% at 30% 50%, rgba(255, 140, 200, 0.4), transparent 70%), radial-gradient(45% 60% at 70% 40%, rgba(127, 184, 255, 0.35), transparent 70%); }
 .hero-photo .tfx-stars i.nebula { width: 100%; background: radial-gradient(35% 55% at 25% 45%, rgba(255, 140, 200, 0.28), transparent 70%), radial-gradient(35% 55% at 70% 40%, rgba(127, 184, 255, 0.25), transparent 70%); }
-/* Ember: sparks rising off the bottom edge, and the heat along it. */
-.tfx-sparks i { width: 3px; height: 3px; border-radius: 50%; background: #ffc36b; box-shadow: 0 0 6px #ff9a3c; }
-.tfx-sparks i:nth-child(3n) { background: #ff7a4f; }
-.tfx-sparks i.heat { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 9px; border-radius: 0; box-shadow: none; background: linear-gradient(0deg, rgba(255, 122, 60, 0.55), transparent); }
+.tfx-stars i.shoot { left: 72%; top: 3px; width: 28px; height: 1.5px; border-radius: 1px; opacity: 0; background: linear-gradient(90deg, #fff, transparent); }
+.hero-photo .tfx-stars i.shoot { top: 18%; width: 60px; }
+/* Deep Sea: bubbles and plankton drifting; at 9.5 a ray of light over the photo and a jellyfish peeping above it. */
+.tfx-plankton i.ray { left: 46px; top: -30%; width: 46px; height: 160%; rotate: 18deg; filter: blur(4px); background: linear-gradient(180deg, rgba(200, 255, 246, 0.28), transparent 80%); }
+.tfx-plankton i.jelly { left: 88px; top: -3px; width: 14px; height: 10px; border-radius: 50% 50% 40% 40% / 65% 65% 35% 35%; background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.7), var(--t1) 60%, transparent 80%); opacity: 0.8; }
+.hero-photo .tfx-plankton i.ray { left: 55%; width: 110px; top: -20%; height: 140%; }
+.hero-photo .tfx-plankton i.jelly { left: 78%; top: 28%; width: 30px; height: 22px; }
+/* Ember: sparks rising from the bottom edge; at 9.5 a glow of heat. */
+.tfx-sparks i:not(.glow) { width: 3px; height: 3px; border-radius: 50%; background: #ffc36b; box-shadow: 0 0 6px #ff9a3c; }
+.tfx-sparks i:not(.glow):nth-child(3n) { background: #ff7a4f; }
+.tfx-sparks i.heat { left: 0; right: 0; top: auto; bottom: 0; height: 9px; background: linear-gradient(0deg, rgba(255, 122, 60, 0.55), transparent); }
 .hero-photo .tfx-sparks i.heat { height: 40px; background: linear-gradient(0deg, rgba(255, 122, 60, 0.3), transparent); }
-/* Synthwave: a neon grid floor along the bottom edge, and at 9.5 a striped sun setting into it. */
+/* Medals: glitter, bronze to gold; at 9.5 gold leaf drifting by. */
+:is(.tfx-glitter i.gl, .tfx-beams i.spk) { width: 6px; height: 6px; translate: -50% 0;
+  background: linear-gradient(var(--sp, var(--t3)), var(--sp, var(--t3))) center / 1.5px 100% no-repeat, linear-gradient(var(--sp, var(--t3)), var(--sp, var(--t3))) center / 100% 1.5px no-repeat;
+  filter: drop-shadow(0 0 2px var(--t1)); }
+.tfx-beams i.spk { --sp: #fff; }
+.tfx-glitter i.leaf { width: 5px; height: 3px; border-radius: 1px; background: linear-gradient(135deg, #fff0c0, #f2b84b); box-shadow: 0 0 3px rgba(255, 211, 107, 0.8); }
+/* Neon: tubes along the edges, humming from 9.0; at 9.5 the whole card glows and flickers. */
+.tfx-tubes i.tube { height: 2px; border-radius: 2px; background: var(--t3); box-shadow: 0 0 4px var(--t1), 0 0 9px var(--t2); opacity: 0.85; }
+.tfx-tubes i.t1 { left: 30%; right: 6%; top: 2px; } .tfx-tubes i.t2 { left: 18%; right: 20%; bottom: 2px; } .tfx-tubes i.t3 { left: 6%; width: 18%; top: 2px; }
+.tfx-tubes i.buzz { inset: 0; border-radius: inherit; box-shadow: inset 0 0 16px color-mix(in srgb, var(--t1) 40%, transparent); }
+/* Prism: beams of light passing over; at 9.5 sparkles where the light splits. */
+.tfx-beams i.beam { left: 100%; top: -40%; width: 16px; height: 180%; rotate: 25deg; opacity: 0; background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16), transparent); }
+/* Storm: rain along the top edge and splashes along the bottom, heavier band by band; at 9.5 lightning now and then,
+   round the card's edge and in a little bolt (a flash over the words failed the readability test). */
+.tfx-rain i.drop { width: 1px; height: 6px; rotate: 12deg; opacity: 0; background: linear-gradient(transparent, var(--t3)); }
+.tfx-rain i.splash { width: 6px; height: 2px; translate: -50% 0; border-radius: 50%; opacity: 0; border: 1px solid var(--t3); box-sizing: border-box; }
+.tfx-rain i.flash { inset: 0; border-radius: inherit; opacity: 0; box-shadow: inset 0 0 12px rgba(230, 236, 255, 0.6); }
+.tfx-rain i.bolt { left: 78%; top: 1px; width: 6px; height: 7px; opacity: 0; background: #fff6c0; clip-path: polygon(60% 0, 10% 55%, 45% 55%, 25% 100%, 90% 40%, 55% 40%, 80% 0); filter: drop-shadow(0 0 2px #fff); }
+.hero-photo .tfx-rain i.bolt { left: 70%; top: 12%; width: 22px; height: 30px; }
+/* Sunset: golden dust drifting; at 9.5 the sun behind the photo and its stripes along the bottom. */
+.tfx-sun i.sunball { left: 67px; top: 50%; width: 76px; height: 76px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 211, 107, 0.75), rgba(255, 111, 168, 0.35) 55%, transparent 72%); }
+.hero-photo .tfx-sun i.sunball { left: auto; right: -70px; top: -40px; width: 240px; height: 240px; translate: none; background: radial-gradient(circle, rgba(255, 211, 107, 0.45), rgba(255, 111, 168, 0.18) 50%, transparent 70%); }
+.tfx-sun i.horizon { left: 0; right: 0; bottom: 0; height: 5px; opacity: 0.8; background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--t4) 65%, transparent) 0 1px, transparent 1px 2.5px); }
+/* Synthwave: old-screen lines; a neon grid floor from 8.5, stars from 9.0, and at 9.5 a striped sun setting into it. */
+.tfx-grid i.scan { inset: 0; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px); }
 .tfx-grid i.floor { left: -20%; right: -20%; bottom: -2px; height: 13px; opacity: 0.55; transform: perspective(40px) rotateX(40deg); transform-origin: bottom;
   background: repeating-linear-gradient(90deg, var(--t1) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, var(--t1) 0 1px, transparent 1px 5px); }
 .tfx-grid i.sun { left: 50%; bottom: -15px; width: 24px; height: 24px; translate: -50% 0; border-radius: 50%; opacity: 0.8;
   background: linear-gradient(transparent 30%, rgba(0, 0, 0, 0.85) 30% 36%, transparent 36% 44%, rgba(0, 0, 0, 0.85) 44% 50%, transparent 50%), linear-gradient(#ffe66b, #ff5fa8); }
 .hero-photo .tfx-grid i.floor { bottom: 0; height: 44px; opacity: 0.5; transform: perspective(120px) rotateX(55deg); background: repeating-linear-gradient(90deg, var(--t1) 0 1px, transparent 1px 34px), repeating-linear-gradient(0deg, var(--t1) 0 1px, transparent 1px 11px); }
 .hero-photo .tfx-grid i.sun { left: auto; right: 34px; bottom: 30px; width: 72px; height: 72px; translate: none; opacity: 0.7; }
+/* Toxic: acid bubbles fizzing up from the bottom edge; at 9.5 drips from the top and a purple ooze. */
+.tfx-goo i.goo { width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f6ffd0, var(--t1) 60%); box-shadow: 0 0 5px var(--t1); }
+.tfx-goo i.drip { top: 0; width: 4px; height: 4px; border-radius: 0 0 3px 3px; background: var(--t1); box-shadow: 0 0 4px var(--t1); }
+.tfx-goo i.d1 { left: 34%; } .tfx-goo i.d2 { left: 58%; } .tfx-goo i.d3 { left: 82%; }
+.tfx-goo i.ooze { left: 0; right: 0; bottom: -6px; height: 16px; background: radial-gradient(60% 100% at 60% 100%, rgba(192, 123, 255, 0.4), transparent 75%); }
+.hero-photo .tfx-goo i.ooze { height: 50px; bottom: -10px; }
 @media (prefers-reduced-motion: no-preference) {
-  .tfx-sun i { animation: tfx-pulse 5s ease-in-out infinite; }
-  .tfx-plankton i { animation: tfx-drift var(--d) linear var(--dl) infinite; }
-  .hero-photo .tfx-plankton i { animation-name: tfx-rise; }
-  .tfx-stars i:not(.nebula) { animation: tfx-twinkle var(--d) ease-in-out var(--dl) infinite; }
+  .tfx-sun i.sunball { animation: tfx-pulse 5s ease-in-out infinite; }
+  :is(.tfx-plankton i:is(:not([class]), .bub), .tfx-sun i.mote, .tfx-sprinkles i.spr, .tfx-glitter i.leaf) { animation: tfx-drift var(--d) linear var(--dl) infinite; }
+  .hero-photo :is(.tfx-plankton i:is(:not([class]), .bub), .tfx-sun i.mote, .tfx-glitter i.leaf) { animation-name: tfx-rise; }
+  :is(.tfx-stars i:is(:not([class]), .big), .tfx-ribbons i.st, .tfx-grid i.st, .tfx-glitter i.gl, .tfx-beams i.spk) { animation: tfx-twinkle var(--d) ease-in-out var(--dl) infinite; }
   .tfx-stars i.nebula { animation: tfx-nebula 14s ease-in-out infinite alternate; }
-  .tfx-sparks i:not(.heat) { animation: tfx-spark var(--d) ease-out var(--dl) infinite; }
-  .hero-photo .tfx-sparks i:not(.heat) { animation-name: tfx-spark-high; }
+  .tfx-stars i.shoot { animation: tfx-shoot 5.5s ease-in 1s infinite; }
+  .tfx-sparks i:not(.glow) { animation: tfx-spark var(--d) ease-out var(--dl) infinite; }
+  .hero-photo .tfx-sparks i:not(.glow) { animation-name: tfx-spark-high; }
   .tfx-sparks i.heat { animation: tfx-flicker 1.7s steps(1) infinite; }
+  .tfx-goo i.goo { animation: tfx-fizz var(--d) ease-in var(--dl) infinite; }
+  .hero-photo .tfx-goo i.goo { animation-name: tfx-spark-high; }
+  .tfx-goo i.drip { animation: tfx-drip 3.4s ease-in infinite; }
+  .tfx-goo i.d2 { animation-delay: -1.2s; } .tfx-goo i.d3 { animation-delay: -2.3s; }
   .tfx-grid i.floor { animation: tfx-grid 1.4s linear infinite; }
+  .tfx-ribbons i.rib { animation: tfx-ribbon 6s ease-in-out infinite alternate; }
+  .tfx-ribbons i.r2 { animation-delay: -2s; } .tfx-ribbons i.r3 { animation-delay: -4s; }
+  .tfx-ribbons i.curtain { animation: tfx-curtain 7s ease-in-out infinite alternate; }
+  .tfx-sprinkles i.swirl { animation: tfx-spin 14s linear infinite; }
+  .tfx-plankton i.jelly { animation: tfx-jelly 4s ease-in-out infinite; }
+  .tfx-plankton i.ray { animation: tfx-ray 5s ease-in-out infinite alternate; }
+  .tfx-tubes i.hum { animation: tfx-hum 2.4s ease-in-out infinite; }
+  .tfx-tubes i.buzz { animation: tfx-buzz 4s linear infinite; }
+  .tfx-beams i.beam { animation: tfx-beam 4.5s ease-in-out infinite; }
+  .tfx-beams i.b2 { animation-delay: -1.5s; } .tfx-beams i.b3 { animation-delay: -3s; }
+  .tfx-rain i.drop { animation: tfx-fall calc(var(--d) * 0.6) linear var(--dl) infinite; }
+  .tfx-rain i.splash { animation: tfx-splash var(--d) ease-out var(--dl) infinite; }
+  .tfx-rain i:is(.flash, .bolt) { animation: tfx-flash 6s linear infinite; }
 }
 @keyframes tfx-pulse { 50% { opacity: 0.6; } }
 @keyframes tfx-drift { 0% { opacity: 0; translate: 0 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; translate: -36px 0; } }
 @keyframes tfx-rise { 0% { opacity: 0; translate: 0 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; translate: 0 -50px; } }
 @keyframes tfx-twinkle { 0%, 100% { opacity: 0.25; scale: 0.6; } 50% { opacity: 1; scale: 1; } }
 @keyframes tfx-nebula { to { translate: 24px 0; scale: 1.1; } }
+@keyframes tfx-shoot { 0%, 70% { opacity: 0; translate: 0 0; } 74% { opacity: 1; } 90%, 100% { opacity: 0; translate: -140px 0; } }
 @keyframes tfx-spark { 0% { opacity: 0; translate: 0 0; } 15% { opacity: 1; } 100% { opacity: 0; translate: var(--dx) -5px; } }
 @keyframes tfx-spark-high { 0% { opacity: 0; translate: 0 0; } 15% { opacity: 1; } 100% { opacity: 0; translate: var(--dx) -110px; } }
+@keyframes tfx-fizz { 0% { opacity: 0; translate: 0 0; scale: 0.5; } 20% { opacity: 1; } 80% { opacity: 1; translate: calc(var(--dx) / 2) -4px; scale: 1; } 100% { opacity: 0; translate: calc(var(--dx) / 2) -5px; scale: 1.5; } }
+@keyframes tfx-drip { 0% { height: 3px; } 70% { height: 8px; } 72% { height: 4px; } 100% { height: 3px; } }
 @keyframes tfx-flicker { 0% { opacity: 0.6; } 20% { opacity: 0.9; } 45% { opacity: 0.7; } 70% { opacity: 1; } 85% { opacity: 0.65; } }
 @keyframes tfx-grid { from { background-position: 0 0, 0 0; } to { background-position: 0 0, 0 5px; } }
 @keyframes tfx-grid-page { to { background-position: 0 0, 0 11px; } }
+@keyframes tfx-ribbon { from { translate: -14px 0; scale: 0.85 1; opacity: 0.55; } to { translate: 14px 0; scale: 1.1 1; opacity: 0.95; } }
+@keyframes tfx-curtain { from { translate: -8px 0; skew: -8deg 0; } to { translate: 8px 0; skew: 8deg 0; } }
+@keyframes tfx-spin { to { rotate: 1turn; } }
+@keyframes tfx-jelly { 0%, 100% { translate: 0 1px; scale: 1 0.9; } 50% { translate: -6px -1px; scale: 0.92 1.08; } }
+@keyframes tfx-ray { from { opacity: 0.5; } to { opacity: 1; } }
+@keyframes tfx-hum { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+@keyframes tfx-buzz { 0%, 86%, 90%, 94%, 100% { opacity: 1; } 88%, 92% { opacity: 0.15; } }
+@keyframes tfx-beam { 0% { opacity: 0; translate: 0 0; } 20% { opacity: 1; } 65%, 100% { opacity: 0; translate: var(--sweep) 0; } }
+@keyframes tfx-fall { 0% { opacity: 0; translate: 0 0; } 10% { opacity: 1; } 100% { opacity: 0; translate: -3px var(--fall); } }
+@keyframes tfx-splash { 0%, 60% { opacity: 0; scale: 0.3; } 70% { opacity: 0.9; } 100% { opacity: 0; scale: 1.4; } }
+@keyframes tfx-flash { 0%, 80%, 85%, 100% { opacity: 0; } 81%, 84% { opacity: 1; } 82.5% { opacity: 0.3; } }
 @media (prefers-reduced-motion: no-preference) { .hero-photo .tfx-grid i.floor { animation-name: tfx-grid-page; } }
 
 
@@ -2043,9 +2119,19 @@ html[data-tone="light"] .gem-badge { color: var(--text);
   background: linear-gradient(115deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.92) 70%) padding-box, var(--tier-grad) padding-box, var(--tier-grad) border-box;
   background-size: 100% 100%, 200% 100%, 200% 100%; }
 /* The colour sets' effects in deeper shades, so they show on white. */
-html[data-tone="light"] :is(.glint::before, .glint::after) { background: var(--t4); }
-html[data-tone="light"] .tfx-stars i:not(.nebula) { background: var(--t4); box-shadow: 0 0 4px var(--t2); }
-html[data-tone="light"] .tfx-plankton i { background: var(--t4); box-shadow: 0 0 5px var(--t2); }
+html[data-tone="light"] :is(.tfx-stars, .tfx-ribbons, .tfx-grid) i:is(:not([class]), .big, .st) { background: var(--t4); box-shadow: 0 0 4px var(--t2); }
+html[data-tone="light"] .tfx-plankton i:not([class]) { background: var(--t4); box-shadow: 0 0 5px var(--t2); }
+html[data-tone="light"] .tfx-plankton i.bub { border-color: var(--t4); }
+html[data-tone="light"] .tfx-stars i.shoot { background: linear-gradient(90deg, var(--t4), transparent); }
+html[data-tone="light"] :is(.tfx-glitter i.gl, .tfx-beams i.spk) { --sp: var(--t4); filter: none; }
+html[data-tone="light"] .tfx-tubes i.tube { background: var(--t4); box-shadow: 0 0 4px var(--t2); }
+html[data-tone="light"] .tfx-ribbons i.rib { background: linear-gradient(90deg, transparent, var(--t4), var(--t2), transparent); }
+html[data-tone="light"] .tfx-rain i.drop { background: linear-gradient(transparent, var(--t4)); }
+html[data-tone="light"] .tfx-sun i.mote { background: radial-gradient(circle, var(--t4), transparent 70%); }
+html[data-tone="light"] .tfx-beams i.beam { background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.5), transparent); }
+html[data-tone="light"] .tfx-rain i.splash { border-color: var(--t4); }
+html[data-tone="light"] .tfx-rain i.flash { box-shadow: inset 0 0 12px color-mix(in srgb, var(--t4) 50%, transparent); }
+html[data-tone="light"] .tfx-rain i.bolt { background: var(--t4); filter: none; }
 html[data-tone="light"] :is(.tfx-grid i.floor) { background: repeating-linear-gradient(90deg, var(--t4) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, var(--t4) 0 1px, transparent 1px 5px); }
 /* Below 8 the heat glow stays; its score in a deeper shade of the heat. */
 html[data-tone="light"] :is(.row[data-heat] .score b, .rbar[data-heat] .v, .rate[data-heat] .rate-top .val:not(input)) { color: color-mix(in srgb, var(--heat) 45%, var(--text)); }
