@@ -162,6 +162,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D88 | **Anton's photos on the website** (2026-11-04; the owner: "the pictures used are just coloured blobs … take the best pictures from my live account anton_godd"; after the trade-offs were explained (his photos, AI, stock; the personal side of "Made by Anton" with real buds; D63's rule), "use mine", yes to reading his live account, "use my real strain names"). **Reopens D63** ("products shown are all made up; nobody's data is used") with his OK, for his own account only. | **The website shows the owner's own cut-out photos, real strain names and real scores** in place of drawn nugs and made-up products: the hero's top five and tiles, the scroll story, Make it yours and Rate the stack. **Sellers, prices, weights and other people stay made up**; no source or country is shown with a strain; private and kept products are never used; the pictures carry nothing but the picture. Nobody else's data is ever used. Website only; the app is unchanged. See §4 *Anton's photos on the website*. |
 | D89 | **The website's full overhaul** (2026-11-04; the owner: "run a review of the website with [ui-ux-pro-max]. i want a full website overhaul"; his picks: "1. match the app" (Apple's fonts), "2. ok" (no reviews until real ones), then "go ahead" on https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T). | **The website matches the app's Apple-style design:** Apple's fonts (none downloaded); the hero's phone drawn as the app looks now (large title, Compact line, calm rows, the floating tab bar with the +), showing on the first screen; Rate the stack straight after the top; a new **Your stash is your business** section of four promises, each true in the app; drawn icons in place of emoji; sentence-case labels; a footer with Open the app, Create an account and Email us; hover feedback for a mouse and a tidier laptop layout. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *The website's full overhaul*. |
 | D90 | **The Apple-style redesign, stage B: the Looks** (2026-11-04; mockups https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe; the owner on them: "i like it"; his answers: one light look ("one"), Holo Pearl and Haze go ("ok"), no tilting the phone for now ("what ever you recommond"). From stage A's questions: his favourites, Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea, Frost, Fireflies, Lava Lamp, Neon Night, Outrun, with "nice moving background animations… little unique details"; battery is no concern (iPhone 17 Pro). Eleven looks: those ten and **Daylight** (Daylight Sky's key kept), each with a scene of its own that glides smoothly (in place of D64-D70's small steps). Looks that went show as their replacement, nothing rewritten: Holo Pearl and Haze as Aurora Glass, Daylight Mint and Pearl as Daylight. Kept: D70 (only colours and the background change), every readability test. What changed is in §4 *The Looks' scenes*. |
+| D91 | **The Apple-style redesign, stage C: the Leaderboard colours** (2026-11-04; mockups https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz; the owner: his favourites Sunset, Synthwave, Prism, Neon, Ember ("but i dont like how there is a random blue colour in the middle"), Deep Sea, Cosmos and Aurora ("better version of gems"); he likes "the ones that have little unique details and things like moving animations"; on the mockups: "ember - should be gold", "i like: toxic, medals, storm and candy", "i also really like the little animations youve done", then "go ahead"). | **Twelve colour sets, every one with details of its own** that grow from a hint at 8.0 to a full show at 9.5: his eight (Ember's Blue flame now **Gold**, and no blue in Inferno) and four new ones, **Candy**, **Medals**, **Storm** and **Toxic** (marked New). **Gems and Metals go**: saved ones show as Aurora, nothing rewritten (`PRESETS_MOVED`, like D90's looks); a backup naming a look or set that went is restored with its replacement. Accounts start on Aurora's colours (D71's Gems before). Kept: D48's four bands and cards, the #1 mark, D74 (followers see your colours), every readability test (Storm's rain and lightning were redrawn to stay off the words). What changed is in §4 *The colour sets' details*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -1959,12 +1960,37 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   `loadAppearance` (yours and a friend's) and look.js's `moved` (the phone's memory); `validateAppearance` refuses
   them. *Tests:* `looks.spec.ts` (all eleven: chosen and saved, only colours change, a smooth scene, still with Reduce
   Motion, hidden under the viewer, readable on every screen), `gems.test.ts`, `appearance.test.ts`.
+- **The colour sets' details (D91, 0.80.0).** Twelve sets (`PRESET_KEYS`: Aurora first, then A to Z), each with one
+  effect (`EFFECTS` in gems.ts, `bandEffect` now gives one for every band) drawn by `Effects` (`components/Gems.tsx`) as
+  `span.tfx tfx-<effect> fb<band>` behind the words, with more pieces band by band (`COUNTS`): Aurora's ribbons of light
+  (a curtain and stars at 9.5), Candy's sprinkles (a turning swirl), Cosmos' stars (a nebula and a shooting star), Deep
+  Sea's bubbles and plankton (a ray of light and a jellyfish), Ember's sparks (heat), Medals' glitter (gold leaf),
+  Neon's tubes (humming from 9.0, the card glowing and flickering at 9.5), Prism's beams of light (sparkles), Storm's
+  raindrops and splashes (lightning round the edge and a bolt), Sunset's golden dust (the sun and its stripes),
+  Synthwave's screen lines, grid from 8.5 and stars from 9.0 (the sun), Toxic's fizzing bubbles (drips and a purple
+  ooze). Small pieces keep to the strips along a row's edges and round the photo (`appearance.spec.ts` checks none
+  overlaps a word); a `.glow` is a faint wash judged by the readability tests at every moment. On a product page the
+  same effect fills the photo's upper part, above every word (`gems.spec.ts`, one test per set). Light versions under
+  `html[data-tone="light"]`. Everything still with Reduce Motion. *Sets that went:* `PRESETS_MOVED` / `movedPreset`,
+  used by `loadAppearance`; `validateAppearance` refuses them, except with `{ moved: true }` (a backup being restored,
+  which now also reads D90's looks that went). Metals' glints are gone with it. *Tests:* `appearance.spec.ts` (colours,
+  effects and readability for all twelve), `gems.spec.ts`, `daylight.spec.ts` (light cards, in two halves),
+  `gems.test.ts`, `appearance.test.ts`.
 
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.80.0 — the Apple-style redesign, stage C: the Leaderboard colours (D91)
+- Twelve Leaderboard colour sets, each with little moving details of its own that grow with the score, from a hint at
+  8.0 to a full show at 9.5: Aurora's northern lights, Candy's sprinkles, Cosmos' stars, Deep Sea's bubbles and
+  jellyfish, Ember's sparks, Medals' glitter and gold leaf, Neon's humming tubes, Prism's beams, Storm's rain and
+  lightning, Sunset's golden dust and sun, Synthwave's grid and sun, Toxic's bubbles and drips.
+- Four new sets: Candy, Medals, Storm and Toxic. Ember's middle colour is now Gold (no more blue).
+- Gems and Metals have gone: anyone using them sees Aurora. New accounts start on Aurora's colours.
+- Restoring a backup saved on a Look or colour set that has gone now works (it gets the replacement).
 
 ### Notes — the website's Looks row is live
 - 0.79.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.79.1, #202), with no flaky tests. Notes only.

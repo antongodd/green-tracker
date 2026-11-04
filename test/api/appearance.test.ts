@@ -17,7 +17,8 @@ describe('appearance settings (D48)', () => {
     expect((await new Browser().req('PUT', '/api/appearance', DEFAULT_APPEARANCE)).status).toBe(401);
     // Signed out: nothing about anyone's appearance.
     expect((await new Browser().get('/api/auth/me')).json).not.toHaveProperty('appearance');
-    for (const bad of [{ preset: 'gold', markFirst: true }, { preset: 'gems' }, { preset: 'gems', markFirst: 'yes' }, []]) {
+    // D91: Gems and Metals went, so they can't be saved any more.
+    for (const bad of [{ preset: 'gold', markFirst: true }, { preset: 'aurora' }, { preset: 'aurora', markFirst: 'yes' }, { ...DEFAULT_APPEARANCE, preset: 'gems' }, { ...DEFAULT_APPEARANCE, preset: 'metals' }, []]) {
       expect((await b.req('PUT', '/api/appearance', bad)).status, JSON.stringify(bad)).toBe(400);
     }
     expect((await b.get('/api/appearance')).json.appearance).toEqual(DEFAULT_APPEARANCE);
@@ -26,7 +27,7 @@ describe('appearance settings (D48)', () => {
   it('a change is saved to the account: another phone signed in sees it', async () => {
     const b = new Browser();
     await signUp(b);
-    const mine: Appearance = { look: 'aurora', top: 'strip', preset: 'metals', markFirst: false };
+    const mine: Appearance = { look: 'aurora', top: 'strip', preset: 'medals', markFirst: false };
     const r = await b.req('PUT', '/api/appearance', mine);
     expect(r.status).toBe(200);
     expect(r.json.appearance).toEqual(mine);
@@ -59,7 +60,7 @@ describe('appearance settings (D48)', () => {
     const ownerName = (await signUp(owner)).username;
     const fanName = (await signUp(fan)).username;
     await signUp(asker);
-    const theirs: Appearance = { look: 'outrun', top: 'tiles', preset: 'metals', markFirst: false };
+    const theirs: Appearance = { look: 'outrun', top: 'tiles', preset: 'toxic', markFirst: false };
     expect((await owner.req('PUT', '/api/appearance', theirs)).status).toBe(200);
     const shown = (await owner.post('/api/products', { ...emptyProductInput(), name: 'Shown', ratings: { look: 9 } })).json.product;
     const hidden = (await owner.post('/api/products', { ...emptyProductInput(), name: 'Hidden', private: true, ratings: { look: 9 } })).json.product;
@@ -67,7 +68,7 @@ describe('appearance settings (D48)', () => {
     await asker.post(`/api/people/u/${ownerName}/follow`);
     for (const path of [`/api/people/u/${ownerName}`, `/api/people/u/${ownerName}/products`, `/api/people/u/${ownerName}/products/${shown.id}`]) {
       const r = await asker.get(path);
-      expect(JSON.stringify(r.json), path).not.toMatch(/outrun|metals|preset|markFirst|appearance/i);
+      expect(JSON.stringify(r.json), path).not.toMatch(/outrun|toxic|preset|markFirst|appearance/i);
     }
     await fan.post(`/api/people/u/${ownerName}/follow`);
     expect((await owner.post(`/api/people/requests/${fanName}/approve`)).status).toBe(200);
@@ -82,11 +83,11 @@ describe('appearance settings (D48)', () => {
     // A private product is still not found, appearance or not.
     const missing = await fan.get(`/api/people/u/${ownerName}/products/${hidden.id}`);
     expect(missing.status).toBe(404);
-    expect(JSON.stringify(missing.json)).not.toMatch(/outrun|metals/i);
+    expect(JSON.stringify(missing.json)).not.toMatch(/outrun|toxic/i);
     // The person card alone carries none of it.
-    expect(JSON.stringify((await fan.get(`/api/people/u/${ownerName}`)).json)).not.toMatch(/outrun|metals|appearance/i);
+    expect(JSON.stringify((await fan.get(`/api/people/u/${ownerName}`)).json)).not.toMatch(/outrun|toxic|appearance/i);
     // A change shows on the next load; unfollowing ends it at once.
-    const next: Appearance = { look: 'daysky', top: 'hero', preset: 'gems', markFirst: true };
+    const next: Appearance = { look: 'daysky', top: 'hero', preset: 'storm', markFirst: true };
     await owner.req('PUT', '/api/appearance', next);
     expect((await fan.get(`/api/people/u/${ownerName}/products`)).json.appearance).toEqual(next);
     // The fan's own setting is untouched.
@@ -112,7 +113,12 @@ describe('export and restore (D48)', () => {
     expect(bad.status).toBe(400);
     expect((await b.get('/api/appearance')).json.appearance).toEqual(theirs);
     // A file from before 0.54.0 has a preset but no look or top: those take the defaults (D64; the slim strip since D71).
-    expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'metals', markFirst: true } })).status).toBe(200);
-    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'metals', markFirst: true });
+    expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { preset: 'candy', markFirst: true } })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'strip', preset: 'candy', markFirst: true });
+    // A file saved on a look or colour set that went (D90, D91) is restored, showing their replacements.
+    expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { look: 'pearl', top: 'hero', preset: 'metals', markFirst: false } })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'aurora', top: 'hero', preset: 'aurora', markFirst: false });
+    expect((await b.post('/api/data/restore', { products: [], logEntries: [], appearance: { look: 'daymint', top: 'tiles', preset: 'gems', markFirst: true } })).status).toBe(200);
+    expect((await b.get('/api/appearance')).json.appearance).toEqual({ look: 'daysky', top: 'tiles', preset: 'aurora', markFirst: true });
   });
 });

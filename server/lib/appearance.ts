@@ -1,4 +1,4 @@
-import { BOARD_TOP_KEYS, DEFAULT_APPEARANCE, movedLook, PRESET_KEYS, type Appearance, type BoardTop, type Preset } from '../../shared/domain/gems';
+import { BOARD_TOP_KEYS, DEFAULT_APPEARANCE, movedLook, movedPreset, type Appearance, type BoardTop } from '../../shared/domain/gems';
 
 // Appearance (D48): one row per account that changed anything; none = the defaults.
 
@@ -18,7 +18,8 @@ export async function loadAppearance(db: D1Database, userId: string): Promise<Ap
     // D90: a look that went shows as its replacement (Holo Pearl and Haze: Aurora Glass; Mint and Pearl: Daylight).
     look: movedLook(r.look) ?? DEFAULT_APPEARANCE.look,
     top: known<BoardTop>(BOARD_TOP_KEYS, r.board_top, DEFAULT_APPEARANCE.top),
-    preset: known<Preset>(PRESET_KEYS, r.preset, DEFAULT_APPEARANCE.preset),
+    // D91: a colour set that went shows as its replacement (Gems and Metals: Aurora).
+    preset: movedPreset(r.preset) ?? DEFAULT_APPEARANCE.preset,
     markFirst: r.mark_first === 1,
   };
 }

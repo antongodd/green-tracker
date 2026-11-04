@@ -179,7 +179,7 @@ describe('Product pages: place and badge (D22, D48)', () => {
     p('f', 'flower', { look: 5.5 }),
     p('u', 'flower', {}),
   ];
-  const gems = { ...DEFAULT_APPEARANCE, preset: 'gems', markFirst: true } as const;
+  const gems = { ...DEFAULT_APPEARANCE, preset: 'aurora', markFirst: true } as const;
   const at = (id: string, view: { filter: any; rankBy: any }) => {
     const r = boardPlace(list, id, view);
     return r && [r.rank, r.band, r.first];
@@ -214,11 +214,11 @@ describe('Product pages: place and badge (D22, D48)', () => {
     const all = { filter: 'all', rankBy: 'overall' } as const;
     expect(placeBadge({ rank: 3, band: 3, first: false }, all, 'your', gems)).toBe('#3 on your Leaderboard');
     expect(placeBadge({ rank: 1, band: 4, first: true }, all, 'their', gems)).toBe('#1 on their Leaderboard');
-    expect(placeBadge({ rank: 2, band: 2, first: false }, { filter: 'flower', rankBy: 'overall' }, 'your', { ...DEFAULT_APPEARANCE, preset: 'metals', markFirst: true })).toBe('#2 in Flower');
+    expect(placeBadge({ rank: 2, band: 2, first: false }, { filter: 'flower', rankBy: 'overall' }, 'your', { ...DEFAULT_APPEARANCE, preset: 'medals', markFirst: true })).toBe('#2 in Flower');
     expect(placeBadge({ rank: 4, band: 1, first: false }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'prism', markFirst: false })).toBe('#4 on your Leaderboard');
     expect(placeBadge({ rank: 5, band: null, first: false }, all, 'your', gems)).toBeNull();
     expect(placeBadge({ rank: 1, band: null, first: true }, { filter: 'flower', rankBy: 'price' }, 'your', gems)).toBe('#1 in Flower by Price');
-    expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'gems', markFirst: false })).toBeNull();
+    expect(placeBadge({ rank: 1, band: null, first: true }, all, 'your', { ...DEFAULT_APPEARANCE, preset: 'aurora', markFirst: false })).toBeNull();
   });
 });
 

@@ -28,8 +28,8 @@ const appearance = (page: Page, a: { look: string; top: string; preset: string; 
   page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
 const P = (over: Partial<ProductInput>): ProductInput => ({ ...emptyProductInput(), ...over });
 
-const THEIRS = { look: 'outrun', top: 'tiles', preset: 'metals', markFirst: false };
-const MINE = { look: 'aurora', top: 'strip', preset: 'gems', markFirst: true };
+const THEIRS = { look: 'outrun', top: 'tiles', preset: 'medals', markFirst: false };
+const MINE = { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true };
 
 /** Every look the page shows from now on, "+fade" while it cross-fades. */
 const recordLooks = (page: Page) =>
@@ -90,15 +90,15 @@ test('their board is in their look, top and colours; the key says whose; your ph
   // Their top: two tiles (Products and Average), not your slim strip.
   await expect(fan.locator('.banner.summary .tile')).toHaveCount(2); // Summary (`tiles`, D87)
   await expect(fan.locator('.banner.strip')).toHaveCount(0);
-  // Their colours: Metals, and no crown or halo (they turned Mark my #1 off).
-  await expect(fan.locator('.row.tier.pal-metals')).toHaveCount(2);
-  await expect(fan.locator('.row.tier.pal-gems')).toHaveCount(0);
+  // Their colours: Medals, and no crown or halo (they turned Mark my #1 off).
+  await expect(fan.locator('.row.tier.pal-medals')).toHaveCount(2);
+  await expect(fan.locator('.row.tier.pal-aurora')).toHaveCount(0);
   await expect(fan.locator('.row.first, .rank-crown')).toHaveCount(0);
   await settled(fan);
   await shot(fan, '96-their-look-board');
   await fan.locator('.pill.key').click();
   const key = fan.locator('.keysheet');
-  await expect(key).toContainText(`@${ownerName}’s are Metals.`);
+  await expect(key).toContainText(`@${ownerName}’s are Medals.`);
   await expect(key.getByRole('link', { name: 'Change colours' })).toHaveCount(0);
   await expect(key).not.toContainText('Crown and halo');
   await key.getByRole('button', { name: 'Done' }).click();
@@ -125,11 +125,11 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   await recordLooks(fan);
   await fan.locator('.row', { hasText: 'Alpha' }).click();
   await expect(fan.locator('.gem-badge')).toHaveText('#1 on their Leaderboard');
-  await expect(fan.locator('main')).toHaveAttribute('class', /pal-metals/);
+  await expect(fan.locator('main')).toHaveAttribute('class', /pal-medals/);
   await fan.getByRole('link', { name: 'Acme' }).click();
   await expect(fan.locator('.brand-lead')).toBeVisible();
   await expect(fan.locator('.banner.summary')).toBeVisible();
-  await expect(fan.locator('.row.tier.pal-metals')).toHaveCount(2);
+  await expect(fan.locator('.row.tier.pal-medals')).toHaveCount(2);
   await fan.goBack();
   await expect(fan.locator('.gem-badge')).toBeVisible();
   await fan.goBack();
@@ -169,7 +169,7 @@ test('someone you don’t follow stays in your look; so does your own board as f
 });
 
 test('a light look: the iPhone’s own controls follow theirs, then yours come back', async () => {
-  expect(await appearance(owner, { look: 'daysky', top: 'hero', preset: 'gems', markFirst: true })).toBe(200);
+  expect(await appearance(owner, { look: 'daysky', top: 'hero', preset: 'aurora', markFirst: true })).toBe(200);
   await fan.goto('/people');
   await go(fan, `/u/${ownerName}`);
   await expect(fan.locator('.banner.strip')).toBeVisible(); // Showcase (`hero`): on a friend's board, the Compact line (D87)

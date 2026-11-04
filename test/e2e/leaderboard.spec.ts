@@ -42,9 +42,9 @@ test('default: Overall, all types; colours by score, #1 marked, tiles, unrated l
   await page.goto('/');
   await expect(rows()).toHaveCount(16);
   await expect(rows().nth(0)).toContainText('Gelato 41');
-  // Colours by score in Gems, where a new account starts (D48, D71): 8.9 and 8.6 Sapphire, 8.4 → 8.0 Emerald; below 8 the heat glow (D30).
+  // Colours by score in Aurora, where a new account starts (D48, D91): 8.9 and 8.6 Lagoon, 8.4 → 8.0 Jade; below 8 the heat glow (D30).
   const bands = await rows().evaluateAll((els) => els.slice(0, 7).map((e) => [...e.classList].filter((c) => /^(band\d|pal-.+|first)$/.test(c)).join(' ')));
-  expect(bands).toEqual(['band2 pal-gems first', 'band2 pal-gems', 'band1 pal-gems', 'band1 pal-gems', 'band1 pal-gems', 'band1 pal-gems', '']);
+  expect(bands).toEqual(['band2 pal-aurora first', 'band2 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', 'band1 pal-aurora', '']);
   await expect(rows().nth(6)).toHaveAttribute('data-heat');
   await expect(rows().nth(0).locator('.rk .rank-crown')).toHaveCount(1);
   await expect(page.locator('.rank-crown')).toHaveCount(1);
@@ -337,7 +337,7 @@ test('the + never sits on the last row’s score: room under the list on every t
   const put = (a: object) => page.evaluate(async (a) => (await fetch('/api/appearance', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(a) })).status, a);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const top of ['hero', 'tiles', 'strip']) {
-    expect(await put({ look: 'daysky', top, preset: 'gems', markFirst: true })).toBe(200);
+    expect(await put({ look: 'daysky', top, preset: 'aurora', markFirst: true })).toBe(200);
     for (const path of ['/', '/log']) {
       await page.goto(path);
       await expect(page.locator(path === '/' ? '.row' : '.lrow').first()).toBeVisible();
@@ -351,7 +351,7 @@ test('the + never sits on the last row’s score: room under the list on every t
       expect(clash, `${top} ${path}`).toBeNull();
     }
   }
-  expect(await put({ look: 'aurora', top: 'strip', preset: 'gems', markFirst: true })).toBe(200);
+  expect(await put({ look: 'aurora', top: 'strip', preset: 'aurora', markFirst: true })).toBe(200);
   await page.goto('/');
   await page.evaluate(() => localStorage.setItem('gt.look', 'aurora'));
 });
