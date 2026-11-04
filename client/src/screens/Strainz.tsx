@@ -29,7 +29,7 @@ import type { LogEntry } from '../../../shared/domain/logEntry';
 
 // Strainz (D92): your products grouped by strain (the product's Name), in the Log's place in the tab bar. Since
 // D93 (the owner's pick, option A "Shelves"): your favourite on top, then rows that scroll sideways (Your favourites,
-// Most tried, Want to try, Recently tried, Tried, not rated), each strain a round photo with a ring for its average.
+// Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring for its average.
 // See all opens a shelf's whole list: the cards (`StrainzAll`), your Want to try list, or the Log.
 
 const enc = encodeURIComponent;
@@ -82,17 +82,20 @@ function StrainRing(p: { strain: Strain<Product>; size?: 'big' }) {
   );
 }
 
+/** How often you've had it, read out (the shelf shows ×1, ×2…, the owner's pick). */
+const timesTried = (n: number) => (n === 1 ? 'tried once' : n === 2 ? 'tried twice' : `tried ${n} times`);
+
 /** One strain on a shelf: its ring, name and how often you've had it; opens its page. */
 function Pick(p: { strain: Strain<Product> }) {
   const s = p.strain;
   const n = s.products.length;
-  const label = `${s.name}, ${s.average === null ? 'not rated' : `average ${formatScore(s.average)}`}, ${n === 1 ? 'tried once' : `${n} tried`}`;
+  const label = `${s.name}, ${s.average === null ? 'unranked' : `average ${formatScore(s.average)}`}, ${timesTried(n)}`;
   return (
     <li class="pick">
       <a href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))} aria-label={label}>
         <StrainRing strain={s} />
         <span class="pk-n">{s.name}</span>
-        <span class="pk-m">{n === 1 ? 'Tried once' : `${n} tried`}</span>
+        <span class="pk-m" aria-hidden="true">×{n}</span>
       </a>
     </li>
   );
@@ -212,15 +215,15 @@ export function StrainzList() {
               </ShelfRow>
             )}
             {unrated.length > 0 && (
-              <ShelfRow id="unrated" title="Tried, not rated" all="/log" allLabel="Your Log">
+              <ShelfRow id="unrated" title="Unranked" all="/log" allLabel="Your Log">
                 {unrated.slice(0, SHELF_MAX).map((u) => (
                   <li key={u.key} class="pick">
-                    <a href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)} aria-label={`${u.name}, not rated`}>
+                    <a href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)} aria-label={`${u.name}, unranked`}>
                       <span class="sring dash">
                         <RoundPhoto photo={u.entry.photo} productType={u.entry.productType} />
                       </span>
                       <span class="pk-n">{u.name}</span>
-                      <span class="pk-m">Not rated</span>
+                      <span class="pk-m">Unranked</span>
                     </a>
                   </li>
                 ))}
@@ -328,7 +331,7 @@ export function StrainzAll(p: { shelf: Shelf }) {
             {p.shelf === 'average' && shownUnrated.length > 0 && (
               <section class="unrated" aria-labelledby="unrated-h">
                 <h2 id="unrated-h" class="group-h wrap">
-                  <span class="gname">Tried, not rated</span>
+                  <span class="gname">Unranked</span>
                   <span class="n num">{shownUnrated.length}</span>
                 </h2>
                 <div class="scards">
@@ -341,7 +344,7 @@ export function StrainzAll(p: { shelf: Shelf }) {
                         <span class="scard-top">
                           <span class="nm">{u.name}</span>
                         </span>
-                        <span class="sub">Not rated{u.count > 1 ? ` · ${u.count} times` : ''}</span>
+                        <span class="sub">Unranked{u.count > 1 ? ` · ×${u.count}` : ''}</span>
                       </a>
                     );
                   })}

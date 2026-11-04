@@ -238,7 +238,8 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   on every screen with the bar (`add` gives its label and action; default **Add a product**), so a friend's page and
   Settings have one too and the bar is the same width everywhere. No button opens `/log/new` any more: a test reaches it
   with `history.pushState` + a `popstate` event (no reload; `keepediting.spec.ts`, `sounds.spec.ts`). Return to Log is
-  labelled **Move to Tried, not rated**. A strain is the product's Name by `nameKey`; names are capitalised when saved,
+  labelled **Move to Unranked** (0.82.1; the shelf of Log entries never rated is **Unranked**, and a shelf's
+  count reads ×1, ×2…). A strain is the product's Name by `nameKey`; names are capitalised when saved,
   so use different capitals (`ZKITTLEZ`) to show they're matched. Since D93 Strainz is shelves: read one with
   `getByRole('list', { name: '<shelf title>', exact: true })` (`.pk-n` the names), See all is the link "See all:
   <shelf>" (`/strainz/list/<sort>` the cards, `/strainz/list/want` the Want to try list); a Want to try shelf shows
@@ -402,7 +403,7 @@ section, so it must always be current.
 
 - **Live:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), and no line across a
   product's photo in the colour sets.
-- **Dev:** 0.82.0 (2026-11-04): Strainz as shelves (item 17, D93), waiting for Anton to try it on GT Dev and say
+- **Dev:** 0.82.1 (2026-11-04): Strainz as shelves (item 17, D93; one row scrolls, ×2, Unranked in 0.82.1), waiting for Anton to try it on GT Dev and say
   "go live".
 
 ### To-do list (suggested order; Anton decides)

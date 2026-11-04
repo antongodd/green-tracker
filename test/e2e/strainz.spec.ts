@@ -69,27 +69,26 @@ test('the tab bar: Strainz in the Log’s place; the + beside the bar on every s
 /** The names on a shelf, in order. */
 const shelf = (title: string) => page.getByRole('list', { name: title, exact: true }).locator('.pk-n');
 
-test('Strainz (D93, shelves): your favourite on top, then Your favourites, Most tried, Recently tried, Tried, not rated', async () => {
+test('Strainz (D93, shelves): your favourite on top, then Your favourites, Most tried, Recently tried, Unranked', async () => {
   await page.goto('/strainz');
   await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
   await expect(page.locator('.fav-card .fav-m')).toHaveText('9.5 average · 3 strains tried');
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Recently tried', 'Tried, not rated']); // no Want to try yet: hidden
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Recently tried', 'Unranked']); // no Want to try yet: hidden
   await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
   await expect(shelf('Most tried')).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
   await expect(shelf('Recently tried')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Gelato 41']);
   // The Log entry you never rated; the one named like a product isn't there.
-  await expect(shelf('Tried, not rated')).toHaveText(['Amnesia Haze']);
-  const z = page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: 'Zkittlez, average 8.0, 3 tried' });
+  await expect(shelf('Unranked')).toHaveText(['Amnesia Haze']);
+  const z = page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: 'Zkittlez, average 8.0, tried 3 times' });
   await expect(z.locator('.sring-v')).toHaveText('8.0');
-  await expect(page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: /^Cookies Zkittlez/ }).locator('.pk-m')).toHaveText('Tried once');
+  await expect(page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: /^Cookies Zkittlez/ }).locator('.pk-m')).toHaveText('×1');
+  await expect(z.locator('.pk-m')).toHaveText('×3');
   // The ring fills to the average out of 10.
   const filled = await z.locator('circle.fill').evaluate((c) => {
     const [on, all] = c.getAttribute('stroke-dasharray')!.split(' ').map(Number);
     return on! / all!;
   });
   expect(filled).toBeCloseTo(0.8, 2);
-  // A shelf scrolls sideways inside itself; the page never does.
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await shot(page, 'strainz-shelves');
   expect(await axe()).toEqual([]);
   expect(await wholeScreenContrastFailures(page, '/strainz', '.fav-k, .fav-n, .fav-m, .shelf h2, .shelf-h a, .pk-n, .pk-m, .sring-v')).toEqual([]);
@@ -107,6 +106,50 @@ test('the shelves are readable in the light look (Daylight) too', async () => {
     await call('PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: false });
     await page.evaluate(() => localStorage.setItem('gt.look', 'aurora'));
   }
+});
+
+test('a full shelf scrolls inside itself; the page never slides sideways, and the top card sits in the middle', async ({ browser }) => {
+  // 0.82.0 (Anton's screenshots, 30 strains): the shelves' column took the length of its longest row, so on iPhone the
+  // whole screen slid sideways and the top card ran off the right edge.
+  const other = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+  await signUp(other, `sz3${Date.now().toString(36).slice(-6)}${Math.random().toString(36).slice(2, 5)}`);
+  for (let i = 0; i < 8; i++)
+    await other.evaluate((p) => fetch('/api/products', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(p) }), {
+      ...emptyProductInput(),
+      name: `Strain Number ${i + 1}`,
+      ratings: rated(9 - i / 4),
+    });
+  await other.goto('/strainz');
+  const fr = other.getByRole('list', { name: 'Your favourites', exact: true });
+  await expect(fr.locator('.pk-n')).toHaveCount(8);
+  expect(await other.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  for (const rail of await other.locator('ul.rail').all()) {
+    const box = (await rail.boundingBox())!;
+    expect(box.x).toBe(0);
+    expect(box.width).toBeLessThanOrEqual(390);
+  }
+  const fav = (await other.locator('.fav-card').boundingBox())!;
+  expect(Math.abs(fav.x - (390 - (fav.x + fav.width))), 'the top card has the same gap on both sides').toBeLessThanOrEqual(1);
+  // Swiping a row moves only that row.
+  await fr.evaluate((el) => el.scrollBy({ left: 300 }));
+  await expect.poll(() => fr.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+  expect(await other.getByRole('list', { name: 'Most tried', exact: true }).evaluate((el) => el.scrollLeft)).toBe(0);
+  expect(await other.evaluate(() => window.scrollX)).toBe(0);
+  await other.context().close();
+});
+
+test('no Unranked shelf when every strain you’ve had is ranked', async ({ browser }) => {
+  const other = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+  await signUp(other, `sz2${Date.now().toString(36).slice(-6)}${Math.random().toString(36).slice(2, 5)}`);
+  await other.evaluate((p) => fetch('/api/products', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(p) }), {
+    ...emptyProductInput(),
+    name: 'Only One',
+    ratings: rated(8),
+  });
+  await other.goto('/strainz');
+  await expect(other.locator('.shelf h2')).toHaveText(['Your favourites']);
+  await expect(other.getByRole('heading', { name: 'Unranked' })).toHaveCount(0);
+  await other.context().close();
 });
 
 test('See all: a shelf’s whole list as cards, with search and the four sorts', async () => {
@@ -133,9 +176,9 @@ test('See all: a shelf’s whole list as cards, with search and the four sorts',
   await page.getByRole('link', { name: 'See all: Your favourites' }).click();
   await expect(cards()).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
   await expect(page.locator('.unrated .nm')).toHaveText(['Amnesia Haze']);
-  // Tried, not rated's own link opens the Log, by country.
+  // Unranked's own link opens the Log, by country.
   await page.goto('/strainz');
-  await page.getByRole('link', { name: 'Your Log: Tried, not rated' }).click();
+  await page.getByRole('link', { name: 'Your Log: Unranked' }).click();
   await expect(page).toHaveURL(/\/log$/);
   await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(/^Strainz/);
   await expect(page.locator('.lrow .name')).toContainText(['Amnesia Haze']);
@@ -197,7 +240,7 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   await sheet.getByRole('button', { name: 'Add' }).click();
   await expect(sheet).toBeHidden();
   // A Want to try shelf appears, between Most tried and Recently tried, with Add one at its end.
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Want to try', 'Recently tried', 'Tried, not rated']);
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Want to try', 'Recently tried', 'Unranked']);
   await expect(shelf('Want to try')).toHaveText(['Runtz', 'Add one']);
   // See all: the whole list, with its notes.
   await page.getByRole('link', { name: 'See all: Want to try' }).click();
@@ -269,14 +312,14 @@ test('Rename: every product with the name takes the new one; renaming into anoth
   await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Runtz', 'Wedding Cake']);
 });
 
-test('a product moved to Tried, not rated shows there, and Back from it goes to Strainz', async () => {
+test('a product moved to Unranked shows there, and Back from it goes to Strainz', async () => {
   const p = (await product('Blue Dream', { ratings: rated(6) })).product;
   await page.goto('/strainz');
   await page.goto(`/products/${p.id}`);
-  await page.getByRole('button', { name: 'Move to Tried, not rated' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Move to Tried, not rated' }).click();
+  await page.getByRole('button', { name: 'Move to Unranked' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Move to Unranked' }).click();
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/strainz$/);
-  await expect(shelf('Tried, not rated')).toHaveText(['Blue Dream', 'Amnesia Haze']);
+  await expect(shelf('Unranked')).toHaveText(['Blue Dream', 'Amnesia Haze']);
 });
