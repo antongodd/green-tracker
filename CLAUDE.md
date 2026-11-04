@@ -85,8 +85,10 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | `green-tracker-account-audit` | Anton asks to audit all accounts: a read-only table of everyone on live, shown only in the conversation (never saved, no emails) |
 | `green-tracker-reports` | Anton asks to see the reports (D84): a read-only table in the conversation; removes a post or comment only on his "yes" |
 
-**Outside skills** (not recipes): `apple-design` (Emil Kowalski's, from `github.com/emilkowalski/skills`, MIT; added
-2026-11-03 at Anton's request) is design advice on Apple-style motion, materials and type, for building or reviewing
+**Outside skills** (not recipes, and not kept in this repository): `apple-design` (Emil Kowalski's, from
+`github.com/emilkowalski/skills`, MIT; added 2026-11-03 at Anton's request; since 2026-11-04 it lives in Anton's Claude
+account, under Settings › Customize › Skills, so every project can use it, and shows here as
+`anthropic-skills:apple-design`) is design advice on Apple-style motion, materials and type, for building or reviewing
 screens. Where it disagrees with this file, this file wins: a Look changes only colours and the background (D70), the
 looks' moving lights stay, readability and accessibility tests are never loosened, and anything it suggests that
 changes how the app looks is still a big change.
@@ -430,6 +432,7 @@ Each is a job for its own conversation; the summary lists what each covers.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| `apple-design` moved from this repository to Anton's Claude account (Settings › Customize › Skills), so all his projects can use it | (notes) | | 2026-11-04 | notes only |
 | The website, Anton's photos: his own cut-outs, strain names and scores in place of the drawn nugs (sellers, prices and people made up) | 0.77.0 | D88 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage A: Apple's fonts, large titles, the floating tab bar with the + beside it, Settings from your photo, calm cards, three new Leaderboard tops (Compact, Summary, Showcase), the product page's actions as one list, press-in feedback, springy sheets; the tab bar's four tabs made exactly equal in 0.77.1 (the release run caught "Leaderboard" widening its tab on the CI fonts) (not yet tried on Anton's iPhone) | 0.76.0, 0.77.1 | D87 | 2026-11-04 | 2026-11-04 |
 | The website, five things to play with: Rate the stack, Make it yours (the fifteen Looks), the phone you can pick up, the scroll story, the install sheet (tried by Anton on the preview; drags and flicks not yet confirmed on his iPhone) | 0.75.0 | D86 | 2026-11-04 | 2026-11-04 |
