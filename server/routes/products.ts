@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { AppEnv } from '../env';
-import { settleCurrencies, validateProductInput, type Product, type ProductInput, type PurchaseRecord } from '../../shared/domain/product';
+import { PRODUCT_LIMITS, settleCurrencies, validateProductInput, type Product, type ProductInput, type PurchaseRecord } from '../../shared/domain/product';
 import type { ProductTypeKey, RatingKey, StrainTypeKey } from '../../shared/domain/productTypes';
 import type { Ratings } from '../../shared/domain/ratings';
 import { randomId } from '../lib/crypto';
@@ -8,6 +8,9 @@ import { deleteLater, PHOTO_COLUMNS, planPhotoWrites, toPhotoRecord, type PhotoR
 import { fail, jsonBody } from '../lib/http';
 import { loadMainCurrency } from '../lib/money';
 import { requireUser } from '../lib/session';
+import { tickOffWrites } from '../lib/wants';
+import { nameKey } from '../../shared/domain/names';
+import { autoCapitalise } from '../../shared/domain/capitalise';
 
 // Your own products. Every query is scoped by user_id, so another user's ID
 // behaves exactly like a missing one (404). Followers get their own, narrower
@@ -219,9 +222,11 @@ products.post('/', async (c) => {
   const input = parseProduct(await jsonBody(c));
   const db = c.env.DB;
   const { id, statements, unusedKeys } = await createProductWrites(db, userId, input);
-  await db.batch(statements);
+  // D92: the wants it ticks off go with it.
+  const tick = await tickOffWrites(db, userId, input);
+  await db.batch([...statements, ...tick.statements]);
   deleteLater(c.executionCtx, c.env.PHOTOS, unusedKeys);
-  return c.json({ product: await loadOne(db, userId, id) }, 201);
+  return c.json({ product: await loadOne(db, userId, id), tickedOff: tick.ticked }, 201);
 });
 
 /**
@@ -251,10 +256,11 @@ products.put('/:id', async (c) => {
   const db = c.env.DB;
   await loadOne(db, userId, id); // 404 unless it's yours (and not kept by a Log entry, D50)
   const { statements, unusedKeys } = await updateProductWrites(db, userId, id, input);
-  await db.batch(statements);
+  const tick = await tickOffWrites(db, userId, input);
+  await db.batch([...statements, ...tick.statements]);
   // Only after the batch has committed: files no longer used by any photo.
   deleteLater(c.executionCtx, c.env.PHOTOS, unusedKeys);
-  return c.json({ product: await loadOne(db, userId, id) });
+  return c.json({ product: await loadOne(db, userId, id), tickedOff: tick.ticked });
 });
 
 /** The profile's Private switch and the Archive / Un-archive actions save immediately. */
@@ -271,3 +277,35 @@ for (const flag of ['private', 'archived'] as const) {
     return c.json({ product: await loadOne(c.env.DB, userId, id) });
   });
 }
+
+/**
+ * Rename a strain (D92): every product and Log entry with this name (matched like every name, nameKey) takes the
+ * new one, archived ones and the products returned Log entries keep (D50) included, so the strain stays together.
+ * Renaming it to a strain you already have joins the two. Ticks off a want of the new name.
+ */
+products.post('/rename-strain', async (c) => {
+  const body = await jsonBody(c);
+  const userId = c.var.user!.id;
+  if (typeof body.from !== 'string' || !nameKey(body.from)) fail(400, 'bad_request', 'The request couldn’t be read.');
+  const name = typeof body.to === 'string' ? autoCapitalise(body.to) : '';
+  if (!name || !nameKey(name)) fail(400, 'invalid_product', 'Give the strain a name.');
+  if (name.length > PRODUCT_LIMITS.name) fail(400, 'invalid_product', `Keep the name to ${PRODUCT_LIMITS.name} characters.`);
+  const key = nameKey(body.from as string);
+  const db = c.env.DB;
+  const [prods, entries] = await db.batch<{ id: string; name: string }>([
+    db.prepare('SELECT id, name FROM products WHERE user_id = ?1').bind(userId),
+    db.prepare('SELECT id, name FROM log_entries WHERE user_id = ?1').bind(userId),
+  ]);
+  const ids = (rows: { id: string; name: string }[]) => rows.filter((r) => nameKey(r.name) === key).map((r) => r.id);
+  const productIds = ids(prods!.results);
+  const entryIds = ids(entries!.results);
+  if (!productIds.length && !entryIds.length) fail(404, 'not_found', 'You have nothing with that name.');
+  const now = Date.now();
+  const tick = await tickOffWrites(db, userId, { name, source: null, purchases: [] });
+  await db.batch([
+    db.prepare('UPDATE products SET name = ?1, updated_at = ?2 WHERE user_id = ?3 AND id IN (SELECT value FROM json_each(?4))').bind(name, now, userId, JSON.stringify(productIds)),
+    db.prepare('UPDATE log_entries SET name = ?1, updated_at = ?2 WHERE user_id = ?3 AND id IN (SELECT value FROM json_each(?4))').bind(name, now, userId, JSON.stringify(entryIds)),
+    ...tick.statements,
+  ]);
+  return c.json({ name, products: productIds.length, logEntries: entryIds.length, tickedOff: tick.ticked });
+});

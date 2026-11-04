@@ -88,7 +88,7 @@ test('with a photo it shows on the first frame of every tab switch, never flashi
         });
     }).observe(document.body, { childList: true, subtree: true });
   });
-  for (const tab of ['Log', 'Sources', 'Feed', 'Leaderboard', 'Log', 'Sources', 'Leaderboard']) {
+  for (const tab of ['Strainz', 'Sources', 'Feed', 'Leaderboard', 'Strainz', 'Sources', 'Leaderboard']) {
     await tabBar().getByRole('link', { name: new RegExp(tab) }).click();
     await expect(tabBar().getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page');
     await expect(me().locator('.av img')).toHaveCount(1);

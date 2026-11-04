@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { usernameKey } from '../../shared/domain/account';
 import { validateRestore } from '../../shared/domain/backup';
+import { nameKey } from '../../shared/domain/names';
 import { randomId } from '../lib/crypto';
 import { fail, jsonBody, str } from '../lib/http';
 import { deleteLater, imageKeys, setKeys } from '../lib/photos';
@@ -54,7 +55,7 @@ data.post('/restore', async (c) => {
   const db = c.env.DB;
   const v = validateRestore(await jsonBody(c));
   if (!v.ok) fail(400, 'invalid_restore', v.message);
-  const { products, logEntries, profilePhoto, privacy, appearance, money, posts } = v.value;
+  const { products, logEntries, profilePhoto, privacy, appearance, money, posts, wants } = v.value;
 
   // Every photo must be a fresh upload of yours that includes its original. Which are
   // cut-outs (D26) comes from the uploads themselves; a profile photo is never one.
@@ -281,12 +282,25 @@ data.post('/restore', async (c) => {
   if (appearance) statements.push(saveAppearanceStatement(db, userId, appearance));
   // D66: and your main currency (a file from before 0.56.0 has none).
   if (money) statements.push(saveMainCurrencyStatement(db, userId, money.currency));
+  // D92: the Want to try lists replace yours (a file from before 0.81.0 has none: yours stay).
+  if (wants) {
+    statements.push(db.prepare('DELETE FROM wants WHERE user_id = ?1').bind(userId));
+    if (wants.length)
+      statements.push(
+        db
+          .prepare(
+            `INSERT INTO wants (id, user_id, kind, name, name_key, note, created_at)
+             SELECT json_extract(value, '$.id'), ?1, json_extract(value, '$.kind'), json_extract(value, '$.name'), json_extract(value, '$.key'), json_extract(value, '$.note'), json_extract(value, '$.at') FROM json_each(?2)`,
+          )
+          .bind(userId, JSON.stringify(wants.map((w) => ({ id: randomId(), kind: w.kind, name: w.name, key: nameKey(w.name), note: w.note, at: w.createdAt })))),
+      );
+  }
   const allUploads = [...uploadIds, ...postUploads];
   if (allUploads.length) statements.push(db.prepare('DELETE FROM uploads WHERE user_id = ?1 AND id IN (SELECT value FROM json_each(?2))').bind(userId, JSON.stringify(allUploads)));
 
   await db.batch(statements);
   deleteLater(c.executionCtx, c.env.PHOTOS, old.flatMap((o) => [...setKeys(userId, o.original_set), ...(o.image_set !== o.original_set ? imageKeys(userId, o.image_set) : [])]));
-  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed', posts: posts ? postRows.length : 'kept' });
+  return c.json({ products: productRows.length - entryRows.filter((e) => (e as { kept: string | null }).kept).length, logEntries: entryRows.length, photos: photoRows.length, profilePhoto: profilePhoto === undefined ? 'kept' : profilePhoto ? 'restored' : 'removed', posts: posts ? postRows.length : 'kept', wants: wants ? wants.length : 'kept' });
 });
 
 // Delete account --------------------------------------------------------------
@@ -296,7 +310,7 @@ data.post('/delete/options', async (c) => c.json(await ownPasskeyOptions(c, c.va
 
 /**
  * Step 2: with your password (or the passkey check) and the typed username, delete everything:
- * the user row cascades to products, ratings, purchases, log entries, privacy, appearance and money settings, photos, the profile photo,
+ * the user row cascades to products, ratings, purchases, log entries, the Want to try lists (D92), privacy, appearance and money settings, photos, the profile photo,
  * posts and every comment and fire you gave (D77), uploads, sessions, passkeys, follows both ways, pending requests
  * and blocks. Then every file under the user's R2 prefix is deleted. Irreversible.
  */

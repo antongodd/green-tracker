@@ -163,6 +163,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D89 | **The website's full overhaul** (2026-11-04; the owner: "run a review of the website with [ui-ux-pro-max]. i want a full website overhaul"; his picks: "1. match the app" (Apple's fonts), "2. ok" (no reviews until real ones), then "go ahead" on https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T). | **The website matches the app's Apple-style design:** Apple's fonts (none downloaded); the hero's phone drawn as the app looks now (large title, Compact line, calm rows, the floating tab bar with the +), showing on the first screen; Rate the stack straight after the top; a new **Your stash is your business** section of four promises, each true in the app; drawn icons in place of emoji; sentence-case labels; a footer with Open the app, Create an account and Email us; hover feedback for a mouse and a tidier laptop layout. Website only: the app, data, Export / Restore and followers are unchanged; nothing new loads from elsewhere. See §4 *The website's full overhaul*. |
 | D90 | **The Apple-style redesign, stage B: the Looks** (2026-11-04; mockups https://claude.ai/artifact/RTuhbdLqNubiwWPqyq1gJe; the owner on them: "i like it"; his answers: one light look ("one"), Holo Pearl and Haze go ("ok"), no tilting the phone for now ("what ever you recommond"). From stage A's questions: his favourites, Sakura first, then Nebula, Aurora Glass, Deep Forest, Deep Sea, Frost, Fireflies, Lava Lamp, Neon Night, Outrun, with "nice moving background animations… little unique details"; battery is no concern (iPhone 17 Pro). Eleven looks: those ten and **Daylight** (Daylight Sky's key kept), each with a scene of its own that glides smoothly (in place of D64-D70's small steps). Looks that went show as their replacement, nothing rewritten: Holo Pearl and Haze as Aurora Glass, Daylight Mint and Pearl as Daylight. Kept: D70 (only colours and the background change), every readability test. What changed is in §4 *The Looks' scenes*. |
 | D91 | **The Apple-style redesign, stage C: the Leaderboard colours** (2026-11-04; mockups https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz; the owner: his favourites Sunset, Synthwave, Prism, Neon, Ember ("but i dont like how there is a random blue colour in the middle"), Deep Sea, Cosmos and Aurora ("better version of gems"); he likes "the ones that have little unique details and things like moving animations"; on the mockups: "ember - should be gold", "i like: toxic, medals, storm and candy", "i also really like the little animations youve done", then "go ahead"). | **Twelve colour sets, every one with details of its own** that grow from a hint at 8.0 to a full show at 9.5: his eight (Ember's Blue flame now **Gold**, and no blue in Inferno) and four new ones, **Candy**, **Medals**, **Storm** and **Toxic** (marked New). **Gems and Metals go**: saved ones show as Aurora, nothing rewritten (`PRESETS_MOVED`, like D90's looks); a backup naming a look or set that went is restored with its replacement. Accounts start on Aurora's colours (D71's Gems before). Kept: D48's four bands and cards, the #1 mark, D74 (followers see your colours), every readability test (Storm's rain and lightning were redrawn to stay off the words). What changed is in §4 *The colour sets' details*. |
+| D92 | **Strainz, the + everywhere, and the Log folded in** (2026-11-04; mockups https://claude.ai/artifact/987zYn5kvJgDSphKFaXGAr; the owner: "I want a new kinda section, similar to sources… to track the strains you have tried, see how many different products of each strain you have tried. compare strains. see the average you rate that strain"; on the Log: "this isn't very useful to new people… I don't want to delete the log, but just maybe move it into somewhere else"; on the bar: "I hate how the menu buttons change… it needs to be consistent in every tab"; on strains: "zkittlez and cookies zkittlez are different strains… you (atleast myself) would put zkittlez as the name, and live rosin as the product/concentrate type"; his answers: a merge (Rename) yes, "tried once" marked, Compare two, the Log folded in, ticked-off wants "disapear completly", private for now, the + different on every screen (Leaderboard a product, Strainz a strain to try, Sources option B "sources to try", Feed a post, Settings a product), no new "tried, not rated" entries ("just take it straight into the whole product/leaderboard form"), the name **Strainz**, layout B "cards - like sources", then "go ahead"). | **A Strainz tab in the Log's place**: a strain is a product's Name (matched like Sources' names, so "Cookies Zkittlez" is its own strain); cards like Sources (Best average, Most tried, Recently tried, A–Z; "Tried once"), then the Log entries you never rated (*Tried, not rated*) and a link to the Log by country (its screens stay). A strain's page: average, place among your rated strains, best and lowest, kinds, price per gram, value for money, sources, first and last tried, its products; **Compare** two side by side; **Rename** renames every product and Log entry with the name (joining two strains). **Want to try** lists (strains on Strainz, sources on Sources, a new table `wants`), private, ticked off by the server when a saved product has the name, Source or Supplier, with a message once. **The + beside the bar on every screen** (`TabBar` draws it), so the bar keeps its width; Return to Log reads *Move to Tried, not rated*. Export, Restore and Delete account cover the lists; the privacy page says so. Left for later: friends' strains (to-do list). |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -1977,11 +1978,47 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   effects and readability for all twelve), `gems.spec.ts`, `daylight.spec.ts` (light cards, in two halves),
   `gems.test.ts`, `appearance.test.ts`.
 
+- **Strainz, the + everywhere, the Log folded in (D92, 0.81.0).** *Strains:* `shared/domain/strains.ts`
+  (`strainsOf`: products by `nameKey(name)`, archived left out; the spelling used most is shown; average, best, lowest
+  (two or more rated), strain type most used, kinds by `kindLabel` (a concentrate's own kind), sources, first and last
+  tried (Date tried, else the day added), average `pricePerGramEquivalent` and `valueForMoney`; `sortStrains`,
+  `strainRank` among rated strains, `notRated` for Log entries whose name is no product's, one per name). Nothing new
+  is stored for strains. Screens in `screens/Strainz.tsx`: `/strainz` (Tried | Want to try halves, the Sources cards
+  and search, `.unrated` cards opening `/log/<id>`, *Your Log* to `/log`), `/strainz/<name>` (`.strain-hero`, `Tiles`,
+  `.facts`, its `ProductRow`s; the + opens `/products/new/<name>`, the editor with the Name filled in),
+  `/strainz/<a>/vs/<b>` (`table.vs`, the better figure `.win`, "(better)" for VoiceOver). *Rename:*
+  `POST /api/products/rename-strain` `{ from, to }`: every product (archived and kept ones too) and Log entry with that
+  name; the client marks each product `changing` first (D55) and fetches again. *Want to try:* migration 0022 (`wants`:
+  kind `strain` | `source`, name, `name_key`, note; one per name per list), `server/routes/wants.ts` (GET, POST, DELETE,
+  owner only, 500 per account), `shared/domain/wants.ts` (`validateWantInput`, `wantsTriedBy`, `tickedOffText`). A
+  saved product (create, update, Add to Leaderboard) deletes the wants it ticks off in the same batch
+  (`server/lib/wants.ts` `tickOffWrites`) and answers `tickedOff`; the client shows `TickedOff` (`client/src/wants.tsx`,
+  `.toast.ticked`). Never in a follower route. In Export (`wants`) and Restore (absent: yours stay; the same name twice
+  kept once); Delete account cascades. *The +:* `TabBar` draws `.fab` beside the bar on every screen with it (`add`:
+  label and action; default Add a product), so `.nav` is always `right: 86px`. The Log is no longer a tab: `/log`
+  (Back to Strainz) and its entry pages keep the Strainz tab; no button opens `/log/new` any more (the address works).
+  Return to Log reads *Move to Tried, not rated* and goes back to Strainz. *Tests:* `strainz.spec.ts` (the journey,
+  layout, readability and axe; core set), `test/api/wants.test.ts`, `test/domain/strains.test.ts`.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.81.0 — Strainz, the + everywhere, and the Log folded in (D92)
+- A new **Strainz** tab in the Log's place: every strain you've tried (a product's name) as a card, with your average,
+  how many products and "Tried once"; sort by Best average, Most tried, Recently tried or A–Z; search.
+- A strain's page: your average and its place among your strains, best and lowest, kinds, price per gram, value for
+  money, where it came from, first and last tried, and its products. **Compare** two strains side by side. **Rename** a
+  strain (every product with the name takes the new one; renaming into another strain joins them).
+- **Want to try**: strains on Strainz, sources on Sources (Tried | To try). Private. One leaves its list by itself when
+  you add a product with that name, or from that source, and the app says so.
+- The Log is folded into Strainz: entries you never rated show under *Tried, not rated*; *Your Log* opens it by
+  country. Return to Log now reads *Move to Tried, not rated*. New entries are added as products.
+- **The + is beside the bar on every screen**, so the bar never changes width: Leaderboard adds a product, Strainz a
+  strain to try, Sources a source to try, Feed a post, everywhere else a product (on a strain's page, one with its name).
+- Export, Restore and Delete account include the Want to try lists; the privacy page says so.
 
 ### Notes — the Apple-style redesign, stage C (the Leaderboard colours) is live
 - 0.80.0 (on dev 2026-11-04) went live on 2026-11-04 (release 0.80.0, #205), with no flaky tests; tried by the owner

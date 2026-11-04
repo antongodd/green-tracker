@@ -39,10 +39,10 @@ test.beforeAll(async ({ browser }) => {
   ({ page: fan, name: fanName } = await person(browser, 'fan'));
 });
 
-test('four tabs in a floating bar (D87): Sources third, Feed last, each a quarter of it; the + beside it', async () => {
+test('four tabs in a floating bar (D87; Strainz in the Log’s place, D92): Sources third, Feed last, each a quarter of it; the + beside it', async () => {
   await page.goto('/');
   // Wait for the bar itself: on a busy machine the app is still starting when the page loads (0.36.0 CI).
-  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Log', 'Sources', 'Feed']);
+  await expect(page.locator('.nav .tab-l')).toHaveText(['Leaderboard', 'Strainz', 'Sources', 'Feed']);
   const bar = (await page.locator('.nav').boundingBox())!;
   const fab = (await page.getByRole('button', { name: 'Add a product' }).boundingBox())!;
   expect(bar.x, 'off the left edge').toBeGreaterThanOrEqual(10);
@@ -54,11 +54,12 @@ test('four tabs in a floating bar (D87): Sources third, Feed last, each a quarte
   // Each name fits its tab.
   const clipped = await page.locator('.nav .tab-l').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth || e.getBoundingClientRect().width > e.parentElement!.getBoundingClientRect().width).map((e) => e.textContent));
   expect(clipped).toEqual([]);
-  // Without a + (Sources), the bar takes the width.
-  await page.goto('/sources');
-  await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(/^Sources/);
-  const wide = (await page.locator('.nav').boundingBox())!;
-  expect(wide.width).toBeGreaterThan(bar.width + 60);
+  // D92: Sources (and Settings) have a + too, so the bar keeps its width (it once widened there).
+  for (const path of ['/sources', '/more']) {
+    await page.goto(path);
+    await expect(page.locator('.fab')).toBeVisible();
+    expect((await page.locator('.nav').boundingBox())!.width, path).toBeCloseTo(bar.width, 0);
+  }
 });
 
 test('the old Smokes addresses open the Leaderboard', async () => {
@@ -68,7 +69,7 @@ test('the old Smokes addresses open the Leaderboard', async () => {
   }
 });
 
-for (const [path, label] of [['/', 'Leaderboard'], ['/log', 'Log'], ['/sources', 'Sources'], ['/feed', 'Feed']] as const) {
+for (const [path, label] of [['/', 'Leaderboard'], ['/strainz', 'Strainz'], ['/sources', 'Sources'], ['/feed', 'Feed']] as const) {
   test(`on ${label}: only its tab is solid, green and on a pill; the others are outlines`, async () => {
     await page.goto(path);
     await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(new RegExp(`^${label}`));

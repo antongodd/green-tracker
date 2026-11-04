@@ -40,6 +40,8 @@ import { BrandPage, BrandsList } from './screens/Brands';
 import { Feed } from './screens/Feed';
 import { PostPage } from './screens/PostPage';
 import { Composer } from './screens/Composer';
+import { StrainCompare, StrainPage, StrainzList } from './screens/Strainz';
+import { clearWantsCache, TickedOff } from './wants';
 
 const SIGNED_OUT_PATHS = ['/signin', '/login', '/signup'];
 
@@ -60,6 +62,7 @@ function App() {
           clearProductCache();
           clearPrivacyCache();
           clearEntryCache();
+          clearWantsCache();
           forgetTheirLooks();
         }
         return next;
@@ -151,7 +154,13 @@ function App() {
     const compose = path.match(/^\/feed\/new(?:\/(p|log)\/([^/]+))?$/);
     const preview = path.match(/^\/more\/privacy\/preview(?:\/p\/([^/]+)|\/brands\/([^/]+))?$/);
     const brand = path.match(/^\/brands\/([^/]+)$/); // D59
+    // D92: Strainz, a strain's page, two strains compared, and a new product named after a strain.
+    const strain = path.match(/^\/strainz\/([^/]+)(?:\/vs\/([^/]+))?$/);
+    const named = path.match(/^\/products\/new\/([^/]+)$/);
     if (path === '/products/new') screen = <Editor key="new" id={null} />;
+    else if (named) screen = <Editor key={path} id={null} name={decodeURIComponent(named[1]!)} />;
+    else if (strain?.[2]) screen = <StrainCompare key={path} name={decodeURIComponent(strain[1]!)} other={decodeURIComponent(strain[2])} />;
+    else if (strain) screen = <StrainPage key={path} name={decodeURIComponent(strain[1]!)} />;
     else if (postPage) screen = <PostPage key={path} id={decodeURIComponent(postPage[1]!)} />;
     else if (compose) screen = <Composer key={path} product={compose[1] === 'p' ? decodeURIComponent(compose[2]!) : undefined} entry={compose[1] === 'log' ? decodeURIComponent(compose[2]!) : undefined} />;
     else if (preview?.[1]) screen = <SharedProfile key={path} username={me.user!.username} id={decodeURIComponent(preview[1])} preview />;
@@ -170,7 +179,10 @@ function App() {
     else if (product) screen = <Profile key={product[1]} id={decodeURIComponent(product[1]!)} />;
     else
       switch (path) {
-        case '/log':
+        case '/strainz': // D92: in the Log's place in the tab bar
+          screen = <StrainzList />;
+          break;
+        case '/log': // its screens stay, reached from Strainz
           screen = <Log />;
           break;
         case '/people':
@@ -258,6 +270,7 @@ render(
     <Backdrop />
     <App />
     <OfflineBanner />
+    <TickedOff />
     {ticksSupported() && <TickSwitch />}
   </>,
   document.getElementById('app')!,

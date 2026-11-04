@@ -168,7 +168,7 @@ function topProduct(): string | null | undefined {
  * Cancel asks first (Keep editing / Discard). Since 0.69.2 every product does once anything has
  * changed, on Cancel and on a swipe back (useKeepEditing).
  */
-export function Editor(p: { id: string | null; promoteFrom?: string }) {
+export function Editor(p: { id: string | null; promoteFrom?: string; name?: string }) {
   const main = useCurrency();
   const existing = p.id ? cachedProduct(p.id) : undefined;
   const [promotion] = useState(() => (p.promoteFrom ? takePromotion(p.promoteFrom) : null));
@@ -182,7 +182,8 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
           : null
         : p.promoteFrom
           ? null
-          : toForm({ ...emptyProductInput(), dateTried: todayIso() }, {}, main),
+          : // D92: from a strain's page, the + opens it with the strain's name.
+            toForm({ ...emptyProductInput(), name: p.name ?? '', dateTried: todayIso() }, {}, main),
   );
   // D81: the examples in the empty Name and Source boxes, picked at random each time the editor opens.
   const [examples] = useState(() => ({ name: nameExample(), source: sourceExample() }));
@@ -360,7 +361,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string }) {
       if (p.id) back(`/products/${product.id}`);
       else if (p.promoteFrom) {
         // The entry is gone: drop its editor from history, then open the new product.
-        replaceHistory('/log');
+        replaceHistory('/strainz');
         navigate(`/products/${product.id}`);
       }
       else navigate(`/products/${product.id}`, { replace: true });

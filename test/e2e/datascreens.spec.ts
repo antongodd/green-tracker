@@ -69,7 +69,7 @@ test('Export: a glowing icon, what’s in the file, and a progress bar while pho
   await expect(page.getByRole('heading', { level: 1, name: 'Your data, in one file' })).toBeVisible();
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   const card = page.getByRole('region', { name: 'In the file' });
-  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', /^Every photo/, /^Your posts\s*not the comments or 🔥 on them$/, 'Your privacy and appearance settings']);
+  await expect(card.locator('li.yes')).toHaveText([/^Every product/, 'Your whole Log', 'Your Want to try lists', /^Every photo/, /^Your posts\s*not the comments or 🔥 on them$/, 'Your privacy and appearance settings']);
   await expect(card).not.toContainText(/smoke/i);
   await expect(card.locator('li.not')).toContainText('Not included: who you follow');
   await expect(page.locator('.data-note')).toContainText('Save to Files');
@@ -100,7 +100,7 @@ test('Restore: the file as tiles, a different file, and a progress bar while pho
   await page.goto('/more/restore');
   await expect(page.getByRole('heading', { level: 1, name: 'Restore from a file' })).toBeVisible();
   await expect(page.locator('.data-hero p')).toHaveText(
-    'Replaces your products, Log, photos and posts (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.',
+    'Replaces your products, Log, photos, posts and Want to try lists (if the file has them) with an export file. Your email, password, passkeys and followers stay as they are.',
   );
   await expect(page.locator('.data-mark.teal svg')).toBeVisible();
   await expect(page.getByRole('region', { name: 'File contents' })).toHaveCount(0);

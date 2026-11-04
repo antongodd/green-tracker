@@ -7,7 +7,7 @@ import { InviteButton } from '../components/InviteButton';
 import { MeButton } from '../components/MeButton';
 import { PostCard } from '../components/PostCard';
 import { Skeleton } from '../components/Skeleton';
-import { PeopleIcon, PlusIcon } from '../icons';
+import { PeopleIcon } from '../icons';
 import * as posts from '../posts';
 import { cameFrom, linkTo, navigate } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
@@ -229,10 +229,7 @@ export function Feed() {
           </p>
         )}
       </main>
-      <button class="fab" aria-label="New post" onClick={() => navigate('/feed/new')}>
-        <PlusIcon />
-      </button>
-      <TabBar active="feed" />
+      <TabBar active="feed" add={{ label: 'New post', onAdd: () => navigate('/feed/new') }} />
     </>
   );
 }
