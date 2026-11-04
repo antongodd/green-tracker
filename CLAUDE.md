@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D88 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D89 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -147,7 +147,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D89) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D90) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -171,7 +171,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D88.
+- Reopen any decision D1–D89.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -277,6 +277,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Website photos (D88): `site/public/media/nugs/<strain>-s|l.webp`, made from Anton's cut-outs and re-encoded so they
   carry only the picture (`website.spec.ts` reads each file's chunks). A new one: the same way (PIL, WebP, no
   `exif`/`icc_profile`), never a straight copy of a photo. Never put anyone else's photos or names on the site.
+- Website overhaul (D89): the site uses Apple's fonts and downloads none (`website.spec.ts` checks `document.fonts` is
+  empty); Chromium draws a stand-in, so judge the family named, never the look. The footer's account link is **Create
+  an account** (not "Sign up": the top bar's Sign up is found by that exact name). The privacy promises must stay true:
+  change them with the app (D45, D77, D80, D84).
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -374,7 +378,7 @@ section, so it must always be current.
 
 - **Live:** 0.77.1 (2026-11-04): everything up to the website's overhaul so far (item 15) and the app's Apple-style
   redesign, stage A (item 16).
-- **Dev:** 0.77.1, the same as live.
+- **Dev:** 0.78.0 (2026-11-04): the website's full overhaul (to-do item 15), waiting for Anton's "go live".
 
 ### To-do list (suggested order; Anton decides)
 
@@ -414,7 +418,9 @@ Each is a job for its own conversation; the summary lists what each covers.
    full overhaul** from the ui-ux-pro-max review (2026-11-04): Anton chose Apple's fonts to match the app, no reviews
    until there are real ones; the plan is the hero with the phone in view (redrawn as the new app), Rate the stack
    earlier, a tighter story with drawn icons (no emoji), a "Your stash is your business" privacy block, one set of
-   install steps, a proper footer, a laptop pass with hover states. Next: iPhone mockups, then "go ahead".
+   install steps, a proper footer, a laptop pass with hover states. Mockups
+   https://claude.ai/artifact/2DGUNvwmsikqQq25xS5y2T, "go ahead" (2026-11-04): **on dev** in 0.78.0 (2026-11-04),
+   D89. Waiting for "go live".
 16. **The Apple-style redesign of the app** (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
    a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
    each with its own mockups:
