@@ -104,7 +104,7 @@ test('it becomes a Log entry: its page opens, with what it keeps; it’s off the
   // Back goes to Strainz (D92), where it's under Tried, not rated, and still in the Log.
   await page.locator('.hdr').getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/strainz$/);
-  await expect(page.locator('.unrated .nm')).toHaveText(['Zkittlez']);
+  await expect(page.getByRole('list', { name: 'Tried, not rated', exact: true }).locator('.pk-n')).toHaveText(['Zkittlez']);
   await page.goto('/log');
   await expect(page.locator('.lrow', { hasText: 'Zkittlez' })).toBeVisible();
   await page.goto('/');

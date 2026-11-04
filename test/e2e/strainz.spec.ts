@@ -66,45 +66,84 @@ test('the tab bar: Strainz in the Log’s place; the + beside the bar on every s
   });
 });
 
-test('Strainz: a card per strain (the name, capitals ignored; Cookies Zkittlez another), sorted four ways', async () => {
+/** The names on a shelf, in order. */
+const shelf = (title: string) => page.getByRole('list', { name: title, exact: true }).locator('.pk-n');
+
+test('Strainz (D93, shelves): your favourite on top, then Your favourites, Most tried, Recently tried, Tried, not rated', async () => {
   await page.goto('/strainz');
-  await expect(page.getByRole('tab', { name: /Tried/ })).toHaveAttribute('aria-selected', 'true');
-  await expect(cards()).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
+  await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
+  await expect(page.locator('.fav-card .fav-m')).toHaveText('9.5 average · 3 strains tried');
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Recently tried', 'Tried, not rated']); // no Want to try yet: hidden
+  await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
+  await expect(shelf('Most tried')).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
+  await expect(shelf('Recently tried')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Gelato 41']);
+  // The Log entry you never rated; the one named like a product isn't there.
+  await expect(shelf('Tried, not rated')).toHaveText(['Amnesia Haze']);
+  const z = page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: 'Zkittlez, average 8.0, 3 tried' });
+  await expect(z.locator('.sring-v')).toHaveText('8.0');
+  await expect(page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: /^Cookies Zkittlez/ }).locator('.pk-m')).toHaveText('Tried once');
+  // The ring fills to the average out of 10.
+  const filled = await z.locator('circle.fill').evaluate((c) => {
+    const [on, all] = c.getAttribute('stroke-dasharray')!.split(' ').map(Number);
+    return on! / all!;
+  });
+  expect(filled).toBeCloseTo(0.8, 2);
+  // A shelf scrolls sideways inside itself; the page never does.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await shot(page, 'strainz-shelves');
+  expect(await axe()).toEqual([]);
+  expect(await wholeScreenContrastFailures(page, '/strainz', '.fav-k, .fav-n, .fav-m, .shelf h2, .shelf-h a, .pk-n, .pk-m, .sring-v')).toEqual([]);
+});
+
+test('the shelves are readable in the light look (Daylight) too', async () => {
+  await call('PUT', '/api/appearance', { look: 'daysky', top: 'strip', preset: 'aurora', markFirst: false });
+  try {
+    await page.goto('/strainz');
+    await expect(page.locator('html')).toHaveAttribute('data-tone', 'light');
+    await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
+    expect(await axe()).toEqual([]);
+    expect(await wholeScreenContrastFailures(page, '/strainz', '.fav-k, .fav-n, .fav-m, .shelf h2, .shelf-h a, .pk-n, .pk-m, .sring-v')).toEqual([]);
+  } finally {
+    await call('PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: false });
+    await page.evaluate(() => localStorage.setItem('gt.look', 'aurora'));
+  }
+});
+
+test('See all: a shelf’s whole list as cards, with search and the four sorts', async () => {
+  await page.goto('/strainz');
+  await page.getByRole('link', { name: 'See all: Most tried' }).click();
+  await expect(page).toHaveURL(/\/strainz\/list\/tried$/);
+  await expect(page.locator('.hdr .title')).toHaveText(/Most tried/);
+  await expect(page.getByRole('button', { name: 'Most tried' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(cards()).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
   const card = (name: string) => page.locator('.scard', { has: page.locator('.nm', { hasText: new RegExp(`^${name}$`) }) });
   await expect(card('Zkittlez').locator('.avg')).toHaveText('Average 8.0');
   await expect(card('Zkittlez').locator('.sub')).toHaveText('3 products · Indica');
   await expect(card('Cookies Zkittlez').locator('.role.once')).toHaveText('Tried once');
-  await expect(card('Zkittlez').locator('.role.once')).toHaveCount(0);
-  await expect(page.locator('.strainz-lead')).toHaveText('3 strains · your favourite Cookies Zkittlez');
-  await page.getByRole('button', { name: 'Most tried' }).click();
-  await expect(cards()).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
   await page.getByRole('button', { name: 'Recently tried' }).click();
   await expect(cards()).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Gelato 41']);
   await page.getByRole('button', { name: 'A–Z' }).click();
   await expect(cards()).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
   await page.getByLabel('Search strains').fill('zkit');
   await expect(cards()).toHaveText(['Cookies Zkittlez', 'Zkittlez']);
-  await page.getByLabel('Search strains').fill('');
-  await page.getByRole('button', { name: 'Best average' }).click();
-  // The Log entry you never rated, under its own heading; the one named like a product isn't there.
-  const unrated = page.locator('.unrated');
-  await expect(unrated.locator('.group-h')).toHaveText(/Tried, not rated\s*1/);
-  await expect(unrated.locator('.nm')).toHaveText(['Amnesia Haze']);
-  await shot(page, 'strainz-list');
   expect(await axe()).toEqual([]);
-  expect(await wholeScreenContrastFailures(page, '/strainz', '.scard .nm, .scard .avg, .scard .sub, .role, .pill, .seg button, .strainz-lead, .group-h .gname, .group-h .n, .ll-t, .log-link .small')).toEqual([]);
-  // Your Log, by country, is still there.
-  await page.getByRole('link', { name: /Your Log/ }).click();
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/strainz$/);
+  // Your favourites' See all also lists the entries you never rated.
+  await page.getByRole('link', { name: 'See all: Your favourites' }).click();
+  await expect(cards()).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
+  await expect(page.locator('.unrated .nm')).toHaveText(['Amnesia Haze']);
+  // Tried, not rated's own link opens the Log, by country.
+  await page.goto('/strainz');
+  await page.getByRole('link', { name: 'Your Log: Tried, not rated' }).click();
   await expect(page).toHaveURL(/\/log$/);
   await expect(page.locator('.nav .tab[aria-current="page"]')).toHaveText(/^Strainz/);
   await expect(page.locator('.lrow .name')).toContainText(['Amnesia Haze']);
-  await page.getByRole('link', { name: 'Back' }).click();
-  await expect(page).toHaveURL(/\/strainz$/);
 });
 
 test('a strain’s page: average, place, best and lowest, kinds, price, sources, days, its products; + adds one with its name', async () => {
   await page.goto('/strainz');
-  await page.locator('.scard', { hasText: /^.*Zkittlez.*3 products/ }).click();
+  await page.getByRole('list', { name: 'Most tried', exact: true }).getByRole('link', { name: /^Zkittlez,/ }).click();
   await expect(page).toHaveURL(/\/strainz\/Zkittlez$/);
   await expect(page.locator('.sh-name')).toHaveText('Zkittlez');
   await expect(page.locator('.strain-place')).toHaveText('#3 of your 3 rated strains.');
@@ -157,13 +196,17 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   expect(await axe()).toEqual([]);
   await sheet.getByRole('button', { name: 'Add' }).click();
   await expect(sheet).toBeHidden();
-  await expect(page.getByRole('tab', { name: /Want to try/ })).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByRole('tab', { name: /Want to try/ })).toHaveText(/Want to try\s*1/);
+  // A Want to try shelf appears, between Most tried and Recently tried, with Add one at its end.
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Want to try', 'Recently tried', 'Tried, not rated']);
+  await expect(shelf('Want to try')).toHaveText(['Runtz', 'Add one']);
+  // See all: the whole list, with its notes.
+  await page.getByRole('link', { name: 'See all: Want to try' }).click();
+  await expect(page).toHaveURL(/\/strainz\/list\/want$/);
   await expect(page.locator('.wants .w-name')).toHaveText(['Runtz']);
   await expect(page.locator('.wants .w-note')).toHaveText(['Heard about it from Drew']);
   await shot(page, 'strainz-want-list');
   expect(await axe()).toEqual([]);
-  expect(await contrastFailures(page, await textBoxes(page, '.w-name, .w-note, .wants .btn, .footnote, .seg button'))).toEqual([]);
+  expect(await contrastFailures(page, await textBoxes(page, '.w-name, .w-note, .wants .btn, .footnote'))).toEqual([]);
   // The same name again: said plainly.
   await page.goto('/strainz'); // textBoxes hid the words it measured
   await page.getByRole('button', { name: 'Add a strain to try' }).click();
@@ -177,20 +220,20 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('.toast.ticked')).toHaveText('You tried Runtz! It’s off your Want to try list.');
   await page.goto('/strainz');
-  await expect(page.getByRole('tab', { name: /Want to try/ })).toHaveText(/Want to try\s*0/);
-  await page.getByRole('tab', { name: /Want to try/ }).click();
-  await expect(page.getByRole('heading', { name: 'No strains to try yet' })).toBeVisible();
+  await expect(shelf('Your favourites')).toContainText(['Runtz']);
+  await expect(page.locator('.shelf h2')).not.toContainText(['Want to try']);
 });
 
-test('Remove takes one off the list', async () => {
-  await call('POST', '/api/wants', { kind: 'strain', name: 'Apple Fritter' });
+test('a strain on the Want to try shelf: tap it for its note and Remove', async () => {
+  await call('POST', '/api/wants', { kind: 'strain', name: 'Apple Fritter', note: 'Kush Co sometimes has it' });
   await page.goto('/strainz');
-  await page.getByRole('tab', { name: /Want to try/ }).click();
-  await expect(page.locator('.wants .w-name')).toHaveText(['Apple Fritter']);
-  await page.getByRole('button', { name: 'Remove Apple Fritter' }).click();
-  await expect(page.getByRole('heading', { name: 'No strains to try yet' })).toBeVisible();
+  await page.getByRole('button', { name: 'Apple Fritter, on your Want to try list' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Apple Fritter' });
+  await expect(sheet).toContainText('Kush Co sometimes has it');
+  expect(await axe()).toEqual([]);
+  await sheet.getByRole('button', { name: 'Remove from list' }).click();
+  await expect(page.locator('.shelf h2')).not.toContainText(['Want to try']);
   expect((await call('GET', '/api/wants')).wants).toEqual([]);
-  await page.getByRole('tab', { name: /Tried/ }).click();
 });
 
 test('Sources to try: the + adds a source; a product bought there ticks it off', async () => {
@@ -223,7 +266,7 @@ test('Rename: every product with the name takes the new one; renaming into anoth
   await expect(page).toHaveURL(/\/strainz\/Zkittlez$/);
   await expect(page.locator('.tile', { hasText: 'Products' }).locator('b')).toHaveText('5');
   await page.goto('/strainz');
-  await expect(cards()).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Runtz', 'Wedding Cake']);
+  await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Runtz', 'Wedding Cake']);
 });
 
 test('a product moved to Tried, not rated shows there, and Back from it goes to Strainz', async () => {
@@ -235,5 +278,5 @@ test('a product moved to Tried, not rated shows there, and Back from it goes to 
   await expect(page).toHaveURL(/\/log\/[^/]+$/);
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/strainz$/);
-  await expect(page.locator('.unrated .nm')).toHaveText(['Blue Dream', 'Amnesia Haze']);
+  await expect(shelf('Tried, not rated')).toHaveText(['Blue Dream', 'Amnesia Haze']);
 });

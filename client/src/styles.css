@@ -2424,3 +2424,36 @@ table.vs tbody td:last-child { text-align: right; }
 table.vs .win { color: var(--accent-bright); }
 /* A want ticked off: a short message over the screen you land on. */
 .toast.ticked { width: max-content; max-width: calc(100% - 32px); border-radius: 16px; text-align: center; line-height: 1.4; border-color: var(--accent); }
+
+/* ---------- Strainz as shelves (D93) ---------- */
+.shelves { display: grid; gap: 22px; max-width: 720px; margin: 0 auto; padding-top: 4px; }
+.fav-card { display: flex; gap: 14px; align-items: center; margin: 0 16px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--card-edge); color: var(--text); text-decoration: none;
+  background: linear-gradient(120deg, var(--accent-soft), color-mix(in srgb, var(--violet) 14%, transparent)), var(--glass); }
+.fav-t { display: grid; gap: 2px; min-width: 0; }
+.fav-k { font-size: 13px; color: var(--text-2); }
+.fav-n { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.fav-m { font-size: 13px; color: var(--text-2); }
+.shelf-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 20px; }
+.shelf-h h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+.shelf-h a { display: flex; align-items: center; min-height: 44px; color: var(--accent-bright); font-size: 15px; text-decoration: none; flex: none; }
+.rail { list-style: none; margin: 0; padding: 2px 20px 4px; display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 20px; scrollbar-width: none; overscroll-behavior-x: contain; }
+.rail::-webkit-scrollbar { display: none; }
+.pick { flex: none; width: 100px; scroll-snap-align: start; }
+.pick > :is(a, button) { display: grid; justify-items: center; gap: 4px; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: var(--text); text-align: center; text-decoration: none; }
+.sring { position: relative; display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; }
+.sring > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.sring circle { fill: none; stroke-width: 5; }
+.sring .track { stroke: var(--hairline-strong); }
+.sring .fill { stroke: var(--accent-bright); stroke-linecap: round; }
+.sring-ph { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; overflow: hidden; color: var(--accent-bright);
+  background: radial-gradient(50% 60% at 50% 45%, rgba(88, 224, 140, 0.22), transparent 70%), var(--surface-2); }
+.sring-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sring-ph.cut img { object-fit: contain; }
+.sring-ph svg { width: 30px; height: 30px; }
+.sring-v { position: absolute; right: -4px; bottom: 0; padding: 2px 7px; border-radius: 999px; background: var(--surface-1); border: 1px solid var(--accent); color: var(--accent-bright); font-family: var(--num-font); font-size: 14px; font-weight: 700; line-height: 1.2; }
+.sring.big { width: 72px; height: 72px; flex: none; }
+.sring.big .sring-ph { width: 56px; height: 56px; }
+.sring.big .sring-v { font-size: 12px; right: -8px; }
+.sring.dash { border: 1.5px dashed var(--hairline-strong); color: var(--text-2); font-size: 26px; font-weight: 300; }
+.pk-n { font-size: 14px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.pk-m { font-size: 12px; color: var(--text-2); }
