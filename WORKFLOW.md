@@ -5,7 +5,7 @@ A one-page guide to working with Claude on Green Tracker. You just talk normally
 
 ## Every conversation starts the same way
 
-Claude reads you the **to-do list**, tells you if **another conversation** seems to be working on something, and
+Claude reads you the open ideas from **GT Ideas** (your to-do list), tells you if **another conversation** seems to be working on something, and
 mentions anything on GT Dev **waiting for your "go live"**. Then it gets on with what you asked.
 
 ## Small or big?
@@ -53,6 +53,20 @@ Ask for "the review panel" any time. Five reviewers (Sam, the everyday user, cou
 developer, a marketing pro and a sceptic) look at the app and the website, and you get one page to read on your
 phone, with a to-do list split into jobs, each for its own conversation.
 
+## GT Ideas: your ideas and changes
+
+Your to-do list is a private page, **GT Ideas**: https://claude.ai/artifact/7rizQA13SW585icpjHgDBx (add it to your
+iPhone's Home Screen from Safari's Share menu, or pin it in the Claude app). It looks like the app:
+
+1. **Ideas.** Tap **+** whenever something comes to you, even while Claude is busy on something else: a name, what
+   you want, where in the app, how much you want it, and a screenshot if it helps. Nothing clashes, because it isn't
+   in the code. Claude adds its take (small or big, what else it touches, any questions) next time you talk.
+2. **In progress.** When you say "take #26", the idea moves here and you can follow it: Talking, Building, On GT
+   Dev, Live, with the conversation's Job number.
+3. **Changes.** Everything that's gone live, with its version and date, newest first.
+
+Ideas Claude spots itself are marked **From Claude** and wait for your say-so.
+
 ## If something on live breaks
 
 Tell Claude what you see (a screenshot helps). It **puts the previous version back first**, so the app works again
@@ -76,6 +90,7 @@ the other.
 |---|---|
 | "go ahead" | A big change's plan is approved: Claude builds it and puts it on GT Dev |
 | "go live" | What's on GT Dev goes to the live app |
-| "what's on the to-do list?" | Claude reads it to you |
-| "add X to the to-do list" | It goes on the list, in a quick notes-only update |
+| "what's on the to-do list?" | Claude reads you the open ideas from GT Ideas |
+| "add X to the to-do list" | Claude adds it to GT Ideas (or add it yourself with the +) |
+| "take #26" | Claude starts on that idea from GT Ideas, as a small or big change |
 | "live is broken" | Claude puts the previous version back, then fixes it |

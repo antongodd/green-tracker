@@ -2016,6 +2016,14 @@ None.
 
 ## 6. Changelog
 
+### Notes — GT Ideas, the to-do list outside the code
+- The to-do list moved from CLAUDE.md to GT Ideas (https://claude.ai/artifact/7rizQA13SW585icpjHgDBx), a private
+  claude.ai page in the app's look with its own small database: Ideas (Anton adds them any time, with where in the app,
+  how much he wants it and a screenshot), In progress (talking, building, on GT Dev, live, with the Job number) and
+  Changes (the Done table, one row per item that went live). Two conversations no longer clash over the list. The new
+  `ideas` recipe says how Claude reads and moves the ideas; `start`, `small-change`, `big-change`, `go-live`,
+  `review-panel` and WORKFLOW.md follow it. The page's source is `design/gt-ideas.html`. Nothing in the app changes.
+
 ### Notes — Strainz is live
 - 0.81.0 and 0.81.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.81.1, #209). Auto-merge merged the release
   on the dev push run's "test" before its own full browser run had finished; that run then passed on every machine.

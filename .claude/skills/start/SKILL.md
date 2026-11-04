@@ -1,6 +1,6 @@
 ---
 name: start
-description: Start of every Green Tracker conversation, before any other work, whatever Anton asks first. Reads the to-do list to Anton, checks for work another conversation has in progress, and says what's next.
+description: Start of every Green Tracker conversation, before any other work, whatever Anton asks first. Reads the open ideas in GT Ideas (the to-do list) to Anton, checks for work another conversation has in progress, and says what's next.
 ---
 
 # Start a conversation
@@ -16,16 +16,17 @@ CLAUDE.md is the rule book; this is the routine for the first few minutes. Do it
    - `claude/*` branches pushed in the last day that have no pull request yet;
    - CI runs still in progress on `dev` or `main`.
    Anything there is probably another conversation's work. Note what it touches (which screens, the version, a
-   decision number, CLAUDE.md's to-do list). An open pull request more than a few days old (#88, #93, #96 and the like) is
+   decision number, which ideas in GT Ideas are in progress). An open pull request more than a few days old (#88, #93, #96 and the like) is
    not yours to handle (Anton, 2026-11-02): leave it alone, don't ask about it, never close or merge it.
 4. **Where things stand:** compare CLAUDE.md's Live / Dev lines with what's really on `main` and `dev`
    (`package.json` version on each, `git log origin/main..origin/dev`). If they disagree, say so and fix the notes in
    your next pull request.
 5. **Tell Anton**, in plain words, short:
-   - the to-do list (each item and its "Next:");
+   - the open ideas in GT Ideas (recipe **ideas**: list both collections): new ones first, then what's in progress;
+     the `later` ones only as a count unless he asks. Write your take on any idea that has none;
    - anything another conversation seems to be doing, and whether it could overlap with what he's asked for;
    - anything on dev waiting for his "go live".
 6. Then do what he asked, choosing the recipe: **small-change**, **big-change**, **go-live**, **undo-live**,
-   **new-look**. Say whether it's small or big (CLAUDE.md, "Small or big?").
+   **new-look**; "take #N" means that idea in GT Ideas (**ideas**: mark it taken first). Say whether it's small or big (CLAUDE.md, "Small or big?").
 
 If Anton's first message is only a question, answer it after step 5; you don't need to start a change.
