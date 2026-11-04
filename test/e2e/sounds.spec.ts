@@ -96,8 +96,10 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   // Saving to the Log, then deleting the entry.
   // D92: no button leads to a new Log entry any more; its address still opens one (in the app, no reload).
   await page.evaluate(() => {
-    history.pushState({ depth: 1 }, '', '/log/new');
-    dispatchEvent(new PopStateEvent('popstate'));
+    for (const [depth, path] of [[1, '/log'], [2, '/log/new']] as const) {
+      history.pushState({ depth }, '', path);
+      dispatchEvent(new PopStateEvent('popstate'));
+    }
   });
   await page.getByLabel('Name').fill('Sour Diesel');
   await page.getByRole('button', { name: 'Save to Log' }).click();

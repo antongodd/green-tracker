@@ -361,7 +361,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string; name?: stri
       if (p.id) back(`/products/${product.id}`);
       else if (p.promoteFrom) {
         // The entry is gone: drop its editor from history, then open the new product.
-        replaceHistory('/strainz');
+        replaceHistory('/log');
         navigate(`/products/${product.id}`);
       }
       else navigate(`/products/${product.id}`, { replace: true });
