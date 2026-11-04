@@ -221,7 +221,6 @@ h3 { margin-top: 4px; font-family: var(--body); font-size: 18px; font-weight: 80
 .lk[aria-pressed="true"] .sw { transform: scale(1.08); box-shadow: 0 0 0 2px var(--text), 0 10px 26px rgba(0, 0, 0, 0.5); }
 .sw-aurora { background: radial-gradient(70% 70% at 20% 20%, #58e08c, transparent 70%), radial-gradient(70% 70% at 90% 80%, #40c4c4, transparent 70%), radial-gradient(60% 60% at 80% 10%, #8b7bff, transparent 70%), #03070a; }
 .sw-neon { background: radial-gradient(70% 70% at 20% 20%, #b06bff, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ff5ab4, transparent 70%), radial-gradient(60% 60% at 80% 10%, #3fdcf0, transparent 70%), #06041a; }
-.sw-pearl { background: radial-gradient(70% 70% at 20% 20%, #ffc6dc, transparent 70%), radial-gradient(70% 70% at 90% 80%, #a6f0c1, transparent 70%), radial-gradient(60% 60% at 80% 10%, #9fdcff, transparent 70%), #08080c; }
 .sw-forest { background: radial-gradient(70% 70% at 20% 20%, #3fa866, transparent 70%), radial-gradient(70% 70% at 90% 80%, #1f6b45, transparent 70%), radial-gradient(60% 60% at 80% 10%, #7fc896, transparent 70%), #050807; }
 .sw-sakura { background: radial-gradient(70% 70% at 20% 20%, #f58cba, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ffb3d3, transparent 70%), radial-gradient(60% 60% at 80% 10%, #b48cff, transparent 70%), #130a13; }
 .sw-fireflies { background: radial-gradient(70% 70% at 20% 20%, #b6e85a, transparent 70%), radial-gradient(70% 70% at 90% 80%, #2f8a6a, transparent 70%), radial-gradient(60% 60% at 80% 10%, #d4f78a, transparent 70%), #040b0b; }
@@ -230,9 +229,6 @@ h3 { margin-top: 4px; font-family: var(--body); font-size: 18px; font-weight: 80
 .sw-nebula { background: radial-gradient(70% 70% at 20% 20%, #a99bff, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ff8ad8, transparent 70%), radial-gradient(60% 60% at 80% 10%, #5a7bff, transparent 70%), #05040c; }
 .sw-outrun { background: radial-gradient(70% 70% at 20% 20%, #3fdcf0, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ff4fd8, transparent 70%), radial-gradient(60% 60% at 80% 10%, #8b4fff, transparent 70%), #0a0420; }
 .sw-lava { background: radial-gradient(70% 70% at 20% 20%, #ffa94d, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ff5a6e, transparent 70%), radial-gradient(60% 60% at 80% 10%, #ffd166, transparent 70%), #12060c; }
-.sw-haze { background: radial-gradient(70% 70% at 20% 20%, #8fd8ae, transparent 70%), radial-gradient(70% 70% at 90% 80%, #b8a8d8, transparent 70%), radial-gradient(60% 60% at 80% 10%, #d8c8a8, transparent 70%), #0c0b10; }
-.sw-daymint { background: radial-gradient(70% 70% at 20% 20%, #7fd8a8, transparent 70%), radial-gradient(70% 70% at 90% 80%, #b8ead0, transparent 70%), #eef4f0; }
-.sw-daypearl { background: radial-gradient(70% 70% at 20% 20%, #ffc6dc, transparent 70%), radial-gradient(70% 70% at 90% 80%, #c6e6ff, transparent 70%), #f5f4f8; }
 .sw-daysky { background: radial-gradient(70% 70% at 20% 20%, #8fc4f5, transparent 70%), radial-gradient(70% 70% at 90% 80%, #ffd6a0, transparent 70%), #eef3fa; }
 
 /* D86: Rate the stack. A deck of made-up products: drag the top card and its score changes as it moves (it takes

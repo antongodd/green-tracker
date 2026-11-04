@@ -1966,6 +1966,17 @@ None.
 
 ## 6. Changelog
 
+### 0.79.1 — the website's Looks row shows the eleven Looks
+- The website's "Fifteen Looks. Pick yours." row still listed the four Looks that went in 0.79.0 (Holo Pearl, Haze,
+  Daylight Mint, Daylight Pearl). It's now "Eleven Looks. Pick yours.", in the app's order, with the app's names and
+  descriptions (Daylight in place of Daylight Sky). Website only.
+- Tests: `country.spec.ts` › "the list opens under the box…" measured the box before it had moved up (a frame after
+  the list opens) and was flaky in 0.79.0's release run; it now waits for the move.
+
+### Notes — the Apple-style redesign, stage B (the Looks) is live
+- 0.79.0 (on dev 2026-11-04) went live on 2026-11-04 (release 0.79.0, #200) and moves to Done. One flaky test in the
+  release run (`country.spec.ts`), fixed in 0.79.1.
+
 ### 0.79.0 — the Apple-style redesign, stage B: the Looks (D90)
 - Every Look's background glides smoothly now, with little details of its own: Sakura's swaying branch and falling
   petals, Nebula's shooting stars, Aurora Glass's northern lights, Deep Forest's sunbeams and fog, Deep Sea's bubbles
