@@ -2033,6 +2033,10 @@ None.
 
 ## 6. Changelog
 
+### Notes — No dark band behind Rank and Type is live
+- 0.83.1 (on dev 2026-11-06) went live on 2026-11-06 (release #221). Its full run listed one flaky test,
+  `friendstrainz.spec.ts` "the switch: off until turned on…" (passed on its retry): to fix in the next change. Notes only.
+
 ### 0.83.1 — No dark band behind Rank and Type at the top
 - The row with Rank, the colours button and Type (the Leaderboard, the Log, a friend's board) had a see-through dark
   strip behind it all the time, so at the starting position it ran like a band across the Look under the clear large
