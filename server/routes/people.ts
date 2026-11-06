@@ -11,6 +11,10 @@ import { loadAppearance } from '../lib/appearance';
 import { serveImage } from '../lib/photos';
 import { load } from './products';
 import { compareBoards, yoursByKey, yoursFor } from '../../shared/domain/compare';
+import { compareStrains, kindLabel } from '../../shared/domain/strains';
+import { nameKey, usedNames } from '../../shared/domain/names';
+import { overall } from '../../shared/domain/ratings';
+import { loadWants } from './wants';
 
 // People (brief §5). Following is one-way and needs approval; blocks remove follows
 // both ways and hide the blocker. Nothing about another person is ever returned
@@ -243,6 +247,55 @@ people.get('/u/:username/compare', async (c) => {
   const { them, products, appearance, privacy } = await sharedFor(c);
   const comparison = compareBoards(await yourBoard(c), products, privacy.shareSource);
   return c.json({ person: await card(c, them, 'following'), appearance, comparison });
+});
+
+// Friends on Strainz (D94) -----------------------------------------------------
+
+/**
+ * Their Strainz page: your strains against what they share with you (both tried, only them), worked out here for you
+ * only; and their Want to try lists (names only, never the notes) when they've switched them on.
+ */
+people.get('/u/:username/strainz', async (c) => {
+  const { them, products, appearance, privacy } = await sharedFor(c);
+  const mine = await yourBoard(c);
+  const comparison = compareStrains(mine, products);
+  let wants: { kind: 'strain' | 'source'; name: string; tried: boolean }[] | null = null;
+  if (privacy.shareWants) {
+    const myStrains = new Set(mine.map((p) => nameKey(p.name)));
+    const mySources = new Set(usedNames(mine).map((n) => n.key));
+    wants = (await loadWants(c.env.DB, them.id)).map((w) => ({ kind: w.kind, name: w.name, tried: (w.kind === 'strain' ? myStrains : mySources).has(nameKey(w.name)) }));
+  }
+  return c.json({ person: await card(c, them, 'following'), appearance, comparison, wants });
+});
+
+/**
+ * Friends who've tried a strain (D94): every product with that name that the people you follow share with you (their
+ * Leaderboard switch, never Private, archived or kept ones, through the same allow-list as their board), best first.
+ */
+people.get('/strain-friends', async (c) => {
+  const me = c.var.user!.id;
+  const name = c.req.query('name') ?? '';
+  const key = nameKey(name);
+  if (!key || name.length > 200) fail(400, 'bad_request', 'The request couldn’t be read.');
+  const db = c.env.DB;
+  const { results: following } = await db
+    .prepare(
+      `SELECT u.id, u.username FROM follows f JOIN users u ON u.id = f.followed_id WHERE f.follower_id = ?1 AND f.status = 'approved'
+         AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.blocker_id = ?1 AND b.blocked_id = u.id) OR (b.blocker_id = u.id AND b.blocked_id = ?1))`,
+    )
+    .bind(me)
+    .all<UserRef>();
+  const friends = [];
+  for (const them of following) {
+    const privacy = await loadEffectivePrivacy(db, them.id);
+    if (!privacy.shareBoard) continue;
+    const shared = shareProducts(await load(db, them.id, { archived: false }), privacy).filter((p) => nameKey(p.name) === key);
+    if (!shared.length) continue;
+    const person = await card(c, them, 'following');
+    for (const p of shared) friends.push({ person, productId: p.id, score: overall(p.productType, p.ratings), kind: kindLabel(p), source: p.source });
+  }
+  friends.sort((a, b) => (a.score === b.score ? a.person.username.localeCompare(b.person.username) : a.score === null ? 1 : b.score === null ? -1 : b.score - a.score));
+  return c.json({ friends });
 });
 
 // Their profile photo (D23) -----------------------------------------------------

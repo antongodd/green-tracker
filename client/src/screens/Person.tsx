@@ -34,6 +34,8 @@ import { loadOthersView, saveOthersView } from '../viewState';
 import { useTheirLook } from '../theirLook';
 import { Avatar } from '../components/Avatar';
 import { Duel, them, useMe } from '../components/Duel';
+import { AddWant, FriendsTried, TheirStrainz } from '../components/Friends';
+import { fetchProducts } from '../products';
 import type { YourScore } from '../../../shared/domain/compare';
 import { photoOf } from './People';
 import { Ratings } from './Profile';
@@ -238,16 +240,18 @@ function TheirPosts(p: { username: string; mine: boolean }) {
   return <PostList list={list} returnKey={`posts:${p.username}`} />;
 }
 
-/** D77: Leaderboard | Posts, at the top of a friend's page and your own. */
-function PageTabs(p: { tab: 'board' | 'posts'; onTab: (t: 'board' | 'posts') => void }) {
+type PageTab = 'board' | 'posts' | 'strainz';
+
+/** D77: Leaderboard | Posts, at the top of a friend's page and your own; D94: and Strainz on a friend's. */
+function PageTabs(p: { tab: PageTab; onTab: (t: PageTab) => void; strainz: boolean }) {
+  const tabs: [PageTab, string][] = [
+    ['board', 'Leaderboard'],
+    ['posts', 'Posts'],
+    ...(p.strainz ? ([['strainz', 'Strainz']] as [PageTab, string][]) : []),
+  ];
   return (
-    <div class="seg two page-tabs" role="tablist" aria-label="Their page">
-      {(
-        [
-          ['board', 'Leaderboard'],
-          ['posts', 'Posts'],
-        ] as const
-      ).map(([key, label]) => (
+    <div class={`seg ${p.strainz ? 'three' : 'two'} page-tabs`} role="tablist" aria-label="Their page">
+      {tabs.map(([key, label]) => (
         <button key={key} type="button" role="tab" aria-selected={p.tab === key} class={p.tab === key ? 'on' : ''} onClick={() => p.onTab(key)}>
           {label}
         </button>
@@ -262,14 +266,14 @@ function PageTabs(p: { tab: 'board' | 'posts'; onTab: (t: 'board' | 'posts') => 
  * D77: with Leaderboard | Posts at the top; your own page (/u/<you>) shows both too, the board as
  * your followers see it.
  */
-export function Person(p: { username: string; preview?: boolean; tab?: 'board' | 'posts' }) {
+export function Person(p: { username: string; preview?: boolean; tab?: PageTab }) {
   const { me } = useSession();
   const mine = !p.preview && me.user?.username.toLowerCase() === p.username.toLowerCase();
   const own = p.preview || mine;
-  const [tab, setTab] = useState<'board' | 'posts'>(p.tab ?? 'board');
-  const switchTab = (t: 'board' | 'posts') => {
+  const [tab, setTab] = useState<PageTab>(own && p.tab === 'strainz' ? 'board' : (p.tab ?? 'board'));
+  const switchTab = (t: PageTab) => {
     setTab(t);
-    replaceHistory(`/u/${enc(p.username)}${t === 'posts' ? '/posts' : ''}`);
+    replaceHistory(`/u/${enc(p.username)}${t === 'board' ? '' : `/${t}`}`);
   };
   const [person, setPerson] = useState<PersonCard | null>(null);
   const [products, setProducts] = useState<SharedProduct[] | null>(null);
@@ -374,8 +378,9 @@ export function Person(p: { username: string; preview?: boolean; tab?: 'board' |
         </p>
       )}
       <main class="screen">
-        {!p.preview && <PageTabs tab={tab} onTab={switchTab} />}
-        {!showBoard && <TheirPosts username={person.username} mine={mine} />}
+        {!p.preview && <PageTabs tab={tab} onTab={switchTab} strainz={!own} />}
+        {tab === 'posts' && !p.preview && <TheirPosts username={person.username} mine={mine} />}
+        {tab === 'strainz' && !own && <TheirStrainz username={person.username} />}
         {showBoard && (
           <>
         {own && <PreviewNote />}
@@ -451,6 +456,14 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
   // D82: you've had the same product (name, Source and type): your score, shown only to you.
   const [also, setAlso] = useState<{ yours: YourScore; person: PersonCard } | null>(null);
   const me = useMe();
+  // D94: whether you've had this strain yourself (any product with its name), for + Add to my Want to try.
+  const [myStrains, setMyStrains] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    if (p.preview) return;
+    fetchProducts()
+      .then((list) => setMyStrains(new Set(list.map((x) => nameKey(x.name)))))
+      .catch(() => setMyStrains(new Set()));
+  }, [p.preview]);
   // Its row on their board (D22, D48), worked out only from what you can see, under the
   // same Rank by as their board.
   const [list, setList] = useState<SharedProduct[] | null>(null);
@@ -541,6 +554,12 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
             <Duel me={me} them={them(also.person)} mine={also.yours.score} theirs={o} />
           </section>
         )}
+        {!p.preview && myStrains && (
+          <div class="wrap add-want-wrap">
+            <AddWant kind="strain" name={product.name} from={p.username} tried={myStrains.has(nameKey(product.name))} big />
+          </div>
+        )}
+        {!p.preview && <FriendsTried name={product.name} />}
         <Ratings product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">

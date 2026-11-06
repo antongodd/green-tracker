@@ -177,3 +177,73 @@ export function formatDay(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   return `${d} ${MONTHS[m! - 1]} ${y}`;
 }
+
+// Friends on Strainz (D94) -----------------------------------------------------------------------------------------
+
+/** What a friend's strain is worked out from: one of the products they share with you (social.ts's allow-list). */
+export interface ScoredProduct {
+  id: string;
+  name: string;
+  productType: string;
+  ratings: Ratings;
+  concentrateType?: string | null;
+}
+
+/** One strain's score: its average Overall (of rated products), how many products, and its best one. */
+export interface StrainScore {
+  key: string;
+  name: string;
+  average: number | null;
+  count: number;
+  best: { id: string; score: number } | null;
+  /** The product to open (its best, else its first). */
+  productId: string;
+  productType: string;
+}
+
+/** Products by strain (the name, by nameKey), each with its average and best; the spelling used most is shown. */
+export function strainScores(products: readonly ScoredProduct[]): StrainScore[] {
+  const byKey = new Map<string, ScoredProduct[]>();
+  for (const p of products) {
+    const key = nameKey(p.name);
+    if (key) byKey.set(key, [...(byKey.get(key) ?? []), p]);
+  }
+  return [...byKey].map(([key, list]) => {
+    const rated = list.flatMap((p) => {
+      const score = overall(p.productType, p.ratings);
+      return score === null ? [] : [{ p, score }];
+    });
+    rated.sort((a, b) => b.score - a.score);
+    const top = rated[0]?.p ?? list[0]!;
+    return {
+      key,
+      name: shownSpelling(list.map((p) => p.name)),
+      average: mean(rated.map((r) => r.score)),
+      count: list.length,
+      best: rated[0] ? { id: rated[0].p.id, score: rated[0].score } : null,
+      productId: top.id,
+      productType: top.productType,
+    };
+  });
+}
+
+export interface StrainsAgainst {
+  /** Strains you've both had: your average and theirs (best first by theirs), and their product to open. */
+  both: { name: string; yours: number | null; theirs: number | null; count: number; productId: string }[];
+  /** Strains only they've had (best first). */
+  onlyThem: { name: string; average: number | null; count: number; productId: string; productType: string }[];
+}
+
+/**
+ * Your strains against a friend's (D94): `mine` is your board (only you see what's worked out from it), `theirs` what
+ * they share with you. Unrated strains sort last.
+ */
+export function compareStrains(mine: readonly ScoredProduct[], theirs: readonly ScoredProduct[]): StrainsAgainst {
+  const yours = new Map(strainScores(mine).map((s) => [s.key, s]));
+  const byScore = (a: { average: number | null }, b: { average: number | null }) => (a.average === b.average ? 0 : a.average === null ? 1 : b.average === null ? -1 : b.average - a.average);
+  const them = strainScores(theirs).sort((a, b) => byScore(a, b) || a.name.localeCompare(b.name));
+  return {
+    both: them.filter((s) => yours.has(s.key)).map((s) => ({ name: s.name, yours: yours.get(s.key)!.average, theirs: s.average, count: s.count, productId: s.productId })),
+    onlyThem: them.filter((s) => !yours.has(s.key)).map((s) => ({ name: s.name, average: s.average, count: s.count, productId: s.productId, productType: s.productType })),
+  };
+}

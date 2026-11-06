@@ -21,6 +21,7 @@ import { renameStrain } from '../products';
 import { linkTo, navigate } from '../router';
 import { removeWant, useWants } from '../wants';
 import { WantList, WantSheet } from '../components/Wants';
+import { FriendsTried } from '../components/Friends';
 import type { Want } from '../../../shared/domain/wants';
 import type { PhotoRecord } from '../../../shared/domain/photo';
 import type { ComponentChildren } from 'preact';
@@ -590,6 +591,7 @@ export function StrainPage(p: { name: string }) {
                 )}
               </dl>
             </div>
+            <FriendsTried name={s.name} />
             <h2 class="group-h wrap">
               <span class="gname">Your {s.name} products</span>
               <span class="n num">{s.products.length}</span>
