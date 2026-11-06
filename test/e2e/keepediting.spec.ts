@@ -100,6 +100,8 @@ test('editing a product: a swipe back asks; after Save, leaving doesn’t', asyn
 
 test('a Log entry: Cancel asks once changed, new or saved', async () => {
   await page.goto('/log');
+  // The router listens only after its first render: wait for the tab bar before changing screen without a reload.
+  await page.locator('.tabs').waitFor();
   // D92: no button leads to a new Log entry any more; its address still opens one.
   await page.evaluate(() => {
     history.pushState({ depth: 1 }, '', '/log/new');

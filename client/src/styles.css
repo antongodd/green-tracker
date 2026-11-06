@@ -1020,9 +1020,11 @@ input[type="date"].input::-webkit-date-and-time-value { text-align: left; }
 
 /* ---------- control row (brief §6.4, P4: sticky under the header) ---------- */
 /* 0.83.1 (GT Ideas #30): clear at the top, like the large title; frosted only once it's held under the header
-   (`.stuck`, Controls.tsx `useStuck`), so no dark band runs across the Look at the starting position. */
+   (`.stuck`, Controls.tsx `useStuck`), so no dark band runs across the Look at the starting position. The glass
+   comes on at once (rows start passing under it straight away, and every moment must stay readable); only going
+   back to clear at the top fades. */
 .controls { position: sticky; top: var(--header-h); z-index: 10; display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: transparent; max-width: 720px; margin: 0 auto; transition: background-color 0.25s ease, -webkit-backdrop-filter 0.25s ease, backdrop-filter 0.25s ease; }
-.controls.stuck { background: var(--controls-bg); -webkit-backdrop-filter: var(--sticky-blur); backdrop-filter: var(--sticky-blur); }
+.controls.stuck { background: var(--controls-bg); -webkit-backdrop-filter: var(--sticky-blur); backdrop-filter: var(--sticky-blur); transition: none; }
 .controls-right { margin-left: auto; min-width: 0; }
 .pill { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-edge); color: var(--text); font-size: 15px; white-space: nowrap; flex: none; }
 .pill .k { color: var(--text-2); }
