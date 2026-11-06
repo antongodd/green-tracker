@@ -1,0 +1,552 @@
+<title>GT Ideas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone-sized column on the app's Aurora Glass ground; large title, glass cards, a floating tab bar with the + beside it. Single dark look, like the app. */
+:root {
+  color-scheme: dark;
+  --bg: #03070a;
+  --solid: #0a1114;
+  --glass: rgba(255,255,255,0.05);
+  --glass-2: rgba(255,255,255,0.085);
+  --edge: rgba(255,255,255,0.11);
+  --line: rgba(255,255,255,0.07);
+  --text: #f1f6f3;
+  --text-2: rgba(241,246,243,0.72);
+  --text-3: rgba(241,246,243,0.5);
+  --accent: #45d483;
+  --accent-soft: rgba(88,224,140,0.15);
+  --on-accent: #03140a;
+  --teal: #40c4c4;
+  --violet: #b4a8ff;
+  --warn: #f0a93b;
+  --danger: #ff6b6b;
+  --gold: #ffd36b;
+  --primary: linear-gradient(135deg, #58e08c, #40c4c4);
+  --grad: linear-gradient(100deg, #a6f0c1, #9fdcff 55%, #cdbdff);
+  --light-1: rgba(47,216,138,0.24);
+  --light-2: rgba(43,184,196,0.2);
+  --light-3: rgba(123,107,255,0.2);
+  --bar: rgba(10,17,20,0.72);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
+  --num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--text); font: 16px/1.4 var(--font);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(120px + env(safe-area-inset-bottom, 0px));
+}
+.lights { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: var(--bg); }
+.lights i { position: absolute; width: 90vmax; height: 90vmax; border-radius: 50%; filter: blur(60px); }
+.lights i:nth-child(1) { background: radial-gradient(circle, var(--light-1), transparent 62%); left: -40vmax; top: -45vmax; animation: drift1 26s ease-in-out infinite alternate; }
+.lights i:nth-child(2) { background: radial-gradient(circle, var(--light-2), transparent 62%); right: -45vmax; top: 10vh; animation: drift2 32s ease-in-out infinite alternate; }
+.lights i:nth-child(3) { background: radial-gradient(circle, var(--light-3), transparent 62%); left: -10vmax; bottom: -55vmax; animation: drift1 38s ease-in-out infinite alternate-reverse; }
+@keyframes drift1 { to { transform: translate(12vmax, 8vmax) scale(1.08); } }
+@keyframes drift2 { to { transform: translate(-10vmax, 14vmax) scale(0.94); } }
+
+.wrap { max-width: 560px; margin: 0 auto; }
+header.top { padding-top: 28px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.eyebrow { font-size: 13px; color: var(--text-3); letter-spacing: 0.02em; }
+h1 { font: 700 34px/1.1 var(--display); letter-spacing: -0.02em; margin: 2px 0 0; text-wrap: balance; }
+.live-pill { font: 600 13px var(--num); padding: 6px 10px; border-radius: 999px; background: var(--glass); border: 1px solid var(--edge); color: var(--text-2); white-space: nowrap; }
+.live-pill b { color: var(--accent); font-weight: 700; }
+.sub { color: var(--text-2); font-size: 15px; margin: 8px 0 18px; }
+
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 14px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.chip {
+  font: 600 14px var(--font); color: var(--text-2); background: var(--glass); border: 1px solid var(--edge);
+  border-radius: 999px; padding: 8px 13px; white-space: nowrap; cursor: pointer; min-height: 36px;
+}
+.chip[aria-pressed="true"], .chip[aria-checked="true"] { background: var(--accent-soft); color: var(--text); border-color: rgba(88,224,140,0.5); }
+
+.section-h { font: 600 13px var(--font); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: 22px 4px 8px; display: flex; justify-content: space-between; }
+.list { display: grid; gap: 10px; }
+.card {
+  display: block; width: 100%; text-align: left; color: inherit; font: inherit;
+  background: var(--glass); border: 1px solid var(--edge); border-radius: 18px; padding: 14px 16px;
+  cursor: pointer; transition: transform .15s ease, background .15s ease;
+}
+.card:active { transform: scale(0.98); background: var(--glass-2); }
+.card:focus-visible, .chip:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card-top { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+.card h3 { font: 600 17px/1.3 var(--font); margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.num { font: 700 13px var(--num); color: var(--text-3); white-space: nowrap; }
+.card p { margin: 5px 0 0; color: var(--text-2); font-size: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tag { font: 600 12px var(--font); padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.07); color: var(--text-2); }
+.tag.must { background: rgba(255,107,107,0.16); color: #ffb0b0; }
+.tag.want { background: rgba(240,169,59,0.16); color: #ffd08a; }
+.tag.nice { background: rgba(64,196,196,0.15); color: #9fe6e6; }
+.tag.claude { background: rgba(139,123,255,0.18); color: var(--violet); }
+.tag.job { background: var(--accent-soft); color: #a6f0c1; }
+.tag.shot::before { content: ""; display: inline-block; width: 10px; height: 8px; border: 1.5px solid currentColor; border-radius: 2px; margin-right: 5px; vertical-align: -0.5px; }
+.clash { margin-top: 9px; font-size: 13px; color: #ffd08a; }
+
+.stage { display: flex; gap: 4px; margin-top: 12px; }
+.stage span { flex: 1; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.1); }
+.stage span.on { background: var(--primary); }
+.stage-label { font-size: 13px; color: var(--text-3); margin-top: 6px; }
+
+.change { padding: 13px 16px; }
+.change .ver { font: 700 13px var(--num); color: var(--accent); white-space: nowrap; }
+.change .ver.notes { color: var(--text-3); }
+.change .when { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+.change .detail { display: none; color: var(--text-2); font-size: 14px; margin-top: 8px; }
+.change[aria-expanded="true"] .detail { display: block; }
+.change[aria-expanded="true"] p { -webkit-line-clamp: unset; }
+
+.empty { text-align: center; padding: 40px 20px; color: var(--text-2); background: var(--glass); border: 1px dashed var(--edge); border-radius: 18px; }
+.empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
+.status-line { font-size: 13px; color: var(--text-3); text-align: center; margin-top: 18px; }
+
+/* Tab bar and + */
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: 10px;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+.tabs {
+  pointer-events: auto; display: grid; grid-template-columns: repeat(3, 1fr); flex: 1; max-width: 420px;
+  background: var(--bar); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--edge); border-radius: 999px; padding: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+.tab { background: none; border: 0; color: var(--text-3); font: 600 12px var(--font); border-radius: 999px; padding: 6px 4px; display: grid; justify-items: center; gap: 2px; cursor: pointer; min-height: 48px; }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-selected="true"] { color: var(--accent); background: rgba(255,255,255,0.07); }
+.tab .count { font: 700 10px var(--num); }
+.fab {
+  pointer-events: auto; width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--primary); color: var(--on-accent);
+  display: grid; place-items: center; cursor: pointer; flex: none; box-shadow: 0 8px 26px rgba(88,224,140,0.45);
+}
+.fab svg { width: 26px; height: 26px; }
+.fab:active, .btn:active { transform: scale(0.96); }
+
+/* Sheets */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 30; opacity: 0; transition: opacity .25s; }
+.scrim.open { opacity: 1; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--solid); border-top: 1px solid var(--edge); border-radius: 24px 24px 0 0;
+  padding: 8px max(18px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  transform: translateY(100%); transition: transform .38s cubic-bezier(.2,.9,.25,1.05);
+}
+.sheet.open { transform: none; }
+.sheet-in { max-width: 560px; margin: 0 auto; }
+.grab { width: 38px; height: 5px; border-radius: 5px; background: rgba(255,255,255,0.2); margin: 2px auto 10px; }
+.sheet-hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
+.sheet-hdr > :first-child { justify-self: start; }
+.sheet-hdr > :last-child { justify-self: end; }
+.sheet-hdr h2 { font: 700 20px var(--display); margin: 0; }
+.link { background: none; border: 0; color: var(--accent); font: 600 16px var(--font); cursor: pointer; padding: 10px 4px; min-height: 44px; }
+.link.quiet { color: var(--text-2); }
+.field { display: grid; gap: 6px; margin-top: 16px; }
+.field > label, .field > .lbl { font: 600 13px var(--font); color: var(--text-2); }
+.hint { font-size: 13px; color: var(--text-3); }
+input[type=text], textarea {
+  width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.06); border: 1px solid var(--edge); border-radius: 12px;
+  color: var(--text); font: 16px/1.4 var(--font); padding: 12px 13px;
+}
+textarea { min-height: 120px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
+.seg button { border: 0; background: none; color: var(--text-2); font: 600 14px var(--font); border-radius: 9px; padding: 9px 4px; cursor: pointer; min-height: 40px; }
+.seg button[aria-checked="true"] { background: rgba(255,255,255,0.12); color: var(--text); }
+.shot-box { display: flex; align-items: center; gap: 12px; }
+.shot-box img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--edge); }
+.btn { border: 1px solid var(--edge); background: rgba(255,255,255,0.07); color: var(--text); font: 600 15px var(--font); border-radius: 12px; padding: 11px 14px; cursor: pointer; min-height: 44px; }
+.btn.primary { background: var(--primary); color: var(--on-accent); border: 0; width: 100%; font-size: 17px; padding: 14px; margin-top: 22px; }
+.btn.danger { color: var(--danger); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.err { color: var(--danger); font-size: 14px; margin-top: 10px; }
+
+.d-what { white-space: pre-wrap; color: var(--text); font-size: 16px; margin: 6px 0 0; overflow-wrap: anywhere; }
+.d-shot { width: 100%; border-radius: 14px; border: 1px solid var(--edge); margin-top: 14px; }
+.take { margin-top: 16px; padding: 13px 14px; border-radius: 14px; background: rgba(139,123,255,0.1); border: 1px solid rgba(139,123,255,0.28); }
+.take h4 { margin: 0 0 4px; font: 600 13px var(--font); color: var(--violet); }
+.take p { margin: 0; font-size: 15px; color: var(--text); white-space: pre-wrap; }
+.take.waiting p { color: var(--text-2); }
+.steps { display: grid; gap: 0; margin-top: 6px; }
+.step { display: flex; align-items: center; gap: 12px; padding: 10px 2px; border: 0; background: none; color: var(--text-2); font: 15px var(--font); text-align: left; cursor: pointer; min-height: 44px; border-bottom: 1px solid var(--line); }
+.step:last-child { border-bottom: 0; }
+.step .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); flex: none; box-sizing: border-box; }
+.step.done .dot { background: rgba(88,224,140,0.45); border-color: transparent; }
+.step[aria-checked="true"] { color: var(--text); font-weight: 600; }
+.step[aria-checked="true"] .dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.step small { color: var(--text-3); font-weight: 400; margin-left: auto; font-size: 13px; }
+.row-btns { display: flex; gap: 10px; margin-top: 18px; }
+.row-btns .btn { flex: 1; }
+.confirm { margin-top: 14px; padding: 13px; border-radius: 14px; background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.3); }
+.confirm p { margin: 0 0 10px; }
+.small-print { font-size: 13px; color: var(--text-3); margin-top: 14px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; z-index: 40; background: var(--solid); border: 1px solid var(--edge); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; transition: .25s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lights i { animation: none; }
+  .sheet, .scrim, .card, .toast { transition: none; }
+}
+</style>
+
+<div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Green Tracker</div>
+      <h1 id="title">Ideas</h1>
+    </div>
+    <div class="live-pill" id="livePill" hidden>Live <b id="liveVer"></b></div>
+  </header>
+  <p class="sub" id="sub">Everything you want changed, in one place.</p>
+  <main id="view" aria-live="polite"></main>
+  <p class="status-line" id="statusLine"></p>
+</div>
+
+<nav class="dock" aria-label="Sections">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-ideas" data-tab="ideas" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>
+      <span>Ideas <span class="count" id="c-ideas"></span></span>
+    </button>
+    <button class="tab" role="tab" id="tab-progress" data-tab="progress" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>
+      <span>In progress <span class="count" id="c-progress"></span></span>
+    </button>
+    <button class="tab" role="tab" id="tab-changes" data-tab="changes" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+      <span>Changes</span>
+    </button>
+  </div>
+  <button class="fab" id="addBtn" aria-label="Add an idea">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-in" id="sheetIn"></div>
+</section>
+<input type="file" id="shotInput" accept="image/*" hidden>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const AREAS = ['Leaderboard', 'Strainz', 'Sources', 'Feed', 'Settings', 'Website', 'Other'];
+  const WANTS = [['must', 'Must'], ['want', 'Want'], ['nice', 'Nice to have']];
+  const WANT_RANK = { must: 0, want: 1, nice: 2 };
+  const STAGES = [
+    ['new', 'New', 'Waiting for you to say "take it"'],
+    ['talking', 'Talking', 'Questions, plan or mockups'],
+    ['building', 'Building', 'Claude is making it'],
+    ['dev', 'On GT Dev', 'Ready for you to try'],
+    ['live', 'Live', 'On the real app'],
+  ];
+  const PROGRESS = ['talking', 'building', 'dev'];
+
+  const state = { tab: 'ideas', filter: 'all', ideas: [], changes: [], loaded: { ideas: false, changes: false }, db: null, assets: null, error: '' };
+  try { const t = localStorage.getItem('gtideas.tab'); if (['ideas','progress','changes'].includes(t)) state.tab = t; } catch (e) {}
+
+  const $ = (id) => document.getElementById(id);
+  function h(tag, attrs, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : String(kid));
+    return el;
+  }
+  const fmtDate = (s) => {
+    if (!s || !/^\d{4}-\d{2}-\d{2}/.test(s)) return s || '';
+    const d = new Date(s.slice(0, 10) + 'T12:00:00');
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const shotUrl = (id) => id ? '/_blob/' + id : '';
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+
+  // ---------- Rendering ----------
+  function render() {
+    for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.tab === state.tab));
+    const open = state.ideas.filter((i) => i.status === 'new' || i.status === 'later');
+    const prog = state.ideas.filter((i) => PROGRESS.includes(i.status));
+    $('c-ideas').textContent = open.length ? '· ' + open.length : '';
+    $('c-progress').textContent = prog.length ? '· ' + prog.length : '';
+    const latest = state.changes.find((c) => /\d/.test(c.version) && c.version !== 'notes');
+    if (latest) { $('liveVer').textContent = latest.version.split(/[,–]\s*/).pop(); $('livePill').hidden = false; }
+
+    const view = $('view'); view.replaceChildren();
+    if (state.tab === 'ideas') { $('title').textContent = 'Ideas'; $('sub').textContent = 'Jot it down. Tell Claude "take #" when you want it built.'; view.append(renderIdeas(open, prog)); }
+    if (state.tab === 'progress') { $('title').textContent = 'In progress'; $('sub').textContent = 'What Claude is working on, and where it’s up to.'; view.append(renderProgress(prog)); }
+    if (state.tab === 'changes') { $('title').textContent = 'Changes'; $('sub').textContent = 'What’s gone live, newest first.'; view.append(renderChanges()); }
+
+    let line = '';
+    if (!state.db) line = state.error || 'Connecting…';
+    else if (state.error) line = state.error;
+    $('statusLine').textContent = line;
+  }
+
+  function wantTag(w) { const m = WANTS.find((x) => x[0] === w); return m ? h('span', { class: 'tag ' + w }, m[1]) : null; }
+
+  function ideaCard(i, prog) {
+    const busy = (prog || []).filter((p) => p.id !== i.id && (p.where || []).some((a) => a !== 'Other' && (i.where || []).includes(a)));
+    return h('button', { class: 'card', onclick: () => openDetail(i.id) },
+      h('div', { class: 'card-top' }, h('h3', {}, i.name || 'Untitled'), h('span', { class: 'num' }, '#' + i.num)),
+      i.what ? h('p', {}, i.what) : null,
+      h('div', { class: 'meta' },
+        wantTag(i.want),
+        (i.where || []).map((a) => h('span', { class: 'tag' }, a)),
+        i.from === 'claude' ? h('span', { class: 'tag claude' }, 'From Claude') : null,
+        i.screenshot ? h('span', { class: 'tag shot' }, 'Screenshot') : null,
+        i.status === 'later' ? h('span', { class: 'tag' }, 'Later') : null,
+      ),
+      busy.length ? h('div', { class: 'clash' }, (busy[0].job || '#' + busy[0].num) + ' is changing ' + busy[0].where.filter((a) => (i.where || []).includes(a)).join(', ') + ' now. Best done after it.') : null,
+    );
+  }
+
+  function emptyBox(title, text) { return h('div', { class: 'empty' }, h('b', {}, title), text); }
+
+  function renderIdeas(open, prog) {
+    const frag = document.createDocumentFragment();
+    if (!state.loaded.ideas) { frag.append(emptyBox('Loading your ideas', 'They appear here in a moment.')); return frag; }
+    const filters = h('div', { class: 'filters', role: 'group', 'aria-label': 'Show' });
+    const opts = [['all', 'All'], ['must', 'Must'], ['want', 'Want'], ['nice', 'Nice to have'], ['claude', 'From Claude']];
+    for (const [k, l] of opts) filters.append(h('button', { class: 'chip', 'aria-pressed': String(state.filter === k), onclick: () => { state.filter = k; render(); } }, l));
+    frag.append(filters);
+    let list = open.filter((i) => state.filter === 'all' || (state.filter === 'claude' ? i.from === 'claude' : i.want === state.filter));
+    const sort = (a, b) => (WANT_RANK[a.want] ?? 3) - (WANT_RANK[b.want] ?? 3) || String(b.created || '').localeCompare(String(a.created || ''));
+    const now = list.filter((i) => i.status === 'new').sort(sort);
+    const later = list.filter((i) => i.status === 'later').sort(sort);
+    if (!open.length) { frag.append(emptyBox('No ideas yet', 'Tap + to add the first one. Name it, say what you want, done.')); return frag; }
+    if (!now.length && !later.length) { frag.append(emptyBox('Nothing here', 'No ideas match this filter.')); return frag; }
+    if (now.length) { frag.append(h('div', { class: 'section-h' }, h('span', {}, 'New'), h('span', {}, String(now.length)))); frag.append(h('div', { class: 'list' }, now.map((i) => ideaCard(i, prog)))); }
+    if (later.length) { frag.append(h('div', { class: 'section-h' }, h('span', {}, 'Later'), h('span', {}, String(later.length)))); frag.append(h('div', { class: 'list' }, later.map((i) => ideaCard(i, prog)))); }
+    return frag;
+  }
+
+  function stageBar(status) {
+    const idx = STAGES.findIndex((s) => s[0] === status);
+    return h('div', { class: 'stage', 'aria-hidden': 'true' }, STAGES.slice(1).map((s, n) => h('span', { class: n + 1 <= idx ? 'on' : '' })));
+  }
+
+  function renderProgress(prog) {
+    const frag = document.createDocumentFragment();
+    if (!state.loaded.ideas) { frag.append(emptyBox('Loading', 'One moment.')); return frag; }
+    if (!prog.length) { frag.append(emptyBox('Nothing in progress', 'When you tell Claude to take an idea, it moves here and you can follow it to live.')); return frag; }
+    for (const st of [...PROGRESS].reverse()) {
+      const items = prog.filter((i) => i.status === st).sort((a, b) => String(b.updated || '').localeCompare(String(a.updated || '')));
+      if (!items.length) continue;
+      const s = STAGES.find((x) => x[0] === st);
+      frag.append(h('div', { class: 'section-h' }, h('span', {}, s[1]), h('span', {}, String(items.length))));
+      frag.append(h('div', { class: 'list' }, items.map((i) => h('button', { class: 'card', onclick: () => openDetail(i.id) },
+        h('div', { class: 'card-top' }, h('h3', {}, i.name), h('span', { class: 'num' }, '#' + i.num)),
+        h('div', { class: 'meta' }, i.job ? h('span', { class: 'tag job' }, i.job) : null, (i.where || []).map((a) => h('span', { class: 'tag' }, a)), i.version ? h('span', { class: 'tag' }, i.version) : null),
+        stageBar(i.status),
+        h('div', { class: 'stage-label' }, i.statusNote || s[2]),
+      ))));
+    }
+    return frag;
+  }
+
+  function renderChanges() {
+    const frag = document.createDocumentFragment();
+    if (!state.loaded.changes) { frag.append(emptyBox('Loading the history', 'One moment.')); return frag; }
+    if (!state.changes.length) { frag.append(emptyBox('No changes yet', 'Claude adds a row here each time something goes live.')); return frag; }
+    let month = '';
+    let list = null;
+    for (const c of state.changes) {
+      const m = /^\d{4}-\d{2}/.test(c.live || '') ? new Date(c.live.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : (/^\d{4}-\d{2}/.test(c.onDev || '') ? new Date(c.onDev.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'Earlier');
+      if (m !== month) { month = m; frag.append(h('div', { class: 'section-h' }, h('span', {}, m))); list = h('div', { class: 'list' }); frag.append(list); }
+      const notes = !/\d/.test(c.version || '') || c.version === 'notes';
+      const card = h('button', { class: 'card change', 'aria-expanded': 'false', onclick: () => card.setAttribute('aria-expanded', String(card.getAttribute('aria-expanded') !== 'true')) },
+        h('div', { class: 'card-top' }, h('h3', {}, c.title), h('span', { class: 'ver' + (notes ? ' notes' : '') }, notes ? 'Notes' : c.version)),
+        h('div', { class: 'when' }, [
+          /^\d/.test(c.live || '') ? 'Live ' + fmtDate(c.live) : (c.live || ''),
+          c.onDev && /^\d/.test(c.onDev) && c.onDev !== c.live ? ' · on GT Dev ' + fmtDate(c.onDev) : '',
+          c.decision ? ' · ' + c.decision : '',
+        ].join('')),
+        c.detail ? h('div', { class: 'detail' }, c.detail) : null,
+      );
+      list.append(card);
+    }
+    return frag;
+  }
+
+  // ---------- Sheets ----------
+  let lastFocus = null;
+  function openSheet(build) {
+    lastFocus = document.activeElement;
+    const s = $('sheet'), sc = $('scrim');
+    $('sheetIn').replaceChildren(h('div', { class: 'grab', 'aria-hidden': 'true' }), build());
+    s.hidden = false; sc.hidden = false;
+    requestAnimationFrame(() => { s.classList.add('open'); sc.classList.add('open'); });
+    s.scrollTop = 0;
+    setTimeout(() => { const f = s.querySelector('[data-autofocus]') || s.querySelector('button'); f && f.focus({ preventScroll: true }); }, 60);
+  }
+  function closeSheet() {
+    const s = $('sheet'), sc = $('scrim');
+    s.classList.remove('open'); sc.classList.remove('open');
+    setTimeout(() => { s.hidden = true; sc.hidden = true; $('sheetIn').replaceChildren(); }, 300);
+    lastFocus && lastFocus.focus && lastFocus.focus({ preventScroll: true });
+  }
+  $('scrim').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('sheet').hidden) closeSheet(); });
+
+  function openForm(existing) {
+    if (!state.db) { toast('Still connecting. Try again in a moment.'); return; }
+    const d = existing ? { ...existing, where: [...(existing.where || [])] } : { name: '', what: '', where: [], want: 'want', screenshot: '' };
+    let draftKey = existing ? null : 'gtideas.draft';
+    if (draftKey) { try { const s = JSON.parse(localStorage.getItem(draftKey) || 'null'); if (s) Object.assign(d, s); } catch (e) {} }
+    const saveDraft = () => { if (!draftKey) return; try { localStorage.setItem(draftKey, JSON.stringify({ name: d.name, what: d.what, where: d.where, want: d.want, screenshot: d.screenshot })); } catch (e) {} };
+
+    openSheet(() => {
+      const err = h('div', { class: 'err', role: 'alert' });
+      const name = h('input', { type: 'text', id: 'f-name', maxlength: '80', placeholder: 'Search my strains', 'data-autofocus': true, autocomplete: 'off' });
+      name.value = d.name; name.addEventListener('input', () => { d.name = name.value; saveDraft(); });
+      const what = h('textarea', { id: 'f-what', placeholder: 'What you want, in your own words. What bugged you, what you’d like to tap, what it should do.' });
+      what.value = d.what; what.addEventListener('input', () => { d.what = what.value; saveDraft(); });
+      const areas = h('div', { class: 'chips', role: 'group', 'aria-labelledby': 'l-where' });
+      for (const a of AREAS) {
+        const c = h('button', { class: 'chip', type: 'button', role: 'checkbox', 'aria-checked': String(d.where.includes(a)) }, a);
+        c.addEventListener('click', () => { d.where = d.where.includes(a) ? d.where.filter((x) => x !== a) : [...d.where, a]; c.setAttribute('aria-checked', String(d.where.includes(a))); saveDraft(); });
+        areas.append(c);
+      }
+      const seg = h('div', { class: 'seg', role: 'radiogroup', 'aria-labelledby': 'l-want' });
+      for (const [k, l] of WANTS) {
+        const b = h('button', { type: 'button', role: 'radio', 'aria-checked': String(d.want === k) }, l);
+        b.addEventListener('click', () => { d.want = k; for (const x of seg.children) x.setAttribute('aria-checked', String(x === b)); saveDraft(); });
+        seg.append(b);
+      }
+      const shotBox = h('div', { class: 'shot-box' });
+      const drawShot = () => {
+        shotBox.replaceChildren();
+        if (d.screenshot) {
+          shotBox.append(h('img', { src: shotUrl(d.screenshot), alt: 'Your screenshot' }), h('button', { class: 'btn', type: 'button', onclick: () => { d.screenshot = ''; saveDraft(); drawShot(); } }, 'Remove'));
+        } else if (state.assets) {
+          shotBox.append(h('button', { class: 'btn', type: 'button', onclick: () => pickShot() }, 'Add a screenshot'));
+        } else {
+          shotBox.append(h('span', { class: 'hint' }, 'Screenshots can’t be added from here.'));
+        }
+      };
+      const pickShot = () => {
+        const inp = $('shotInput'); inp.value = '';
+        inp.onchange = async () => {
+          const f = inp.files && inp.files[0]; if (!f) return;
+          shotBox.replaceChildren(h('span', { class: 'hint' }, 'Adding…'));
+          try { const r = await state.assets.upload(f); d.screenshot = r.id; saveDraft(); }
+          catch (e) { err.textContent = 'That picture couldn’t be added (' + (e && e.code || 'error') + '). Try a smaller one.'; }
+          drawShot();
+        };
+        inp.click();
+      };
+      drawShot();
+      const save = h('button', { class: 'btn primary', type: 'submit' }, existing ? 'Save changes' : 'Add idea');
+      const form = h('form', { novalidate: true },
+        h('div', { class: 'sheet-hdr' }, h('button', { class: 'link quiet', type: 'button', onclick: closeSheet }, 'Cancel'), h('h2', { id: 'sheetTitle' }, existing ? 'Edit idea' : 'New idea'), h('span', {})),
+        h('div', { class: 'field' }, h('label', { for: 'f-name' }, 'Name'), name),
+        h('div', { class: 'field' }, h('label', { for: 'f-what' }, 'What you want'), what),
+        h('div', { class: 'field' }, h('span', { class: 'lbl', id: 'l-where' }, 'Where in the app'), areas),
+        h('div', { class: 'field' }, h('span', { class: 'lbl', id: 'l-want' }, 'How much you want it'), seg),
+        h('div', { class: 'field' }, h('span', { class: 'lbl' }, 'Screenshot (if it helps)'), shotBox),
+        err, save,
+        existing ? null : h('p', { class: 'small-print' }, 'Claude adds its take (small or big, what else it touches, any questions) next time you talk.'),
+      );
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!d.name.trim()) { err.textContent = 'Give it a name, even a rough one.'; name.focus(); return; }
+        save.disabled = true; err.textContent = '';
+        const now = new Date().toISOString();
+        try {
+          if (existing) {
+            await state.db.doc('ideas/' + existing.id).update({ name: d.name.trim(), what: d.what.trim(), where: d.where, want: d.want, screenshot: d.screenshot || '', updated: now });
+            toast('Saved');
+          } else {
+            const num = Math.max(18, ...state.ideas.map((i) => Number(i.num) || 0)) + 1;
+            await state.db.collection('ideas').doc('i' + num).set({ num, name: d.name.trim(), what: d.what.trim(), where: d.where, want: d.want, screenshot: d.screenshot || '', status: 'new', from: 'anton', take: '', job: '', version: '', statusNote: '', created: now, updated: now });
+            try { localStorage.removeItem('gtideas.draft'); } catch (e2) {}
+            state.tab = 'ideas'; state.filter = 'all';
+            toast('Added #' + num);
+          }
+          closeSheet();
+        } catch (e2) {
+          save.disabled = false;
+          err.textContent = e2 && e2.code === 'not_granted' ? 'Only you can add ideas here. Open it signed in as yourself.' : 'That didn’t save (' + (e2 && e2.code || 'error') + '). Check your connection and try again.';
+        }
+      });
+      return form;
+    });
+  }
+
+  function openDetail(id) {
+    const i = state.ideas.find((x) => x.id === id); if (!i) return;
+    openSheet(() => {
+      const idx = STAGES.findIndex((s) => s[0] === i.status);
+      const steps = h('div', { class: 'steps', role: 'radiogroup', 'aria-label': 'Where it’s up to' });
+      const opts = [...STAGES, ['later', 'Later', 'Parked for now']];
+      for (const [k, l, note] of opts) {
+        const n = STAGES.findIndex((s) => s[0] === k);
+        const b = h('button', { class: 'step' + (n >= 0 && n < idx ? ' done' : ''), role: 'radio', 'aria-checked': String(i.status === k), type: 'button' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), l, h('small', {}, note));
+        b.addEventListener('click', async () => {
+          if (i.status === k) return;
+          try { await state.db.doc('ideas/' + i.id).update({ status: k, updated: new Date().toISOString(), statusNote: '' }); toast('Moved to ' + l); closeSheet(); }
+          catch (e) { toast('Couldn’t move it (' + (e && e.code || 'error') + ')'); }
+        });
+        steps.append(b);
+      }
+      const confirmBox = h('div', { class: 'confirm', hidden: true },
+        h('p', {}, 'Delete “' + i.name + '”? This can’t be undone.'),
+        h('div', { class: 'row-btns' },
+          h('button', { class: 'btn', type: 'button', onclick: () => { confirmBox.hidden = true; } }, 'Keep it'),
+          h('button', { class: 'btn danger', type: 'button', onclick: async () => {
+            try { await state.db.doc('ideas/' + i.id).delete(); toast('Deleted'); closeSheet(); } catch (e) { toast('Couldn’t delete it (' + (e && e.code || 'error') + ')'); }
+          } }, 'Delete')));
+      return h('div', {},
+        h('div', { class: 'sheet-hdr' }, h('button', { class: 'link quiet', type: 'button', onclick: closeSheet }, 'Close'), h('span', { class: 'num' }, '#' + i.num + (i.job ? ' · ' + i.job : '')), h('button', { class: 'link', type: 'button', onclick: () => { closeSheet(); setTimeout(() => openForm(i), 320); } }, 'Edit')),
+        h('h2', { id: 'sheetTitle', style: 'font:700 24px/1.2 var(--display);margin:4px 0 0;letter-spacing:-0.01em' }, i.name),
+        h('div', { class: 'meta' }, wantTag(i.want), (i.where || []).map((a) => h('span', { class: 'tag' }, a)), i.from === 'claude' ? h('span', { class: 'tag claude' }, 'From Claude') : null, i.version ? h('span', { class: 'tag' }, i.version) : null),
+        i.what ? h('p', { class: 'd-what' }, i.what) : null,
+        i.screenshot ? h('img', { class: 'd-shot', src: shotUrl(i.screenshot), alt: 'Screenshot for ' + i.name }) : null,
+        i.take ? h('div', { class: 'take' }, h('h4', {}, 'Claude’s take'), h('p', {}, i.take))
+               : h('div', { class: 'take waiting' }, h('h4', {}, 'Claude’s take'), h('p', {}, 'Not read yet. Claude adds it next time you talk.')),
+        h('div', { class: 'section-h' }, h('span', {}, 'Where it’s up to')),
+        i.statusNote ? h('p', { class: 'hint', style: 'margin:0 4px 4px' }, i.statusNote) : null,
+        steps,
+        h('div', { class: 'row-btns' }, h('button', { class: 'btn danger', type: 'button', onclick: () => { confirmBox.hidden = false; } }, 'Delete idea')),
+        confirmBox,
+        h('p', { class: 'small-print' }, 'Added ' + fmtDate(i.created) + (i.updated && i.updated !== i.created ? ' · changed ' + fmtDate(i.updated) : '') + '. To start it, tell Claude: “take #' + i.num + '”.'),
+      );
+    });
+  }
+
+  // ---------- Wiring ----------
+  for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => {
+    state.tab = b.dataset.tab; try { localStorage.setItem('gtideas.tab', state.tab); } catch (e) {}
+    render(); window.scrollTo({ top: 0 });
+  });
+  $('addBtn').addEventListener('click', () => openForm(null));
+  render();
+
+  (async () => {
+    const timer = setTimeout(() => { if (!state.db) { state.error = 'Couldn’t connect. Open this page in the Claude app or claude.ai, signed in.'; render(); } }, 10000);
+    const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    clearTimeout(timer);
+    if (!db) { state.error = 'Couldn’t connect. Open this page in the Claude app or claude.ai, signed in.'; render(); return; }
+    state.db = db; state.error = ''; render();
+    window.claude.use('assets').then((a) => { state.assets = a; }).catch(() => {});
+    const failed = (what) => (e) => { state.error = 'Couldn’t load ' + what + ' (' + (e && e.code || 'error') + ').'; render(); };
+    db.collection('ideas').onSnapshot((snap) => {
+      state.ideas = snap.docs.map((d) => ({ id: d.id, ...d.data() })); state.loaded.ideas = true; render();
+    }, failed('the ideas'));
+    db.collection('changes').orderBy('order', 'desc').onSnapshot((snap) => {
+      state.changes = snap.docs.map((d) => ({ id: d.id, ...d.data() })); state.loaded.changes = true; render();
+    }, failed('the changes'));
+  })();
+})();
+</script>

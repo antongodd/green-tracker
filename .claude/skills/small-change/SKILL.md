@@ -11,7 +11,8 @@ point the change turns out to need a migration, or to change privacy or what fol
 
 ## 1. Build
 
-1. Branch from the latest `origin/dev` (the session branch). Ask Anton only if what he wants is unclear.
+1. Branch from the latest `origin/dev` (the session branch). Ask Anton only if what he wants is unclear. If it's an
+   idea in GT Ideas, mark it `building` with its Job number (recipe **ideas**); if it isn't there, add it first.
 2. Make the change. Add or update tests (mostly API and unit). **A bug fix:** check the new test fails on the old code.
 3. Grep **all** test files for anything you moved or renamed.
 4. Notes in the same pull request:
@@ -19,14 +20,14 @@ point the change turns out to need a migration, or to change privacy or what fol
      tests-only changes keep the version.
    - `SPEC.md` changelog entry at the top of §6 (an app change always gets one; a decision only if it really decides
      something new).
-   - CLAUDE.md: new rules or lessons; the to-do list if the item is on it.
+   - CLAUDE.md: new rules or lessons.
 5. Run `npm run typecheck`, `npm test`, the browser specs you touched and `npm run test:e2e:core`, with
    `PW_CHROMIUM=/opt/pw-browsers/chromium` and 2 workers, in the background, output saved to a file.
 
 ## 2. Into dev
 
 1. **Before the pull request**, fetch `dev` again. If another conversation has merged since you started: rebase; if
-   it took your version number, bump to the next one; merge both sets of notes (to-do list, changelog: theirs stays,
+   it took your version number, bump to the next one; merge both sets of notes (Done, changelog: theirs stays,
    yours goes on top). Re-run what the rebase could have broken.
 2. Commit, push, open a pull request into `dev` (squash), with plain-English notes on what changed and why.
 3. Merge it as soon as **test** is green; if it's still running, turn on auto-merge (squash). If it fails, read the
@@ -41,4 +42,4 @@ it takes everything on dev to live: if something is, stop there and tell Anton h
 ## 4. Tell Anton
 
 That it's live, what changed in one or two sentences, exact iPhone steps to see it on the live app (and that GT Dev
-has it too), what couldn't be checked on a real iPhone, and what's next on the to-do list.
+has it too), what couldn't be checked on a real iPhone, and what's next in GT Ideas.

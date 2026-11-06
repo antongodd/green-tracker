@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<title>Green Tracker ad</title>
+<style>
+@font-face { font-family: "Unbounded"; src: url(unbounded.woff2) format("woff2"); font-weight: 200 900; }
+@font-face { font-family: "Manrope"; src: url(manrope.woff2) format("woff2"); font-weight: 200 800; }
+:root { --bg: #03070a; --text: #f1f6f3; --green: #58e08c; --teal: #40c4c4; --violet: #8b7bff; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: var(--W); height: var(--H); overflow: hidden; background: var(--bg); color: var(--text); font-family: "Manrope", sans-serif; }
+#stage { position: absolute; inset: 0; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; will-change: transform; }
+.l1 { width: 900px; height: 700px; background: radial-gradient(circle, #1f9d5a 0%, transparent 70%); }
+.l2 { width: 800px; height: 800px; background: radial-gradient(circle, #1b6f8a 0%, transparent 70%); }
+.l3 { width: 700px; height: 600px; background: radial-gradient(circle, #4c3fb0 0%, transparent 70%); }
+.grain { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 120%, transparent 40%, rgba(0,0,0,.55)); }
+.abs { position: absolute; }
+/* The hook: two texts. */
+.chat { position: absolute; display: flex; flex-direction: column; gap: 22px; width: 1100px; }
+.who { font: 600 30px Manrope; color: rgba(241,246,243,.55); margin: 0 0 -6px 26px; }
+.bub { font: 600 60px/1.22 Manrope; padding: 26px 36px; border-radius: 44px; max-width: 1000px; transform-origin: left bottom; }
+.bub.in { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.14); align-self: flex-start; border-bottom-left-radius: 14px; }
+.bub.out { background: linear-gradient(135deg, #58e08c, #40c4c4); color: #03140a; align-self: flex-end; border-bottom-right-radius: 14px; transform-origin: right bottom; }
+.dots { align-self: flex-end; display: flex; gap: 12px; padding: 30px 36px; border-radius: 44px; background: rgba(255,255,255,.1); transform-origin: right bottom; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; background: rgba(241,246,243,.75); }
+/* Big words. */
+.title { font-family: "Unbounded"; font-weight: 700; letter-spacing: -0.02em; line-height: 1.04; }
+.title em { font-style: normal; background: linear-gradient(100deg, #b6ffd4, #58e08c 45%, #40c4c4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.eyebrow { font: 700 26px Manrope; letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.cap { position: absolute; }
+.cap .title { font-size: 84px; margin-top: 22px; }
+.cap .sub { font: 500 34px/1.4 Manrope; color: rgba(241,246,243,.72); margin-top: 26px; }
+/* The phone. */
+.phone { position: absolute; border-radius: 74px; padding: 16px; background: linear-gradient(145deg, #2b3330, #0d1210 40%, #1d2522); box-shadow: 0 0 0 2px rgba(255,255,255,.08) inset, 0 60px 120px rgba(0,0,0,.6), 0 0 120px rgba(88,224,140,.12); transform-origin: 50% 50%; }
+.screen { position: relative; width: 393px; height: 852px; border-radius: 58px; overflow: hidden; background: #03070a; transform-origin: 0 0; }
+.screen img.full { position: absolute; left: 0; top: 0; width: 393px; height: 852px; }
+.island { position: absolute; top: 11px; left: 50%; width: 120px; height: 34px; margin-left: -60px; background: #000; border-radius: 20px; z-index: 9; }
+.layer { position: absolute; inset: 0; }
+.strip { position: absolute; left: 0; width: 393px; overflow: hidden; background-size: 393px 852px; background-repeat: no-repeat; }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 50px; z-index: 9; display: flex; align-items: center; justify-content: space-between; padding: 4px 30px 0 48px; pointer-events: none; }
+.status .time { font: 700 17px -apple-system, Manrope; color: #fff; letter-spacing: -.01em; }
+.home { position: absolute; bottom: 8px; left: 50%; width: 136px; height: 5px; margin-left: -68px; border-radius: 3px; background: rgba(255,255,255,.7); z-index: 9; }
+.finger { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255,255,255,.38); border: 2px solid rgba(255,255,255,.75); box-shadow: 0 6px 18px rgba(0,0,0,.35); z-index: 10; }
+.ring { position: absolute; border-radius: 22px; border: 3px solid #b6ffd4; box-shadow: 0 0 40px rgba(88,224,140,.6), 0 0 0 6px rgba(88,224,140,.15); z-index: 8; }
+/* The end. */
+.end { position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.end img { width: 168px; height: 168px; border-radius: 38px; box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 80px rgba(88,224,140,.25); }
+.end .name { font: 700 92px Unbounded; letter-spacing: -0.02em; margin-top: 34px; }
+.end .line { font: 600 40px Manrope; color: rgba(241,246,243,.8); margin-top: 14px; }
+.chips { display: flex; gap: 14px; margin-top: 40px; flex-wrap: wrap; justify-content: center; }
+.chips span { font: 700 28px Manrope; padding: 12px 24px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); }
+.chips span.age { border-color: rgba(88,224,140,.5); color: #b6ffd4; }
+.cta { margin-top: 42px; font: 800 36px Manrope; color: #03140a; padding: 24px 56px; border-radius: 999px; background: linear-gradient(135deg, #58e08c, #40c4c4); box-shadow: 0 20px 50px rgba(88,224,140,.35); }
+.url { margin-top: 26px; font: 600 26px Manrope; color: rgba(241,246,243,.6); }
+.logo-big { position: absolute; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.logo-big img { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 0 90px rgba(88,224,140,.35); }
+.logo-big .title { font-size: 112px; margin-top: 44px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob l1" id="b1"></div><div class="blob l2" id="b2"></div><div class="blob l3" id="b3"></div>
+  <div class="grain"></div>
+
+  <div class="chat" id="chat">
+    <div class="who" id="who">Jay</div>
+    <div class="bub in" id="m1">bro what was that one we had last month 🔥</div>
+    <div class="dots" id="dots"><i></i><i></i><i></i></div>
+    <div class="bub out" id="m2">no idea 💀</div>
+  </div>
+
+  <div class="logo-big" id="reveal">
+    <img src="favicon.svg" id="rIcon" alt="" />
+    <div class="title"><span id="rA">Rate your stash.</span><br /><em id="rB">Remember the fire.</em></div>
+  </div>
+
+  <div class="cap" id="c1"><div class="eyebrow">Rate it</div><div class="title">Score it<br />out of 10.</div><div class="sub">Name, photo, a slide of your thumb.</div></div>
+  <div class="cap" id="c2"><div class="eyebrow">Rank it</div><div class="title">Your <em>Leaderboard</em>,<br />sorted.</div><div class="sub">Your best, always at the top.</div></div>
+  <div class="cap" id="c3"><div class="eyebrow">Share it</div><div class="title">Post it.<br />Your friends<br />see it.</div><div class="sub">Only the friends you approve.</div></div>
+  <div class="cap" id="c4"><div class="eyebrow">Track it</div><div class="title">Know your<br /><em>plug</em>.</div><div class="sub">Every shop, coffeeshop and plug,<br />and what you spent there.</div></div>
+
+  <div class="phone" id="phone">
+    <div class="screen" id="screen">
+      <div class="layer" id="scrEditor"><img class="full" id="imgEditor" alt="" /></div>
+      <div class="layer" id="scrBoard"></div>
+      <div class="layer" id="scrFeed">
+        <img class="full" src="film/feed2/feed-before.png" alt="" id="feedBase" />
+        <div class="strip" id="feedAfter" style="background-image:url(film/feed2/feed-after.png)"></div>
+        <img class="full" id="feedComposer" alt="" />
+      </div>
+      <div class="layer" id="scrSources">
+        <img class="full" id="srcImg" alt="" />
+        <img class="full" src="film/sources2/grove.png" alt="" id="groveImg" />
+      </div>
+      <div class="ring" id="ring"></div>
+      <div class="finger" id="finger"></div>
+      <div class="island"></div>
+      <div class="status"><span class="time">9:41</span><svg class="icons" viewBox="0 0 78 14" width="78" height="14" fill="#fff"><rect x="0" y="9" width="3.2" height="4.5" rx="1"/><rect x="5" y="6.5" width="3.2" height="7" rx="1"/><rect x="10" y="4" width="3.2" height="9.5" rx="1"/><rect x="15" y="1" width="3.2" height="12.5" rx="1"/><path d="M31 3.2c2.6 0 5 1 6.8 2.7l1.3-1.3A11.3 11.3 0 0 0 31 1.3a11.3 11.3 0 0 0-8.1 3.3l1.3 1.3A9.4 9.4 0 0 1 31 3.2zm0 3.7c1.6 0 3 .6 4.1 1.6l1.3-1.3a7.6 7.6 0 0 0-10.8 0l1.3 1.3c1.1-1 2.5-1.6 4.1-1.6zm0 3.7c.6 0 1.1.2 1.5.6L31 12.7l-1.5-1.5c.4-.4.9-.6 1.5-.6z"/><rect x="47" y="1.5" width="25" height="11.5" rx="3.5" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="49" y="3.5" width="19" height="7.5" rx="2"/><rect x="73.5" y="5" width="1.8" height="4.5" rx=".9" fill-opacity=".5"/></svg></div>
+      <div class="home"></div>
+    </div>
+  </div>
+
+  <div class="end" id="end">
+    <img src="favicon.svg" alt="" />
+    <div class="name">Green Tracker</div>
+    <div class="line">Rate your stash. Remember the fire.</div>
+    <div class="chips"><span>Free</span><span>Made for iPhone</span><span>No ads</span><span class="age">18+</span></div>
+    <div class="cta">Sign up free</div>
+    <div class="url">green-tracker-site.green-tracker.workers.dev</div>
+  </div>
+</div>
+<script>
+const V = new URLSearchParams(location.search).has('v');
+const W = V ? 1080 : 1920, H = V ? 1920 : 1080;
+document.documentElement.style.setProperty('--W', W + 'px');
+document.documentElement.style.setProperty('--H', H + 'px');
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const inOut = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+// A spring that settles (overshoots a little), 0→1.
+const spring = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-6 * x) * Math.cos(9 * x) * (1 - x * .2));
+const FPS = 30;
+
+// Times (seconds): a beat is 0.5s (120 bpm), every cut on a beat.
+const T = { reveal: 3.0, editor: 5.5, board: 10.0, feed: 14.0, sources: 18.5, end: 22.5, total: 26.0 };
+
+let FILM = null, ROWS = null;
+async function load() {
+  const [e, f, r, sc] = await Promise.all(['film/editor.json', 'film/feed2.json', 'film/board-rows.json', 'film/sources2.json'].map((u) => fetch(u).then((x) => x.json())));
+  FILM = { editor: e, feed: f, sources: sc };
+  ROWS = r;
+  // Preload every frame.
+  const urls = new Set(e.map((x) => 'film/' + x.f));
+  for (const n of ['c0', 'c-focus', 'c-press', 'feed-before', 'feed-after', ...Array.from({ length: f.chars }, (_, i) => 'c' + (i + 1))]) urls.add(`film/feed2/${n}.png`);
+  for (const n of ['sources', 'sources-press', 'grove']) urls.add(`film/sources2/${n}.png`);
+  urls.add('film/board/000.png'); urls.add('film/board-bg.png'); urls.add('film/board-notab.png'); urls.add('film/board-before.png');
+  window.IMGS = {};
+  await Promise.all([...urls].map((u) => new Promise((ok) => { const i = new Image(); i.onload = ok; i.onerror = ok; i.src = u; window.IMGS[u] = i; })));
+  // The Leaderboard strips: the header and tab bar stay put; each row is its own strip of the real screenshot.
+  const board = $('scrBoard');
+  const pitch = ROWS[1].y - ROWS[0].y;
+  const box = document.createElement('div'); box.style.cssText = 'position:absolute;left:0;top:0;width:393px;height:760px;overflow:hidden;z-index:1';
+  const mk = (cls, top, h, src, extra = '', into = board) => { const d = document.createElement('div'); d.className = 'strip ' + cls; d.style.cssText = `top:${top}px;height:${h}px;background-image:url(${src});background-position:0 ${-top}px;${extra}`; into.appendChild(d); return d; };
+  const head = ROWS[0].y - 6;
+  mk('bg', 0, 852, 'film/board-bg.png');
+  board.appendChild(box);
+  window.BOARD = {
+    pitch,
+    headBefore: mk('hb', 0, head, 'film/board-before.png', 'z-index:2'),
+    headAfter: mk('ha', 0, head, 'film/board/000.png', 'z-index:2'),
+    rows: ROWS.filter((r) => r.y - 5 < 760 + pitch).map((r) => mk('row', r.y - 5, pitch, 'film/board-notab.png', '', box)),
+    tab: mk('tab', 760, 92, 'film/board/000.png', 'z-index:3'),
+  };
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+}
+
+function frameAt(list, t0, t) {
+  const i = clamp(Math.floor((t - t0) * FPS), 0, list.length - 1);
+  return list[i];
+}
+
+// Layout: where things sit for each format.
+const L = V
+  ? { phoneX: (W - 425) / 2, phoneY: 690, phoneS: 1.42, capX: 90, capY: 170, capW: 900, chatX: 60, chatY: 700, endY: 520, revealY: 640 }
+  : { phoneX: 1180, phoneY: 62, phoneS: 1.08, capX: 160, capY: 310, capW: 900, chatX: 410, chatY: 300, endY: 175, revealY: 260 };
+
+function place() {
+  const ph = $('phone');
+  ph.style.left = L.phoneX + 'px'; ph.style.top = L.phoneY + 'px';
+  for (const id of ['c1', 'c2', 'c3', 'c4']) { const c = $(id); c.style.left = L.capX + 'px'; c.style.top = L.capY + 'px'; c.style.width = L.capW + 'px'; if (V) c.style.textAlign = 'center'; }
+  if (V) for (const id of ['c1', 'c2', 'c3', 'c4']) $(id).querySelector('.title').style.fontSize = '80px';
+  const ch = $('chat'); ch.style.left = L.chatX + 'px'; ch.style.top = L.chatY + 'px';
+  if (V) { ch.style.width = '960px'; ch.querySelectorAll('.bub').forEach((b) => { b.style.fontSize = '54px'; b.style.maxWidth = '900px'; }); }
+  const e = $('end'); e.style.left = '0'; e.style.width = W + 'px'; e.style.top = L.endY + 'px';
+  const r = $('reveal'); r.style.left = '0'; r.style.width = W + 'px'; r.style.top = L.revealY + 'px';
+  if (V) { $('reveal').querySelector('.title').style.fontSize = '86px'; $('end').querySelector('.name').style.fontSize = '88px'; }
+}
+
+function show(el, o, tx = 0, ty = 0, s = 1, blur = 0) {
+  el.style.opacity = o;
+  el.style.visibility = o <= 0.001 ? 'hidden' : 'visible';
+  el.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+  el.style.filter = blur ? `blur(${blur}px)` : 'none';
+}
+
+window.render = function (t) {
+  // The lights drift slowly (a pure function of time).
+  const d = (a, f, p) => Math.sin(t * f + p) * a;
+  $('b1').style.transform = `translate(${W * .05 + d(120, .35, 0)}px, ${H * .05 + d(80, .27, 1)}px)`;
+  $('b2').style.transform = `translate(${W * .55 + d(140, .3, 2)}px, ${H * .35 + d(90, .33, 3)}px)`;
+  $('b3').style.transform = `translate(${W * .25 + d(110, .25, 4)}px, ${H * .55 + d(100, .31, 5)}px)`;
+  const lightUp = 0.35 + 0.65 * outCubic(prog(t, 2.9, 3.6));
+  for (const b of ['b1', 'b2', 'b3']) $(b).style.opacity = (0.55 * lightUp).toFixed(3);
+
+  // 1. The hook.
+  const out = prog(t, T.reveal, T.reveal + 0.45);
+  const chatO = 1 - out;
+  show($('chat'), chatO, 0, 0, 1 - 0.06 * out, 16 * out);
+  const p1 = spring(prog(t, 0.25, 0.85));
+  show($('who'), clamp(p1 * 1.5) , 0, 0);
+  show($('m1'), clamp(p1 * 2), 0, (1 - p1) * 40, 0.85 + 0.15 * p1);
+  const dotsIn = spring(prog(t, 1.0, 1.4)), dotsOut = prog(t, 1.95, 2.05);
+  show($('dots'), clamp(dotsIn * 2) * (1 - dotsOut), 0, 0, (0.7 + 0.3 * dotsIn) * (1 - dotsOut * 0.3));
+  $('dots').style.display = t < 2.05 ? 'flex' : 'none';
+  [...$('dots').children].forEach((dot, i) => { const k = 0.5 + 0.5 * Math.sin(t * 12 - i * 0.9); dot.style.transform = `translateY(${-6 * k}px)`; dot.style.opacity = 0.45 + 0.55 * k; });
+  const p2 = spring(prog(t, 2.0, 2.55));
+  $('m2').style.display = t < 2.0 ? 'none' : 'block';
+  show($('m2'), clamp(p2 * 2), 0, (1 - p2) * 40, 0.85 + 0.15 * p2);
+
+  // 2. The reveal.
+  const rIn = spring(prog(t, T.reveal + 0.2, T.reveal + 0.8));
+  const rOut = prog(t, T.editor - 0.35, T.editor);
+  show($('reveal'), rIn > 0 ? 1 - rOut : 0, 0, -30 * rOut, 1 - 0.04 * rOut, 10 * rOut);
+  show($('rIcon'), clamp(rIn * 2), 0, (1 - rIn) * -60, 0.6 + 0.4 * rIn);
+  const a = outCubic(prog(t, T.reveal + 0.45, T.reveal + 0.85)), b = outCubic(prog(t, T.reveal + 0.85, T.reveal + 1.25));
+  show($('rA'), a, 0, (1 - a) * 30); $('rA').style.display = 'inline-block';
+  show($('rB'), b, 0, (1 - b) * 30); $('rB').style.display = 'inline-block';
+
+  // The phone: in with the editor, out at the end.
+  const phIn = spring(prog(t, T.editor - 0.15, T.editor + 0.5));
+  const phOut = inOut(prog(t, T.end, T.end + 0.5));
+  const phY = V ? (1 - phIn) * 700 + phOut * 900 : (1 - phIn) * 900 + phOut * 1000;
+  show($('phone'), phIn > 0 && phOut < 1 ? 1 : 0, 0, phY, L.phoneS * (1 - 0.05 * phOut));
+  $('phone').style.transformOrigin = '50% 0';
+
+  // Captions: old one out, then the new one in (never both busy at once).
+  const cap = (id, t0, t1) => {
+    const i = outCubic(prog(t, t0 + 0.15, t0 + 0.6)), o = inOut(prog(t, t1 - 0.3, t1));
+    show($(id), i * (1 - o), V ? 0 : (1 - i) * -40 - o * 40, V ? (1 - i) * 30 - o * 30 : 0);
+  };
+  cap('c1', T.editor, T.board); cap('c2', T.board, T.feed); cap('c3', T.feed, T.sources); cap('c4', T.sources, T.end);
+
+  // The screens: the app's own sideways slide between them.
+  const slide = (t0) => inOut(prog(t, t0 - 0.05, t0 + 0.3));
+  const order = [['scrEditor', T.editor], ['scrBoard', T.board], ['scrFeed', T.feed], ['scrSources', T.sources]];
+  order.forEach(([id, t0], i) => {
+    const sIn = i === 0 ? 1 : slide(t0), sOut = i === order.length - 1 ? 0 : slide(order[i + 1][1]);
+    const el = $(id);
+    el.style.transform = `translateX(${393 * (1 - sIn) - 393 * 0.3 * sOut}px)`;
+    el.style.filter = `brightness(${1 - 0.5 * sOut})`;
+    el.style.visibility = sIn > 0 && sOut < 1 ? 'visible' : 'hidden';
+  });
+
+  // 3. The editor: real frames of the real app.
+  const fe = frameAt(FILM.editor, T.editor + 0.2, t);
+  $('imgEditor').src = window.IMGS['film/' + fe.f].src;
+  // 5. The Feed: only settled screens of the real app; the moves between them are drawn here.
+  const F = FILM.feed, tf = t - T.feed;
+  const img = (n) => window.IMGS[n].src;
+  let comp = 'c0';
+  if (tf >= 1.0) comp = 'c-focus';
+  for (let i = 1; i <= F.chars; i++) if (tf >= 1.25 + (i - 1) * 0.125) comp = 'c' + i;
+  if (tf >= 2.75) comp = 'c-press';
+  $('feedComposer').src = img(`film/feed2/${comp}.png`);
+  const dismiss = inOut(prog(tf, 2.9, 3.35));
+  $('feedComposer').style.transform = `translateY(${852 * dismiss}px)`;
+  $('feedComposer').style.visibility = dismiss < 1 ? 'visible' : 'hidden';
+  $('feedComposer').style.borderRadius = dismiss > 0 ? `${Math.min(1, dismiss * 6) * 38}px ${Math.min(1, dismiss * 6) * 38}px 0 0` : '0';
+  $('feedComposer').style.boxShadow = dismiss > 0 && dismiss < 1 ? '0 -20px 50px rgba(0,0,0,.5)' : 'none';
+  $('feedBase').style.transform = `scale(${0.95 + 0.05 * dismiss})`;
+  $('feedBase').style.filter = `brightness(${0.55 + 0.45 * dismiss})`;
+  const fa = $('feedAfter'), FA = { y: 668, h: 102 };
+  fa.style.top = FA.y + 'px'; fa.style.height = FA.h + 'px'; fa.style.backgroundPosition = `0 ${-FA.y}px`;
+  fa.style.opacity = outCubic(prog(tf, 3.75, 4.1));
+
+  // 6. Sources: tap The Grove; its page slides in like the iPhone's push.
+  const S = FILM.sources, ts = t - T.sources;
+  $('srcImg').src = img(`film/sources2/${ts >= 1.5 && ts < 1.7 ? 'sources-press' : 'sources'}.png`);
+  const push = inOut(prog(ts, 1.65, 2.1));
+  $('srcImg').style.transform = `translateX(${-393 * 0.3 * push}px)`;
+  $('srcImg').style.filter = `brightness(${1 - 0.5 * push})`;
+  $('groveImg').style.transform = `translateX(${393 * (1 - push)}px)`;
+  $('groveImg').style.visibility = push > 0 ? 'visible' : 'hidden';
+  $('groveImg').style.boxShadow = push > 0 && push < 1 ? '-20px 0 40px rgba(0,0,0,.45)' : 'none';
+
+  // The finger: fades in and out (never pops), glides with an ease, presses in.
+  let fin = null;
+  const glideTo = (a, b, k) => ({ x: lerp(a.x, b.x, inOut(k)), y: lerp(a.y, b.y, inOut(k)) });
+  if (t > T.editor && t < T.board - 0.05) fin = fe.finger ? { ...fe.finger, o: 1 } : null;
+  else if (tf > 0.4 && tf < 3.0) {
+    const rest = { x: 300, y: 680 };
+    if (tf < 1.3) { const p = glideTo(rest, F.caption, prog(tf, 0.6, 0.98)); fin = { ...p, down: tf >= 1.0 && tf < 1.12, o: prog(tf, 0.4, 0.6) * (1 - prog(tf, 1.15, 1.3)) }; }
+    else if (tf > 2.1) { const p = glideTo(F.caption, F.post, prog(tf, 2.3, 2.7)); fin = { ...p, down: tf >= 2.75 && tf < 2.88, o: prog(tf, 2.1, 2.3) * (1 - prog(tf, 2.85, 3.0)) }; }
+  } else if (ts > 0.7 && ts < 1.85) {
+    const rest = { x: 290, y: 730 };
+    const p = glideTo(rest, S.card, prog(ts, 0.95, 1.45));
+    fin = { ...p, down: ts >= 1.5 && ts < 1.65, o: prog(ts, 0.7, 0.9) * (1 - prog(ts, 1.65, 1.85)) };
+  }
+  const fg = $('finger');
+  if (fin && fin.o > 0) { fg.style.display = 'block'; fg.style.opacity = fin.o; fg.style.left = fin.x + 'px'; fg.style.top = fin.y + 'px'; fg.style.transform = `scale(${fin.down ? 0.78 : 1})`; fg.style.background = fin.down ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.38)'; }
+  else fg.style.display = 'none';
+
+  // 4. The Leaderboard: Mega Z Emerald drops in at #1, the rest step down a place.
+  const B = window.BOARD, t4 = T.board + 0.55;
+  const head = prog(t, t4 + 0.2, t4 + 0.45);
+  B.headBefore.style.opacity = 1 - head; B.headAfter.style.opacity = head;
+  B.rows.forEach((row, i) => {
+    if (i === 0) {
+      const k = spring(prog(t, t4 + 0.35, t4 + 1.0));
+      row.style.opacity = clamp(k * 1.6);
+      row.style.transform = `translateY(${(1 - k) * -40}px) scale(${0.8 + 0.2 * k})`;
+      row.style.zIndex = 2;
+      const glow = Math.max(0, Math.sin(Math.PI * prog(t, t4 + 0.7, t4 + 1.8)));
+      row.style.filter = `drop-shadow(0 0 ${18 * glow}px rgba(182,255,212,${0.8 * glow})) brightness(${1 + 0.15 * glow})`;
+    } else {
+      const dl = (B.rows.length - i) * 0.02; const k = spring(prog(t, t4 + dl, t4 + 0.55 + dl));
+      row.style.transform = `translateY(${(1 - k) * -B.pitch}px)`;
+    }
+  });
+
+  // 5. The friend's page: a ring round "You've had this too" once it's in view.
+  // In with a spring; out with a slow, even fade (never a snap).
+  const inF = spring(prog(t, T.feed + 3.8, T.feed + 4.3)), outF = inOut(prog(t, T.sources - 0.45, T.sources - 0.05));
+  const inS = spring(prog(t, T.sources + 2.5, T.sources + 3.0)), outS = inOut(prog(t, T.end - 0.45, T.end - 0.05));
+  const kFeed = inF * (1 - outF), kSrc = inS * (1 - outS);
+  const ringK = Math.max(kFeed, kSrc);
+  const ringO = kSrc > 0 ? clamp(inS * 1.5) * (1 - outS) : clamp(inF * 1.5) * (1 - outF);
+  const ring = $('ring');
+  const st = FILM.sources.stats;
+  const R = kSrc > 0 ? { x: st.x - 6, y: st.y - 8, w: st.w + 12, h: st.h + 16 } : { x: 12, y: 664, w: 369, h: 104 };
+  ring.style.borderRadius = kSrc > 0 ? '14px' : '22px';
+  ring.style.left = R.x - 4 + 'px'; ring.style.top = R.y - 4 + 'px'; ring.style.width = R.w + 8 + 'px'; ring.style.height = R.h + 8 + 'px';
+  ring.style.opacity = ringO;
+  ring.style.transform = `scale(${1.08 - 0.08 * (kSrc > 0 ? inS : inF)})`;
+
+  // 6. The end.
+  const e = (a0, a1) => spring(prog(t, T.end + a0, T.end + a1));
+  const end = $('end');
+  const ek = e(0.35, 0.95);
+  show(end, ek > 0 ? 1 : 0);
+  const kids = [...end.children];
+  kids.forEach((k, i) => { const s = e(0.35 + i * 0.12, 0.95 + i * 0.12); show(k, clamp(s * 1.6), 0, (1 - s) * 40, i === 0 ? 0.6 + 0.4 * s : 1); });
+};
+
+window.ready = (async () => { place(); await load(); window.render(0); return true; })();
+</script>
+</body>
+</html>

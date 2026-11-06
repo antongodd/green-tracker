@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D93 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D94 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -61,8 +61,8 @@ only if what he wants is unclear.
 3. Wait for **"go live"**, then do the rest yourself (below) and say it's live with exact iPhone steps.
 
 - **Ask before adding scope.** Explain knock-on effects: other screens, data, export/restore, followers, privacy.
-- **After each item** is on dev or live: update the to-do list and Done (see "Where things stand"), tell him, and
-  suggest what's next.
+- **After each item** is on dev or live: move its idea along in GT Ideas (`ideas`), update Done when it's live (see
+  "Where things stand"), tell him, and suggest what's next.
 - **Whenever you need Anton to do something** (GitHub, Cloudflare, iPhone), give exact, full, numbered steps. He's
   happy to click through and send screenshots.
 
@@ -76,6 +76,7 @@ own one-page guide is `WORKFLOW.md`: keep it in step too.
 | Recipe | When |
 |---|---|
 | `start` | The start of every conversation, before anything else |
+| `ideas` | GT Ideas, the to-do list: "take #N", adding an idea, moving one along at each step |
 | `small-change` | A small change (and notes-only or tests-only ones), all the way to live |
 | `big-change` | A big change: questions, plan, mockups, "go ahead", GT Dev, "go live" |
 | `go-live` | Anton says "go live", and the end of every small change |
@@ -100,10 +101,11 @@ see the others' work (open pull requests, recently pushed `claude/*` branches, C
 - **At the start** (`start`) and **again before opening a pull request**, fetch `dev` and look for the others' work.
   Tell Anton if it overlaps with his request (the same screen or files); suggest doing one after the other if so.
 - **Whoever merges second sorts out clashes:** rebase on the latest `dev`; take the next free version number and
-  decision number; keep both sets of notes (to-do list, Done, changelog: theirs stays, yours goes on top).
+  decision number; keep both sets of notes (Done, changelog: theirs stays, yours goes on top). GT Ideas never clashes: each
+  conversation writes only its own ideas.
 - **Going live takes everything on `dev`.** Never open a release while a big change on `dev` is still waiting for
   Anton's "go live": tell him your change is on dev and waiting with it, and ask. One release pull request at a time.
-- **Naming a conversation you open for a job** (Anton, 2026-11-03): start with "Job #" and the to-do list number,
+- **Naming a conversation you open for a job** (Anton, 2026-11-03): start with "Job #" and the idea's number in GT Ideas,
   then a short description, with no "Green Tracker" in front: for example "Job 3: Privacy and data wording".
 - Never close, merge or push to another conversation's branch or pull request. Old open pull requests (#88, #93, #96)
   aren't yours to handle either (Anton): leave them, and don't ask about them.
@@ -145,11 +147,11 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 
 ## Every change
 
-- **Notes go in the same pull request** as the change (to-do list, Done, testing notes). After going live, the move to
-  Done is a notes-only pull request: it skips the tests, so merge it at once.
+- **Notes go in the same pull request** as the change (Done, testing notes); the idea moves in GT Ideas as you go.
+  After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D94) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D95) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -165,6 +167,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   only how something moves, delete it and say so. **Save the full output to a file before re-running anything.**
 - **Readability and accessibility tests are never loosened.** Fix the design instead.
 - **Tell Anton what couldn't be checked on a real iPhone.**
+- **The `changes` history in GT Ideas** gets a row for each item that goes live (`ideas` recipe), alongside Done.
 - **Screen recordings:** examine them frame by frame (opencv-python-headless).
 
 ## Don't, without asking Anton first
@@ -173,7 +176,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D93.
+- Reopen any decision D1–D94.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -247,6 +250,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   click **To try** after `goto`. Want to try in
   a test: `POST /api/wants` `{ kind: 'strain' | 'source', name, note? }`; a product save answers `tickedOff`. The Want
   to try sheet's box is `getByLabel('Strain', { exact: true })` (the Strainz tab matches otherwise).
+- Friends on Strainz (D94): `GET /api/people/strain-friends?name=` (friends who've tried a strain) and
+  `GET /api/people/u/<them>/strainz` (`comparison`, `wants`); both only from `sharedFor` and the `shareProducts`
+  allow-list, so Private, archived and kept products never appear. Their Want to try lists need their switch
+  `shareWants` (`PUT /api/privacy`, off by default; a setting sent without it stays off) and send names and kinds only,
+  never notes: a new field there must be checked in `test/api/friendstrainz.test.ts`. A friend's profile tabs are
+  Leaderboard, Posts, **Strainz** (your own keeps two), so a test that reads the tabs on someone else's page meets three.
+  Followers in a test: `follow` then `approve` (`friendstrainz.spec.ts` `beforeAll`); put `DEFAULT_PRIVACY` back at the end.
 - A colour set's effect on a product page (`.hero-photo .tfx`) fades out towards its box's bottom edge (0.81.1), so
   nothing stops there in a line across the photo; `heroedge.spec.ts` holds every animation (`getAnimations().pause()`;
   the CSP refuses `addStyleTag`) and compares the strip with and without the effect. A new piece of an effect must
@@ -395,73 +405,33 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 
 ## Where things stand
 
-Keep this short and current. **Read the to-do list to Anton at the start of each conversation** and keep it updated:
-when an item is merged into `dev`, mark it **on dev** (with the version and date); when it goes live, move it to
-**Done** with both dates. A new item Anton asks for goes on the list in the same pull request as other notes, or in a
-small notes-only one. The "Green Tracker to-do list" conversation answers Anton's questions about the list from this
-section, so it must always be current.
+Keep this short and current. **Read the open ideas in GT Ideas to Anton at the start of each conversation** (below,
+and the `ideas` recipe) and move each one along there: talking, building, on GT Dev (with the version), live. When an
+item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
+file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.81.1 (2026-11-04): Strainz, the + on every screen and the Log folded in (item 17), and no line across a
-  product's photo in the colour sets.
-- **Dev:** 0.82.1 (2026-11-04): Strainz as shelves (item 17, D93; one row scrolls, ×2, Unranked in 0.82.1), waiting for Anton to try it on GT Dev and say
-  "go live".
+- **Live:** 0.82.1 (2026-11-04): Strainz as shelves (item 17), on top of 0.81's Strainz, the + on every screen and
+  the line fix.
+- **Dev:** 0.83.0, Friends on Strainz (item 18, D94), waiting for Anton's "go live".
 
-### To-do list (suggested order; Anton decides)
+### The to-do list: GT Ideas
 
-From the review panel of 2026-11-03 (`reviews/2026-11-03/summary.md`; Anton wants all ten, order left to Claude).
-Each is a job for its own conversation; the summary lists what each covers.
-
-1. ~~Forgot-password safety net~~: live in 0.69.1 (see Done). Numbers stay as they are, so "Job 2" and the rest
-   keep naming the same job.
-2. ~~Don't lose my work~~: live in 0.69.2 (see Done).
-3. ~~Privacy and data words that are out of date~~: live in 0.69.3 and 0.69.5 (see Done).
-4. ~~Small fixes on the Leaderboard, Log and Feed~~: live in 0.69.9 (see Done).
-5. ~~Wording fixes across the app~~: live in 0.69.8 (see Done). Anton keeps the New tags on Looks and colours
-   (2026-11-03). Still open if he wants them: the names used twice (Deep Sea; Aurora, Neon), the Brand tag on a
-   brand's own page.
-6. ~~Website catch-up~~: live in 0.69.4 and 0.69.6 (see Done).
-7. ~~Trust basics for strangers~~: live in 0.73.0–0.73.1 (see Done). Ofcom: the Online Safety Act applies (its
-   paperwork is item 12); ICO: the fee applies (£52, paying is Anton's to do). Later if he wants it: move the photos
-   (now in North America) to Europe.
-8. ~~Friends: you against them, and inviting someone~~: live in 0.71.0 (see Done).
-9. ~~Sign-in hardening~~: live in 0.72.0 (see Done).
-10. ~~A quicker add-a-product form~~: live in 0.70.0–0.70.2 (see Done).
-11. **Forgot password by email, and checking the email is real** (later; Anton, 2026-11-02). Both need the app to send
-   email: a web address of Anton's linked to Cloudflare, or an email service. Until then, a forgotten password with no
-   Face ID can't be recovered. Would also stop sign-up showing whether an email has an account (panel, 2026-11-03).
-12. ~~Ofcom paperwork~~: drafted 2026-11-03 in `design/ofcom/` (see Done). Anton still signs, dates and keeps them,
-   checks the 🔎 points on Ofcom's site, and looks at them again by 2027-11-03 or before a big change to what people
-   can share (`big-change` step 1).
-13. **Acting on reports** (from the Ofcom paperwork, 2026-11-03; Anton decides). Reports reach Anton only when he asks
-   (a weekly reminder, or a message when one arrives); there's no way to close an account that keeps breaking the
-   rules, though the house rules say Anton can; the house rules don't say how to complain about a decision (the
-   contact address). Ofcom expects reports dealt with swiftly and a route for complaints.
-14. **A real age check** (from the Ofcom paperwork; optional, Anton's choice, later). The 18+ tick isn't "highly
-   effective age assurance", so in law children can use the app; for now the children's access assessment finds
-   they're not likely to. Worth it before opening the app beyond friends of friends; costs money per check.
-15. ~~The website, overhauled~~: live in 0.74.0–0.78.0 (see Done). Later if Anton wants: a privacy page anyone can
-   open (the app's is behind sign-in), and reviews once there are real ones.
-16. ~~The Apple-style redesign of the app~~: all three stages live by 0.80.0 (see Done). (big; Anton, 2026-11-03: "it just looks like a vibe coded app — i want it to look like
-   a real developed apple app"; D87). Mockups https://claude.ai/artifact/WQrY1QDf397CU8vNUdVnQ8. In three stages,
-   each with its own mockups:
-   - ~~Stage A, the base design~~: live in 0.76.0 (see Done).
-   - ~~Stage B, the Looks~~: live in 0.79.0 (see Done); the website's Looks row followed in 0.79.1.
-   - ~~Stage C, the Leaderboard colours~~: live in 0.80.0 (see Done). Later if Anton wants: the website showing the
-     new colour sets.
-   - The website: its own job (item 15).
-17. **Strainz** (big; Anton, 2026-11-04; D92): live in 0.81.0–0.81.1 (see Done). Anton wants to try Rename on his
-   own data before deciding more. **Shelves** (D93, Anton's pick A, 2026-11-04): on dev in 0.82.0
-   (2026-11-04), waiting for Anton to try on GT Dev and say "go live"; mockups
-   https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94.
-18. **Friends' strains** (later; Anton, 2026-11-04): "3 friends have tried Zkittlez", or your strains against a
-   friend's. Changes what followers see, so it's a big change of its own (privacy, `big-change` step 1). Also later
-   if he wants: Want to try lists his followers can see, and the website's "Log" screen in its scroll story showing
-   Strainz.
+Since 2026-11-04 the to-do list is **GT Ideas** (https://claude.ai/artifact/7rizQA13SW585icpjHgDBx), a private page in
+the app's look where Anton types ideas whenever they come to him (name, what he wants, where in the app, how much he
+wants it, a screenshot). It has three tabs: **Ideas** (new and later), **In progress** (talking, building, on GT Dev,
+with the Job number), **Changes** (everything that went live, from this Done table). It's outside the code, so two
+conversations never clash over the list. Read and write it with the **`ideas`** recipe (the ArtifactData tool):
+Anton says "take #26", you move the card along at each step, and add your take on each new idea. Items 1–18 of the
+old list kept their numbers; the open ones (11–14, 17, 18) and the "later if he wants" leftovers (19–25) moved there.
+The page's source is `design/gt-ideas.html`.
 
 ### Done (newest first)
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| An ad video for the app (26 seconds, widescreen and upright, made with the `brag` skill from the real app: rate it, rank it, post it, know your plug), in `design/ad-video/` with what's real and made up and how it was made; not on the website yet (its own job, in GT Ideas) | (notes) | | 2026-11-05 | notes only |
+| GT Ideas: the to-do list moved out of this file into a private page in the app's look (Ideas, In progress, Changes), where Anton adds ideas whenever he likes; the `ideas` recipe | (notes) | | 2026-11-04 | notes only |
+| Strainz as shelves: your favourite strain on top, then rows that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring filled to its average and ×1, ×2…; See all for the whole list; tap a strain you want to try for its note or Remove; only the row you swipe moves (0.82.1, Anton's screenshots); "Tried, not rated" renamed Unranked everywhere, Move to Unranked on a product page (tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.82.0, 0.82.1 | D93 | 2026-11-04 | 2026-11-04 |
 | Strainz: a tab in the Log's place with your strains (a product's name) and a page for each (average, place, best and lowest, kinds, prices, sources, dates), Compare two, Rename, Want to try lists for strains and sources that tick themselves off, the Log's unrated entries under Tried, not rated, the + beside the bar on every screen; and no line across a product's photo in any colour set (0.81.1, Anton's Sunset screenshot) (tried by Anton on GT Dev: "i like it"; Rename and VoiceOver not yet checked on his iPhone) | 0.81.0, 0.81.1 | D92 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage C, the Leaderboard colours: twelve sets, each with little moving details growing from 8.0 to a full show at 9.5 (Aurora's lights, Candy's sprinkles, Cosmos' stars, Deep Sea's jellyfish, Ember's sparks, Medals' gold leaf, Neon's tubes, Prism's beams, Storm's lightning, Sunset's sun, Synthwave's grid, Toxic's drips); Ember's middle band Gold; Candy, Medals, Storm and Toxic new; Gems and Metals went (shown as Aurora); new accounts on Aurora; old backups with a removed Look or set restore again (tried by Anton on GT Dev: "ok this is good") | 0.80.0 | D91 | 2026-11-04 | 2026-11-04 |
 | The app's Apple-style redesign, stage B, the Looks: every Look's background glides smoothly with details of its own (Sakura's branch and petals, Nebula's shooting stars, Aurora's northern lights, Deep Sea's jellyfish…), one light look (Daylight); Holo Pearl and Haze went (shown as Aurora Glass; Mint and Pearl as Daylight); the website's Looks row followed (eleven) in 0.79.1 (not yet tried on Anton's iPhone on live) | 0.79.0, 0.79.1 | D90 | 2026-11-04 | 2026-11-04 |

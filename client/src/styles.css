@@ -2460,3 +2460,36 @@ table.vs .win { color: var(--accent-bright); }
 .sring.dash { border: 1.5px dashed var(--hairline-strong); color: var(--text-2); font-size: 26px; font-weight: 300; }
 .pk-n { font-size: 14px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
 .pk-m { font-size: 12px; color: var(--text-2); }
+
+/* ---------- Friends on Strainz (D94) ---------- */
+.seg.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.friends-tried { margin-top: 16px; }
+.list.ftried { margin: 0; padding: 0; list-style: none; }
+.ftried li + li { border-top: 1px solid var(--hairline); }
+.ftried a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; color: var(--text); text-decoration: none; }
+.ftried .ft-text { display: grid; gap: 2px; min-width: 0; }
+.ftried .ft-n { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.ftried .ft-m { font-size: 13px; color: var(--text-2); overflow-wrap: anywhere; }
+.ftried .ft-s { font-family: var(--num-font); font-size: 22px; font-weight: 700; color: var(--accent-bright); }
+.add-want-wrap { margin-top: 14px; }
+.add-want.sm { flex: none; border: 0; border-radius: 999px; padding: 0 12px; min-height: 36px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; color: var(--on-accent); background: var(--primary); white-space: nowrap; }
+.add-want.done { background: var(--glass-strong); color: var(--accent-bright); box-shadow: inset 0 0 0 1px var(--accent); }
+.add-want.tried { background: none; color: var(--text-2); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.btn.add-want.done, .btn.add-want.tried { display: flex; align-items: center; justify-content: center; }
+.their-strainz { display: grid; gap: 4px; padding-top: 4px; }
+table.vs-both { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+table.vs-both th, table.vs-both td { padding: 11px 14px; border-top: 1px solid var(--hairline); text-align: right; font-size: 15px; }
+table.vs-both thead th { border-top: 0; padding-top: 8px; padding-bottom: 4px; font-size: 12px; font-weight: 500; color: var(--text-2); }
+table.vs-both th.vs-who .av { width: 30px; height: 30px; font-size: 13px; margin-left: auto; }
+table.vs-both thead th:not(:first-child), table.vs-both td { width: 74px; }
+table.vs-both tbody th { text-align: left; font-weight: 600; overflow-wrap: anywhere; }
+table.vs-both tbody th a { color: var(--text); text-decoration: none; }
+table.vs-both td { font-family: var(--num-font); font-weight: 700; color: var(--text-2); }
+table.vs-both td.win { color: var(--accent-bright); }
+.vs-foot { padding: 10px 4px 4px; text-align: left; }
+.list.want-rows { margin: 0; padding: 0; list-style: none; }
+.want-rows li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+.want-rows li + li { border-top: 1px solid var(--hairline); }
+.want-rows .wr-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.want-rows .wr-n { font-weight: 600; font-size: 15px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.want-rows .wr-m { font-size: 13px; color: var(--text-2); }

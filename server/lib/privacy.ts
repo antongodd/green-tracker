@@ -8,9 +8,10 @@ interface PrivacyRow {
   share_country: number;
   share_photos: number;
   share_profile_photo: number;
+  share_wants: number;
 }
 
-const COLUMNS = 'share_board, share_source, share_country, share_photos, share_profile_photo';
+const COLUMNS = 'share_board, share_source, share_country, share_photos, share_profile_photo, share_wants';
 
 /** Your settings as you set them (switches that need another one keep their own state). */
 export async function loadPrivacy(db: D1Database, userId: string): Promise<Privacy> {
@@ -22,6 +23,7 @@ export async function loadPrivacy(db: D1Database, userId: string): Promise<Priva
     shareCountry: r.share_country === 1,
     sharePhotos: r.share_photos === 1,
     shareProfilePhoto: r.share_profile_photo === 1,
+    shareWants: r.share_wants === 1,
   };
 }
 
@@ -33,9 +35,9 @@ export function savePrivacyStatement(db: D1Database, userId: string, p: Privacy)
   const b = (v: boolean) => (v ? 1 : 0);
   return db
     .prepare(
-      `INSERT INTO privacy_settings (user_id, ${COLUMNS}, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+      `INSERT INTO privacy_settings (user_id, ${COLUMNS}, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
        ON CONFLICT (user_id) DO UPDATE SET share_board = excluded.share_board, share_source = excluded.share_source, share_country = excluded.share_country,
-         share_photos = excluded.share_photos, share_profile_photo = excluded.share_profile_photo, updated_at = excluded.updated_at`,
+         share_photos = excluded.share_photos, share_profile_photo = excluded.share_profile_photo, share_wants = excluded.share_wants, updated_at = excluded.updated_at`,
     )
-    .bind(userId, b(p.shareBoard), b(p.shareSource), b(p.shareCountry), b(p.sharePhotos), b(p.shareProfilePhoto), Date.now());
+    .bind(userId, b(p.shareBoard), b(p.shareSource), b(p.shareCountry), b(p.sharePhotos), b(p.shareProfilePhoto), b(p.shareWants), Date.now());
 }

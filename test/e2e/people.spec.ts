@@ -96,7 +96,7 @@ test('their profile shows identity, ratings and details only — no price, notes
   await fan.locator('.row', { hasText: 'Wedding Cake' }).click();
   await expect(fan.locator('.hdr .title')).toContainText(`@${ownerName} / Wedding Cake`);
   await expect(fan.locator('.hero-score b')).toHaveText('9.1');
-  await expect(fan.getByText('Jungle Boys')).toBeVisible();
+  await expect(fan.getByText('Jungle Boys', { exact: true })).toBeVisible();
   for (const hidden of ['Price history', 'Value for money', 'Private notes', 'Leafly', 'Secret Shop', '£']) {
     await expect(fan.getByText(hidden)).toHaveCount(0);
   }

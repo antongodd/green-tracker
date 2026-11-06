@@ -37,6 +37,9 @@ It's made for iPhone, it's free, there are no ads, and it's run by one person.
 - **Their profile**: an @name and a profile photo.
 - **Their Leaderboard**, as far as their Privacy settings share it (name, type, strain, score, Source = the brand or
   grower, country, product photos). **Never** prices, the Supplier (the shop or dealer), amounts, dates or notes.
+- **Their Want to try lists** (since 0.83.0, D94), only if they turn on **My Want to try lists** (off to start with):
+  the names of strains and Sources they want to try, **never their notes**. Followers can copy a name to their own
+  list; nobody is told. The Log is never shared.
 
 **Who sees it:**
 
@@ -149,6 +152,11 @@ where it stands:
     expects the assessment to be redone **before** a significant change is made 🔎;
   - if reports show a new kind of problem, or the number of accounts grows a lot;
   - if Ofcom changes its Risk Profiles or Codes.
+- **Looked at again, 2026-11-06 (0.83.0, Friends on Strainz):** followers can now see which friends have tried a
+  strain, compare strains, and see Want to try names if the owner turns that on. It adds no new way to reach strangers,
+  no messages, links, prices or notes; everything still goes only to approved followers. A Source to try is a short
+  name a person types, so someone could put a dealer's name there; the same is true of a product's Source today, the
+  wording asks for the brand or grower, and Report covers the profile. **No risk level changes.**
 
 ---
 

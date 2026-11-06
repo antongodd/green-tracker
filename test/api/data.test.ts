@@ -93,13 +93,13 @@ describe('restore (brief §13)', () => {
     });
     expect(res.status, JSON.stringify(res.json)).toBe(200);
     expect(res.json).toEqual({ products: 1, logEntries: 1, photos: 0, profilePhoto: 'kept', posts: 'kept', wants: 'kept' });
-    expect((await b.get('/api/privacy')).json.privacy).toEqual({ shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true });
+    expect((await b.get('/api/privacy')).json.privacy).toEqual({ shareBoard: true, shareSource: true, shareCountry: true, sharePhotos: true, shareProfilePhoto: true, shareWants: false });
   });
 
   it('the database has no smokes left (D60): the table and the three Smokes privacy switches are gone', () => {
     expect(d1("SELECT name FROM sqlite_master WHERE name = 'smokes'")).toEqual([]);
     const columns = (d1('PRAGMA table_info(privacy_settings)') as { name: string }[]).map((c) => c.name);
-    expect(columns).toEqual(['user_id', 'share_board', 'share_source', 'share_country', 'share_photos', 'share_profile_photo', 'updated_at']);
+    expect(columns).toEqual(['user_id', 'share_board', 'share_source', 'share_country', 'share_photos', 'share_profile_photo', 'updated_at', 'share_wants']);
   });
 
   it('a bad record rejects the whole restore and changes nothing', async () => {

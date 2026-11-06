@@ -2,6 +2,7 @@
 import type { PersonCard, SharedProduct } from '../../shared/domain/social';
 import type { Appearance } from '../../shared/domain/gems';
 import type { Comparison, YourScore } from '../../shared/domain/compare';
+import type { StrainsAgainst } from '../../shared/domain/strains';
 import type { ReportReason } from '../../shared/domain/trust';
 import { api } from './api';
 import { rememberTheirLook } from './theirLook';
@@ -45,4 +46,26 @@ export const compareWith = (username: string) =>
   api<{ person: PersonCard; appearance?: Appearance; comparison: Comparison }>('GET', `${u(username)}/compare`).then((r) => {
     rememberTheirLook(username, r.appearance);
     return { person: r.person, comparison: r.comparison };
+  });
+
+// Friends on Strainz (D94) ----------------------------------------------------------------------------------------
+
+/** A friend's product of a strain, from what they share with you. */
+export interface StrainFriend {
+  person: PersonCard;
+  productId: string;
+  score: number | null;
+  kind: string;
+  source: string | null;
+}
+/** Friends who've tried a strain (D94), best first. */
+export const strainFriends = (name: string) => api<{ friends: StrainFriend[] }>('GET', `/people/strain-friends?name=${encodeURIComponent(name)}`).then((r) => r.friends);
+
+/** Their Want to try lists, names only (D94), when they've switched them on; `tried` when you've had it. */
+export type TheirWant = { kind: 'strain' | 'source'; name: string; tried: boolean };
+/** Their Strainz page (D94): your strains against theirs, and their Want to try lists (or null). */
+export const theirStrainz = (username: string) =>
+  api<{ person: PersonCard; appearance?: Appearance; comparison: StrainsAgainst; wants: TheirWant[] | null }>('GET', `${u(username)}/strainz`).then((r) => {
+    rememberTheirLook(username, r.appearance);
+    return { person: r.person, comparison: r.comparison, wants: r.wants };
   });

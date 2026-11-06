@@ -165,6 +165,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D91 | **The Apple-style redesign, stage C: the Leaderboard colours** (2026-11-04; mockups https://claude.ai/artifact/7M3gtiszBn91BDxVsmwsEz; the owner: his favourites Sunset, Synthwave, Prism, Neon, Ember ("but i dont like how there is a random blue colour in the middle"), Deep Sea, Cosmos and Aurora ("better version of gems"); he likes "the ones that have little unique details and things like moving animations"; on the mockups: "ember - should be gold", "i like: toxic, medals, storm and candy", "i also really like the little animations youve done", then "go ahead"). | **Twelve colour sets, every one with details of its own** that grow from a hint at 8.0 to a full show at 9.5: his eight (Ember's Blue flame now **Gold**, and no blue in Inferno) and four new ones, **Candy**, **Medals**, **Storm** and **Toxic** (marked New). **Gems and Metals go**: saved ones show as Aurora, nothing rewritten (`PRESETS_MOVED`, like D90's looks); a backup naming a look or set that went is restored with its replacement. Accounts start on Aurora's colours (D71's Gems before). Kept: D48's four bands and cards, the #1 mark, D74 (followers see your colours), every readability test (Storm's rain and lightning were redrawn to stay off the words). What changed is in §4 *The colour sets' details*. |
 | D92 | **Strainz, the + everywhere, and the Log folded in** (2026-11-04; mockups https://claude.ai/artifact/987zYn5kvJgDSphKFaXGAr; the owner: "I want a new kinda section, similar to sources… to track the strains you have tried, see how many different products of each strain you have tried. compare strains. see the average you rate that strain"; on the Log: "this isn't very useful to new people… I don't want to delete the log, but just maybe move it into somewhere else"; on the bar: "I hate how the menu buttons change… it needs to be consistent in every tab"; on strains: "zkittlez and cookies zkittlez are different strains… you (atleast myself) would put zkittlez as the name, and live rosin as the product/concentrate type"; his answers: a merge (Rename) yes, "tried once" marked, Compare two, the Log folded in, ticked-off wants "disapear completly", private for now, the + different on every screen (Leaderboard a product, Strainz a strain to try, Sources option B "sources to try", Feed a post, Settings a product), no new "tried, not rated" entries ("just take it straight into the whole product/leaderboard form"), the name **Strainz**, layout B "cards - like sources", then "go ahead"). | **A Strainz tab in the Log's place**: a strain is a product's Name (matched like Sources' names, so "Cookies Zkittlez" is its own strain); cards like Sources (Best average, Most tried, Recently tried, A–Z; "Tried once"), then the Log entries you never rated (*Tried, not rated*) and a link to the Log by country (its screens stay). A strain's page: average, place among your rated strains, best and lowest, kinds, price per gram, value for money, sources, first and last tried, its products; **Compare** two side by side; **Rename** renames every product and Log entry with the name (joining two strains). **Want to try** lists (strains on Strainz, sources on Sources, a new table `wants`), private, ticked off by the server when a saved product has the name, Source or Supplier, with a message once. **The + beside the bar on every screen** (`TabBar` draws it), so the bar keeps its width; Return to Log reads *Move to Tried, not rated*. Export, Restore and Delete account cover the lists; the privacy page says so. Left for later: friends' strains (to-do list). |
 | D93 | **Strainz as shelves** (2026-11-04; mockups https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94; the owner on GT Dev: "i feel like the strainz and the sources tab feels pretty similar… i just want some ideas of how we could maybe make this better so every tab feels different"; of four options: "i really like A: shelves", then "go ahead"). | Strainz is no longer cards like Sources: **your favourite strain** on top, then **shelves** that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Tried, not rated; an empty one hidden), each strain a round photo with a **ring filled to its average** out of 10, the average on the ring, and "Tried once" / "3 tried". **See all** opens the whole list: the D92 cards with search and the four sorts (`/strainz/list/<sort>`), your Want to try list with notes (`/strainz/list/want`), or the Log. Tapping a strain on the Want to try shelf shows its note and **Remove from list**; the Tried \| Want to try switch went. Sources unchanged. No database change. |
+| D94 | **Friends on Strainz** (2026-11-06; idea #18; mockups https://claude.ai/artifact/Xfch7N15YyTRACSuTXkbYY; the owner: "i want the '3 freinds have tried this' i want the 'your strains againts a freind's' i want the ' want to try lists freinds can see' - and yes i want to be able to add strains from freinds"; friends are the people you follow who approved you; strains follow their Leaderboard switch ("a"); "i dont want log to be shared"; Want to try names only; a Strainz tab on their profile ("a"); the friends list as option A, "a, go ahead"). | **Friends who've tried it**: a strain's page (and a friend's product page) lists the people you follow who share their Leaderboard and have a product of that name (by `nameKey`), each with their photo, @name, what they had (kind, and Source if they share it) and their score, best first; never Private, archived or kept products. **A friend's profile** has Leaderboard \| Posts \| **Strainz**: strains you've both tried (your average and theirs, the higher one green), strains only they've tried, and, if they've switched it on, their Want to try strains and Sources to try (**names only, never notes**). **+ Want to try** adds one to your own list with the note "From @them"; they aren't told. A new switch in What followers see, **My Want to try lists**, off until you turn it on (`privacy_settings.share_wants`, migration 0023; a setting or backup without it reads as off). The Log is never shared. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -2010,16 +2011,55 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   unrated entries) and `StrainzWants` (`/strainz/list/want`). Styles: "Strainz as shelves" at the end of `styles.css`.
   *Tests:* `strainz.spec.ts`.
 
+- **Friends on Strainz (D94, 0.83.0).** Server (`server/routes/people.ts`): `GET /api/people/strain-friends?name=`
+  (400 for an empty or over-long name) lists `{ person, productId, score, kind, source }` for each shared product of
+  that `nameKey` among the people you follow, approved and with no block either way, who share their Leaderboard
+  (`sharedFor` and the `shareProducts` allow-list, so Private, archived and kept products never count; `source` is null
+  when they don't share Source), best first. `GET /api/people/u/:username/strainz` (403 if you don't follow them, 404
+  when blocked) answers `{ person, appearance, comparison, wants }`: `comparison` is `compareStrains(yours, theirs)`
+  (`shared/domain/strains.ts`: `both` with your average and theirs, `onlyThem`; empty with their Leaderboard off),
+  `wants` is null unless `privacy.shareWants`, else `{ kind, name, tried }` only (never the note). `shareWants`
+  (`shared/domain/privacy.ts`, column `share_wants`, migration 0023) defaults to off and a setting without it reads as
+  off. Client: `components/Friends.tsx` (`FriendsTried` on the strain page and a friend's product page; `AddWant`,
+  which posts the usual `POST /api/wants` with the note "From @them" and shows "On your list" on a 409; `TheirStrainz`,
+  the Strainz tab: `table.vs-both` with each person's photo as the column headings, the winning cell `td.win`, then
+  `#ts-only`, `#ts-want`, `#ts-src`). `Person.tsx`: the third tab only on someone else's page (`/u/<them>/strainz`).
+  Privacy: the Strainz group with the one switch, and its line under What followers see. About (privacy page): the
+  followers sentences say what's shared. *Tests:* `test/api/friendstrainz.test.ts`, `friendstrainz.spec.ts` (core set).
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
 
+### 0.83.0 — Friends on Strainz (D94)
+- A strain's page shows **Friends who've tried it**: the people you follow who've had it, with what they had and their
+  score. A friend's product page shows it too, with **+ Add to my Want to try**.
+- A friend's profile has a third tab, **Strainz**: the strains you've both tried (your score and theirs, the higher one
+  green), the ones only they've tried, and their Want to try lists if they share them. **+ Want to try** puts one on
+  your own list, noted "From @them"; they aren't told.
+- A new switch under Settings › What followers see: **My Want to try lists** (names only, never your notes). Off until
+  you turn it on. Your Log is never shared. The privacy page says so.
+- Database: migration 0023 adds `privacy_settings.share_wants` (off for everyone).
+- Tests: `test/api/friendstrainz.test.ts`, `friendstrainz.spec.ts` (core set).
+
+### Notes — GT Ideas, the to-do list outside the code
+- The to-do list moved from CLAUDE.md to GT Ideas (https://claude.ai/artifact/7rizQA13SW585icpjHgDBx), a private
+  claude.ai page in the app's look with its own small database: Ideas (Anton adds them any time, with where in the app,
+  how much he wants it and a screenshot), In progress (talking, building, on GT Dev, live, with the Job number) and
+  Changes (the Done table, one row per item that went live). Two conversations no longer clash over the list. The new
+  `ideas` recipe says how Claude reads and moves the ideas; `start`, `small-change`, `big-change`, `go-live`,
+  `review-panel` and WORKFLOW.md follow it. The page's source is `design/gt-ideas.html`. Nothing in the app changes.
+
 ### Notes — Strainz is live
 - 0.81.0 and 0.81.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.81.1, #209). Auto-merge merged the release
   on the dev push run's "test" before its own full browser run had finished; that run then passed on every machine.
   Releases no longer use auto-merge (CLAUDE.md).
+
+### Notes — Strainz as shelves is live
+- 0.82.0 and 0.82.1 (on dev 2026-11-04) went live on 2026-11-04 (release 0.82.1, #212), merged by hand once its own
+  full browser run had passed on all six machines. Notes only.
 
 ### 0.82.1 — Strainz shelves: one row scrolls, ×2, Unranked
 - Swiping a shelf moved the whole screen sideways on iPhone, and the favourite card ran off the right edge (the owner's
