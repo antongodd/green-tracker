@@ -55,11 +55,11 @@ test('More has a Privacy group; the screen starts as before, with the preview on
   await expect(owner).toHaveURL(/\/more\/privacy$/);
   await expect(preview()).toContainText('Shared Kush');
   await expect(preview()).toContainText('Kind Shop');
-  for (const [name, on] of [['Share my Leaderboard', true], ['Source', true], ['Country', true], ['Product photos', true], ['My profile photo', true]] as const) {
+  for (const [name, on] of [['Share my Leaderboard', true], ['Source', true], ['Country', true], ['Product photos', true], ['My profile photo', true], ['My Want to try lists', false]] as const) {
     await expect(toSwitch(name), name).toBeChecked({ checked: on });
   }
-  // Smokes are gone (D60): no Smokes switches or group.
-  await expect(owner.locator('.priv-row')).toHaveCount(5);
+  // Smokes are gone (D60): no Smokes switches or group. Want to try lists (D94) start off.
+  await expect(owner.locator('.priv-row')).toHaveCount(6);
   await expect(owner.locator('main')).not.toContainText(/smoke|Most used/i);
   // The words match what's shared since posts (D77): posts go to followers whatever the switches say.
   await expect(owner.locator('.priv-row', { hasText: 'Share my Leaderboard' }).locator('.sub')).toHaveText('Off: followers see only your name and your posts.');
