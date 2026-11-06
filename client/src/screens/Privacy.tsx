@@ -33,6 +33,8 @@ const GROUPS: { title: string; switches: Switch[] }[] = [
       { key: 'sharePhotos', label: 'Product photos', note: 'Without them, followers see the leaf or other icon.' },
     ],
   },
+  // D94: off until you turn it on; your notes and your Log are never shared.
+  { title: 'Strainz', switches: [{ key: 'shareWants', label: 'My Want to try lists', note: 'Strains and sources, names only. Followers can add them to their own lists; you aren’t told. Your notes and your Log stay private.' }] },
   { title: 'You', switches: [{ key: 'shareProfilePhoto', label: 'My profile photo', note: 'Off: everyone else sees your letter instead.' }] },
 ];
 
@@ -78,6 +80,7 @@ function PreviewCard(p: { settings: Settings; preview: Preview | null }) {
       </div>
       {body}
       <p class="pv-line">Beside your name: {p.settings.shareProfilePhoto ? 'your photo, if you have one' : 'your letter'}.</p>
+      <p class="pv-line">Your Want to try lists: {p.settings.shareWants ? 'shared, names only' : 'private'}.</p>
     </section>
   );
 }

@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D93 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D94 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D94) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D95) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D93.
+- Reopen any decision D1–D94.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -250,6 +250,13 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   click **To try** after `goto`. Want to try in
   a test: `POST /api/wants` `{ kind: 'strain' | 'source', name, note? }`; a product save answers `tickedOff`. The Want
   to try sheet's box is `getByLabel('Strain', { exact: true })` (the Strainz tab matches otherwise).
+- Friends on Strainz (D94): `GET /api/people/strain-friends?name=` (friends who've tried a strain) and
+  `GET /api/people/u/<them>/strainz` (`comparison`, `wants`); both only from `sharedFor` and the `shareProducts`
+  allow-list, so Private, archived and kept products never appear. Their Want to try lists need their switch
+  `shareWants` (`PUT /api/privacy`, off by default; a setting sent without it stays off) and send names and kinds only,
+  never notes: a new field there must be checked in `test/api/friendstrainz.test.ts`. A friend's profile tabs are
+  Leaderboard, Posts, **Strainz** (your own keeps two), so a test that reads the tabs on someone else's page meets three.
+  Followers in a test: `follow` then `approve` (`friendstrainz.spec.ts` `beforeAll`); put `DEFAULT_PRIVACY` back at the end.
 - A colour set's effect on a product page (`.hero-photo .tfx`) fades out towards its box's bottom edge (0.81.1), so
   nothing stops there in a line across the photo; `heroedge.spec.ts` holds every animation (`getAnimations().pause()`;
   the CSP refuses `addStyleTag`) and compares the strip with and without the effect. A new piece of an effect must
@@ -405,7 +412,7 @@ file. The "Green Tracker to-do list" conversation answers Anton's questions abou
 
 - **Live:** 0.82.1 (2026-11-04): Strainz as shelves (item 17), on top of 0.81's Strainz, the + on every screen and
   the line fix.
-- **Dev:** the same as live.
+- **Dev:** 0.83.0, Friends on Strainz (item 18, D94), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 

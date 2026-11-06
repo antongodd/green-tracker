@@ -9,7 +9,7 @@ import { useSession } from '../session';
 // Trust basics for strangers (D84): the privacy page, the house rules, and the 18+ tick. Every sentence on the
 // privacy page must stay true: when what's kept, where, or who sees it changes, change it here too (SPEC §4).
 
-export const PRIVACY_UPDATED = '4 November 2026';
+export const PRIVACY_UPDATED = '6 November 2026';
 
 /** A page from Settings (with Back), or over sign-up (with Close, so nothing typed there is lost). */
 function AboutPage(p: { title: string; onClose?: () => void; children: ComponentChildren }) {
@@ -53,7 +53,7 @@ export function PrivacyNotice(p: { onClose?: () => void }) {
           <b>Face ID</b>: only a key your iPhone makes. Your face never leaves your phone.
         </li>
         <li>
-          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, Want to try lists (only you see them), notes, photos, posts, comments, 🔥s and settings.
+          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, Want to try lists (only you see them, unless you share their names in What followers see), notes, photos, posts, comments, 🔥s and settings.
         </li>
         <li>
           <b>To stop break-ins</b>: a scrambled form of your internet address (never the address itself) to limit how many tries can be made, and a random code for each phone you’ve signed in on.
@@ -68,7 +68,7 @@ export function PrivacyNotice(p: { onClose?: () => void }) {
         <dt>You</dt>
         <dd>Everything.</dd>
         <dt>Followers you approve</dt>
-        <dd>Only what you switch on in What followers see, and your posts.</dd>
+        <dd>Only what you switch on in What followers see (your Leaderboard, and your Want to try lists by name if you choose), and your posts. Never your Log or your notes.</dd>
         <dt>Anyone on the app</dt>
         <dd>Your @name. People you follow, or ask to follow, also see your profile photo, unless you turn it off.</dd>
         <dt>Anton</dt>
