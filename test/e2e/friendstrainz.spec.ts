@@ -66,6 +66,7 @@ test('a friend’s profile has Leaderboard | Posts | Strainz: both tried, only t
   await expect(me.getByRole('tab')).toHaveText(['Leaderboard', 'Posts', 'Strainz']);
   await me.getByRole('tab', { name: 'Strainz' }).click();
   await expect(me).toHaveURL(new RegExp(`/u/${samName}/strainz$`));
+  await expect(me.locator('table.vs-both tbody tr')).toHaveCount(2);
   const rows = await me.locator('table.vs-both tbody tr').evaluateAll((trs) => trs.map((tr) => [...tr.children].map((c) => (c.textContent ?? '').trim() + (c.classList.contains('win') ? '*' : ''))));
   expect(rows).toEqual([
     ['Zkittlez', '8.0', '9.0 (higher)*'],

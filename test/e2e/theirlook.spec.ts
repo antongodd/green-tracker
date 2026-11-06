@@ -126,7 +126,7 @@ test('it fades in when it arrives; their product and brand pages keep it, never 
   await fan.locator('.row', { hasText: 'Alpha' }).click();
   await expect(fan.locator('.gem-badge')).toHaveText('#1 on their Leaderboard');
   await expect(fan.locator('main')).toHaveAttribute('class', /pal-medals/);
-  await fan.getByRole('link', { name: 'Acme' }).click();
+  await fan.getByRole('link', { name: 'Acme', exact: true }).click();
   await expect(fan.locator('.brand-lead')).toBeVisible();
   await expect(fan.locator('.banner.summary')).toBeVisible();
   await expect(fan.locator('.row.tier.pal-medals')).toHaveCount(2);
