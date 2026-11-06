@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { filterOptions, rankByOptions, type RankBy, type TypeFilter } from '../../../shared/domain/leaderboard';
 import { productType } from '../../../shared/domain/productTypes';
 import { ChevronDown } from '../icons';
@@ -34,6 +34,31 @@ function Pill(p: { id: string; name: string; label: string; active: boolean; val
 }
 
 /**
+ * True once the row is held under the header (it has scrolled up to its sticky place). Only then does it
+ * get its frosted strip (`.controls.stuck`, 0.83.1): at the top it sits straight on the background like
+ * the large title above it, with no dark band across the Look (GT Ideas #30, Anton's screenshot).
+ */
+function useStuck(row: { current: HTMLDivElement | null }): boolean {
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      const el = row.current;
+      if (!el) return;
+      const top = parseFloat(getComputedStyle(el).top) || 0;
+      setStuck(window.scrollY > 0 && el.getBoundingClientRect().top <= top + 0.5);
+    };
+    check();
+    window.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => {
+      window.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+    };
+  }, []);
+  return stuck;
+}
+
+/**
  * The control row under the header (P4: sticky). Rank by on the left (Leaderboard
  * only), then the Colours key (D48), Type on the right in the same place on every screen.
  */
@@ -43,6 +68,7 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
   const [compact, setCompact] = useState(0);
   const key = `${p.filter}|${p.rankBy ?? ''}`;
   const measuredFor = useRef('');
+  const stuck = useStuck(row);
 
   // Measure after layout and before paint; step down only as far as needed.
   useLayoutEffect(() => {
@@ -74,7 +100,7 @@ export function ControlRow(p: { filter: TypeFilter; rankBy?: RankBy; money?: boo
   }
 
   return (
-    <div class="controls" ref={row}>
+    <div class={`controls${stuck ? ' stuck' : ''}`} ref={row}>
       {rank && p.rankBy && (
         <Pill id="rank-by" name="Rank" label={rank.label} active={p.rankBy !== 'overall'} value={p.rankBy} options={rank.options} onChange={(v) => p.onRankBy!(v as RankBy)} />
       )}

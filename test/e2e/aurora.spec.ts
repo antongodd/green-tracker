@@ -121,18 +121,27 @@ test('with Reduce Motion the lights are still', async ({ browser }) => {
   await still.context().close();
 });
 
-test('the Rank / Type row is frosted, not a black band across the lights', async () => {
+test('the Rank / Type row has no band at the top, and is frosted once held under the header', async () => {
   await page.goto('/');
   await settled();
   await holdLights(0);
-  const c = await page.locator('.controls').evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, blur: getComputedStyle(e).backdropFilter }));
-  expect(c).toEqual({ bg: 'rgba(3, 7, 10, 0.3)', blur: 'blur(20px) saturate(1.4)' });
+  const look = () => page.locator('.controls').evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, blur: getComputedStyle(e).backdropFilter }));
+  // 0.83.1 (GT Ideas #30): at the starting position it sits straight on the lights, like the large title.
+  await expect(page.locator('.controls')).not.toHaveClass(/\bstuck\b/);
+  await expect.poll(look).toEqual({ bg: 'rgba(0, 0, 0, 0)', blur: 'none' });
   // At the row's left edge the green light still shows through, about as strongly as just below it.
   const row = await page.locator('.controls').evaluate((e) => e.getBoundingClientRect().toJSON());
   const inside = await colour(2, row.top + 2, 6, 10);
   const below = await colour(2, row.bottom + 2, 6, 10);
   expect(inside[1]! - BG[1]!, `inside ${inside}, below ${below}`).toBeGreaterThan((below[1]! - BG[1]!) * 0.6);
   expect(inside[1]! - BG[1]!, `inside ${inside}`).toBeGreaterThan(6);
+  // Scrolled until the row is held under the header: frosted, so the rows passing under it are hidden.
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await expect(page.locator('.controls')).toHaveClass(/\bstuck\b/);
+  await expect.poll(look).toEqual({ bg: 'rgba(3, 7, 10, 0.3)', blur: 'blur(20px) saturate(1.4)' });
+  // And clear again back at the top.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.locator('.controls')).not.toHaveClass(/\bstuck\b/);
 });
 
 test('text sitting straight on the lights stays readable', async () => {

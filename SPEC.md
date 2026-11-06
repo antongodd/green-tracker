@@ -2033,6 +2033,14 @@ None.
 
 ## 6. Changelog
 
+### 0.83.1 — No dark band behind Rank and Type at the top
+- The row with Rank, the colours button and Type (the Leaderboard, the Log, a friend's board) had a see-through dark
+  strip behind it all the time, so at the starting position it ran like a band across the Look under the clear large
+  title (GT Ideas #30, Anton's screenshot). Now it sits straight on the background at the top and turns to frosted glass
+  only once it's held under the header as you scroll (`.controls.stuck`, `useStuck` in `components/Controls.tsx`).
+  Scrolled down, nothing changes.
+- Tests: `aurora.spec.ts` checks the row is clear at the top, frosted once stuck, and clear again back at the top.
+
 ### Notes — Friends on Strainz is live
 - 0.83.0 (on dev 2026-11-06) went live on 2026-11-06 (release #217), merged by hand once its own full browser run had
   passed. Its first run failed `people.spec.ts` on CI only (the friends list on a friend's product page also names the
