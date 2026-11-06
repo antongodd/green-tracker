@@ -410,9 +410,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.82.1 (2026-11-04): Strainz as shelves (item 17), on top of 0.81's Strainz, the + on every screen and
-  the line fix.
-- **Dev:** 0.83.0, Friends on Strainz (item 18, D94), waiting for Anton's "go live".
+- **Live:** 0.83.0 (2026-11-06): Friends on Strainz (items 18 and 19).
+- **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
 
@@ -429,6 +428,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Friends on Strainz: Friends who've tried it on a strain's page and a friend's product page (their photo, what they had, their score); a Strainz tab on a friend's profile (strains you've both tried with both scores, the higher one green; only theirs; their Want to try lists if shared); + Want to try from a friend, noted "From @them" (they aren't told); a new switch My Want to try lists (names only, off to start with); the Log never shared (tried by Anton on GT Dev: "its good"; VoiceOver not yet checked on his iPhone) | 0.83.0 | D94 | 2026-11-06 | 2026-11-06 |
 | An ad video for the app (26 seconds, widescreen and upright, made with the `brag` skill from the real app: rate it, rank it, post it, know your plug), in `design/ad-video/` with what's real and made up and how it was made; not on the website yet (its own job, in GT Ideas) | (notes) | | 2026-11-05 | notes only |
 | GT Ideas: the to-do list moved out of this file into a private page in the app's look (Ideas, In progress, Changes), where Anton adds ideas whenever he likes; the `ideas` recipe | (notes) | | 2026-11-04 | notes only |
 | Strainz as shelves: your favourite strain on top, then rows that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring filled to its average and ×1, ×2…; See all for the whole list; tap a strain you want to try for its note or Remove; only the row you swipe moves (0.82.1, Anton's screenshots); "Tried, not rated" renamed Unranked everywhere, Move to Unranked on a product page (tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.82.0, 0.82.1 | D93 | 2026-11-04 | 2026-11-04 |
