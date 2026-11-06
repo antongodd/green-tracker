@@ -2033,6 +2033,11 @@ None.
 
 ## 6. Changelog
 
+### Notes — Friends on Strainz is live
+- 0.83.0 (on dev 2026-11-06) went live on 2026-11-06 (release #217), merged by hand once its own full browser run had
+  passed. Its first run failed `people.spec.ts` on CI only (the friends list on a friend's product page also names the
+  Source, so the brand found two matches once it had loaded); fixed in #218 (tests only). Notes only.
+
 ### 0.83.0 — Friends on Strainz (D94)
 - A strain's page shows **Friends who've tried it**: the people you follow who've had it, with what they had and their
   score. A friend's product page shows it too, with **+ Add to my Want to try**.
