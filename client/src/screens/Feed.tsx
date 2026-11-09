@@ -173,7 +173,12 @@ export function FriendsRow(p: { requests: number }) {
   const req = p.requests > 0 ? `${p.requests} follow ${p.requests === 1 ? 'request' : 'requests'}` : '';
   return (
     <a class="friends-row" href="/people" onClick={linkTo('/people')} aria-label={['Friends', line, req].filter(Boolean).join('. ')}>
-      <PeopleIcon />
+      {/* The requests as a number on the icon, like the header's (a label beside "Friends" took a second line on a
+          narrow screen). */}
+      <span class="ico" aria-hidden="true">
+        <PeopleIcon />
+        {p.requests > 0 && <span class="badge">{p.requests}</span>}
+      </span>
       {people && people.length > 0 && (
         <span class="faces" aria-hidden="true">
           {people.slice(0, 3).map((f) => (
@@ -182,10 +187,7 @@ export function FriendsRow(p: { requests: number }) {
         </span>
       )}
       <span class="t" aria-hidden="true">
-        <b>
-          Friends
-          {p.requests > 0 && <span class="req">{req}</span>}
-        </b>
+        <b>Friends</b>
         <small>{line}</small>
       </span>
       <span class="go" aria-hidden="true">
