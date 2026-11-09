@@ -413,10 +413,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.83.1 (2026-11-06): no dark band behind Rank and Type at the top (item 30), on top of 0.83.0's Friends on
-  Strainz (items 18 and 19).
-- **Dev:** 0.84.1 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33; 0.84.1 keeps the row one line
-  high), going live.
+- **Live:** 0.84.1 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33).
+- **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
 
@@ -433,6 +431,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Feed posts as cards and a Friends row: each post its own card with a gap between (the Feed, a person's Posts, a post's own page; GT Ideas #31, Anton's screenshot); a Friends row at the top of the Feed with the people icon (follow requests as a number on it, 0.84.1), up to three friends' photos (two on a narrow phone), how many you follow and People ›, the corner icon kept (GT Ideas #33); the first release run caught the row two lines high on the CI fonts, fixed in 0.84.1 (tried by Anton on GT Dev before 0.84.1's badge; VoiceOver not yet checked on his iPhone) | 0.84.0, 0.84.1 | D95 | 2026-11-09 | 2026-11-09 |
 | No dark band behind Rank and Type at the top: the row sits straight on the Look at the starting position and turns to frosted glass only once it sticks under the header as you scroll (Leaderboard, Log, a friend's board; GT Ideas #30, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.83.1 | | 2026-11-06 | 2026-11-06 |
 | Friends on Strainz: Friends who've tried it on a strain's page and a friend's product page (their photo, what they had, their score); a Strainz tab on a friend's profile (strains you've both tried with both scores, the higher one green; only theirs; their Want to try lists if shared); + Want to try from a friend, noted "From @them" (they aren't told); a new switch My Want to try lists (names only, off to start with); the Log never shared (tried by Anton on GT Dev: "its good"; VoiceOver not yet checked on his iPhone) | 0.83.0 | D94 | 2026-11-06 | 2026-11-06 |
 | An ad video for the app (26 seconds, widescreen and upright, made with the `brag` skill from the real app: rate it, rank it, post it, know your plug), in `design/ad-video/` with what's real and made up and how it was made; not on the website yet (its own job, in GT Ideas) | (notes) | | 2026-11-05 | notes only |
