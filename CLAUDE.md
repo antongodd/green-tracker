@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D94 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D95 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D95) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D96) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D94.
+- Reopen any decision D1–D95.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -333,7 +333,10 @@ editors asking before discarding (`keepediting`) and the quality checks. A spec 
   `upload`). The Feed's first page marks it seen (`feedNew` on `/api/auth/me`). People has no tab since D77: reach it
   with the Feed tab, then the **People** button (its name carries the requests: "People, 1 follow request"); the
   requests number is on the Feed tab, and a `.badge.dot` when there are none and something's new. Posting is limited
-  to 30 an hour per account, so keep a file's posts per account under that. D78: `photos: [...]` (1–10) in place of
+  to 30 an hour per account, so keep a file's posts per account under that. D95: each `.post` is a card again (no
+  `backdrop-filter`: its sheets are inside it), and the Feed has a **Friends** row above the posts, a link to
+  `/people` named "Friends. You follow N people[. N follow requests]", so the header's People button is still found
+  with `{ exact: true }` or by "People, 1 follow request". D78: `photos: [...]` (1–10) in place of
   `photo`; a post's `n`th photo is `postPhotoUrl(post, variant, n)`; in a list each photo is its own "Open the post
   (photo i of n)" link.
 - A row's photo (D79): a tap on `.thumb` (with an `img`) opens the viewer instead of the page, checked in the row's own
@@ -412,7 +415,7 @@ file. The "Green Tracker to-do list" conversation answers Anton's questions abou
 
 - **Live:** 0.83.1 (2026-11-06): no dark band behind Rank and Type at the top (item 30), on top of 0.83.0's Friends on
   Strainz (items 18 and 19).
-- **Dev:** the same as live.
+- **Dev:** 0.84.0 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 

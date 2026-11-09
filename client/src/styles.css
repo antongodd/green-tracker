@@ -2336,9 +2336,29 @@ html[data-tone="light"] .post-photo, html[data-tone="light"] .compose-photo { ba
 html[data-tone="light"] :is(.duel-side.mine .duel-score, .your-chip.mine b, .about .your-chip b, .too-head a) { color: color-mix(in srgb, var(--accent) 55%, var(--text)); }
 
 /* ---------- D87 (continued): the Feed's posts and the editors, as in Photos ---------- */
-.post { background: none; border: 0; border-radius: 0; overflow: visible; -webkit-backdrop-filter: none; backdrop-filter: none; }
-.post-photo { margin: 0 8px; border-radius: 24px; overflow: hidden; }
-.post .row.about { border-radius: 18px; }
+/* D95: each post is its own card again (the owner: "hard to distinguish between posts", as Instagram makes plain
+   where one ends). A pane in the look's glass with its edge, 14px between; never a backdrop-filter (a sheet inside
+   would be placed in the card). The photo sits inside it with a small margin, the About card under it. */
+.post { background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 26px; overflow: hidden; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18); }
+.post-who { padding-left: 12px; }
+.post-photo { margin: 0 6px; border-radius: 20px; overflow: hidden; }
+.post .row.about { margin: 8px 8px 0; border-radius: 18px; }
+html[data-tone="light"] .post { box-shadow: 0 6px 22px rgba(15, 26, 44, 0.08); }
+/* D95: the Friends row at the top of the Feed: the people icon, up to three friends' photos, how many you follow and
+   People ›, with the follow requests. The icon in the header stays, for once the row has scrolled away. */
+.friends-row { max-width: 720px; margin: 12px auto 0; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; border-radius: 20px; background: var(--card-bg); border: 1px solid var(--card-edge); color: var(--text); text-decoration: none; }
+.feed .friends-row { margin-left: 12px; margin-right: 12px; }
+@media (min-width: 744px) { .feed .friends-row { margin-left: auto; margin-right: auto; } }
+.friends-row > svg { width: 24px; height: 24px; flex: none; color: var(--accent-bright); }
+.friends-row .faces { display: flex; flex: none; }
+.friends-row .faces .av { width: 30px; height: 30px; font-size: 13px; box-shadow: 0 0 0 2px var(--bg); }
+.friends-row .faces .av + .av { margin-left: -8px; }
+.friends-row .t { flex: 1; min-width: 0; display: grid; }
+.friends-row .t b { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-size: 15px; font-weight: 700; }
+.friends-row .t small { font-size: 13px; color: var(--text-2); }
+.friends-row .req { padding: 1px 7px; border-radius: 9px; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 800; vertical-align: 1px; }
+.friends-row .go { flex: none; color: var(--accent-bright); font-size: 15px; font-weight: 700; white-space: nowrap; }
+.friends-row + .posts { padding-top: 12px; }
 .fgroup { border: 0; border-radius: var(--r-group); }
 .me-links .link-btn { display: inline-flex; align-items: center; margin: -8px 0 -12px; text-decoration: none; }
 /* The Leaderboard top picker's little drawings (D87): Compact a line of text, Showcase big photo cards side by side,

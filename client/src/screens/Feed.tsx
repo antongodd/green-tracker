@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Post } from '../../../shared/domain/posts';
+import type { PersonCard } from '../../../shared/domain/social';
 import { errorText } from '../api';
+import { Avatar } from '../components/Avatar';
 import { Header, LargeTitle, TabBar } from '../components/chrome';
 import { EmptyCard } from '../components/EmptyCard';
 import { InviteButton } from '../components/InviteButton';
@@ -8,10 +10,12 @@ import { MeButton } from '../components/MeButton';
 import { PostCard } from '../components/PostCard';
 import { Skeleton } from '../components/Skeleton';
 import { PeopleIcon } from '../icons';
+import { following } from '../people';
 import * as posts from '../posts';
 import { cameFrom, linkTo, navigate } from '../router';
 import { rememberRow, restoreRow } from '../scrollReturn';
 import { useSession } from '../session';
+import { photoOf } from './People';
 
 // The Feed (D77): your posts and those of everyone you follow, newest first, 20 at a time as you
 // scroll. In People's place in the tab bar; People is the button at the top left, with the follow
@@ -145,6 +149,52 @@ export function PostList(p: { list: ReturnType<typeof usePostList>; returnKey: s
   );
 }
 
+/** How many you follow, in words. */
+export function followingLine(n: number | null): string {
+  if (n === null) return 'See who you follow';
+  if (n === 0) return 'Find people to follow';
+  return `You follow ${n} ${n === 1 ? 'person' : 'people'}`;
+}
+
+/**
+ * D95: the Friends row at the top of the Feed (the owner: "not so obvious where to access your friends list"): the
+ * people icon, up to three of the people you follow, how many, and People ›, with the follow requests. It opens
+ * People, like the icon in the header, which stays for once the row has scrolled away.
+ */
+export function FriendsRow(p: { requests: number }) {
+  const [people, setPeople] = useState<PersonCard[] | null>(null);
+  useEffect(() => {
+    following()
+      // Only those who approved you; a request still waiting isn't a friend yet.
+      .then((all) => setPeople(all.filter((f) => f.relation === 'following')))
+      .catch(() => setPeople(null));
+  }, []);
+  const line = followingLine(people ? people.length : null);
+  const req = p.requests > 0 ? `${p.requests} follow ${p.requests === 1 ? 'request' : 'requests'}` : '';
+  return (
+    <a class="friends-row" href="/people" onClick={linkTo('/people')} aria-label={['Friends', line, req].filter(Boolean).join('. ')}>
+      <PeopleIcon />
+      {people && people.length > 0 && (
+        <span class="faces" aria-hidden="true">
+          {people.slice(0, 3).map((f) => (
+            <Avatar key={f.username} username={f.username} src={photoOf(f)} />
+          ))}
+        </span>
+      )}
+      <span class="t" aria-hidden="true">
+        <b>
+          Friends
+          {p.requests > 0 && <span class="req">{req}</span>}
+        </b>
+        <small>{line}</small>
+      </span>
+      <span class="go" aria-hidden="true">
+        People ›
+      </span>
+    </a>
+  );
+}
+
 export function Feed() {
   const { me, refresh } = useSession();
   const list = usePostList(posts.feedPage, { keep: true, key: 'feed' });
@@ -222,6 +272,7 @@ export function Feed() {
             </div>
           </EmptyCard>
         )}
+        {list.page && list.page.posts.length > 0 && <FriendsRow requests={requests} />}
         {list.page && list.page.posts.length > 0 && <PostList list={list} returnKey="feed" />}
         {list.error && list.page && (
           <p class="error wrap" role="alert">

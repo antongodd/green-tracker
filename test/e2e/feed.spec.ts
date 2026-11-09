@@ -164,3 +164,51 @@ test('coming back to the app: the Feed shows what’s new, in its place, and the
   await backToFront(fan);
   await expect(tab.locator('.badge:not(.dot)')).toHaveText('1');
 });
+
+test('each post is its own card with a gap between, and the Friends row at the top opens People (D95)', async () => {
+  // By now the owner has asked to follow the fan (the test above), so the fan has 1 follow request.
+  await fan.setViewportSize({ width: 390, height: 844 });
+  await fan.goto('/feed');
+  const posts = fan.locator('.posts .post');
+  await expect(posts).toHaveCount(9);
+  await settled(fan);
+
+  // A card: an edge and a pane of its own, rounded, the photo inside it, and clear space before the next one.
+  const card = await posts.first().evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { edge: s.borderTopWidth, bg: s.backgroundColor + s.backgroundImage, radius: parseFloat(s.borderTopLeftRadius), filter: s.backdropFilter };
+  });
+  expect(card.edge).toBe('1px');
+  expect(card.bg).not.toBe('rgba(0, 0, 0, 0)none');
+  expect(card.radius).toBeGreaterThanOrEqual(20);
+  expect(card.filter).toBe('none'); // a sheet inside a card with a backdrop-filter is placed in the card
+  const [a, b] = [(await posts.nth(0).boundingBox())!, (await posts.nth(1).boundingBox())!];
+  expect(b.y - (a.y + a.height)).toBeGreaterThanOrEqual(10);
+  const photo = (await posts.first().locator('.post-photo').boundingBox())!;
+  expect(photo.x).toBeGreaterThan(a.x);
+  expect(photo.x + photo.width).toBeLessThan(a.x + a.width);
+
+  // The Friends row: above the first post, the icon, the one person followed, the request, People ›, on one line.
+  const row = fan.getByRole('link', { name: 'Friends. You follow 1 person. 1 follow request' });
+  await expect(row).toBeVisible();
+  await expect(row.locator('svg')).toHaveCount(1);
+  await expect(row.locator('.faces .av')).toHaveCount(1);
+  await expect(row.locator('.req')).toHaveText('1 follow request');
+  await expect(row.locator('.go')).toHaveText('People ›');
+  const r = (await row.boundingBox())!;
+  expect(r.y + r.height).toBeLessThanOrEqual(a.y);
+  expect(r.height).toBeLessThanOrEqual(72);
+  expect(r.x + r.width).toBeLessThanOrEqual(390);
+  // The icon in the header stays, for once the row has scrolled away.
+  await expect(fan.getByRole('link', { name: 'People, 1 follow request' })).toBeVisible();
+  await shot(fan, 'feed-02-cards-friends');
+
+  await row.click();
+  await expect(fan).toHaveURL(/\/people$/);
+
+  // Following nobody: the row says so, with no photos.
+  await owner.goto('/feed');
+  const own = owner.getByRole('link', { name: 'Friends. Find people to follow' });
+  await expect(own).toBeVisible();
+  await expect(own.locator('.faces')).toHaveCount(0);
+});
