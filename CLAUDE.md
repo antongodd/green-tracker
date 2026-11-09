@@ -415,7 +415,8 @@ file. The "Green Tracker to-do list" conversation answers Anton's questions abou
 
 - **Live:** 0.83.1 (2026-11-06): no dark band behind Rank and Type at the top (item 30), on top of 0.83.0's Friends on
   Strainz (items 18 and 19).
-- **Dev:** 0.84.0 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33), waiting for Anton's "go live".
+- **Dev:** 0.84.1 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33; 0.84.1 keeps the row one line
+  high), going live.
 
 ### The to-do list: GT Ideas
 

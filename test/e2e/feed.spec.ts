@@ -191,9 +191,9 @@ test('each post is its own card with a gap between, and the Friends row at the t
   // The Friends row: above the first post, the icon, the one person followed, the request, People ›, on one line.
   const row = fan.getByRole('link', { name: 'Friends. You follow 1 person. 1 follow request' });
   await expect(row).toBeVisible();
-  await expect(row.locator('svg')).toHaveCount(1);
+  await expect(row.locator('.ico svg')).toHaveCount(1);
+  await expect(row.locator('.ico .badge')).toHaveText('1');
   await expect(row.locator('.faces .av')).toHaveCount(1);
-  await expect(row.locator('.req')).toHaveText('1 follow request');
   await expect(row.locator('.go')).toHaveText('People ›');
   const r = (await row.boundingBox())!;
   expect(r.y + r.height).toBeLessThanOrEqual(a.y);
