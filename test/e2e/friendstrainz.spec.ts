@@ -88,9 +88,13 @@ test('the switch: off until turned on in What followers see; then their lists sh
   const sw = sam.getByRole('switch', { name: 'My Want to try lists' });
   await expect(sw).not.toBeChecked();
   await expect(sam.getByText('Your Want to try lists: private.')).toBeVisible();
+  // The switch moves at once and saves behind it: wait for the save before asking the server (0.83.1's run read it
+  // too early on a busy machine).
+  const saved = sam.waitForResponse((r) => r.url().endsWith('/api/privacy') && r.request().method() === 'PUT');
   await sw.click();
   await expect(sw).toBeChecked();
   await expect(sam.getByText('Your Want to try lists: shared, names only.')).toBeVisible();
+  expect((await saved).ok()).toBe(true);
   expect((await call(sam, 'GET', '/api/privacy')).privacy.shareWants).toBe(true);
   expect(await axe(sam)).toEqual([]);
 
