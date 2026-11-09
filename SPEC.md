@@ -2044,6 +2044,11 @@ None.
 
 ## 6. Changelog
 
+### Notes — Feed posts as cards and a Friends row are live
+- 0.84.0 and 0.84.1 (on dev 2026-11-09) went live on 2026-11-09 (release #224). Its first full run failed
+  `feed.spec.ts` (the Friends row two lines high on the CI fonts); fixed in 0.84.1 (#225), and the second run passed
+  with no flaky tests. Notes only.
+
 ### 0.84.1 — the Friends row stays one line high
 - 0.84.0's release run caught the Friends row growing to two lines on the test machine's fonts: the "1 follow
   request" label beside "Friends" didn't fit. The follow requests now show as a number on the row's people icon, like
