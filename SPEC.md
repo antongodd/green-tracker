@@ -166,6 +166,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D92 | **Strainz, the + everywhere, and the Log folded in** (2026-11-04; mockups https://claude.ai/artifact/987zYn5kvJgDSphKFaXGAr; the owner: "I want a new kinda section, similar to sources… to track the strains you have tried, see how many different products of each strain you have tried. compare strains. see the average you rate that strain"; on the Log: "this isn't very useful to new people… I don't want to delete the log, but just maybe move it into somewhere else"; on the bar: "I hate how the menu buttons change… it needs to be consistent in every tab"; on strains: "zkittlez and cookies zkittlez are different strains… you (atleast myself) would put zkittlez as the name, and live rosin as the product/concentrate type"; his answers: a merge (Rename) yes, "tried once" marked, Compare two, the Log folded in, ticked-off wants "disapear completly", private for now, the + different on every screen (Leaderboard a product, Strainz a strain to try, Sources option B "sources to try", Feed a post, Settings a product), no new "tried, not rated" entries ("just take it straight into the whole product/leaderboard form"), the name **Strainz**, layout B "cards - like sources", then "go ahead"). | **A Strainz tab in the Log's place**: a strain is a product's Name (matched like Sources' names, so "Cookies Zkittlez" is its own strain); cards like Sources (Best average, Most tried, Recently tried, A–Z; "Tried once"), then the Log entries you never rated (*Tried, not rated*) and a link to the Log by country (its screens stay). A strain's page: average, place among your rated strains, best and lowest, kinds, price per gram, value for money, sources, first and last tried, its products; **Compare** two side by side; **Rename** renames every product and Log entry with the name (joining two strains). **Want to try** lists (strains on Strainz, sources on Sources, a new table `wants`), private, ticked off by the server when a saved product has the name, Source or Supplier, with a message once. **The + beside the bar on every screen** (`TabBar` draws it), so the bar keeps its width; Return to Log reads *Move to Tried, not rated*. Export, Restore and Delete account cover the lists; the privacy page says so. Left for later: friends' strains (to-do list). |
 | D93 | **Strainz as shelves** (2026-11-04; mockups https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94; the owner on GT Dev: "i feel like the strainz and the sources tab feels pretty similar… i just want some ideas of how we could maybe make this better so every tab feels different"; of four options: "i really like A: shelves", then "go ahead"). | Strainz is no longer cards like Sources: **your favourite strain** on top, then **shelves** that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Tried, not rated; an empty one hidden), each strain a round photo with a **ring filled to its average** out of 10, the average on the ring, and "Tried once" / "3 tried". **See all** opens the whole list: the D92 cards with search and the four sorts (`/strainz/list/<sort>`), your Want to try list with notes (`/strainz/list/want`), or the Log. Tapping a strain on the Want to try shelf shows its note and **Remove from list**; the Tried \| Want to try switch went. Sources unchanged. No database change. |
 | D94 | **Friends on Strainz** (2026-11-06; idea #18; mockups https://claude.ai/artifact/Xfch7N15YyTRACSuTXkbYY; the owner: "i want the '3 freinds have tried this' i want the 'your strains againts a freind's' i want the ' want to try lists freinds can see' - and yes i want to be able to add strains from freinds"; friends are the people you follow who approved you; strains follow their Leaderboard switch ("a"); "i dont want log to be shared"; Want to try names only; a Strainz tab on their profile ("a"); the friends list as option A, "a, go ahead"). | **Friends who've tried it**: a strain's page (and a friend's product page) lists the people you follow who share their Leaderboard and have a product of that name (by `nameKey`), each with their photo, @name, what they had (kind, and Source if they share it) and their score, best first; never Private, archived or kept products. **A friend's profile** has Leaderboard \| Posts \| **Strainz**: strains you've both tried (your average and theirs, the higher one green), strains only they've tried, and, if they've switched it on, their Want to try strains and Sources to try (**names only, never notes**). **+ Want to try** adds one to your own list with the note "From @them"; they aren't told. A new switch in What followers see, **My Want to try lists**, off until you turn it on (`privacy_settings.share_wants`, migration 0023; a setting or backup without it reads as off). The Log is never shared. |
+| D95 | **Feed posts as cards, and a Friends row** (2026-11-09; GT Ideas #31 and #33, Anton's screenshot with a red line where one post ran into the next; mockups https://claude.ai/artifact/4XXVj8wykzzcggkS71biwj). The owner: his girlfriend found it "hard to distinguish between posts in the feed… compared to instagram where it's pretty obvious where the post ends", and "its not so obvious where to access your freinds list". Picks: **A, a card for each post** (of A card, B Instagram edge to edge with a line, C a bigger gap and a line); keep the order inside a post ("match instagram"); the same card on a person's Posts and a post's own page ("yes"); for People, **2, a row at the top "but also has an icon"**: the row starts with the people icon and the header's icon stays. | Each post is a card again: the look's glass pane with its edge, 26px corners, 14px apart, the photo inset 6px with 20px corners, the About card inset 8px; no backdrop-filter. Above the Feed's first post, the Friends row: the people icon, up to three of the people you follow (approved only), "You follow N people" (or "Find people to follow"), the follow requests as a number on the icon (0.84.1), People ›; it opens People. Undoes D87's borderless posts only; the rest of D87 stands. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -2027,11 +2028,41 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   Privacy: the Strainz group with the one switch, and its line under What followers see. About (privacy page): the
   followers sentences say what's shared. *Tests:* `test/api/friendstrainz.test.ts`, `friendstrainz.spec.ts` (core set).
 
+- **Feed posts as cards, and a Friends row (D95, 0.84.0).** `styles.css`, the D87 Feed block at the end: `.post` is a card
+  again (`--card-bg`, `--card-edge`, 26px, a soft shadow; never `backdrop-filter`, as the post's sheets are inside it),
+  `.post-photo` inset 6px, `.post .row.about` inset 8px. Every list of posts (Feed, a person's Posts, a post's own
+  page) uses `PostCard`, so all three changed together. `FriendsRow` in `screens/Feed.tsx`: shown above the posts
+  once the Feed has any; loads `GET /api/people/following` (no new API) and keeps only `relation: 'following'` (a
+  request still waiting isn't a friend); `followingLine` words the count. One link to `/people` whose name says it
+  all ("Friends. You follow 2 people. 1 follow request"; the parts inside are hidden from VoiceOver), so it never
+  matches the header's "People" button by exact name. *Tests:* `feed.spec.ts` (the card, the gap, the photo inside it,
+  the row's words, size and link); `posts.spec.ts` judges the row's words for readability, now in Sakura too.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.84.1 — the Friends row stays one line high
+- 0.84.0's release run caught the Friends row growing to two lines on the test machine's fonts: the "1 follow
+  request" label beside "Friends" didn't fit. The follow requests now show as a number on the row's people icon, like
+  the one in the header (VoiceOver still reads "1 follow request"), and a phone narrower than 400 points shows two
+  friends' photos instead of three, so "You follow 12 people" fits beside People ›.
+
+### 0.84.0 — Feed posts as cards, and a Friends row (D95)
+- Each post in the Feed is its own card, like the cards everywhere else in the app, with a gap between, so it's plain
+  where one post ends and the next begins (GT Ideas #31, Anton's screenshot). The same on a person's Posts and a
+  post's own page. The order inside a post stays: name, photo, the product, 🔥 and comments, caption.
+- A **Friends** row at the top of the Feed (GT Ideas #33): the people icon, the photos of up to three people you
+  follow, how many you follow and People ›, with your follow requests. It opens People; the icon at the top left stays.
+- Tests: `feed.spec.ts` checks the cards and the row; `posts.spec.ts` reads the Feed in Sakura too. Fixed the flaky
+  `friendstrainz.spec.ts` test from 0.83.1's run: the switch moves at once and saves behind it, and the test asked the
+  server before the save had finished; it now waits for the save.
+
+### Notes — No dark band behind Rank and Type is live
+- 0.83.1 (on dev 2026-11-06) went live on 2026-11-06 (release #221). Its full run listed one flaky test,
+  `friendstrainz.spec.ts` "the switch: off until turned on…" (passed on its retry): to fix in the next change. Notes only.
 
 ### 0.83.1 — No dark band behind Rank and Type at the top
 - The row with Rank, the colours button and Type (the Leaderboard, the Log, a friend's board) had a see-through dark

@@ -211,7 +211,7 @@ test('several photos (D78): add the product’s second photo, post, then swipe t
   await shot(owner, 'posts-09-feed-two');
 });
 
-for (const look of ['aurora', 'daysky'] as const) {
+for (const look of ['aurora', 'sakura', 'daysky'] as const) {
   test(`readable and accessible in ${look}: the Feed, a post’s page and the composer`, async () => {
     test.slow();
     await call(fan, 'PUT', '/api/appearance', { look, top: 'strip', preset: 'aurora', markFirst: true });
@@ -220,7 +220,7 @@ for (const look of ['aurora', 'daysky'] as const) {
     await expect(fan.locator('.post-photo img').first()).toHaveJSProperty('complete', true);
     await settled(fan);
     expect((await new AxeBuilder({ page: fan }).analyze()).violations).toEqual([]);
-    expect(await wholeScreenContrastFailures(fan, '/feed', '.post-who .u, .post-caption, .post-cmts p, .row.about .name, .row.about .ptype, .row.about .meta, .row.about .score b, .row.about .score .cap, .post-acts .act.count')).toEqual([]);
+    expect(await wholeScreenContrastFailures(fan, '/feed', '.post-who .u, .post-caption, .post-cmts p, .row.about .name, .row.about .ptype, .row.about .meta, .row.about .score b, .row.about .score .cap, .post-acts .act.count, .friends-row .t b, .friends-row .t small, .friends-row .go')).toEqual([]);
     await fan.locator('.post', { hasText: 'Sunday afternoon' }).getByRole('link', { name: 'Open the post' }).click();
     await expect(fan.locator('.cmt').first()).toBeVisible();
     await settled(fan);
