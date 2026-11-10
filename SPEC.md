@@ -2064,6 +2064,12 @@ None.
 
 ## 6. Changelog
 
+### Notes — Put it on your Home Screen is live
+- 0.85.0 and 0.85.1 (on dev 2026-11-10) went live on 2026-11-10 (release #229). The full run passed; two tests passed
+  only on their second try (flaky), neither touched by this change, to be fixed in the next change: `zoom.spec.ts`
+  "double-tap zooms to 2× where you tap, and back" (stayed at 1×) and `welcome.spec.ts` "the buttons lead where they
+  should (D80)". Notes only.
+
 ### 0.85.1 — the website's sheet in another browser: nothing cut off
 - Anton's screenshot (Chrome on his iPhone, the "Put it on my iPhone" sheet): the Copy the app's link button was cut
   off at the bottom, because the wrong-browser steps were taller than the sheet. In the sheet the steps are now
