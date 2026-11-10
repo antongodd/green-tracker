@@ -327,6 +327,9 @@
     });
     sheet.addEventListener('pointerdown', (e) => {
       if (e.target.closest('button, a') || e.button) return;
+      // Where the middle of the sheet has to scroll (a very short screen), a finger there scrolls it.
+      const body = e.target.closest('.sheet-body');
+      if (body && body.scrollHeight > body.clientHeight + 1) return;
       if (anim) anim.stop();
       sheet.setPointerCapture(e.pointerId);
       grab = e.clientY - y; tr.reset(); tr.add(0, e.clientY);

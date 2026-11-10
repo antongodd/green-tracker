@@ -2064,6 +2064,12 @@ None.
 
 ## 6. Changelog
 
+### 0.85.1 — the website's sheet in another browser: nothing cut off
+- Anton's screenshot (Chrome on his iPhone, the "Put it on my iPhone" sheet): the Copy the app's link button was cut
+  off at the bottom, because the wrong-browser steps were taller than the sheet. In the sheet the steps are now
+  shorter (titles only, no second heading), and on a very short screen the middle of the sheet scrolls while Done and
+  the video link stay put. The same steps in the "Get it" part further down are unchanged.
+
 ### 0.85.0 — Put it on your Home Screen, shown by the app (D96)
 - Someone followed the website's steps and put the **website** on her Home Screen instead of the app (GT Ideas #26).
   The website no longer shows the Share steps at all: its "Get it" part and the "Put it on my iPhone" sheet are one

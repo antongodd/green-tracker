@@ -411,7 +411,8 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   arrow's words sit with a Range (`words`), never `textBoxes` twice on one page (the second reading found the words
   hidden). The screen must fit 390×664 (what Safari leaves of an iPhone) with room to spare. The website's side is in
   `website.spec.ts` (`phone`, `PHONES`): `.getapp` or `.wrong` showing, `#notapp` at `/?homescreen`; what's hidden
-  until asked for isn't counted by the readability sweep and is judged in its own test. `site.js` keeps its own copy
+  until asked for isn't counted by the readability sweep and is judged in its own test. The sheet must show its
+  button whole at 390×660 (what Chrome leaves of an iPhone) and 390×568: its middle (`.sheet-body`) scrolls if it must. `site.js` keeps its own copy
   of the two browser lists (`install.test.ts` checks they match `shared/domain/install.ts`). The website must never
   show the Share steps again (the same test).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
@@ -426,8 +427,8 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.84.1 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33).
-- **Dev:** 0.85.0 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96), waiting for Anton's
-  "go live".
+- **Dev:** 0.85.1 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96; 0.85.1 the website's
+  sheet no longer cut off in Chrome), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 

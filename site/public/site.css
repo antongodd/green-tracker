@@ -265,7 +265,7 @@ h3 { margin-top: 4px; font-family: var(--body); font-size: 18px; font-weight: 80
 /* D86: the install sheet. Slides up from the bottom over a dimmed page; drag it, flick it down to close. */
 html.sheet-open { overflow: hidden; }
 .scrim { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.55); opacity: 0; }
-.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 92dvh; overflow: hidden; display: grid; gap: 0; align-content: start;
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 92dvh; overflow: hidden; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 0; align-content: start;
   padding: 8px 0 calc(18px + env(safe-area-inset-bottom, 0px)); border-radius: 30px 30px 0 0; touch-action: none; transform: translateY(110%);
   background: rgba(20, 27, 25, 0.82); -webkit-backdrop-filter: blur(30px) saturate(170%); backdrop-filter: blur(30px) saturate(170%);
   border-top: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5); }
@@ -375,7 +375,12 @@ html.sheet-open { overflow: hidden; }
 .applink { padding: 12px; border-radius: 12px; border: 1px solid var(--glass-edge); background: rgba(0, 0, 0, 0.45); font: 600 14px ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
 .copied { font-size: 14.5px; color: var(--text-2); }
 .copied:empty { display: none; }
-.sheet-body { padding: 8px var(--gutter-r) 0 var(--gutter-l); overflow-y: auto; touch-action: pan-y; }
+.sheet-body { padding: 8px var(--gutter-r) 0 var(--gutter-l); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+/* 0.85.1: in the sheet the steps are shorter, so the button is never cut off at the bottom (Anton's screenshot,
+   Chrome on an iPhone); on a very short screen the middle of the sheet scrolls and the button stays in reach. */
+.sheet .getapp, .sheet .wrong { gap: 10px; }
+.sheet .step { padding: 10px 14px; }
+.sheet .wrong .step p, .sheet .wrong .wrong-title { display: none; }
 .sheet .step, .notapp .step { -webkit-backdrop-filter: none; backdrop-filter: none; }
 .notapp { position: fixed; inset: 0; z-index: 60; overflow-y: auto; background: #03070a; }
 .notapp:focus { outline: none; }
