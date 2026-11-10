@@ -1,0 +1,10 @@
+{
+  "name": "Green Tracker website",
+  "short_name": "GT website",
+  "start_url": "/?homescreen",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03070a",
+  "theme_color": "#03070a",
+  "icons": [{ "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }]
+}

@@ -288,7 +288,7 @@
 
   // ---- D86: the install sheet ----
   // "Put it on my iPhone" slides up a sheet from the bottom over a dimmed page: drag it (1:1; past the top it
-  // resists), flick it down or tap outside or Done to close it. The full steps and the video stay further down.
+  // resists), flick it down or tap outside or Done to close it. D96: it holds the one button; the video is further down.
   const sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
   const opener = document.querySelector('.hero a[href="#install"]');
   if (sheet && scrim && opener) {
@@ -326,7 +326,7 @@
       hide(0, () => document.getElementById('install').scrollIntoView({ behavior: still ? 'auto' : 'smooth' }));
     });
     sheet.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('.pages, button, a') || e.button) return;
+      if (e.target.closest('button, a') || e.button) return;
       if (anim) anim.stop();
       sheet.setPointerCapture(e.pointerId);
       grab = e.clientY - y; tr.reset(); tr.add(0, e.clientY);
@@ -344,7 +344,49 @@
       if (y + project(v, 0.99) > h * 0.4) hide(v); else move(0, v, undefined, 0.85);
     };
     sheet.addEventListener('pointerup', letGo); sheet.addEventListener('pointercancel', letGo);
-    const pages = document.getElementById('pages'), dots = sheet.querySelectorAll('.pdots i');
-    pages.addEventListener('scroll', () => { const i = Math.round(pages.scrollLeft / pages.clientWidth); dots.forEach((d, j) => d.classList.toggle('on', i === j)); }, { passive: true });
+  }
+
+  // ---- D96: the right browser, and the website on a Home Screen by mistake ----
+  // The website never shows the Share steps: it sends people to the app, which shows them itself. Only Safari on
+  // an iPhone (Chrome on Android) can put the app on the Home Screen, so in any other browser the button gives
+  // way to "copy the app's link". The two lists of other browsers are the app's own (shared/domain/install.ts;
+  // a test keeps them the same).
+  const IOS_OTHER = /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|DuckDuckGo|YaBrowser|Instagram|FBAN|FBAV|FB_IAB|Line\/|MicroMessenger|Snapchat|TikTok|musical_ly|Twitter|LinkedInApp|Pinterest/i;
+  const ANDROID_OTHER = /SamsungBrowser|Firefox|EdgA|OPR\/|OPT\/|DuckDuckGo|YaBrowser|UCBrowser|Instagram|FBAN|FBAV|FB_IAB|Line\/|MicroMessenger|Snapchat|TikTok|musical_ly|Twitter|LinkedInApp|Pinterest|; wv\)/i;
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPod|iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const android = !ios && /Android/.test(ua);
+  const wrong = ios ? !(/Safari\//.test(ua) && /Version\//.test(ua) && !IOS_OTHER.test(ua)) : android && !(/Chrome\//.test(ua) && !ANDROID_OTHER.test(ua));
+  const each = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
+  if (android) {
+    each('.bn', (el) => { el.textContent = 'Chrome'; });
+    each('.bn-ios', (el) => { el.hidden = true; });
+    each('.bn-android', (el) => { el.hidden = false; });
+  }
+  if (wrong) {
+    each('.getapp', (el) => { el.hidden = true; });
+    each('.wrong', (el) => { el.hidden = false; });
+  }
+  const APP = 'https://green-tracker.green-tracker.workers.dev/';
+  each('.copylink', (btn) => btn.addEventListener('click', () => {
+    const said = btn.parentElement.querySelector('.copied');
+    const ok = () => { btn.textContent = `Copied. Now open ${android ? 'Chrome' : 'Safari'}`; said.textContent = ''; };
+    const no = () => { said.textContent = 'Couldn’t copy it. Hold the address above, then tap Copy.'; };
+    try { navigator.clipboard.writeText(APP).then(ok, no); } catch { no(); }
+  }));
+  // Opened from a Home Screen icon (the page's own manifest starts it at /?homescreen): this is the website.
+  const notapp = document.getElementById('notapp');
+  const fromHome = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches || /[?&]homescreen\b/.test(location.search);
+  if (notapp && fromHome) {
+    const rest = [document.querySelector('.nav'), document.querySelector('main'), document.querySelector('.foot')].filter(Boolean);
+    notapp.hidden = false;
+    for (const el of rest) el.inert = true;
+    document.documentElement.classList.add('sheet-open');
+    notapp.focus({ preventScroll: true });
+    notapp.querySelector('.notapp-stay').addEventListener('click', () => {
+      notapp.hidden = true;
+      for (const el of rest) el.inert = false;
+      document.documentElement.classList.remove('sheet-open');
+    });
   }
 })();

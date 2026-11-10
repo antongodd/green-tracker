@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { contrastFailures, textBoxes } from './helpers';
 
 // D63 (0.53.0): the website (site/public), a page for people who haven't got the app yet.
@@ -11,7 +11,7 @@ import { contrastFailures, textBoxes } from './helpers';
 const SITE = 'https://site.test';
 const DIR = join(process.cwd(), 'site/public');
 const APP = 'https://green-tracker.green-tracker.workers.dev';
-const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.vtt': 'text/vtt', '.webp': 'image/webp' };
+const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.vtt': 'text/vtt', '.webp': 'image/webp' };
 const headers = Object.fromEntries(
   readFileSync(join(DIR, '_headers'), 'utf8').split('\n').filter((l) => /^\s+\S+:/.test(l)).map((l) => { const i = l.indexOf(':'); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }),
 );
@@ -89,7 +89,7 @@ test('no accessibility problems, at the top and after scrolling through', async 
 // showing: Open app at the top, Sign up further down (D85).
 // Rate the stack (D86): only the top card's words (the ones under it are covered by it). The Looks' names run off
 // the side of the screen in their row: their own test judges the ones in sight.
-const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .asks, .label, .feat p, .card:last-child .ctop span, .card:last-child .cnm b, .card:last-child .cnm small, .step b, .step p, .step .n, .video figcaption, .other, .promises p, .foot span, .foot-links a';
+const WORDS = '.brand span, .btn, .eyebrow, h1, h1 em, h2, h3, .lede, .asks, .label, .feat p, .card:last-child .ctop span, .card:last-child .cnm b, .card:last-child .cnm small, .step b, .step p, .step .n, .usesafari, .usesafari b, .notthis, .video figcaption, .other, .promises p, .foot span, .foot-links a';
 test('every word is readable over the moving lights, all the way down', async ({ page }) => {
   test.slow();
   await open(page);
@@ -103,11 +103,12 @@ test('every word is readable over the moving lights, all the way down', async ({
     await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y);
     await page.waitForTimeout(600);
     const nav = await page.locator('.nav').evaluate((n) => n.getBoundingClientRect().bottom);
-    const where = await page.locator('body').evaluate((body, sel) => [...body.querySelectorAll(sel)].map((e) => ({ inNav: !!e.closest('.nav'), shown: getComputedStyle(e).visibility === 'visible' })), WORDS);
+    const where = await page.locator('body').evaluate((body, sel) => [...body.querySelectorAll(sel)].map((e) => ({ inNav: !!e.closest('.nav'), shown: getComputedStyle(e).visibility === 'visible', gone: !!e.closest('[hidden]') })), WORDS);
     const boxes = (await textBoxes(page, WORDS)).map((b, i) => ({ ...b, i }));
-    total = boxes.length;
+    // What's hidden until asked for (the sheet, the wrong-browser steps, the Home Screen panel) is judged in its own test.
+    total = boxes.filter((b) => !where[b.i]!.gone).length;
     // Only what's showing, fully on screen and, below the bar, not behind the frosted bar at the top.
-    const seen = boxes.filter((b) => where[b.i]!.shown && (where[b.i]!.inNav || b.y >= (y ? nav : 0)) && b.y + b.h <= 844 && b.w > 1);
+    const seen = boxes.filter((b) => where[b.i]!.shown && !where[b.i]!.gone && (where[b.i]!.inNav || b.y >= (y ? nav : 0)) && b.y + b.h <= 844 && b.w > 1);
     for (const b of seen) judged.add(`${b.i}`);
     failures.push(...(await contrastFailures(page, seen, 6)).map((f) => `at ${y}px: ${f}`));
   }
@@ -192,11 +193,11 @@ test('the words match today’s app: an email and password, posts for approved f
   expect(text.match(/\b\d+ seconds?\b|\bminute\b/gi)).toEqual(['20 seconds', '20 seconds']);
   const vtt = readFileSync(join(DIR, 'media/home-screen.vtt'), 'utf8');
   expect(vtt.match(/\b\d+ seconds?\b|\bminute\b/gi)).toEqual(['20 seconds']);
-  expect(vtt.trim().split('\n').slice(-2)[0]).toBe('Get it in 3 steps: open it in Safari, Share → View More → Add to Home Screen, tap Add.');
-  // The real address in the Safari drawing, and a way out of WhatsApp's and Instagram's own browsers.
-  // (The install sheet draws it too, D86.)
-  await expect(page.locator('.safari .url')).toHaveText([new URL(APP).host, new URL(APP).host]);
-  await expect(page.locator('#install li').first()).toContainText('Opened this inside WhatsApp or Instagram? Open it in Safari first');
+  expect(vtt.trim().split('\n').slice(-2)[0]).toBe('Get it in 3 steps: open the app in Safari, Share → View More → Add to Home Screen, tap Add.');
+  // D96: the page sends people to the app (the real address) and says plainly that it has to be Safari.
+  await expect(page.locator('#install .openapp')).toHaveAttribute('href', `${APP}/`);
+  await expect(page.locator('#install .openapp')).toHaveText('Open the app in Safari');
+  await expect(page.locator('#install .usesafari')).toHaveText('Use Safari. It only works in Safari, the blue compass on your iPhone.', { useInnerText: true });
   // The picture of the app: the app's own words, a price called a price, no name cut short.
   await expect(page.locator('.mini-strip')).toHaveText('31 products · 7.9 average · 4 countries');
   await expect(page.locator('.chip.c2')).toHaveText('£9.50/gprice');
@@ -240,17 +241,17 @@ test('the buttons at the top are big enough to tap (44 points), at the top and f
   }
 });
 
-test('on a laptop everything lines up with the hero, and the three steps sit side by side', async ({ page }) => {
+test('on a laptop everything lines up with the hero, and the two steps sit side by side', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await open(page);
   await noRise(page);
   const left = (sel: string) => page.locator(sel).first().evaluate((e) => Math.round(e.getBoundingClientRect().left));
   const hero = await left('h1');
   for (const sel of ['#what', '#try', '#get', '#private', '.feats', '.rate', '.promises', '.steps', '.other', '.final']) expect(await left(sel), sel).toBe(hero);
-  const steps = await page.locator('#install ol > li').evaluateAll((ls) => ls.map((l) => Math.round(l.getBoundingClientRect().top)));
+  const steps = await page.locator('#install .getapp ol > li').evaluateAll((ls) => ls.map((l) => Math.round(l.getBoundingClientRect().top)));
   expect(new Set(steps).size).toBe(1);
   // Each step's words start right under its title (no gap from stretching to the tallest step).
-  for (const step of await page.locator('#install ol > li').all()) {
+  for (const step of await page.locator('#install .getapp ol > li').all()) {
     const gap = await step.evaluate((l) => l.querySelector('p')!.getBoundingClientRect().top - l.querySelector('b')!.getBoundingClientRect().bottom);
     expect(gap).toBeLessThan(10);
   }
@@ -484,7 +485,7 @@ test('the phone at the top turns with a finger, resists past its limit, and swin
   await expect(page.locator('.stage')).not.toHaveClass(/held/);
 });
 
-test('"Put it on my iPhone" slides up a sheet with the three steps; Done, Escape or a flick down closes it', async ({ page }) => {
+test('"Put it on my iPhone" slides up a sheet with the one button; Done, Escape or a flick down closes it', async ({ page }) => {
   await open(page);
   await arrived(page);
   const opener = page.getByRole('link', { name: 'Put it on my iPhone' });
@@ -492,17 +493,19 @@ test('"Put it on my iPhone" slides up a sheet with the three steps; Done, Escape
   await expect(sheet).toBeHidden();
   await opener.click();
   await expect(sheet).toBeVisible();
-  await expect(sheet.locator('.pg')).toHaveCount(3);
+  // D96: the same one button as further down, and no Share steps to follow on the wrong page.
+  await expect(sheet.getByRole('link', { name: 'Open the app in Safari' })).toHaveAttribute('href', `${APP}/`);
+  await expect(sheet.locator('.getapp .step')).toHaveCount(2);
+  await expect(sheet.locator('.wrong')).toBeHidden();
   // It slides all the way up, the page behind it is out of reach, and the page itself didn't jump.
   await expect.poll(() => sheet.evaluate((s) => new DOMMatrix(getComputedStyle(s).transform).m42)).toBe(0);
   expect(await page.evaluate(() => scrollY)).toBe(0);
   expect(await page.locator('main').evaluate((m) => (m as HTMLElement).inert)).toBe(true);
   await expect(sheet).toBeFocused();
   expect((await new AxeBuilder({ page }).analyze()).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`)).toEqual([]);
-  expect(await contrastFailures(page, await textBoxes(page, '.sheet-title, .sheet-sub, .sheet-done, .pg:first-child .pt, .pg:first-child .px, .sheet-more'), 1)).toEqual([]);
-  // Swiped to the next step: the dots follow.
-  await page.locator('#pages').evaluate((p) => p.scrollTo({ left: p.clientWidth, behavior: 'instant' }));
-  await expect(page.locator('.pdots i').nth(1)).toHaveClass('on');
+  expect(await contrastFailures(page, await textBoxes(page, '.sheet-title, .sheet-done, .sheet .getapp .usesafari, .sheet .getapp .usesafari b, .sheet .getapp .openapp, .sheet .getapp .step b, .sheet .getapp .step p, .sheet .getapp .notthis, .sheet-more'), 1)).toEqual([]);
+  // It all fits on the smallest iPhone's screen with the button in reach.
+  expect((await sheet.locator('.openapp').boundingBox())!.height).toBeGreaterThanOrEqual(44);
   // Done: it slides away, and the button you came from has the focus again.
   await sheet.getByRole('button', { name: 'Done' }).click();
   await expect(sheet).toBeHidden();
@@ -522,12 +525,129 @@ test('"Put it on my iPhone" slides up a sheet with the three steps; Done, Escape
   for (let i = 1; i <= 5; i++) { await page.mouse.move(g.x, g.y + 4 + i * 30); await page.waitForTimeout(12); }
   await page.mouse.up();
   await expect(sheet).toBeHidden();
-  // The full steps and the video: closes the sheet and goes to them.
+  // The video: closes the sheet and goes to it.
   await opener.click();
   await expect(sheet).toBeVisible();
-  await sheet.getByRole('link', { name: 'The video and the full steps' }).click();
+  await sheet.getByRole('link', { name: 'Watch the video' }).click();
   await expect(sheet).toBeHidden();
   await expect.poll(() => page.locator('#install h2').evaluate((h) => h.getBoundingClientRect().top)).toBeLessThan(200);
+});
+
+// D96 (0.85.0): someone followed the Share steps on the website and put the website on her Home Screen. The website
+// no longer shows those steps (the app does); it says it must be Safari, gives way to "copy the app's link" in any
+// other browser on an iPhone, and says "This is the website, not the app" when opened from a Home Screen icon.
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)';
+const PHONES = {
+  safari: `${IPHONE} Version/26.0 Mobile/15E148 Safari/604.1`,
+  instagram: `${IPHONE} Mobile/15E148 Instagram 337.0.2.24.92`,
+  chromeIos: `${IPHONE} CriOS/126.0.6478.153 Mobile/15E148 Safari/604.1`,
+  android: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36',
+  samsung: 'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36',
+};
+async function phone(browser: Browser, userAgent: string, path = '/') {
+  const context = await browser.newContext({ userAgent, viewport: { width: 390, height: 844 }, hasTouch: true, permissions: ['clipboard-read', 'clipboard-write'] });
+  const page = await context.newPage();
+  const seen = await open(page, path);
+  await arrived(page);
+  await noRise(page);
+  return { context, page, seen };
+}
+const violations = async (page: Page, sel: string) => (await new AxeBuilder({ page }).include(sel).analyze()).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(' | ')}`);
+
+test('the website shows no Share steps: one button to the app, in Safari, and not this page', async ({ browser }) => {
+  const { context, page, seen } = await phone(browser, PHONES.safari);
+  const part = page.locator('#install');
+  await expect(part.locator('.getapp')).toBeVisible();
+  await expect(part.locator('.wrong')).toBeHidden();
+  await expect(part.locator('.getapp .step b')).toHaveText(['Tap the green button', 'Follow the steps in the app']);
+  await expect(part.locator('.notthis')).toHaveText('Don’t add this page to your Home Screen. This is the website, not the app.');
+  // Nothing on the page (outside the video's own caption) tells anyone to use Share here.
+  const words = await page.locator('main').evaluate((m) => { const c = m.cloneNode(true) as HTMLElement; c.querySelector('.video')!.remove(); return c.textContent; });
+  expect(words).not.toMatch(/View More|Tap Share|Add to Home Screen/);
+  await expect(page.locator('#notapp')).toBeHidden();
+  // The button is the biggest thing to tap in the section.
+  await part.locator('.openapp').scrollIntoViewIfNeeded();
+  expect((await part.locator('.openapp').boundingBox())!.height).toBeGreaterThanOrEqual(56);
+  expect(seen.problems).toEqual([]);
+  await context.close();
+});
+
+for (const [name, ua] of [['Instagram', PHONES.instagram], ['Chrome', PHONES.chromeIos]] as const) {
+  test(`on an iPhone in ${name}, the button gives way to "copy the app’s link" for Safari`, async ({ browser }) => {
+    const { context, page, seen } = await phone(browser, ua);
+    const part = page.locator('#install');
+    await expect(part.locator('.getapp')).toBeHidden();
+    await expect(part.locator('.wrong')).toBeVisible();
+    await expect(part.locator('.wrong-title')).toHaveText('Open the app in Safari');
+    await expect(part.locator('.wrong .step b')).toHaveText(['Copy the app’s link', 'Open Safari', 'Paste it in the address bar and tap Go']);
+    await expect(part.locator('.applink')).toHaveText(new URL(APP).host);
+    await part.locator('.wrong-title').scrollIntoViewIfNeeded();
+    expect(await violations(page, '#install')).toEqual([]);
+    await page.evaluate(() => scrollBy(0, -120)); // clear of the bar at the top
+    expect(await contrastFailures(page, (await textBoxes(page, '#install .wrong-title, #install .wrong-why, #install .wrong .step b, #install .wrong .step p, #install .applink, #install .copylink')).filter((b) => b.y > 80 && b.y + b.h < 844), 2)).toEqual([]);
+    const copy = part.getByRole('button', { name: 'Copy the app’s link' });
+    await copy.click();
+    await expect(part.locator('.copylink')).toHaveText('Copied. Now open Safari');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`${APP}/`);
+    // The sheet says the same.
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.getByRole('link', { name: 'Put it on my iPhone' }).click();
+    const sheet = page.getByRole('dialog', { name: 'On your iPhone in 20 seconds.' });
+    await expect(sheet.locator('.wrong')).toBeVisible();
+    await expect(sheet.locator('.getapp')).toBeHidden();
+    expect(seen.problems).toEqual([]);
+    await context.close();
+  });
+}
+
+test('on Android the same button names Chrome, and another Android browser is sent to Chrome', async ({ browser }) => {
+  const chrome = await phone(browser, PHONES.android);
+  await expect(chrome.page.locator('#install .openapp')).toHaveText('Open the app in Chrome');
+  await expect(chrome.page.locator('#install .usesafari')).toHaveText('Use Chrome. On Android it only works in Chrome.', { useInnerText: true });
+  await expect(chrome.page.locator('#install .getapp .step p').first()).toHaveText('The app opens in Chrome.');
+  await expect(chrome.page.locator('#install .wrong')).toBeHidden();
+  await chrome.context.close();
+  const other = await phone(browser, PHONES.samsung);
+  await expect(other.page.locator('#install .getapp')).toBeHidden();
+  await expect(other.page.locator('#install .wrong-title')).toHaveText('Open the app in Chrome');
+  await expect(other.page.locator('#install .wrong .step').nth(1)).toHaveText(/Open Chrome\s*The red, yellow, green and blue circle\./, { useInnerText: true });
+  await other.page.locator('#install .copylink').click();
+  await expect(other.page.locator('#install .copylink')).toHaveText('Copied. Now open Chrome');
+  await other.context.close();
+});
+
+test('opened from a Home Screen icon, the website says it is not the app and how to put that right', async ({ browser }) => {
+  // The page's own manifest starts a Home Screen icon at /?homescreen.
+  const manifest = JSON.parse(readFileSync(join(DIR, 'manifest.webmanifest'), 'utf8'));
+  expect(manifest.start_url).toBe('/?homescreen');
+  const { context, page, seen } = await phone(browser, PHONES.safari, manifest.start_url);
+  const panel = page.getByRole('dialog', { name: 'This is the website, not the app.' });
+  await expect(panel).toBeVisible();
+  await expect(panel).toBeFocused();
+  await expect(panel.locator('.step b')).toHaveText(['Copy the app’s link', 'Open Safari and paste it in the address bar', 'Afterwards, remove this icon']);
+  expect(await page.locator('main').evaluate((m) => (m as HTMLElement).inert)).toBe(true);
+  // It covers the whole screen, and everything on it fits the width.
+  const box = (await panel.boundingBox())!;
+  expect([box.x, box.y, box.width, box.height]).toEqual([0, 0, 390, 844]);
+  expect(await panel.evaluate((p) => p.scrollWidth)).toBe(390);
+  expect(await violations(page, '#notapp')).toEqual([]);
+  expect(await contrastFailures(page, await textBoxes(page, '#notapp .brandline span, #notapp h2, #notapp .wrong-why, #notapp .step b, #notapp .step p, #notapp .applink, #notapp .copylink, #notapp .notapp-stay'), 1)).toEqual([]);
+  await panel.getByRole('button', { name: 'Copy the app’s link' }).click();
+  await expect(panel.locator('.copylink')).toHaveText('Copied. Now open Safari');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`${APP}/`);
+  // The website is still there for anyone who wants it.
+  await panel.getByRole('button', { name: 'Look at the website anyway' }).click();
+  await expect(panel).toBeHidden();
+  expect(await page.locator('main').evaluate((m) => (m as HTMLElement).inert)).toBe(false);
+  expect(seen.problems).toEqual([]);
+  await context.close();
+  // The same when the browser itself says it was opened from the Home Screen (iOS 26 does it for any page).
+  const alone = await browser.newContext({ userAgent: PHONES.safari, viewport: { width: 390, height: 844 } });
+  const p2 = await alone.newPage();
+  await p2.addInitScript(() => Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true }));
+  await open(p2);
+  await expect(p2.getByRole('dialog', { name: 'This is the website, not the app.' })).toBeVisible();
+  await alone.close();
 });
 
 // D88 (0.77.0): Anton's own photos (his cut-outs) with his real strain names and scores; sellers stay made up. Each

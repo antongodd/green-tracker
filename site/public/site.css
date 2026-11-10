@@ -15,6 +15,7 @@
   --bg: #03070a;
   --text: #f1f6f3;
   --text-2: rgba(241, 246, 243, 0.8);
+  --warn: #f0a93b;
   --text-3: rgba(241, 246, 243, 0.6);
   --green: #58e08c;
   --teal: #40c4c4;
@@ -274,17 +275,6 @@ html.sheet-open { overflow: hidden; }
 .sheet-title { font: 800 20px/1.15 var(--display); letter-spacing: -0.02em; text-wrap: balance; }
 .sheet-done { flex: none; min-height: 44px; padding: 0 16px; border-radius: 99px; border: 1px solid var(--glass-edge); background: var(--glass); color: var(--text); font: 800 14px var(--body); cursor: pointer; transition: transform 0.25s var(--settle); }
 .sheet-done:active { transform: scale(0.95); transition-duration: 0.08s; }
-.sheet-sub { padding: 4px var(--gutter-r) 14px var(--gutter-l); font-size: 14px; color: var(--text-2); }
-.pages { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; overscroll-behavior-x: contain; }
-.pages::-webkit-scrollbar { display: none; }
-.pg { flex: none; width: 100%; scroll-snap-align: center; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 6px 12px; align-content: start; padding: 0 var(--gutter-r) 0 var(--gutter-l); }
-.pn { grid-row: span 2; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font: 800 15px var(--display); color: var(--on-accent); background: linear-gradient(135deg, var(--green), var(--teal)); }
-.pt { font-size: 16px; line-height: 1.3; }
-.px { font-size: 14.5px; color: var(--text-2); }
-.pg .pic { grid-column: 1 / -1; margin-top: 8px; }
-.pdots { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
-.pdots i { width: 7px; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.3); transition: width 0.35s var(--settle), background 0.35s ease; }
-.pdots i.on { width: 20px; background: var(--text); }
 .sheet-more { justify-self: center; margin-top: 10px; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; font-size: 14px; font-weight: 700; color: var(--green); }
 
 /* The smallest iPhones: the story's phone a little smaller, so the words keep room. */
@@ -296,27 +286,6 @@ html.sheet-open { overflow: hidden; }
 .step .n { grid-row: span 2; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--on-accent); background: linear-gradient(135deg, var(--green), var(--teal)); }
 .step b { font-size: 16px; line-height: 1.35; }
 .step p { font-size: 15px; color: var(--text-2); }
-.step .inapp { grid-column: 2; margin-top: 6px; font-size: 14px; }
-/* Little pictures of Safari and the Home Screen, in iPhone's own colours. Each shows its moment once,
-   when the step comes into view (site.js adds .seen), instead of repeating for ever. */
-.pic { grid-column: 2; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: #1c1c1e; border: 1px solid rgba(255, 255, 255, 0.08); color: #f2f2f7;
-  font: 13px/1.3 -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--body); }
-.safari { display: flex; align-items: center; justify-content: space-between; }
-.safari .back { color: #0a84ff; font-size: 20px; }
-.safari .url { flex: 1; min-width: 0; margin: 0 10px; padding: 7px 10px; border-radius: 10px; background: #2c2c2e; color: #aeaeb2; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pic svg { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.safari .share { padding: 4px; border-radius: 8px; color: #0a84ff; }
-.step.seen .safari .share { animation: tapme 1.2s ease-in-out 0.5s 2; }
-.menu div { display: flex; justify-content: space-between; align-items: center; padding: 8px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: #aeaeb2; }
-.menu div:last-child { border: 0; }
-.menu .hit { margin: 0 -6px; padding: 8px; border: 0; border-radius: 8px; color: #f2f2f7; font-weight: 600; background: rgba(10, 132, 255, 0.22); }
-.step.seen .menu .hit { animation: lit 0.9s ease-out 0.5s both; }
-.menu svg { width: 18px; height: 18px; }
-.home { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; justify-items: center; padding: 4px 0; }
-.home i { display: block; width: 44px; height: 44px; border-radius: 11px; background: #3a3a3c; }
-.home .gt { display: block; width: 44px; height: 44px; border-radius: 11px; box-shadow: 0 0 18px rgba(88, 224, 140, 0.6); }
-.step.seen .home .gt { animation: popin 0.6s cubic-bezier(0.34, 1.4, 0.5, 1) 0.5s both; }
-.home span span { display: block; margin-top: 3px; font-size: 9px; text-align: center; white-space: nowrap; }
 /* The how-to video (D68): the iPhone's own controls; the thumbnail shows until it's played. */
 .video { margin: 0; display: grid; gap: 8px; }
 .video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 20px; border: 1px solid var(--glass-edge); background: #03070a; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45); }
@@ -344,9 +313,6 @@ html.sheet-open { overflow: hidden; }
 @keyframes slidein { from { opacity: 0; transform: translateX(-14px); } }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
 @keyframes pop { 40% { scale: 1.035; } }
-@keyframes tapme { 0%, 100% { background: transparent; } 50% { background: rgba(10, 132, 255, 0.3); } }
-@keyframes lit { from { background: transparent; } }
-@keyframes popin { from { transform: scale(0.4); opacity: 0; } }
 
 /* Reduce Motion (iPhone Settings → Accessibility → Motion): everything stays still. */
 @media (prefers-reduced-motion: reduce) {
@@ -374,7 +340,7 @@ html.sheet-open { overflow: hidden; }
   .hero { grid-template-columns: minmax(0, 1fr) 420px; column-gap: 48px; padding-top: 80px; align-items: center; }
   .hero > :not(.stage) { grid-column: 1; }
   .stage { grid-column: 2; grid-row: 1 / span 6; }
-  /* Everything lines up with the hero's left edge; the three steps sit side by side. */
+  /* Everything lines up with the hero's left edge; the steps sit side by side. */
   /* The scroll story: the words on the left, a bigger phone held on the right. */
   .story { grid-template-columns: minmax(0, 1fr) 300px; column-gap: 48px; }
   .story .pin { top: 120px; }
@@ -389,10 +355,34 @@ html.sheet-open { overflow: hidden; }
   .story .feat { min-height: 420px; }
   .stack { height: 380px; max-width: 420px; }
   .rate { max-width: 640px; }
-  .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wrong .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sheet .steps, .notapp .steps { grid-template-columns: 1fr; }
+  .getapp, .wrong { max-width: 640px; }
+  .wrong { max-width: 900px; }
   .rate, .video { width: 100%; max-width: 640px; }
   .sheet { left: 50%; right: auto; width: 520px; margin-left: -260px; }
 }
+
+/* D96: the one button, the wrong browser, and the website opened from a Home Screen icon. */
+.getapp, .wrong { display: grid; gap: 14px; }
+.usesafari { padding: 12px 14px; border-radius: 16px; border: 1px solid var(--warn); background: rgba(240, 169, 59, 0.12); font-size: 15.5px; color: var(--text); }
+.usesafari b { color: var(--warn); }
+.openapp, .copylink { width: 100%; min-height: 56px; font-size: 18px; }
+.notthis { font-size: 14.5px; color: var(--text-2); }
+.wrong-title { font: 800 22px/1.15 var(--display); letter-spacing: -0.02em; }
+.wrong-why { font-size: 15.5px; color: var(--text-2); }
+.applink { padding: 12px; border-radius: 12px; border: 1px solid var(--glass-edge); background: rgba(0, 0, 0, 0.45); font: 600 14px ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
+.copied { font-size: 14.5px; color: var(--text-2); }
+.copied:empty { display: none; }
+.sheet-body { padding: 8px var(--gutter-r) 0 var(--gutter-l); overflow-y: auto; touch-action: pan-y; }
+.sheet .step, .notapp .step { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.notapp { position: fixed; inset: 0; z-index: 60; overflow-y: auto; background: #03070a; }
+.notapp:focus { outline: none; }
+.notapp-in { display: grid; gap: 14px; max-width: 520px; margin: 0 auto; padding: calc(24px + env(safe-area-inset-top, 0px)) var(--gutter-r) calc(24px + env(safe-area-inset-bottom, 0px)) var(--gutter-l); }
+.notapp h2 { font-size: 28px; }
+.brandline { display: flex; align-items: center; gap: 8px; font: 800 16px var(--display); }
+.notapp-stay { justify-self: center; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-2); font: 600 15px var(--body); text-decoration: underline; cursor: pointer; }
 
 /* The page for an address that doesn't exist. */
 .lost { min-height: 100dvh; display: grid; align-content: center; gap: 18px; padding-block: 40px; }
