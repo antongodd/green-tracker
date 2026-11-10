@@ -595,6 +595,24 @@ for (const [name, ua] of [['Instagram', PHONES.instagram], ['Chrome', PHONES.chr
     const sheet = page.getByRole('dialog', { name: 'On your iPhone in 20 seconds.' });
     await expect(sheet.locator('.wrong')).toBeVisible();
     await expect(sheet.locator('.getapp')).toBeHidden();
+    // 0.85.1 (Anton's screenshot, Chrome on his iPhone): nothing in the sheet is cut off at the bottom. What Chrome
+    // leaves of an iPhone's screen is about 660 points tall; the button and the link under it are whole and in reach.
+    const inside = async (sel: string) => {
+      const b = (await sheet.locator(sel).boundingBox())!;
+      const s = (await sheet.boundingBox())!;
+      return b.y >= s.y && b.y + b.height <= Math.min(s.y + s.height, page.viewportSize()!.height);
+    };
+    for (const height of [660, 568]) {
+      await page.setViewportSize({ width: 390, height });
+      await expect.poll(() => sheet.evaluate((s) => new DOMMatrix(getComputedStyle(s).transform).m42)).toBe(0);
+      await sheet.locator('.copylink').scrollIntoViewIfNeeded();
+      expect(await inside('.copylink'), `the button at ${height}`).toBe(true);
+      expect(await inside('.sheet-more'), `the video link at ${height}`).toBe(true);
+      expect(await inside('.sheet-done'), `Done at ${height}`).toBe(true);
+    }
+    // At 660 it all fits with no scrolling inside the sheet.
+    await page.setViewportSize({ width: 390, height: 660 });
+    expect(await sheet.locator('.sheet-body').evaluate((b) => b.scrollHeight - b.clientHeight)).toBeLessThanOrEqual(1);
     expect(seen.problems).toEqual([]);
     await context.close();
   });
