@@ -167,6 +167,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D93 | **Strainz as shelves** (2026-11-04; mockups https://claude.ai/artifact/2TAnKwvsAEMvzqwryy3C94; the owner on GT Dev: "i feel like the strainz and the sources tab feels pretty similar… i just want some ideas of how we could maybe make this better so every tab feels different"; of four options: "i really like A: shelves", then "go ahead"). | Strainz is no longer cards like Sources: **your favourite strain** on top, then **shelves** that scroll sideways (Your favourites, Most tried, Want to try, Recently tried, Tried, not rated; an empty one hidden), each strain a round photo with a **ring filled to its average** out of 10, the average on the ring, and "Tried once" / "3 tried". **See all** opens the whole list: the D92 cards with search and the four sorts (`/strainz/list/<sort>`), your Want to try list with notes (`/strainz/list/want`), or the Log. Tapping a strain on the Want to try shelf shows its note and **Remove from list**; the Tried \| Want to try switch went. Sources unchanged. No database change. |
 | D94 | **Friends on Strainz** (2026-11-06; idea #18; mockups https://claude.ai/artifact/Xfch7N15YyTRACSuTXkbYY; the owner: "i want the '3 freinds have tried this' i want the 'your strains againts a freind's' i want the ' want to try lists freinds can see' - and yes i want to be able to add strains from freinds"; friends are the people you follow who approved you; strains follow their Leaderboard switch ("a"); "i dont want log to be shared"; Want to try names only; a Strainz tab on their profile ("a"); the friends list as option A, "a, go ahead"). | **Friends who've tried it**: a strain's page (and a friend's product page) lists the people you follow who share their Leaderboard and have a product of that name (by `nameKey`), each with their photo, @name, what they had (kind, and Source if they share it) and their score, best first; never Private, archived or kept products. **A friend's profile** has Leaderboard \| Posts \| **Strainz**: strains you've both tried (your average and theirs, the higher one green), strains only they've tried, and, if they've switched it on, their Want to try strains and Sources to try (**names only, never notes**). **+ Want to try** adds one to your own list with the note "From @them"; they aren't told. A new switch in What followers see, **My Want to try lists**, off until you turn it on (`privacy_settings.share_wants`, migration 0023; a setting or backup without it reads as off). The Log is never shared. |
 | D95 | **Feed posts as cards, and a Friends row** (2026-11-09; GT Ideas #31 and #33, Anton's screenshot with a red line where one post ran into the next; mockups https://claude.ai/artifact/4XXVj8wykzzcggkS71biwj). The owner: his girlfriend found it "hard to distinguish between posts in the feed… compared to instagram where it's pretty obvious where the post ends", and "its not so obvious where to access your freinds list". Picks: **A, a card for each post** (of A card, B Instagram edge to edge with a line, C a bigger gap and a line); keep the order inside a post ("match instagram"); the same card on a person's Posts and a post's own page ("yes"); for People, **2, a row at the top "but also has an icon"**: the row starts with the people icon and the header's icon stays. | Each post is a card again: the look's glass pane with its edge, 26px corners, 14px apart, the photo inset 6px with 20px corners, the About card inset 8px; no backdrop-filter. Above the Feed's first post, the Friends row: the people icon, up to three of the people you follow (approved only), "You follow N people" (or "Find people to follow"), the follow requests as a number on the icon (0.84.1), People ›; it opens People. Undoes D87's borderless posts only; the rest of D87 stands. |
+| D96 | **Put it on your Home Screen, shown by the app** (2026-11-10; GT Ideas #26; mockups https://claude.ai/artifact/AQ8AUGWGm8hh4TXSzJJR6g). The owner: "she tried to get the app on her phone and followed the instrcutions but she accidently basically added the website to her home screen - we need this mistake to not be repeated… very very clear that this has to be safari." Picks: the fix on the **website and the app**; another browser on an iPhone is **stopped**; the video **re-made**; the steps **before sign-up**, with a small **"Carry on in Safari"** that lasts one visit; people already using it in Safari **see them too**; **Android gets Chrome's steps**; mockups **A and A** (the website shows one button and no Share steps; the app shows all three steps on one screen). | The website never shows the Share steps: one button, "Open the app in Safari", and "Don’t add this page to your Home Screen". The app shows the steps itself whenever it's open in a browser tab on a phone (`shared/domain/install.ts`, `screens/Install.tsx`), before sign-up and to signed-in people alike. An iPhone in any other browser gets "Open this in Safari" with the link to copy and, signed out, no way past (signed in, "Carry on here": nobody is locked out of their own things). The website opened from a Home Screen icon says "This is the website, not the app". Nothing is stored about anyone; no database change. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -2038,11 +2039,63 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   matches the header's "People" button by exact name. *Tests:* `feed.spec.ts` (the card, the gap, the photo inside it,
   the row's words, size and link); `posts.spec.ts` judges the row's words for readability, now in Sakura too.
 
+- **Put it on your Home Screen, shown by the app (D96, 0.85.0).** `shared/domain/install.ts`: `installKind(env)` from
+  the browser's name (user agent), `navigator.standalone` / `display-mode: standalone` and `maxTouchPoints`:
+  `ios-safari` (an iPhone or iPad whose name has `Version/` and `Safari/` and none of `IOS_OTHER`), `ios-other`,
+  `android-chrome`, `android-other` (`ANDROID_OTHER`, or a `; wv)` web view), `none` (opened from the Home Screen, or
+  not a phone). `safariBar` picks step 1's words: `dots` (Safari 26+: ⋯ then Share, arrow bottom right), `share`
+  (earlier: Share in the bar, arrow centre), `top` (iPad, no arrow). `main.tsx` works it out once (`INSTALL`) and,
+  once `/auth/me` has answered, draws `Install` in place of every other screen unless skipped. Skipping is
+  `sessionStorage['gt.install.skipped']`: it lasts the tab, so the steps return next visit. `Install` (`.install`,
+  styles at the end of `styles.css`, tokens only): the steps (`.inst-steps`), "Can’t find Add to Home Screen?" (a
+  page opened by another app in Safari's clothes can't be told apart: it offers the link to copy), "Carry on in
+  Safari"; or the stop screen with `location.origin` to copy and "Carry on here" only when signed in. The dev site
+  says GT Dev. The website (`site/public`): `.getapp` (the button, two steps) and `.wrong` (copy the app's link) in
+  `#install` and again in the sheet (its swipe pages went); `site.js` repeats the two lists (a unit test keeps them
+  the same), names Chrome on Android (`.bn`, `.bn-ios`, `.bn-android`), and shows `#notapp` when
+  `navigator.standalone`, `display-mode: standalone` or `?homescreen` (the start address in the site's new
+  `manifest.webmanifest`, so an icon added on any iPhone opens as its own window and can be told). The copy button
+  is the way out of a Home Screen window (a link there opens an in-app browser, which can't add to the Home Screen).
+  The video's first scene draws the app's steps screen; its length and sound are unchanged.
+
 ## 5. Open questions for the owner
 
 None.
 
 ## 6. Changelog
+
+### 0.85.1 — the website's sheet in another browser: nothing cut off
+- Anton's screenshot (Chrome on his iPhone, the "Put it on my iPhone" sheet): the Copy the app's link button was cut
+  off at the bottom, because the wrong-browser steps were taller than the sheet. In the sheet the steps are now
+  shorter (titles only, no second heading), and on a very short screen the middle of the sheet scrolls while Done and
+  the video link stay put. The same steps in the "Get it" part further down are unchanged.
+
+### 0.85.0 — Put it on your Home Screen, shown by the app (D96)
+- Someone followed the website's steps and put the **website** on her Home Screen instead of the app (GT Ideas #26).
+  The website no longer shows the Share steps at all: its "Get it" part and the "Put it on my iPhone" sheet are one
+  button, **Open the app in Safari**, with "Use Safari. It only works in Safari, the blue compass on your iPhone" above
+  it and "Don’t add this page to your Home Screen. This is the website, not the app" below.
+- The **app** shows the steps itself. Opened in Safari on an iPhone (not from the Home Screen), the first thing anyone
+  sees, before sign-up, is "First, put Green Tracker on your Home Screen": three taps on one screen, an arrow towards
+  Safari's own button, and a quiet **Carry on in Safari** that lasts until the tab is closed. The words follow the
+  iPhone: ⋯ then Share on iOS 26, Share in the bar on older ones. People already using the app in a Safari tab see the
+  same screen.
+- **Not in Safari** on an iPhone (Chrome, or inside Instagram and the like): "Open this in Safari", with a Copy the
+  link button, on the website and in the app. A new person can't go further there; someone already signed in can
+  ("Carry on here"), so nobody is locked out of their own things.
+- The **website opened from a Home Screen icon** says "This is the website, not the app", with the app's link to copy
+  and how to remove the icon.
+- **Android**: Chrome's own three taps in the app, the website's button names Chrome, and another Android browser is
+  sent to Chrome. A laptop is as before.
+- The how-to **video** re-made to match: step 1 is "Open the app in Safari", and the phone shows the app's steps
+  screen. Same length, same sound.
+- Nothing about anyone's data, privacy or followers changes, and there is no database change. Not checked on a real
+  iPhone or Android phone from the cloud: real Safari, Chrome, Instagram, WhatsApp, and the Home Screen itself.
+
+### Notes — Feed posts as cards and a Friends row are live
+- 0.84.0 and 0.84.1 (on dev 2026-11-09) went live on 2026-11-09 (release #224). Its first full run failed
+  `feed.spec.ts` (the Friends row two lines high on the CI fonts); fixed in 0.84.1 (#225), and the second run passed
+  with no flaky tests. Notes only.
 
 ### 0.84.1 — the Friends row stays one line high
 - 0.84.0's release run caught the Friends row growing to two lines on the test machine's fonts: the "1 follow

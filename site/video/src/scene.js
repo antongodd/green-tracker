@@ -130,7 +130,7 @@ const GTX = (() => {
     return [H.lerp(A[1], B[1], u), H.lerp(A[2], B[2], u), H.lerp(A[3], B[3], u)];
   }
   // the step card's states: [start, badge, title lines, sub lines]
-  const STEPS = [[2.5, '1', ['Open it in Safari'], ['Tap Sign up free', 'on our website']], [5.4, '2', ['Tap Share'], ['Tap ⋯ at the bottom,', 'then Share']], [8.3, '2', ['Tap View More'], ['The last round', 'button']], [10.0, '2', ['Add to', 'Home Screen'], ['In the list that', 'opens']], [12.8, '3', ['Tap Add'], ['Top right. Leave', 'Open as Web App on']], [15.9, '✓', ['It’s on your', 'Home Screen'], ['Look for the', 'green leaf']], [18.8, '✓', ['Opens full', 'screen'], ['No Safari bars.', 'Just your stash.']]];
+  const STEPS = [[2.5, '1', ['Open the app', 'in Safari'], ['Tap Open the app', 'on our website']], [5.4, '2', ['Tap Share'], ['Tap ⋯ at the bottom,', 'then Share']], [8.3, '2', ['Tap View More'], ['The last round', 'button']], [10.0, '2', ['Add to', 'Home Screen'], ['In the list that', 'opens']], [12.8, '3', ['Tap Add'], ['Top right. Leave', 'Open as Web App on']], [15.9, '✓', ['It’s on your', 'Home Screen'], ['Look for the', 'green leaf']], [18.8, '✓', ['Opens full', 'screen'], ['No Safari bars.', 'Just your stash.']]];
 
   function explainer(ctx, W, H_, t, o = {}) {
     const ph = (a, b) => H.clamp((t - a) / (b - a));
@@ -261,7 +261,7 @@ const GTX = (() => {
         ctx.save(); ctx.globalAlpha = tk;
         const hg = ctx.createLinearGradient(CX, 0, CX + 520, 0); hg.addColorStop(0, '#ffffff'); hg.addColorStop(1, '#b6ffd4');
         T(ctx, 'Get it in 3 steps', CX + 40, CY + 82, '800 52px "Inter"', hg);
-        const rows = [['1', 'Open it in Safari'], ['2', 'Share → Add to Home Screen'], ['3', 'Tap Add']];
+        const rows = [['1', 'Open the app in Safari'], ['2', 'Share → Add to Home Screen'], ['3', 'Tap Add']];
         rows.forEach(([n, s], i) => {
           const e = H.ease.back(ph(21.5 + i * 0.25, 21.85 + i * 0.25)); if (e <= 0) return;
           const ry = CY + 150 + i * 92;
@@ -327,38 +327,31 @@ const GTX = (() => {
     glow(ox + w * 0.9, oy + h * 0.45 + Math.cos(t * 0.5) * 14, 190, '#8b7bff', 0.35 * k);
     glow(ox + w * 0.3, oy + h * 0.85, 200, '#40c4c4', 0.3 * k);
   }
-  // Safari on iOS 26, as on Anton's iPhone: the app's welcome page, the compact bar (‹, address, ⋯), the ⋯ menu,
+  // Safari on iOS 26, as on Anton's iPhone: the app's own steps (D96), the compact bar (‹, address, ⋯), the ⋯ menu,
   // the share sheet (people, apps, round buttons, View More), then the Add to Home Screen sheet with its keyboard.
   const leafAt = (ctx, cx, cy, s) => { ctx.save(); ctx.translate(cx, cy); ctx.scale(s / 24, s / 24); ctx.translate(-12, -12.5); leafFill(ctx); ctx.restore(); };
   const fitText = (ctx, s, w, font) => { ctx.font = font; if (ctx.measureText(s).width <= w) return s; while (s.length > 1 && ctx.measureText(s + '…').width > w) s = s.slice(0, -1); return s + '…'; };
-  const WELCOME = [['Wedding Cake', '9.7', 'holo'], ['Gelato 41', '9.2', '#8b7bff'], ['Zkittlez', '8.7', '#4f8dff']];
   function safariScreen(ctx, t, ph, EO, E, typed) {
     const loaded = EO(3.95, 4.4);
     ctx.fillStyle = '#0b0d0f'; ctx.fillRect(SX, SY, SW, SH);
     if (loaded > 0) {
       ctx.save(); ctx.globalAlpha = loaded;
       auroraWall(ctx, SX, SY, SW, SH, t);
-      // the app's welcome page (client/src/screens/SignIn.tsx): the name, a headline, an example Leaderboard
-      ctx.font = '800 19px "Inter"'; const bw = ctx.measureText('Green Tracker').width + 30;
-      leafAt(ctx, SX + SW / 2 - bw / 2 + 11, SY + 76, 24); T(ctx, 'Green Tracker', SX + SW / 2 - bw / 2 + 30, SY + 83, '800 19px "Inter"', '#fff');
-      const hg = ctx.createLinearGradient(SX + 60, 0, SX + 220, 0); hg.addColorStop(0, '#b6ffd4'); hg.addColorStop(1, '#40c4c4');
-      T(ctx, 'Your stash,', SX + SW / 2, SY + 136, '800 34px "Inter"', '#fff', 'center'); T(ctx, 'ranked.', SX + SW / 2, SY + 176, '800 34px "Inter"', hg, 'center');
-      T(ctx, 'Rate, rank and remember', SX + SW / 2, SY + 206, '400 14px "Inter"', 'rgba(255,255,255,0.72)', 'center');
-      T(ctx, 'everything you’ve tried.', SX + SW / 2, SY + 224, '400 14px "Inter"', 'rgba(255,255,255,0.72)', 'center');
-      WELCOME.forEach(([n, s, c], i) => {
-        const y = SY + 250 + i * 72;
-        ctx.save(); ctx.translate(SX + SW / 2, y + 30); ctx.rotate([-0.03, 0.02, -0.015][i]); ctx.translate(-(SX + SW / 2), -(y + 30));
-        ctx.fillStyle = i === 0 ? 'rgba(30,40,48,0.9)' : 'rgba(26,24,52,0.9)'; rr(ctx, SX + 14 + i * 6, y, SW - 28 - i * 6, 60, 16); ctx.fill();
-        let edge = c; if (c === 'holo') { edge = ctx.createLinearGradient(SX, y, SX + SW, y + 60); ['#ff9aa8', '#ffc996', '#fff2a8', '#a6f0c1', '#9fdcff', '#cdbdff'].forEach((h, k) => edge.addColorStop(k / 5, h)); }
-        ctx.strokeStyle = edge; ctx.lineWidth = 1.6; ctx.shadowColor = c === 'holo' ? 'rgba(166,240,193,0.6)' : H.rgba(c, 0.5); ctx.shadowBlur = 10; ctx.stroke(); ctx.shadowBlur = 0;
-        const x0 = SX + 14 + i * 6;
-        T(ctx, String(i + 1), x0 + 18, y + 38, '800 15px "Inter"', i === 0 ? '#cdbdff' : '#e0dcff', 'center');
-        ctx.fillStyle = 'rgba(255,255,255,0.07)'; rr(ctx, x0 + 32, y + 9, 42, 42, 10); ctx.fill(); leafAt(ctx, x0 + 53, y + 31, 22);
-        T(ctx, n, x0 + 84, y + 36, '600 15px "Inter"', '#fff');
-        const sg = ctx.createLinearGradient(0, y + 12, 0, y + 40); sg.addColorStop(0, '#ffffff'); sg.addColorStop(1, c === 'holo' ? '#a6f0c1' : c);
-        T(ctx, s, SX + SW - 26, y + 34, '800 21px "Inter"', sg, 'right'); T(ctx, 'OVERALL', SX + SW - 26, y + 48, '600 8px "Inter"', 'rgba(255,255,255,0.7)', 'right');
-        ctx.restore();
+      // D96: the app's own steps (client/src/screens/Install.tsx), shown in Safari before sign-up: the name, the
+      // heading, and the three taps in a glass card.
+      leafAt(ctx, SX + 27, SY + 72, 22); T(ctx, 'Green Tracker', SX + 44, SY + 78, '800 15px "Inter"', '#fff');
+      ['First, put Green', 'Tracker on your', 'Home Screen'].forEach((l, i) => T(ctx, l, SX + 18, SY + 124 + i * 30, '800 25px "Inter"', '#fff'));
+      T(ctx, 'Three taps, then you make', SX + 18, SY + 214, '400 13.5px "Inter"', 'rgba(255,255,255,0.72)');
+      T(ctx, 'your account in the app.', SX + 18, SY + 232, '400 13.5px "Inter"', 'rgba(255,255,255,0.72)');
+      ctx.fillStyle = 'rgba(255,255,255,0.07)'; rr(ctx, SX + 14, SY + 250, SW - 28, 232, 20); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.stroke();
+      [['Tap ··· below, then Share', 'Share already in the bar? Tap it.'], ['View More, then', 'Add to Home Screen'], ['Tap Add', 'Then open it from your Home Screen.']].forEach(([a1, a2], i) => {
+        const y = SY + 270 + i * 70;
+        const g = ctx.createLinearGradient(SX + 28, y, SX + 54, y + 26); g.addColorStop(0, '#7af0b0'); g.addColorStop(1, '#40c4c4');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(SX + 42, y + 14, 13, 0, 7); ctx.fill(); T(ctx, String(i + 1), SX + 42, y + 15, '800 14px "Inter"', '#03140a', 'center', 'middle');
+        T(ctx, a1, SX + 64, y + 13, '600 14.5px "Inter"', '#fff');
+        T(ctx, a2, SX + 64, y + 33, i === 1 ? '600 14.5px "Inter"' : '400 11.5px "Inter"', i === 1 ? '#fff' : 'rgba(255,255,255,0.72)');
       });
+      T(ctx, 'Start here ↓', SX + SW - 22, BAR_Y - 56, '700 13px "Inter"', '#6fe9a4', 'right');
       ctx.restore();
     }
     statusBar(ctx);
@@ -584,7 +577,7 @@ const GTX = (() => {
       appIcon(ctx, 296, 150, 84);
       T(ctx, 'Green Tracker', 400, 200, '800 46px "Inter"', hg(400, 340));
       T(ctx, 'on your iPhone', 402, 234, '400 28px "Inter"', 'rgba(255,255,255,0.8)');
-      [['1', 'Open it in Safari'], ['2', 'Share → Add to Home Screen'], ['3', 'Tap Add']].forEach(([n, s], i) => {
+      [['1', 'Open the app in Safari'], ['2', 'Share → Add to Home Screen'], ['3', 'Tap Add']].forEach(([n, s], i) => {
         const y = 320 + i * 90, g = ctx.createLinearGradient(296, y - 32, 360, y + 32); g.addColorStop(0, '#7af0b0'); g.addColorStop(1, '#40c4c4');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(330, y, 32, 0, 7); ctx.fill(); T(ctx, n, 330, y + 3, '800 38px "Inter"', '#03140a', 'center', 'middle');
         T(ctx, s, 386, y + 12, '600 36px "Inter"', '#ffffff');
