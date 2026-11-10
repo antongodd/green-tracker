@@ -31,6 +31,7 @@ import { BlockedPeople, People } from './screens/People';
 import { Person, SharedProfile, TheirBrandPage } from './screens/Person';
 import { Compare } from './screens/Compare';
 import { EmailSignIn, SignIn } from './screens/SignIn';
+import { currentInstall, Install, installSkipped, skipInstall } from './screens/Install';
 import { passkeysSupported } from './passkey';
 import { PrivacyScreen } from './screens/Privacy';
 import { AppearanceScreen } from './screens/Appearance';
@@ -44,6 +45,8 @@ import { StrainCompare, StrainPage, StrainzAll, StrainzList, StrainzWants } from
 import { clearWantsCache, TickedOff } from './wants';
 
 const SIGNED_OUT_PATHS = ['/signin', '/login', '/signup'];
+// D96: on a phone, in a browser tab, the app first shows how to put it on the Home Screen (worked out once).
+const INSTALL = currentInstall();
 
 function App() {
   const [me, setMe] = useState<Me | null>(null);
@@ -51,6 +54,7 @@ function App() {
   // Sign-up step 3: the account exists but the codes must be shown once before anything else.
   // D80: just created an account: offer Face ID once (where the browser has passkeys) before the app opens.
   const [fresh, setFresh] = useState(false);
+  const [skipped, setSkipped] = useState(installSkipped);
   const path = usePath();
 
   const refresh = useCallback(async () => {
@@ -118,7 +122,19 @@ function App() {
   }
 
   let screen;
-  if (fresh) {
+  if (INSTALL.kind !== 'none' && !skipped) {
+    // D96: before sign-up, and for anyone still using the app in a browser tab.
+    screen = (
+      <Install
+        kind={INSTALL.kind}
+        bar={INSTALL.bar}
+        onSkip={() => {
+          skipInstall();
+          setSkipped(true);
+        }}
+      />
+    );
+  } else if (fresh) {
     screen = (
       <FaceIdOffer
         onDone={() => {

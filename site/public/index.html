@@ -18,6 +18,8 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- D96: opened from a Home Screen icon, the page arrives at /?homescreen and says it is the website, not the app. -->
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/site.css" />
   <script src="/site.js" defer></script>
 </head>
@@ -124,23 +126,38 @@
     <section class="sec" id="install" aria-labelledby="get">
       <p class="label reveal">Get it</p>
       <h2 id="get" class="reveal">On your iPhone in 20 seconds.</h2>
+      <!-- D96: the website only sends people to the app; the app itself shows the Add to Home Screen steps, so
+           nobody follows them on this page and adds the website by mistake. -->
+      <div class="getapp reveal">
+        <p class="usesafari"><b>Use <span class="bn">Safari</span>.</b> <span class="bn-ios">It only works in Safari, the blue compass on your iPhone.</span><span class="bn-android" hidden>On Android it only works in Chrome.</span></p>
+        <a class="btn go openapp" href="https://green-tracker.green-tracker.workers.dev/"><span>Open the app in <span class="bn">Safari</span></span></a>
+        <ol class="steps">
+          <li class="step"><span class="n" aria-hidden="true">1</span><b>Tap the green button</b><p>The app opens in <span class="bn">Safari</span>.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">2</span><b>Follow the steps in the app</b><p>It shows you how to put it on your Home Screen. Then you make your account.</p></li>
+        </ol>
+        <p class="notthis">Don’t add this page to your Home Screen. This is the website, not the app.</p>
+      </div>
+      <div class="wrong reveal" hidden>
+        <p class="wrong-title">Open the app in <span class="bn">Safari</span></p>
+        <p class="wrong-why">Green Tracker only goes on your Home Screen from <span class="bn">Safari</span><span class="bn-ios">, the blue compass on your iPhone</span>. You’re in another browser right now.</p>
+        <ol class="steps">
+          <li class="step"><span class="n" aria-hidden="true">1</span><b>Copy the app’s link</b><p>The button below does it.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">2</span><b>Open <span class="bn">Safari</span></b><p class="bn-ios">The blue compass on your iPhone.</p><p class="bn-android" hidden>The red, yellow, green and blue circle.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">3</span><b>Paste it in the address bar and tap Go</b><p>The app shows you the rest.</p></li>
+        </ol>
+        <p class="applink">green-tracker.green-tracker.workers.dev</p>
+        <button class="btn go copylink" type="button">Copy the app’s link</button>
+        <p class="copied" role="status"></p>
+      </div>
       <!-- D68: the steps as a video (24 seconds long). Nothing downloads until it's played; sound only when tapped. -->
       <figure class="video reveal">
         <video controls playsinline preload="none" poster="/media/home-screen.jpg" width="1280" height="720" aria-describedby="video-about">
           <source src="/media/home-screen.mp4" type="video/mp4" />
           <track kind="captions" src="/media/home-screen.vtt" srclang="en-GB" label="English (UK)" />
         </video>
-        <figcaption id="video-about">Watch it done: Safari, Share, View More, Add to Home Screen, Add.</figcaption>
+        <figcaption id="video-about">Watch it done: open the app in Safari, then Share, View More, Add to Home Screen, Add.</figcaption>
       </figure>
-      <ol class="steps">
-        <li class="step reveal"><span class="n" aria-hidden="true">1</span><b>Open it in Safari</b><p>Tap Sign up free above, in Safari.</p><p class="inapp">Opened this inside WhatsApp or Instagram? Open it in Safari first: tap ⋯ or the compass, then Open in Safari.</p>
-          <div class="pic" aria-hidden="true"><div class="safari"><span class="back">‹</span><span class="url">green-tracker.green-tracker.workers.dev</span><span class="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" /></svg></span></div></div></li>
-        <li class="step reveal"><span class="n" aria-hidden="true">2</span><b>Tap Share, then View More, then Add to Home Screen</b><p>On newer iPhones, tap ⋯ at the bottom first to find Share. View More is the last round button.</p>
-          <div class="pic menu" aria-hidden="true"><div>Copy <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 16V4h12" /></svg></div><div class="hit">Add to Home Screen <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" /><path d="M12 8v8M8 12h8" /></svg></div><div>Add Bookmark <svg viewBox="0 0 24 24"><path d="M5 4h14v17l-7-5-7 5z" /></svg></div></div></li>
-        <li class="step reveal"><span class="n" aria-hidden="true">3</span><b>Tap Add. Done.</b><p>It sits on your Home Screen and opens full screen, like a proper app.</p>
-          <div class="pic" aria-hidden="true"><div class="home"><span><i></i></span><span><i></i></span><span><i></i></span><span><img class="gt" src="/favicon.svg" alt="" width="44" height="44" /><span>Green Tracker</span></span></div></div></li>
-      </ol>
-      <p class="other reveal">On Android or a computer? It works in your browser too. Just open the link and sign up.</p>
+      <p class="other reveal">On Android? The same button, in Chrome. On a computer it works in your browser: just open the app and sign up.</p>
     </section>
 
     <section class="final reveal" aria-labelledby="go">
@@ -150,19 +167,53 @@
     </section>
   </main>
 
-  <!-- D86: "Put it on my iPhone" slides up a sheet with the three steps (the full steps and video stay below). -->
+  <!-- D86: "Put it on my iPhone" slides up a sheet. D96: it holds the one button too (no Share steps on the website). -->
   <div class="scrim" id="scrim" hidden></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1" hidden>
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><p class="sheet-title" id="sheet-title">On your iPhone in 20 seconds.</p><button class="sheet-done" type="button">Done</button></div>
-    <p class="sheet-sub">Swipe through the steps. Pull the sheet down to close it.</p>
-    <div class="pages" id="pages" tabindex="0" role="group" aria-label="Three steps">
-      <div class="pg"><span class="pn" aria-hidden="true">1</span><b class="pt">Open it in Safari</b><p class="px">Tap Sign up free, in Safari. Inside WhatsApp or Instagram? Tap ⋯ or the compass, then Open in Safari.</p><div class="pic" aria-hidden="true"><div class="safari"><span class="back">‹</span><span class="url">green-tracker.green-tracker.workers.dev</span><span class="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" /></svg></span></div></div></div>
-      <div class="pg"><span class="pn" aria-hidden="true">2</span><b class="pt">Share, then View More, then Add to Home Screen</b><p class="px">On newer iPhones, tap ⋯ at the bottom first to find Share.</p><div class="pic menu" aria-hidden="true"><div>Copy</div><div class="hit">Add to Home Screen</div><div>Add Bookmark</div></div></div>
-      <div class="pg"><span class="pn" aria-hidden="true">3</span><b class="pt">Tap Add. Done.</b><p class="px">It sits on your Home Screen and opens full screen, like a proper app.</p><div class="pic" aria-hidden="true"><div class="home"><span><i></i></span><span><i></i></span><span><i></i></span><span><img class="gt" src="/favicon.svg" alt="" width="44" height="44" /><span>Green Tracker</span></span></div></div></div>
+    <div class="sheet-body">
+      <div class="getapp">
+        <p class="usesafari"><b>Use <span class="bn">Safari</span>.</b> <span class="bn-ios">It only works in Safari, the blue compass on your iPhone.</span><span class="bn-android" hidden>On Android it only works in Chrome.</span></p>
+        <a class="btn go openapp" href="https://green-tracker.green-tracker.workers.dev/"><span>Open the app in <span class="bn">Safari</span></span></a>
+        <ol class="steps">
+          <li class="step"><span class="n" aria-hidden="true">1</span><b>Tap the green button</b><p>The app opens in <span class="bn">Safari</span>.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">2</span><b>Follow the steps in the app</b><p>It shows you how to put it on your Home Screen. Then you make your account.</p></li>
+        </ol>
+        <p class="notthis">Don’t add this page to your Home Screen. This is the website, not the app.</p>
+      </div>
+      <div class="wrong" hidden>
+        <p class="wrong-title">Open the app in <span class="bn">Safari</span></p>
+        <p class="wrong-why">Green Tracker only goes on your Home Screen from <span class="bn">Safari</span><span class="bn-ios">, the blue compass on your iPhone</span>. You’re in another browser right now.</p>
+        <ol class="steps">
+          <li class="step"><span class="n" aria-hidden="true">1</span><b>Copy the app’s link</b><p>The button below does it.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">2</span><b>Open <span class="bn">Safari</span></b><p class="bn-ios">The blue compass on your iPhone.</p><p class="bn-android" hidden>The red, yellow, green and blue circle.</p></li>
+          <li class="step"><span class="n" aria-hidden="true">3</span><b>Paste it in the address bar and tap Go</b><p>The app shows you the rest.</p></li>
+        </ol>
+        <p class="applink">green-tracker.green-tracker.workers.dev</p>
+        <button class="btn go copylink" type="button">Copy the app’s link</button>
+        <p class="copied" role="status"></p>
+      </div>
     </div>
-    <div class="pdots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
-    <a class="sheet-more" href="#install">The video and the full steps</a>
+    <a class="sheet-more" href="#install">Watch the video</a>
+  </div>
+
+  <!-- D96: someone who added this website to their Home Screen by mistake is told so the moment they open it. -->
+  <div class="notapp" id="notapp" role="dialog" aria-modal="true" aria-labelledby="notapp-title" tabindex="-1" hidden>
+    <div class="notapp-in">
+      <p class="brandline"><img src="/favicon.svg" alt="" width="30" height="30" /><span>Green Tracker</span></p>
+      <h2 id="notapp-title">This is the website, not the app.</h2>
+      <p class="wrong-why">Easy mistake. Two minutes to fix:</p>
+      <ol class="steps">
+        <li class="step"><span class="n" aria-hidden="true">1</span><b>Copy the app’s link</b><p>The button below does it.</p></li>
+        <li class="step"><span class="n" aria-hidden="true">2</span><b>Open <span class="bn">Safari</span> and paste it in the address bar</b><p>Tap Go. The app opens and shows you how to put it on your Home Screen.</p></li>
+        <li class="step"><span class="n" aria-hidden="true">3</span><b>Afterwards, remove this icon</b><p>Hold it on your Home Screen, then tap Remove.</p></li>
+      </ol>
+      <p class="applink">green-tracker.green-tracker.workers.dev</p>
+      <button class="btn go copylink" type="button">Copy the app’s link</button>
+      <p class="copied" role="status"></p>
+      <button class="notapp-stay" type="button">Look at the website anyway</button>
+    </div>
   </div>
 
   <footer class="foot">

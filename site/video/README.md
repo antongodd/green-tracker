@@ -1,7 +1,8 @@
 # The website's how-to video (D68)
 
 The 24-second video on the website's "Get it" section, showing how to put Green Tracker on an iPhone Home Screen
-in Safari on iOS 26 (⋯ → Share → View More → Add to Home Screen → Add). It's drawn in code (a canvas, frame by
+in Safari on iOS 26 (open the app, then ⋯ → Share → View More → Add to Home Screen → Add). Since D96 its first scene
+shows the app's own steps screen (`client/src/screens/Install.tsx`), where the website's button leads. It's drawn in code (a canvas, frame by
 frame) in a frosted-glass style, with synthesized sound. This folder isn't published; only the rendered files in
 `site/public/media/` are.
 
