@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, openLanded } from './helpers';
 
 // The searchable country field (D16), in both editors, on one seeded account. Since D81 its list opens
 // right under the box, in the form, instead of on a screen of its own.
@@ -110,8 +110,8 @@ test('the list opens under the box: Used first, flags, and typing filters it', a
 
   await page.getByLabel('Name', { exact: true }).fill('Picked Here');
   await page.getByRole('button', { name: 'Save' }).click();
-  // Wait for the saved product's profile (/products/new matches /products/<id> too).
-  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  // Wait for the saved product's profile (D99: from the Leaderboard it landed on).
+  await openLanded(page);
   const { products } = await get('/api/products');
   expect(products.find((p: { name: string }) => p.name === 'Picked Here')).toMatchObject({ country: 'NL', countryOther: null });
 });

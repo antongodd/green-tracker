@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures, openLanded } from './helpers';
 
 // Currencies (D66, 0.56.0): a purchase in €, converted into your main currency (£) with the rate
 // for its day, saved with it. The rates come from the test server's stand-in (test/fxStub.mjs):
@@ -49,7 +49,7 @@ test('a purchase in €: pick the currency, the rate for its day comes in, and t
   await shot(page, '660-currency-purchase');
   expect((await new AxeBuilder({ page }).include('.pcard.open').analyze()).violations).toEqual([]);
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  await openLanded(page); // D99
   ids['Amnesia Haze'] = page.url().split('/').pop()!;
   // The product page: the price per gram in £; the purchase as paid, with the £ it came to.
   await expect(page.locator('.hero-price')).toHaveText('£9.94/g');

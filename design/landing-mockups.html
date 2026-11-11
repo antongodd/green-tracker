@@ -1,0 +1,449 @@
+<title>Landing Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone you can play beside its controls (way A/B/C, the score, the colour set, Reduce Motion),
+   then the questions. The app's own look (Aurora Glass), dark by choice. */
+:root {
+  color-scheme: dark;
+  --page: #03070a;
+  --ink: #f1f6f3;
+  --ink-2: rgba(241, 246, 243, 0.72);
+  --ink-3: rgba(241, 246, 243, 0.5);
+  --line: rgba(255, 255, 255, 0.12);
+  --panel: rgba(255, 255, 255, 0.05);
+  --green: #45d483;
+  --green-bright: #6fe9a4;
+  --on-green: #03140a;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 72px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 2px; }
+.page { max-width: 980px; margin: 0 auto; display: grid; gap: 44px; }
+h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-bright); font-weight: 600; margin: 0 0 6px; }
+.try { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.ctl { flex: 1 1 300px; min-width: 0; display: grid; gap: 20px; }
+.grp { display: grid; gap: 8px; }
+.grp > b { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; min-height: 44px; text-align: left; }
+.seg button[aria-pressed="true"] { border-color: var(--green); background: rgba(69, 212, 131, 0.14); }
+.seg button small { display: block; color: var(--ink-3); font-size: 12px; }
+.way { display: grid; gap: 10px; }
+.way button { display: grid; gap: 2px; width: 100%; }
+.way button span { font-weight: 600; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.way button em { font-style: normal; color: var(--ink-2); font-size: 14px; }
+.rec { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--green); color: var(--on-green); border-radius: 999px; padding: 2px 9px; font-weight: 700; }
+.play { background: linear-gradient(135deg, #58e08c, #40c4c4); color: var(--on-green); border: 0; border-radius: 14px; min-height: 50px; font-weight: 700; font-size: 17px; }
+.tog { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.tog input { width: 22px; height: 22px; accent-color: var(--green); }
+.what { margin: 0; color: var(--ink-2); font-size: 15px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.qs { margin: 0; padding-left: 22px; display: grid; gap: 14px; max-width: 70ch; color: var(--ink-2); }
+.qs b { color: var(--ink); }
+.qs .r { display: block; color: var(--green-bright); font-size: 14px; margin-top: 2px; }
+.facts { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 70ch; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* ---------- the phone ---------- */
+.phone {
+  --bg: #03070a; --text: #f1f6f3; --text-2: rgba(241,246,243,.72); --text-3: rgba(241,246,243,.5);
+  --glass: rgba(255,255,255,.055); --edge: rgba(255,255,255,.12); --bar: rgba(10,17,20,.82);
+  --accent: #45d483; --l1: rgba(47,216,138,.30); --l2: rgba(43,184,196,.24); --l3: rgba(123,107,255,.24);
+  position: relative; flex: 0 0 auto; width: min(390px, 100%); aspect-ratio: 390 / 844; border-radius: 44px; overflow: hidden;
+  background: var(--bg); color: var(--text); border: 1px solid var(--edge); font-size: 15px; line-height: 1.35; isolation: isolate;
+}
+.phone::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 34% at 12% 8%, var(--l1), transparent 70%), radial-gradient(55% 30% at 95% 38%, var(--l2), transparent 70%), radial-gradient(70% 34% at 30% 100%, var(--l3), transparent 70%); }
+.scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.status { flex: 0 0 auto; height: 50px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px 6px; font-weight: 600; }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 0 16px 130px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+.body::-webkit-scrollbar { display: none; }
+.hdr { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 4px; }
+.hdr h4 { margin: 0; font-size: 32px; letter-spacing: -0.02em; line-height: 1.1; }
+.hdr .act { background: none; border: 0; color: var(--accent); font-weight: 600; font-size: 17px; min-height: 44px; padding: 0 4px; }
+.card { background: var(--glass); border: 1px solid var(--edge); border-radius: 16px; padding: 14px; display: grid; gap: 10px; }
+.card label { font-size: 13px; color: var(--text-3); }
+.card .val { font-size: 17px; }
+.stepper { display: flex; align-items: center; justify-content: space-between; }
+.stepper b { font-family: var(--num); font-size: 34px; }
+.stepper span { display: flex; gap: 8px; }
+.stepper i { font-style: normal; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.08); font-size: 22px; }
+.ph { aspect-ratio: 1; border-radius: 14px; background: radial-gradient(circle at 45% 40%, #8fd7a0, #3f7d55 45%, #1d3a2a 75%); }
+.tabs { position: absolute; left: 16px; right: 76px; bottom: 26px; height: 56px; border-radius: 28px; background: var(--bar); border: 1px solid var(--edge);
+  display: flex; justify-content: space-around; align-items: center; font-size: 11px; color: var(--text-3); z-index: 3; }
+.tabs .on { color: var(--accent); font-weight: 600; }
+.fab { position: absolute; right: 16px; bottom: 26px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #58e08c, #40c4c4); color: #03140a; display: grid; place-items: center; font-size: 30px; z-index: 3; }
+
+/* rows (the app's .row and .row.tier, simplified) */
+.row { position: relative; display: grid; grid-template-columns: 22px 46px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 68px; padding: 8px 12px 8px 8px;
+  border-radius: 12px; background: var(--glass); border: 1px solid var(--edge); }
+.row .rk { font-family: var(--num); font-weight: 700; font-size: 14px; color: var(--text-3); text-align: center; }
+.row .th { width: 46px; height: 46px; border-radius: 10px; background: radial-gradient(circle at 45% 40%, var(--c1, #8fd7a0), var(--c2, #3f7d55) 50%, #13261b 80%); }
+.row .nm { min-width: 0; }
+.row .nm b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .nm small { color: var(--text-2); font-size: 13px; }
+.row .sc { font-family: var(--num); font-weight: 700; font-size: 22px; text-align: right; }
+.row.tier { overflow: hidden; border: 1.5px solid transparent;
+  --g: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t1));
+  background: linear-gradient(115deg, rgba(var(--dark), var(--d1)), rgba(var(--dark), var(--d2)) 70%) padding-box, var(--g) padding-box, var(--g) border-box;
+  background-size: 100% 100%, 200% 100%, 200% 100%; }
+.row.tier .rk { color: var(--t3); }
+.row.tier .sc { background: var(--g); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.row.tier .nm small { color: rgba(238,244,240,.84); }
+.b1 { --d1: .9; --d2: .95; } .b2 { --d1: .86; --d2: .93; } .b3 { --d1: .8; --d2: .9; } .b4 { --d1: .7; --d2: .86; }
+[data-set="aurora"] .b1 { --t1:#6ff0a8; --t2:#3fdc8e; --t3:#b6ffd4; --t4:#2cc47c; --t5:#8affc0; --t6:#4fe39c; --dark: 6,16,14; }
+[data-set="aurora"] .b2 { --t1:#6fe8e8; --t2:#40c4c4; --t3:#c2fbfb; --t4:#2fb0c8; --t5:#8ef0ff; --t6:#58d6dc; --dark: 4,14,20; }
+[data-set="aurora"] .b3 { --t1:#b3a8ff; --t2:#8b7bff; --t3:#ddd6ff; --t4:#9d8cff; --t5:#c7bcff; --t6:#a493ff; --dark: 10,10,24; }
+[data-set="aurora"] .b4 { --t1:#7dffb4; --t2:#6fe8e8; --t3:#c7bcff; --t4:#ff9ad8; --t5:#fff2a8; --t6:#9fdcff; --dark: 8,12,20; }
+[data-set="sunset"] .b1 { --t1:#ffd0a8; --t2:#ffb48a; --t3:#ffe4cc; --t4:#f4a27a; --t5:#ffc9a0; --t6:#ffbe94; --dark: 24,14,10; }
+[data-set="sunset"] .b2 { --t1:#ff9a8a; --t2:#ff7a6b; --t3:#ffc4b8; --t4:#f2665a; --t5:#ffad9e; --t6:#ff8c7c; --dark: 24,10,10; }
+[data-set="sunset"] .b3 { --t1:#ff8fd0; --t2:#f05fb4; --t3:#ffc8e8; --t4:#e05aa8; --t5:#ffa6dc; --t6:#f27cc4; --dark: 22,10,18; }
+[data-set="sunset"] .b4 { --t1:#ffd36b; --t2:#ff9a6b; --t3:#ffe8b0; --t4:#ff6fa8; --t5:#ffb36b; --t6:#c79bff; --dark: 20,10,14; }
+@media (prefers-reduced-motion: no-preference) {
+  .row.tier:not(.b1) { animation: flow 5s linear infinite; }
+  .row.tier:not(.b1) .sc { animation: flowt 5s linear infinite; }
+}
+@keyframes flow { to { background-position: 0 0, 100% 0, 100% 0; } }
+@keyframes flowt { to { background-position: 100% 0; } }
+.row.new { z-index: 2; }
+.row.new.lit { box-shadow: 0 0 0 1px var(--t2, #45d483), 0 0 22px 2px color-mix(in srgb, var(--t2, #45d483) 55%, transparent); transition: box-shadow 1.6s ease; }
+
+/* the show's own layer, over the screen, under nothing you can tap */
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+.fx i { position: absolute; display: block; border-radius: 50%; }
+.dim { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 4; pointer-events: none; }
+.banner { position: absolute; left: 50%; top: 120px; translate: -50% 0; z-index: 6; pointer-events: none; text-align: center; white-space: nowrap;
+  font-weight: 800; font-size: 22px; letter-spacing: -0.01em; padding: 10px 18px; border-radius: 18px; background: rgba(8,12,20,.8); border: 1.5px solid rgba(255,255,255,.2); opacity: 0; }
+.banner small { display: block; font-weight: 600; font-size: 13px; color: var(--text-2); }
+.flame { position: absolute; left: 50%; top: 100%; translate: -50% 0; width: 70px; height: 90px; pointer-events: none; z-index: -1;
+  background: radial-gradient(50% 60% at 50% 0%, #fff7d6, #ffb347 35%, rgba(255,90,40,.6) 60%, transparent 75%); filter: blur(2px); transform-origin: 50% 0; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 96px; z-index: 6; background: rgba(10,17,20,.92); border: 1px solid var(--edge); border-radius: 16px; padding: 12px 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; opacity: 0; pointer-events: none; }
+.toast b { color: var(--accent); }
+/* option C: the product page */
+.badge { align-self: flex-start; position: relative; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1.5px solid transparent;
+  --g: linear-gradient(90deg, var(--t1, #45d483), var(--t3, #6fe9a4), var(--t5, #40c4c4), var(--t1, #45d483));
+  background: linear-gradient(rgba(8,12,16,.75), rgba(8,12,16,.75)) padding-box, var(--g) border-box; }
+.badge.plain { background: rgba(255,255,255,.08); border-color: var(--edge); }
+.bigsc { font-family: var(--num); font-size: 44px; font-weight: 800; line-height: 1; }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">GT Ideas #38 · Job 38</p>
+    <h1>A landing for every new product</h1>
+    <p class="lede">You asked for something special when a new product goes in, like a rocket landing into the Leaderboard, different for each band, with 9.5 the biggest show. Pick a way, pick a score, then tap <b>Save</b> on the phone (or Play below). Made-up products only.</p>
+  </header>
+
+  <section class="try" aria-label="Try it">
+    <div class="phone" id="phone" data-set="aurora">
+      <div class="scr" id="scr"></div>
+      <div class="dim" id="dim"></div>
+      <div class="fx" id="fx"></div>
+      <div class="banner" id="banner"></div>
+    </div>
+
+    <div class="ctl">
+      <div class="grp">
+        <b>1. The way</b>
+        <div class="seg way" id="way">
+          <button type="button" data-v="A" aria-pressed="true"><span>A · Rocket landing <i class="rec">My pick</i></span><em>Save takes you to the Leaderboard. The board opens a gap, your product comes down from the top on a flame, slows, touches down. The higher the band, the bigger the show.</em></button>
+          <button type="button" data-v="B" aria-pressed="false"><span>B · Drop in</span><em>The same trip to the Leaderboard, calmer: no rocket, the row drops into the gap with a bounce. Bands add glow, sparkle, and confetti at 9.5.</em></button>
+          <button type="button" data-v="C" aria-pressed="false"><span>C · Stay on its page</span><em>Save opens the product's page as now. Its "#3 on your Leaderboard" badge comes down on a flame and lands. You'd never see the board itself move.</em></button>
+        </div>
+      </div>
+      <div class="grp">
+        <b>2. Its score</b>
+        <div class="seg" id="score">
+          <button type="button" data-v="7.6" aria-pressed="false">7.6<small>no band</small></button>
+          <button type="button" data-v="8.2" aria-pressed="false">8.2<small>band 1</small></button>
+          <button type="button" data-v="8.7" aria-pressed="false">8.7<small>band 2</small></button>
+          <button type="button" data-v="9.2" aria-pressed="false">9.2<small>band 3</small></button>
+          <button type="button" data-v="9.7" aria-pressed="true">9.7<small>9.5 band</small></button>
+        </div>
+      </div>
+      <div class="grp">
+        <b>3. Colour set</b>
+        <div class="seg" id="set">
+          <button type="button" data-v="aurora" aria-pressed="true">Aurora</button>
+          <button type="button" data-v="sunset" aria-pressed="false">Sunset</button>
+        </div>
+        <label class="tog"><input type="checkbox" id="rm"> Reduce Motion is on (iPhone setting)</label>
+      </div>
+      <p class="what" id="what"></p>
+      <button type="button" class="play" id="play">Play the landing</button>
+    </div>
+  </section>
+
+  <section class="grp" style="gap:14px">
+    <h2>What grows band by band</h2>
+    <ul class="facts">
+      <li><b>Under 8.0:</b> it lands with a little puff of dust. Every product gets a landing.</li>
+      <li><b>8.0 to 8.4:</b> the dust, then a glint of its colour across the row.</li>
+      <li><b>8.5 to 8.9:</b> sparks fly out in its colours.</li>
+      <li><b>9.0 to 9.4:</b> a ring of light spreads out and the board gives a small shake.</li>
+      <li><b>9.5 and up:</b> the screen dims, a bigger flame, fireworks in its colours, the score counts up and a banner says its place. It plays the #1 fanfare sound you already have if it goes top, and a tick you can feel.</li>
+      <li>The colours always come from your own colour set, so it fits all twelve without twelve separate shows.</li>
+      <li>Tap anywhere to skip it. Nothing about your data, followers or privacy changes.</li>
+    </ul>
+  </section>
+
+  <section class="grp" style="gap:14px">
+    <h2>Questions for you</h2>
+    <ol class="qs">
+      <li><b>Which way: A, B or C?</b><span class="r">My pick: A. It's the rocket you described and you see it land in its real place. The catch: Save would take you to the Leaderboard instead of the product's page (one tap on the row opens it, and a note at the bottom says "Blue Dream landed at #2 · Open").</span></li>
+      <li><b>One landing for every colour set, in that set's colours, or a different one per set?</b><span class="r">My pick: one landing in the set's colours. Twelve separate shows is a lot more work and testing for something you see for a few seconds.</span></li>
+      <li><b>Only brand-new products, or also when you move a Log entry up to the Leaderboard?</b><span class="r">My pick: both, since both put something new on the board. Not when you edit an old one's score.</span></li>
+      <li><b>Reduce Motion on (an iPhone setting):</b> tick it on the right to see. <span class="r">My pick: no flying, the row just fades in with a glow and the 9.5 banner still shows.</span></li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(() => {
+  const BOARD = [
+    ['Purple Punch', 'Flower · Hybrid', 9.8, ['#c7a0ff', '#6a3fa8']],
+    ['Lemon Haze', 'Flower · Sativa', 9.3, ['#f5f08a', '#8a8a2f']],
+    ['Gelato 41', 'Flower · Hybrid', 9.1, ['#ffc2d8', '#8a3f5a']],
+    ['Wedding Cake', 'Flower · Indica', 8.8, ['#e8f0c0', '#6a7a3f']],
+    ['Mango Gummies', 'Edible · 10mg', 8.6, ['#ffcf7a', '#a8662f']],
+    ['Northern Lights', 'Flower · Indica', 8.3, ['#a8e8c0', '#2f7a55']],
+    ['Sour Diesel', 'Flower · Sativa', 8.1, ['#d8f08a', '#5a7a2f']],
+    ['Amnesia', 'Pre-roll · Sativa', 7.8, ['#b8e0a0', '#4a7a3a']],
+    ['Cherry Pie', 'Flower · Hybrid', 7.4, ['#ff9aa8', '#7a2f3a']],
+    ['OG Kush', 'Flower · Indica', 7.0, ['#a0d0a0', '#3a6a3a']],
+  ];
+  const NEW = ['Blue Dream', 'Flower · Hybrid', 0, ['#9fdcff', '#2f5a8a']];
+  const NAMES = { aurora: ['Jade', 'Lagoon', 'Violet', 'Aurora'], sunset: ['Peach', 'Coral', 'Rosé', 'Golden hour'] };
+  const st = { way: 'A', score: 9.7, set: 'aurora' };
+  const $ = (id) => document.getElementById(id);
+  const phone = $('phone'), scr = $('scr'), fx = $('fx'), dim = $('dim'), banner = $('banner');
+  const band = (s) => (s >= 9.5 ? 4 : s >= 9 ? 3 : s >= 8.5 ? 2 : s >= 8 ? 1 : 0);
+  const rm = () => $('rm').checked || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let running = [];
+  const anim = (el, k, o) => { const a = el.animate(k, { fill: 'both', ...o }); running.push(a); return a; };
+  const wait = (ms) => new Promise((r) => { const t = setTimeout(r, ms); running.push({ cancel: () => clearTimeout(t) }); });
+
+  const rowHtml = (r, rank, cls = '') => {
+    const b = band(r[2]);
+    return `<div class="row${b ? ` tier b${b}` : ''}${cls}" style="--c1:${r[3][0]};--c2:${r[3][1]}"><span class="rk">${rank}</span><span class="th"></span><span class="nm"><b>${r[0]}</b><small>${r[1]}</small></span><span class="sc">${r[2].toFixed(1)}</span></div>`;
+  };
+  const tabs = (on) => `<nav class="tabs"><span class="${on === 'lb' ? 'on' : ''}">Leaderboard</span><span>Strainz</span><span>Sources</span><span>Feed</span></nav><div class="fab">+</div>`;
+
+  function editor() {
+    reset();
+    scr.innerHTML = `<div class="status"><span>9:41</span><span>●●●</span></div>
+      <div class="body"><div class="hdr"><button class="act" type="button">Cancel</button><b>New product</b><button class="act" type="button" id="save">Save</button></div>
+      <div class="card"><label>Name</label><div class="val">Blue Dream</div></div>
+      <div class="card"><div class="ph" style="background:radial-gradient(circle at 45% 40%,#9fdcff,#2f5a8a 50%,#13202b 80%);max-width:180px"></div></div>
+      <div class="card"><label>Overall</label><div class="stepper"><b>${st.score.toFixed(1)}</b><span><i>−</i><i>+</i></span></div></div>
+      <div class="card"><label>Type</label><div class="val">Flower · Hybrid</div></div></div>`;
+    $('save').onclick = go;
+    describe();
+  }
+
+  function board() {
+    const all = [...BOARD.map((r) => r), [NEW[0], NEW[1], st.score, NEW[3]]].sort((a, b) => b[2] - a[2]);
+    const at = all.findIndex((r) => r[0] === NEW[0]);
+    scr.innerHTML = `<div class="status"><span>9:41</span><span>●●●</span></div>
+      <div class="body" id="list"><div class="hdr"><h4>Leaderboard</h4></div>${all.map((r, i) => rowHtml(r, i + 1, i === at ? ' new' : '')).join('')}</div>
+      ${tabs('lb')}<div class="toast" id="toast"><span><b>${NEW[0]}</b> landed at #${at + 1}</span><span style="color:var(--accent);font-weight:600">Open ›</span></div>`;
+    return at;
+  }
+
+  function page() {
+    const all = [...BOARD, [NEW[0], NEW[1], st.score, NEW[3]]].sort((a, b) => b[2] - a[2]);
+    const at = all.findIndex((r) => r[0] === NEW[0]);
+    const b = band(st.score);
+    scr.innerHTML = `<div class="status"><span>9:41</span><span>●●●</span></div>
+      <div class="body ${b ? `b${b}` : ''}"><div class="hdr"><button class="act" type="button">‹ Leaderboard</button><button class="act" type="button">Edit</button></div>
+      <div class="ph" style="background:radial-gradient(circle at 45% 40%,#9fdcff,#2f5a8a 50%,#13202b 80%)"></div>
+      <h4 style="margin:4px 0 0;font-size:28px">${NEW[0]}</h4>
+      <div class="bigsc">${st.score.toFixed(1)}</div>
+      <span class="badge${b ? '' : ' plain'}" id="badge">#${at + 1} on your Leaderboard</span>
+      <div class="card"><label>Type</label><div class="val">Flower · Hybrid</div></div></div>${tabs('')}`;
+    return at;
+  }
+
+  function reset() {
+    running.forEach((a) => a.cancel()); running = [];
+    fx.innerHTML = ''; dim.style.opacity = 0; banner.style.opacity = 0;
+  }
+
+  function colours(el) {
+    const cs = getComputedStyle(el);
+    const c = [1, 2, 3, 4, 5, 6].map((i) => cs.getPropertyValue(`--t${i}`).trim()).filter(Boolean);
+    return c.length ? c : ['#d8d0c0', '#bfb6a6', '#efe8da'];
+  }
+  function spot(el) {
+    const p = phone.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - p.left, y: r.top - p.top, w: r.width, h: r.height, cx: r.left - p.left + r.width / 2, cy: r.top - p.top + r.height / 2 };
+  }
+  function burst({ x, y, n, cols, dist, size, dur, up = 0, spread = Math.PI * 2, from = 0 }) {
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('i');
+      const s = size * (0.6 + Math.random() * 0.8);
+      d.style.cssText = `left:${x - s / 2}px;top:${y - s / 2}px;width:${s}px;height:${s}px;background:${cols[i % cols.length]};box-shadow:0 0 ${s * 1.5}px ${cols[i % cols.length]}`;
+      fx.appendChild(d);
+      const a = from + (spread === Math.PI * 2 ? Math.random() * spread : (Math.random() - 0.5) * spread);
+      const r = dist * (0.5 + Math.random() * 0.6);
+      anim(d, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px,${Math.sin(a) * r + up}px) scale(.3)`, opacity: 0 }],
+        { duration: dur * (0.7 + Math.random() * 0.5), easing: 'cubic-bezier(.15,.7,.3,1)' });
+    }
+  }
+  function dust(s, big) {
+    const cols = ['rgba(220,225,230,.55)', 'rgba(180,190,200,.45)'];
+    burst({ x: s.cx - s.w * 0.25, y: s.y + s.h, n: big ? 14 : 8, cols, dist: big ? 70 : 45, size: big ? 16 : 12, dur: 900, spread: 1.2, from: Math.PI });
+    burst({ x: s.cx + s.w * 0.25, y: s.y + s.h, n: big ? 14 : 8, cols, dist: big ? 70 : 45, size: big ? 16 : 12, dur: 900, spread: 1.2, from: 0 });
+  }
+  function glint(row) {
+    const g = document.createElement('div');
+    g.style.cssText = 'position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.45) 48%,transparent 66%);background-size:250% 100%';
+    row.appendChild(g);
+    anim(g, [{ backgroundPosition: '120% 0' }, { backgroundPosition: '-60% 0' }], { duration: 900, easing: 'ease-in-out' });
+  }
+  function ring(s, col) {
+    const d = document.createElement('i');
+    d.style.cssText = `left:${s.cx - 40}px;top:${s.cy - 40}px;width:80px;height:80px;border:3px solid ${col};box-shadow:0 0 18px ${col};background:none`;
+    fx.appendChild(d);
+    anim(d, [{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(7)', opacity: 0 }], { duration: 1000, easing: 'cubic-bezier(.2,.7,.3,1)' });
+  }
+  function showBanner(text, sub, cols) {
+    banner.innerHTML = `${text}<small>${sub}</small>`;
+    banner.style.borderColor = cols[1] || '#fff';
+    banner.style.boxShadow = `0 0 30px ${cols[1] || '#fff'}`;
+    anim(banner, [{ opacity: 0, transform: 'translateY(-14px) scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: rm() ? 300 : 500, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+  }
+  function countUp(el, to) {
+    const t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 900); el.textContent = (to * (1 - Math.pow(1 - k, 3))).toFixed(1); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+
+  async function show(target, b, s) {
+    const cols = colours(target);
+    const reduce = rm();
+    if (b >= 1) glint(target);
+    if (reduce) {
+      if (b === 4) showBanner(`#${s.rank} on your Leaderboard`, `${NAMES[st.set][3]} · ${st.score.toFixed(1)}`, cols);
+      return;
+    }
+    if (b >= 2) burst({ x: s.cx, y: s.cy, n: b >= 3 ? 26 : 16, cols, dist: b >= 3 ? 150 : 100, size: 6, dur: 1000 });
+    if (b >= 3) { ring(s, cols[1]); anim($('list') || scr, [{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-2px)' }, { transform: 'none' }], { duration: 320 }); }
+    if (b === 4) {
+      const sc = target.querySelector('.sc') || target;
+      if (target.classList.contains('row')) countUp(sc, st.score);
+      showBanner(`#${s.rank} on your Leaderboard`, `${NAMES[st.set][3]} · ${st.score.toFixed(1)}`, cols);
+      for (let k = 0; k < 4; k++) {
+        await wait(260);
+        burst({ x: 60 + Math.random() * 270, y: 150 + Math.random() * 300, n: 30, cols, dist: 110, size: 6, dur: 1300, up: 40 });
+      }
+      await wait(900);
+      anim(dim, [{ opacity: 0.45 }, { opacity: 0 }], { duration: 700 });
+      anim(banner, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 900 });
+    }
+  }
+
+  async function go() {
+    reset();
+    const b = band(st.score);
+    const reduce = rm();
+    if (st.way === 'C') {
+      const at = page();
+      const badge = $('badge');
+      const s0 = spot(badge);
+      if (reduce) { anim(badge, [{ opacity: 0 }, { opacity: 1 }], { duration: 500 }); await show(badge, b, { ...s0, rank: at + 1 }); return; }
+      if (b === 4) anim(dim, [{ opacity: 0 }, { opacity: 0.45 }], { duration: 400 });
+      const flame = document.createElement('div'); flame.className = 'flame'; flame.style.width = '40px'; flame.style.height = b === 4 ? '90px' : '60px'; badge.appendChild(flame);
+      anim(flame, [{ transform: 'scaleY(1.2)', opacity: 1 }, { transform: 'scaleY(.9)', opacity: 1, offset: 0.8 }, { transform: 'scaleY(.1)', opacity: 0 }], { duration: 1000 });
+      await anim(badge, [{ transform: `translateY(${-s0.y - 60}px)` }, { transform: 'translateY(-12px)', offset: 0.8 }, { transform: 'none' }], { duration: 1000, easing: 'cubic-bezier(.2,.6,.35,1)' }).finished.catch(() => {});
+      const s = spot(badge);
+      dust(s, b >= 3);
+      await show(badge, b, { ...s, rank: at + 1 });
+      return;
+    }
+    const at = board();
+    const list = $('list');
+    const rows = [...list.querySelectorAll('.row')];
+    const row = rows[at];
+    // bring the landing spot to the middle of the screen
+    list.scrollTop = Math.max(0, row.offsetTop - list.clientHeight * 0.42);
+    const toast = $('toast');
+    if (reduce) {
+      anim(row, [{ opacity: 0 }, { opacity: 1 }], { duration: 500 });
+      row.classList.add('lit');
+      await show(row, b, { ...spot(row), rank: at + 1 });
+      anim(toast, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 600 });
+      return;
+    }
+    const h = row.offsetHeight + 10;
+    row.style.opacity = 0;
+    // the rows below make room
+    await Promise.all(rows.slice(at + 1).map((r) => anim(r, [{ transform: `translateY(${-h}px)` }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.3,.8,.3,1)' }).finished)).catch(() => {});
+    row.style.opacity = 1;
+    const s0 = spot(row);
+    const from = -(s0.y + s0.h + 40);
+    if (st.way === 'A') {
+      if (b === 4) anim(dim, [{ opacity: 0 }, { opacity: 0.45 }], { duration: 400 });
+      const flame = document.createElement('div'); flame.className = 'flame';
+      const fh = [70, 80, 95, 110, 150][b];
+      flame.style.height = fh + 'px'; flame.style.width = (b === 4 ? 110 : 80) + 'px';
+      row.style.overflow = 'visible'; row.appendChild(flame);
+      anim(flame, [{ transform: 'scaleY(1.3)', opacity: 1 }, { transform: 'scaleY(.8)', opacity: 1, offset: 0.55 }, { transform: 'scaleY(1.1)', opacity: 1, offset: 0.8 }, { transform: 'scaleY(.05)', opacity: 0 }], { duration: b === 4 ? 1500 : 1150 });
+      // fast fall, then the thrust slows it, a hover, touch down
+      await anim(row, [{ transform: `translateY(${from}px)` }, { transform: 'translateY(-26px)', offset: 0.6, easing: 'ease-out' }, { transform: 'translateY(-8px)', offset: 0.85 }, { transform: 'none' }],
+        { duration: b === 4 ? 1500 : 1150, easing: 'cubic-bezier(.35,0,.6,1)' }).finished.catch(() => {});
+      flame.remove();
+      anim(row, [{ transform: 'scale(1.03,.94)' }, { transform: 'none' }], { duration: 260, easing: 'ease-out' });
+      const s = spot(row);
+      dust(s, b >= 3);
+      row.classList.add('lit');
+      await show(row, b, { ...s, rank: at + 1 });
+    } else {
+      await anim(row, [{ transform: 'translateY(-70px) scale(1.05)', opacity: 0 }, { transform: 'translateY(6px) scale(1)', opacity: 1, offset: 0.7 }, { transform: 'none', opacity: 1 }],
+        { duration: 560, easing: 'cubic-bezier(.3,.9,.4,1.2)' }).finished.catch(() => {});
+      row.classList.add('lit');
+      const s = spot(row);
+      // B: calmer, so the sparks are fewer and there is no ring or shake
+      const cols = colours(row);
+      if (b >= 1) glint(row);
+      if (!rm() && b >= 2 && b < 4) burst({ x: s.cx, y: s.cy, n: 10, cols, dist: 70, size: 5, dur: 900 });
+      if (b === 4) {
+        showBanner(`#${at + 1} on your Leaderboard`, `${NAMES[st.set][3]} · ${st.score.toFixed(1)}`, cols);
+        for (let k = 0; k < 2; k++) { await wait(200); burst({ x: 195, y: 80, n: 40, cols, dist: 260, size: 7, dur: 1800, up: 220, spread: 1.6, from: Math.PI / 2 }); }
+        anim(banner, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 1600 });
+      }
+    }
+    anim(toast, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: 500 });
+  }
+
+  function describe() {
+    const b = band(st.score);
+    const name = b ? `${NAMES[st.set][b - 1]} band` : 'no band';
+    const by = ['a puff of dust', 'dust and a glint', 'dust, a glint and sparks', 'dust, sparks, a ring of light and a shake', 'the full show: dimmed screen, big flame, fireworks, the score counting up, a banner'][b];
+    const way = { A: 'Rocket landing', B: 'Drop in', C: 'Stay on its page' }[st.way];
+    $('what').textContent = `${way}, ${st.score.toFixed(1)} (${name}): ${st.way === 'B' ? 'a calmer version of ' : ''}${by}.${rm() ? ' With Reduce Motion: it fades in and glows, nothing flies.' : ''}`;
+  }
+
+  const pick = (id, key, conv = (v) => v) => {
+    $(id).addEventListener('click', (e) => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      st[key] = conv(btn.dataset.v);
+      $(id).querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
+      if (key === 'set') phone.dataset.set = st.set;
+      editor();
+    });
+  };
+  pick('way', 'way'); pick('score', 'score', Number); pick('set', 'set');
+  $('rm').addEventListener('change', editor);
+  $('play').addEventListener('click', go);
+  phone.addEventListener('click', (e) => { if (!e.target.closest('#save') && running.length) { reset(); } });
+  editor();
+})();
+</script>
