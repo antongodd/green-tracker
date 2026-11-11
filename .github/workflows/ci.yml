@@ -76,7 +76,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Ubuntu's servers can be out of reach from GitHub's machines (2026-11-11): try the browser with its system
+      # packages for up to 4 minutes (a failing download otherwise takes 10), then the browser alone (the machine
+      # already has what Chromium needs to run).
+      - name: Install the browser
+        run: |
+          timeout 240 npx playwright install --with-deps chromium && exit 0
+          echo "::warning::System packages unreachable; installing the browser alone"
+          npx playwright install chromium
       - run: npm run build
       - name: This machine's share of the ${{ needs.plan.outputs.mode }} browser tests
         run: node scripts/e2e-shard.mjs $(( ${{ strategy.job-index }} + 1 )) ${{ strategy.job-total }} ${{ needs.plan.outputs.mode }}

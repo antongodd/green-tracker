@@ -2210,8 +2210,11 @@ html[data-tone="light"] .li-ic.gem { color: #7a3fc0; }
 .post-acts { display: flex; align-items: center; gap: 2px; padding: 6px 8px 0; }
 .post-acts .act { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 8px; border: 0; border-radius: 12px; background: none; color: var(--text-2); font-size: 15px; font-weight: 700; text-decoration: none; justify-content: center; }
 .post-acts .act svg { width: 24px; height: 24px; }
-/* The count (see who) is its own 44-point button, a little apart from the 🔥 (0.69.9). */
-.post-acts .act.count { min-width: 44px; padding: 0 10px; margin-left: 4px; justify-content: flex-start; font-variant-numeric: tabular-nums; }
+/* The count (see who) is its own 44-point button (0.69.9), its number as close to the 🔥 as the comments' number is to
+   their icon (0.87.1, GT Ideas #36): the 🔥's button keeps its 44 points with the icon at its right edge, pulled left so
+   the icon stays where it was, and the count starts straight after it (the flame is narrower than its box). */
+.post-acts .act.fire { padding: 0; justify-content: flex-end; margin-left: -10px; }
+.post-acts .act.count { min-width: 44px; padding: 0 10px 0 0; justify-content: flex-start; font-variant-numeric: tabular-nums; }
 .post-acts .act.count:disabled { opacity: 1; cursor: default; }
 .post-acts .fire.on { color: var(--star); }
 .post-acts .fire.on svg { filter: drop-shadow(0 0 6px rgba(255, 154, 61, 0.55)); }
