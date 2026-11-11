@@ -141,6 +141,7 @@ test('Square tapped before the photo has loaded still crops a square', async ({ 
   await page.getByLabel('Add photos').setInputFiles([await makeJpeg(page, 2000, 1200, ['#2f6b3a', '#b9d36c'], 'SLOW')]);
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99
   await expect(page.locator('.pgrid .pcell')).toHaveCount(1);
 
   // Hold the original back until Square has been tapped, as on a slow connection.
