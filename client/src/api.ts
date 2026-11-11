@@ -1,5 +1,6 @@
 import type { Crop } from '../../shared/domain/photo';
 import type { Appearance } from '../../shared/domain/gems';
+import type { Tour } from '../../shared/domain/tour';
 import { reportNetwork } from './online';
 
 /** A failed API call. `message` is written for the person using the app and can be shown as-is. */
@@ -81,6 +82,8 @@ export interface Me {
   appearance?: Appearance;
   /** D66: your main currency, which every price shown together is in (signed in only). */
   currency?: string;
+  /** D97: Getting started, when this account has it (null: an account from before it that never asked). */
+  tour?: Tour | null;
   /** D47: which site this is. The dev site shows an orange DEV label. */
   site?: 'dev' | 'live';
 }

@@ -4,6 +4,7 @@
 // (/more/colours, with a preview and the #1 mark). Saved to your account at once, so they follow you
 // to a new phone; a friend's board shows in your look and colours too. (Sounds and ticks have their
 // own screen since 0.48.0, D57: Sounds.tsx.)
+import { TourHint, TourLine, tourDone } from '../tour';
 import { useRef, useState } from 'preact/hooks';
 import { BAND_FLOORS, BOARD_TOP_KEYS, BOARD_TOPS, LIGHT_LOOKS, LOOK_KEYS, LOOKS, NEW_LOOKS, NEW_PRESETS, PRESET_KEYS, PRESETS, READY_LOOKS, scoreBand, type Appearance, type Band } from '../../../shared/domain/gems';
 import { errorText } from '../api';
@@ -120,6 +121,11 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
     }
   }
 
+  // D97: tapping a Look is the Pick your Look step, the one you already have included (a tap on it changes nothing,
+  // so `onChange` never hears of it). After the tap has finished: ticking it redraws the app, and a redraw between
+  // the tap and its change would put the radio back.
+  const pickedLook = () => setTimeout(() => tourDone('look'), 0);
+
   return (
     <>
       <Header title={TITLES[p.part]} left={<BackButton to="/more" />} />
@@ -159,6 +165,8 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
             </div>
           </section>
         )}
+        {p.part === 'look' && <TourLine step="look" />}
+        {p.part === 'look' && <TourHint id="look" />}
         {p.part === 'look' &&
           MODES.map((m) => (
             <section key={m.id} aria-labelledby={m.id}>
@@ -181,7 +189,7 @@ export function AppearanceScreen(p: { part: AppearancePart }) {
                           {NEW_LOOKS.includes(k) && <span class="new-tag">New</span>}
                         </span>
                         <span class="ap-sub">{ready ? LOOKS[k].description : 'Coming next'}</span>
-                        <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} />
+                        <input type="radio" class="radio" name="look" value={k} checked={a.look === k} disabled={!online || !ready} onChange={() => change({ ...a, look: k })} onClick={pickedLook} />
                       </label>
                     );
                   })}

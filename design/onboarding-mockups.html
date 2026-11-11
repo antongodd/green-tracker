@@ -1,0 +1,379 @@
+<title>Onboarding Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone you can tap through beside a short list of what to try, then three small phones (A, B, C)
+   for where the Getting started list lives. The app's own look (Aurora Glass), dark by choice. */
+:root {
+  color-scheme: dark;
+  --page: #03070a;
+  --ink: #f1f6f3;
+  --ink-2: rgba(241, 246, 243, 0.72);
+  --ink-3: rgba(241, 246, 243, 0.5);
+  --line: rgba(255, 255, 255, 0.12);
+  --panel: rgba(255, 255, 255, 0.05);
+  --green: #45d483;
+  --green-bright: #6fe9a4;
+  --on-green: #03140a;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 72px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 2px; }
+.page { max-width: 980px; margin: 0 auto; display: grid; gap: 48px; }
+h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-bright); font-weight: 600; margin: 0 0 6px; }
+.sec { display: grid; gap: 20px; }
+.try { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.try > .notes { flex: 1 1 280px; min-width: 0; display: grid; gap: 14px; }
+.notes ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; color: var(--ink-2); }
+.notes ol b { color: var(--ink); font-weight: 600; }
+.ghost { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; min-height: 44px; justify-self: start; }
+.opts { display: flex; flex-wrap: wrap; gap: 24px; }
+.opt { width: 266px; max-width: 100%; display: grid; gap: 10px; align-content: start; }
+.opt h3 { margin: 0; font-size: 17px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.opt p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.rec { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--green); color: var(--on-green); border-radius: 999px; padding: 2px 9px; font-weight: 700; }
+.mini { width: 266px; max-width: 100%; overflow: hidden; border-radius: 30px; }
+.mini .phone { width: 390px; zoom: 0.682; }
+.facts { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 68ch; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* ---------- the phone ---------- */
+.phone {
+  --bg: #03070a; --text: #f1f6f3; --text-2: rgba(241,246,243,.72); --text-3: rgba(241,246,243,.5);
+  --glass: rgba(255,255,255,.055); --edge: rgba(255,255,255,.12); --solid: #0a1114; --bar: rgba(10,17,20,.82);
+  --accent: #45d483; --accent-2: #40c4c4; --on-accent: #03140a;
+  --l1: rgba(47,216,138,.30); --l2: rgba(43,184,196,.24); --l3: rgba(123,107,255,.24);
+  position: relative; flex: 0 0 auto; width: min(390px, 100%); aspect-ratio: 390 / 844; border-radius: 44px; overflow: hidden;
+  background: var(--bg); color: var(--text); border: 1px solid var(--edge); font-size: 15px; line-height: 1.35;
+}
+.phone[data-look="neon"] { --bg:#06041a; --text:#f5f1ff; --text-2:rgba(245,241,255,.74); --text-3:rgba(245,241,255,.5); --glass:rgba(170,140,255,.08); --edge:rgba(200,180,255,.18); --solid:#0d0a24; --bar:rgba(13,10,36,.85); --accent:#52e898; --accent-2:#3da8ff; --l1:rgba(167,123,255,.36); --l2:rgba(255,92,190,.24); --l3:rgba(61,168,255,.26); }
+.phone[data-look="sakura"] { --bg:#140a12; --text:#fff3f8; --text-2:rgba(255,243,248,.74); --text-3:rgba(255,243,248,.5); --glass:rgba(255,180,215,.07); --edge:rgba(255,200,225,.17); --solid:#1c0f19; --bar:rgba(28,15,25,.85); --accent:#ff9cc4; --accent-2:#ffc7a8; --on-accent:#2a0716; --l1:rgba(255,140,190,.30); --l2:rgba(255,190,150,.20); --l3:rgba(190,130,255,.22); }
+.phone[data-look="day"] { --bg:#e6f0f7; --text:#10202b; --text-2:rgba(16,32,43,.74); --text-3:rgba(16,32,43,.56); --glass:rgba(255,255,255,.72); --edge:rgba(16,32,43,.12); --solid:#ffffff; --bar:rgba(255,255,255,.9); --accent:#0c7a45; --accent-2:#0b7285; --on-accent:#ffffff; --l1:rgba(120,200,255,.5); --l2:rgba(160,235,200,.5); --l3:rgba(255,220,170,.5); }
+.phone::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 34% at 12% 8%, var(--l1), transparent 70%), radial-gradient(55% 30% at 95% 38%, var(--l2), transparent 70%), radial-gradient(70% 34% at 30% 100%, var(--l3), transparent 70%); }
+.scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.status { flex: 0 0 auto; height: 50px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px 6px; font-weight: 600; font-size: 15px; }
+.status i { width: 22px; height: 11px; border: 1.5px solid var(--text-3); border-radius: 4px; position: relative; }
+.status i::after { content: ""; position: absolute; inset: 1.5px; right: 5px; background: var(--text); border-radius: 1.5px; }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 0 16px 120px; display: flex; flex-direction: column; gap: 12px; }
+.body::-webkit-scrollbar { display: none; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 8px; }
+.top h4 { margin: 0; font-size: 32px; letter-spacing: -0.02em; line-height: 1.1; }
+.me { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--edge); background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); font-weight: 700; font-size: 14px; padding: 0; flex: 0 0 auto; }
+.nav { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; min-height: 44px; }
+.nav b { font-size: 17px; }
+.nav button { background: none; border: 0; min-height: 44px; padding: 0 4px; color: var(--accent); font-weight: 600; }
+.card { background: var(--glass); border: 1px solid var(--edge); border-radius: 20px; padding: 14px; }
+.sub { color: var(--text-2); font-size: 14px; margin: 0; }
+.tiny { color: var(--text-3); font-size: 12.5px; margin: 0; }
+.btn { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; border: 0; border-radius: 14px; min-height: 48px; padding: 0 18px; font-weight: 650; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+.btn.sec { background: var(--glass); color: var(--text); border: 1px solid var(--edge); }
+.btn.wide { width: 100%; }
+.link { background: none; border: 0; color: var(--text-2); min-height: 44px; padding: 0 12px; }
+
+/* tab bar and + */
+.tabs { position: absolute; left: 14px; right: 84px; bottom: 22px; height: 58px; border-radius: 29px; background: var(--bar); border: 1px solid var(--edge); display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 4px; }
+.tabs button { background: none; border: 0; padding: 0; display: grid; place-items: center; align-content: center; gap: 3px; font-size: 10.5px; color: var(--text-3); font-weight: 600; min-width: 0; }
+.tabs button[aria-current="page"] { color: var(--accent); }
+.tabs svg { width: 22px; height: 22px; }
+.fab { position: absolute; right: 14px; bottom: 23px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); display: grid; place-items: center; padding: 0; }
+.fab svg { width: 26px; height: 26px; }
+.fab.pulse { box-shadow: 0 0 0 0 var(--accent); animation: pulse 1.6s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } 100% { box-shadow: 0 0 0 16px transparent; } }
+
+/* Getting started */
+.gs { padding: 14px 14px 6px; }
+.gs-top { display: flex; gap: 12px; align-items: center; }
+.gs-top h5 { margin: 0; font-size: 17px; }
+.gs-top > div:nth-child(2) { flex: 1; min-width: 0; }
+.ring { --p: 0; width: 46px; height: 46px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; font-family: var(--num); font-weight: 700; font-size: 15px;
+  background: radial-gradient(closest-side, var(--solid) 76%, transparent 78%), conic-gradient(var(--accent) calc(var(--p) * 1%), var(--edge) 0); }
+.x { background: none; border: 0; width: 44px; height: 44px; margin: -8px -10px -8px 0; display: grid; place-items: center; padding: 0; flex: 0 0 auto; }
+.steps { list-style: none; margin: 10px 0 0; padding: 0; }
+.steps li + li { border-top: 1px solid var(--edge); }
+.step { width: 100%; background: none; border: 0; text-align: left; display: flex; gap: 12px; align-items: center; min-height: 54px; padding: 8px 0; }
+.step .t { flex: 1; min-width: 0; }
+.step .t b { display: block; font-weight: 600; }
+.step .t span { color: var(--text-2); font-size: 13px; }
+.dot { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--text-3); flex: 0 0 auto; display: grid; place-items: center; }
+.step.done .dot, .dot.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.step.done .t b { color: var(--text-2); text-decoration: line-through; text-decoration-color: var(--text-3); }
+.dot svg { width: 14px; height: 14px; }
+.chev { color: var(--text-3); font-size: 20px; }
+.x svg, .strip > svg { width: 20px; height: 20px; color: var(--text-3); flex: 0 0 auto; }
+.hide { display: block; margin: 0 auto; font-size: 14px; }
+.here .t { flex: 1; min-width: 0; }
+.here .t b { display: block; }
+.here .t span { color: var(--text-2); font-size: 13px; }
+.strip { width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: var(--text); }
+.strip .bar, .pill .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--edge); overflow: hidden; }
+.strip .bar i, .pill .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.pill { position: absolute; left: 14px; right: 14px; bottom: 92px; min-height: 48px; border-radius: 24px; background: var(--bar); border: 1px solid var(--edge); color: var(--text); display: flex; align-items: center; gap: 12px; padding: 0 16px; font-weight: 600; }
+
+/* hints */
+.hint { background: var(--solid); border: 1px solid var(--accent); border-radius: 18px; padding: 14px; position: relative; display: grid; gap: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
+.hint p { margin: 0; }
+.hint .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+.hint .row .btn { min-height: 44px; }
+.hint::after { content: ""; position: absolute; width: 14px; height: 14px; background: var(--solid); border: 1px solid var(--accent); border-top: 0; border-left: 0; transform: rotate(45deg); left: var(--ax, 40px); bottom: -8px; }
+.hint.up::after { bottom: auto; top: -8px; transform: rotate(225deg); }
+.hint.float { position: absolute; left: 16px; right: 16px; bottom: 96px; }
+.count { color: var(--text-3); font-size: 12.5px; margin-right: auto; }
+
+/* content bits */
+.empty { text-align: center; padding: 26px 16px; display: grid; gap: 8px; justify-items: center; }
+.empty b { font-size: 17px; }
+.prow { display: flex; gap: 12px; align-items: center; padding: 10px 12px; }
+.rank { font-family: var(--num); font-weight: 700; color: var(--text-2); width: 16px; text-align: center; }
+.nug { width: 48px; height: 48px; border-radius: 12px; flex: 0 0 auto; background: radial-gradient(circle at 35% 30%, #b9f27a, #3f8f3a 55%, #5b2f86 100%); border: 1px solid var(--edge); }
+.nug.round { border-radius: 50%; width: 64px; height: 64px; }
+.nug.big { width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: 16px; }
+.prow .t { flex: 1; min-width: 0; }
+.prow .t b { display: block; }
+.score { font-family: var(--num); font-weight: 700; font-size: 20px; color: var(--accent); }
+.field { display: grid; gap: 4px; }
+.field span { font-size: 12.5px; color: var(--text-2); }
+.field div { background: var(--glass); border: 1px solid var(--edge); border-radius: 12px; padding: 11px 12px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--edge); background: var(--glass); border-radius: 999px; padding: 7px 12px; font-size: 14px; }
+.chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.friends { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.friends .t { flex: 1; min-width: 0; }
+.looks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.look { border: 1.5px solid var(--edge); border-radius: 16px; padding: 8px; background: var(--glass); color: var(--text); display: grid; gap: 8px; text-align: left; font-weight: 600; }
+.look[aria-checked="true"] { border-color: var(--accent); }
+.look i { display: block; height: 64px; border-radius: 10px; }
+.list { padding: 0 14px; }
+.list button, .list div { width: 100%; background: none; border: 0; display: flex; justify-content: space-between; align-items: center; min-height: 50px; text-align: left; color: var(--text); padding: 0; }
+.list > * + * { border-top: 1px solid var(--edge); }
+.list .new { color: var(--accent); font-weight: 600; }
+.toast { position: absolute; top: 10px; z-index: 3; left: 50%; transform: translateX(-50%); background: var(--solid); border: 1px solid var(--edge); border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 14px; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+.welcome { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 0 26px 40px; }
+.welcome h4 { font-size: 34px; line-height: 1.08; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.welcome ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.welcome li { display: flex; gap: 12px; align-items: flex-start; }
+.welcome li svg { width: 24px; height: 24px; color: var(--accent); flex: 0 0 auto; margin-top: 1px; }
+.welcome li b { display: block; }
+.welcome li span { color: var(--text-2); font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .fab.pulse { animation: none; } }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Job 32 · mockups, round 2 · nothing built yet</p>
+    <h1>Onboarding for new people</h1>
+    <p class="lede">One welcome screen, then a Getting started list that ticks itself off as someone really uses the app. The list can be made smaller or hidden, and every screen shows its own step. Every product, person and seller here is made up.</p>
+  </header>
+
+  <section class="sec" aria-labelledby="h-try">
+    <div>
+      <p class="eyebrow">Tap through it</p>
+      <h2 id="h-try">A new person's first five minutes</h2>
+    </div>
+    <div class="try">
+      <div class="phone" id="main" aria-label="Interactive iPhone mockup"></div>
+      <div class="notes">
+        <p class="lede" style="margin:0">The phone works. Go in any order, or follow this:</p>
+        <ol>
+          <li><b>Let’s go</b> on the welcome screen (or Skip: the list still waits on the Leaderboard).</li>
+          <li>Tap <b>+</b>, then <b>Save</b>. The first step ticks itself.</li>
+          <li>Tap the <b>arrow</b> on the card to make it one line; tap the line to open it again.</li>
+          <li>Tap <b>Strainz</b>, then <b>Sources</b>. Each has its own step at the top, and a hint, once.</li>
+          <li>Tap <b>Feed</b>: the hint points at Friends. Then <b>+</b> to post.</li>
+          <li>Back on the Leaderboard, tap <b>Pick your Look</b> and choose one.</li>
+          <li>Tap <b>Done</b> (or <b>Hide this list</b> at any point), then your photo (top right) for <b>Show me round again</b>.</li>
+        </ol>
+        <button class="ghost" id="restart" type="button">Start again as a new person</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-opts">
+    <div>
+      <p class="eyebrow">Your pick, with your changes</p>
+      <h2 id="h-opts">A, that folds down to B, with each screen’s own step</h2>
+      <p class="lede">The three states of the same thing. The phone above does all of them.</p>
+    </div>
+    <div class="opts">
+      <div class="opt"><div class="mini"><div class="phone" id="optA" inert></div></div><h3>Open</h3><p>The card on the Leaderboard with all five steps. The arrow makes it smaller; Hide this list puts it away.</p></div>
+      <div class="opt"><div class="mini"><div class="phone" id="optB" inert></div></div><h3>Made smaller</h3><p>One line with the progress bar. Tap it to open the steps again. The app remembers which way you left it.</p></div>
+      <div class="opt"><div class="mini"><div class="phone" id="optC" inert></div></div><h3>On each screen</h3><p>Strainz, Sources, the Feed and Look show their own step at the top: what to do here, then a tick and what’s next.</p></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-facts">
+    <div>
+      <p class="eyebrow">Behind it</p>
+      <h2 id="h-facts">What changes, and what doesn’t</h2>
+    </div>
+    <ul class="facts">
+      <li><b>Who sees it:</b> only accounts created after this goes live. Everyone else gets it only by tapping Show me round again in Settings.</li>
+      <li><b>The database:</b> one small addition, so the app remembers which steps you’ve done and whether you closed the list, on every phone you sign in on.</li>
+      <li><b>Smaller or hidden:</b> the app remembers how you left the list. Hidden, it comes back only with Show me round again.</li>
+      <li><b>Export and Restore:</b> restoring a backup doesn’t bring the list back.</li>
+      <li><b>Privacy and followers:</b> nothing changes. Nobody else sees your progress.</li>
+      <li><b>Find a friend</b> counts as done when you send an invite or ask to follow someone.</li>
+      <li><b>Left out:</b> a guided run that locks the screen until you tap Next, and any reminders or notifications.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function () {
+  var IC = {
+    board: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>',
+    strainz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>',
+    sources: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10l8-6 8 6v9H4z"/></svg>',
+    feed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M4 15l5-4 4 3 3-2 4 3"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8-4.3-4.1 5.9-.8z"/></svg>',
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+    people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M16 6.2a3 3 0 010 5.6M18 14.5c1.8.7 3 2.300 3 4.500"/></svg>'
+  };
+  var STEPS = [
+    ['Add your first product', 'Rate something you’ve tried'],
+    ['Look at Strainz and Sources', 'Your strains, and who you buy from'],
+    ['Find a friend', 'Invite one, or search their @name'],
+    ['Post to the Feed', 'Only followers you approve see it'],
+    ['Pick your Look', 'Colours and background for the whole app']
+  ];
+  var LOOKS = [['aurora', 'Aurora Glass', 'linear-gradient(135deg,#0d3b2a,#123a4a 55%,#2a2466)'], ['neon', 'Neon Night', 'linear-gradient(135deg,#3a1d7a,#7a1d5e 55%,#123a7a)'], ['sakura', 'Sakura', 'linear-gradient(135deg,#6a2748,#a85a6a 55%,#4a2a6a)'], ['day', 'Daylight', 'linear-gradient(135deg,#bfe3ff,#d6f5e6 55%,#ffe9c7)']];
+
+  function fresh() { return { screen: 'welcome', done: [false, false, false, false, false], seen: {}, visited: {}, product: false, posted: false, look: 'aurora', closed: false, collapsed: false, toast: '' }; }
+  function count(s) { return s.done.filter(Boolean).length; }
+
+  function tabs(s, cur) {
+    var t = [['board', 'Leaderboard'], ['strainz', 'Strainz'], ['sources', 'Sources'], ['feed', 'Feed']];
+    var pulse = (s.screen === 'board' && !s.product) || (s.screen === 'feed' && s.seen.friends && !s.posted);
+    return '<nav class="tabs" aria-label="Tabs">' + t.map(function (x) {
+      return '<button type="button" data-act="go:' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : '') + '>' + IC[x[0]] + '<span>' + x[1] + '</span></button>';
+    }).join('') + '</nav><button type="button" class="fab' + (pulse ? ' pulse' : '') + '" data-act="fab" aria-label="' + (s.screen === 'feed' ? 'New post' : 'Add a product') + '">' + IC.plus + '</button>';
+  }
+  function top(title) { return '<div class="top"><h4>' + title + '</h4><button type="button" class="me" data-act="go:settings" aria-label="Settings (@mango)">M</button></div>'; }
+
+  function checklist(s) {
+    if (s.closed) return '';
+    var n = count(s);
+    if (n === 5) return '<section class="card gs" style="padding-bottom:14px"><div class="gs-top"><div class="ring" style="--p:100">5</div><div><h5>You’re all set</h5><p class="sub">That’s the whole app. Find this again in Settings.</p></div></div><button type="button" class="btn wide" style="margin-top:12px" data-act="close">Done</button></section>';
+    if (s.collapsed) return '<button type="button" class="card strip" data-act="expand" aria-expanded="false"><b>Getting started</b><span class="bar"><i style="width:' + n * 20 + '%"></i></span><span class="sub">' + n + ' of 5</span>' + IC.down + '</button>';
+    return '<section class="card gs" aria-label="Getting started"><div class="gs-top"><div class="ring" style="--p:' + n * 20 + '">' + n + '/5</div><div><h5>Getting started</h5><p class="sub">Five things to try. Skip any you like.</p></div><button type="button" class="x" data-act="collapse" aria-label="Make Getting started smaller" aria-expanded="true">' + IC.up + '</button></div><ul class="steps">' +
+      STEPS.map(function (st, i) {
+        return '<li><button type="button" class="step' + (s.done[i] ? ' done' : '') + '" data-act="step:' + i + '"><span class="dot">' + (s.done[i] ? IC.tick : '') + '</span><span class="t"><b>' + st[0] + '</b><span>' + st[1] + '</span></span><span class="chev">›</span></button></li>';
+      }).join('') + '</ul><button type="button" class="link hide" data-act="close">Hide this list</button></section>';
+  }
+  // A screen's own step: what to do here, then a tick and what's next.
+  function here(s, i, note) {
+    var n = count(s);
+    if (s.closed || n === 5) return '';
+    if (s.done[i]) { var nx = s.done.indexOf(false); return '<button type="button" class="card strip here" data-act="step:' + nx + '"><span class="dot on">' + IC.tick + '</span><span class="t"><b>' + STEPS[i][0] + '</b><span>Done. Next: ' + STEPS[nx][0] + '</span></span><span class="chev">›</span></button>'; }
+    return '<div class="card strip here"><span class="dot"></span><span class="t"><b>' + STEPS[i][0] + '</b><span>' + (note || STEPS[i][1]) + '</span></span><span class="sub">Step ' + (i + 1) + ' of 5</span></div>';
+  }
+  function hint(text, key, cls, ax, extra) {
+    return '<div class="hint ' + cls + '" role="status" style="--ax:' + ax + 'px"><p>' + text + '</p><div class="row">' + (extra || '<span class="count">Shown once</span>') + '<button type="button" class="btn" data-act="seen:' + key + '">Got it</button></div></div>';
+  }
+  var product = '<div class="card prow"><span class="rank">1</span><span class="nug"></span><span class="t"><b>Zkittlez</b><span class="sub">Flower · Hybrid · Made-up Farms</span></span><span class="score">9.1</span></div>';
+
+  var SCREENS = {
+    welcome: function () {
+      return '<div class="welcome"><div><p class="tiny" style="margin-bottom:8px">Account created</p><h4>Welcome, @mango</h4></div><ul>' +
+        '<li>' + IC.star + '<div><b>Rate what you try</b><span>Your own Leaderboard, best at the top.</span></div></li>' +
+        '<li>' + IC.strainz + '<div><b>Know your strains and your plug</b><span>Strainz and Sources fill themselves in.</span></div></li>' +
+        '<li>' + IC.people + '<div><b>Share with friends you approve</b><span>Nobody sees anything until you say so.</span></div></li></ul>' +
+        '<div style="display:grid;gap:4px"><button type="button" class="btn wide" data-act="start">Let’s go</button><button type="button" class="link" data-act="start">Skip</button></div></div>';
+    },
+    board: function (s) {
+      var h = (!s.product && !s.seen.add && !s.closed) ? hint('<b>Start here.</b> Tap + to add something you’ve tried and give it a score.', 'add', 'float', 324) : '';
+      return '<div class="body">' + top('Leaderboard') + checklist(s) + (s.product ? product : '<div class="card empty"><b>Nothing ranked yet</b><p class="sub">Add the first thing you’ve tried and it’ll appear here.</p></div>') + '</div>' + tabs(s, 'board') + h;
+    },
+    editor: function () {
+      return '<div class="body"><div class="nav"><button type="button" data-act="go:board">Cancel</button><b>Add a product</b><button type="button" data-act="save">Save</button></div>' +
+        '<div class="card" style="display:grid;gap:12px"><div class="field"><span>Name</span><div>Zkittlez</div></div><div class="field"><span>Type</span><div class="chips"><span class="chip on">Flower</span><span class="chip">Pre-roll</span><span class="chip">Edible</span></div></div><div class="field"><span>Source</span><div>Made-up Farms</div></div><div class="field"><span>Overall</span><div style="font-family:var(--num);font-weight:700;font-size:22px;color:var(--accent)">9.1</div></div></div>' +
+        '<button type="button" class="btn wide" data-act="save">Save</button><p class="tiny" style="text-align:center">The real form, cut short and filled in for this mockup.</p></div>';
+    },
+    strainz: function (s) {
+      var h = !s.seen.strainz ? hint('<b>Strainz.</b> Every strain you rate gets its own page: your average, what you paid, where you got it.', 'strainz', 'float', 100) : '';
+      return '<div class="body">' + top('Strainz') + here(s, 1, s.visited.sources ? '' : 'Have a look, then open Sources') + (s.product ? '<div class="card" style="display:flex;gap:14px;align-items:center"><span class="nug round"></span><div><p class="tiny">Your favourite</p><b style="font-size:19px">Zkittlez</b><p class="sub">9.1 average · ×1</p></div></div>' : '<div class="card empty"><b>No strains yet</b><p class="sub">Rate a product and its strain shows here.</p></div>') + '</div>' + tabs(s, 'strainz') + h;
+    },
+    sources: function (s) {
+      var h = !s.seen.sources ? hint('<b>Sources.</b> Who you buy from, ranked by how their products score for you.', 'sources', 'float', 173) : '';
+      return '<div class="body">' + top('Sources') + here(s, 1, s.visited.strainz ? '' : 'Have a look, then open Strainz') + (s.product ? '<div class="card prow"><span class="rank">1</span><span class="t"><b>Made-up Farms</b><span class="sub">1 product</span></span><span class="score">9.1</span></div>' : '<div class="card empty"><b>No sources yet</b><p class="sub">Add a product with a Source and it shows here.</p></div>') + '</div>' + tabs(s, 'sources') + h;
+    },
+    feed: function (s) {
+      var h1 = !s.seen.friends ? hint('<b>Friends live here.</b> Search a friend’s @name, or send an invite. Only followers you approve see your posts.', 'friends', 'up', 30, '<button type="button" class="btn sec" data-act="invite">Invite a friend</button>') : '';
+      var h2 = (s.seen.friends && !s.posted && !s.seen.post) ? hint('<b>Your turn.</b> Tap + to post a photo of what you’re on.', 'post', 'float', 324) : '';
+      var post = s.posted ? '<div class="card" style="display:grid;gap:10px"><div style="display:flex;gap:10px;align-items:center"><span class="me" style="display:grid;place-items:center">M</span><b>@mango</b><span class="tiny" style="margin-left:auto">now</span></div><span class="nug big"></span><p style="margin:0">First one on the board.</p></div>' : '<div class="card empty"><b>Nothing here yet</b><p class="sub">Posts by you and the people you follow show here.</p></div>';
+      return '<div class="body">' + top('Feed') + here(s, s.done[2] ? 3 : 2) + '<div class="card friends">' + IC.people.replace('<svg', '<svg width="24" height="24"') + '<span class="t"><b>Friends</b><span class="sub" style="display:block">You follow ' + (s.done[2] ? '0 people · 1 invite sent' : '0 people') + '</span></span><span class="sub">People ›</span></div>' + h1 + post + '</div>' + tabs(s, 'feed') + h2;
+    },
+    composer: function () {
+      return '<div class="body"><div class="nav"><button type="button" data-act="go:feed">Cancel</button><b>New post</b><button type="button" data-act="post">Post</button></div><span class="nug big"></span><div class="field"><span>Caption</span><div>First one on the board.</div></div><div class="field"><span>About</span><div>Zkittlez · 9.1</div></div><button type="button" class="btn wide" data-act="post">Post</button></div>';
+    },
+    look: function (s) {
+      var h = !s.seen.look ? hint('<b>Make it yours.</b> A Look changes the colours and background everywhere. Change it any time in Settings.', 'look', 'up', 40) : '';
+      return '<div class="body"><div class="nav"><button type="button" data-act="go:board">‹ Back</button><b>Look</b><span style="width:52px"></span></div>' + here(s, 4) + h + '<div class="looks" role="radiogroup" aria-label="Look">' + LOOKS.map(function (l) {
+        return '<button type="button" class="look" role="radio" aria-checked="' + (s.look === l[0]) + '" data-act="look:' + l[0] + '"><i style="background:' + l[2] + '"></i>' + l[1] + '</button>';
+      }).join('') + '</div><p class="tiny">Four of the eleven Looks, for this mockup.</p></div>' + tabs(s, '');
+    },
+    settings: function (s) {
+      return '<div class="body"><div class="nav"><button type="button" data-act="go:board">‹ Back</button><b>Settings</b><span style="width:52px"></span></div><div class="card list"><button type="button" data-act="go:look">Look<span class="chev">›</span></button><div>Leaderboard colours<span class="chev">›</span></div><div>Privacy<span class="chev">›</span></div><div>Sounds<span class="chev">›</span></div></div><div class="card list"><button type="button" class="new" data-act="again">Show me round again<span class="chev">›</span></button><div>About<span class="chev">›</span></div></div><p class="tiny">Show me round again brings the Getting started list and the hints back, for anyone, even after Hide this list.</p></div>' + tabs(s, '');
+    }
+  };
+
+  function render(el, s) {
+    el.dataset.look = s.look;
+    el.innerHTML = '<div class="scr"><div class="status"><span>9:41</span><i></i></div>' + SCREENS[s.screen](s) + '</div>' + (s.toast ? '<div class="toast" role="status">' + s.toast + '</div>' : '');
+  }
+
+  var main = document.getElementById('main'), S = fresh(), timer;
+  function tick(i, msg) {
+    if (S.done[i]) return;
+    S.done[i] = true;
+    S.toast = msg + ' ' + count(S) + ' of 5 done';
+    clearTimeout(timer);
+    timer = setTimeout(function () { S.toast = ''; render(main, S); }, 2400);
+  }
+  function go(screen) {
+    S.screen = screen;
+    if (screen === 'strainz' || screen === 'sources') {
+      S.visited[screen] = true;
+      if (S.visited.strainz && S.visited.sources) tick(1, 'Strainz and Sources seen.');
+    }
+  }
+  main.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var a = b.dataset.act.split(':'), v = a[1];
+    switch (a[0]) {
+      case 'start': S.screen = 'board'; break;
+      case 'go': go(v); break;
+      case 'fab': S.screen = S.screen === 'feed' ? 'composer' : 'editor'; break;
+      case 'save': S.product = true; S.screen = 'board'; tick(0, 'First one ranked.'); break;
+      case 'post': S.posted = true; S.screen = 'feed'; S.seen.friends = true; tick(3, 'Posted.'); break;
+      case 'invite': S.seen.friends = true; tick(2, 'Invite sent.'); break;
+      case 'look': S.look = v; tick(4, 'Look chosen.'); break;
+      case 'seen': S.seen[v] = true; break;
+      case 'close': S.closed = true; if (count(S) < 5) { S.toast = 'Hidden. Bring it back in Settings'; clearTimeout(timer); timer = setTimeout(function () { S.toast = ''; render(main, S); }, 2400); } break;
+      case 'collapse': S.collapsed = true; break;
+      case 'expand': S.collapsed = false; break;
+      case 'again': var keep = S.look; S = fresh(); S.look = keep; S.screen = 'board'; S.product = true; S.toast = 'Getting started is back'; clearTimeout(timer); timer = setTimeout(function () { S.toast = ''; render(main, S); }, 2400); break;
+      case 'step': go(['board', 'strainz', 'feed', 'feed', 'look'][+v]); if (+v === 0 && S.product) S.screen = 'editor'; break;
+    }
+    render(main, S);
+  });
+  document.getElementById('restart').addEventListener('click', function () { clearTimeout(timer); S = fresh(); render(main, S); });
+  render(main, S);
+
+  [['A', {}], ['B', { collapsed: true }], ['C', { screen: 'strainz' }]].forEach(function (o) {
+    var s = fresh(); s.screen = 'board'; s.product = true; s.done = [true, false, false, false, false]; s.seen = { add: true, strainz: true }; s.visited = { strainz: true };
+    for (var k in o[1]) s[k] = o[1][k];
+    render(document.getElementById('opt' + o[0]), s);
+  });
+})();
+</script>

@@ -17,6 +17,8 @@ import { LIMITS, check, clientKey, hit, miss } from '../lib/rateLimit';
 import { knownDevice, noDeviceCookie, rememberDevice } from '../lib/knownDevice';
 import { checkPassword as checkPasswordHash, hashPassword } from '../lib/password';
 import { clearSessionCookie, startSession } from '../lib/session';
+import { freshTour } from '../../shared/domain/tour';
+import { loadTour, saveTourStatement } from '../lib/tour';
 import { loadAppearance } from '../lib/appearance';
 import { loadMainCurrency } from '../lib/money';
 import { FEED_NEW_SQL } from './posts';
@@ -91,6 +93,8 @@ auth.get('/me', async (c) => {
     appearance: await loadAppearance(c.env.DB, user.id),
     // D66: your main currency, which every price shown together is in.
     currency: await loadMainCurrency(c.env.DB, user.id),
+    // D97: Getting started, for an account that has it (null: one from before it that never asked).
+    tour: await loadTour(c.env.DB, user.id),
     site,
   });
 });
@@ -136,6 +140,9 @@ auth.post('/signup', async (c) => {
     }
     throw e;
   }
+  // D97: a new account starts with Getting started. (The browser tests' accounts skip it with a header only the
+  // test servers listen to, so every other test meets the app as it was; the onboarding tests don't send it.)
+  if (!(c.env.TEST_HOOKS === '1' && c.req.header('x-gt-tour') === 'off')) await saveTourStatement(db, userId, freshTour()).run();
   await startSession(c, userId);
   return c.json({ user: { username } });
 });

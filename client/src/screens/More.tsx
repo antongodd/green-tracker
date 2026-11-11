@@ -1,3 +1,4 @@
+import { showMeRoundAgain } from '../tour';
 import { useEffect, useState } from 'preact/hooks';
 import { ApiError, api, errorText, type Passkey } from '../api';
 import { PasswordField } from '../components/inputs';
@@ -5,7 +6,7 @@ import { BackButton, Header, LargeTitle, Sheet, TabBar } from '../components/chr
 import { MeButton } from '../components/MeButton';
 import { ownProfilePhotoUrl } from '../../../shared/domain/photo';
 import { Avatar } from '../components/Avatar';
-import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, FaceIdIcon, LayoutIcon, LeafGlass, LockIcon, MailIcon, SignOutIcon, SoundIcon, SparkleIcon, TrashIcon, UploadIcon, BoxIcon, ShieldIcon, RulesIcon } from '../icons';
+import { BlockIcon, ChevronRight, CoinsIcon, DevicesIcon, EyeIcon, GemIcon, DownloadIcon, FaceIdIcon, LayoutIcon, LeafGlass, LockIcon, MailIcon, SignOutIcon, SoundIcon, SparkleIcon, StarIcon, TrashIcon, UploadIcon, BoxIcon, ShieldIcon, RulesIcon } from '../icons';
 import { CONTACT_EMAIL } from '../../../shared/domain/trust';
 import * as people from '../people';
 import { addPasskey } from '../passkey';
@@ -183,6 +184,8 @@ export function More() {
           <div class="list">
             <Row label="Privacy" sub="What’s kept, where, and who sees it" to="/more/about/privacy" icon={ShieldIcon} tint="violet" />
             <Row label="House rules" to="/more/about/rules" icon={RulesIcon} tint="green" />
+            {/* D97: the Getting started list and the hints again, for anyone. */}
+            <Row label="Show me round again" sub="The Getting started list and the hints" onClick={() => showMeRoundAgain().catch((e) => setError(errorText(e)))} icon={StarIcon} tint="green" />
             <Row label="Contact" sub={CONTACT_EMAIL} value={copied ? 'Copied' : 'Copy'} onClick={copyContact} icon={MailIcon} tint="amber" />
           </div>
         </div>

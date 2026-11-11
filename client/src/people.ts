@@ -1,4 +1,5 @@
 // Client calls for People (brief §5). Usernames go into URLs encoded.
+import { tourDone } from './tour';
 import type { PersonCard, SharedProduct } from '../../shared/domain/social';
 import type { Appearance } from '../../shared/domain/gems';
 import type { Comparison, YourScore } from '../../shared/domain/compare';
@@ -18,7 +19,11 @@ export const following = () => api<{ people: PersonCard[] }>('GET', '/people/fol
 export const blocked = () => api<{ people: string[] }>('GET', '/people/blocked').then((r) => r.people);
 
 export const person = (username: string) => api<{ person: PersonCard }>('GET', u(username)).then((r) => r.person);
-export const follow = (username: string) => api<{ person: PersonCard }>('POST', `${u(username)}/follow`).then((r) => r.person);
+export const follow = (username: string) =>
+  api<{ person: PersonCard }>('POST', `${u(username)}/follow`).then((r) => {
+    tourDone('friend'); // D97: asking to follow someone is the Find a friend step
+    return r.person;
+  });
 /** Cancels a request or unfollows. */
 export const unfollow = (username: string) => api<{ person: PersonCard }>('DELETE', `${u(username)}/follow`).then((r) => r.person);
 export const block = (username: string) => api('POST', `${u(username)}/block`);
