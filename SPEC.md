@@ -2105,6 +2105,13 @@ None.
 
 ## 6. Changelog
 
+### 0.87.1 — the 🔥 next to its number
+
+- On a post (the Feed, a person's Posts, a post's own page) the 🔥's number now sits as close to the 🔥 as the
+  comments' number does to its icon; before, a 26px gap made them look unrelated (GT Ideas #36, the owner's
+  screenshot). Both stay their own 44-point buttons: the 🔥 gives a fire, the number shows who gave one (as since
+  0.69.9). `feed.spec.ts` measures the two drawn icons' gaps to their numbers (it fails on 0.87.0: 26px against 6px).
+
 ### Notes — the film on the website and Getting started are live
 - 0.86.0 and 0.87.0 (on dev 2026-11-11) went live on 2026-11-11 (release #234). Its first full run failed on
   `more.spec.ts` (Settings' rows counted without Show me round again; not in the core set, so the pull request into
