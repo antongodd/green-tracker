@@ -452,7 +452,7 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.87.1 (2026-11-11): the 🔥 next to its number on posts (item 36).
-- **Dev:** the same as live.
+- **Dev:** 0.88.0, a new product lands on the Leaderboard (item 38, D99), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
