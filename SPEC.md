@@ -2105,6 +2105,12 @@ None.
 
 ## 6. Changelog
 
+### Notes — the film on the website and Getting started are live
+- 0.86.0 and 0.87.0 (on dev 2026-11-11) went live on 2026-11-11 (release #234). Its first full run failed on
+  `more.spec.ts` (Settings' rows counted without Show me round again; not in the core set, so the pull request into
+  `dev` hadn't run it): fixed in the tests (#236), then the full run passed, 431 browser tests with none flaky. Notes
+  only.
+
 ### 0.87.0 — the film at the top of the website (D98)
 
 - The new ad film (GT Ideas #37) is on the website, in the hero in place of the drawn phone (the owner's pick of three
