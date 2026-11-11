@@ -86,7 +86,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   // Saving the #1 again: it was already #1.
   await page.locator('.hdr').getByRole('link', { name: 'Edit' }).click(); // Edit is at the top since D87
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await openLanded(page); // D99
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
   await expectHeard(page, ['save:soft']);
 
   // Flicking a switch.
