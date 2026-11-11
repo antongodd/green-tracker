@@ -1,3 +1,4 @@
+import { PlaceLine, TourHint, tourVisit } from '../tour';
 import { useEffect, useState } from 'preact/hooks';
 import { formatPerUnit, formatScore, formatVFM } from '../../../shared/domain/format';
 import { rankProducts } from '../../../shared/domain/leaderboard';
@@ -127,6 +128,7 @@ export function StrainzList() {
   const [adding, setAdding] = useState(false);
   const [open, setOpen] = useState<Want | null>(null);
   const [removeError, setRemoveError] = useState('');
+  useEffect(() => tourVisit('strainz'), []); // D97
   const strains = products ? strainsOf(products) : [];
   const unrated = entries ? notRated(entries, strains) : [];
   const mine = (wants ?? []).filter((w) => w.kind === 'strain');
@@ -142,6 +144,7 @@ export function StrainzList() {
       <Header title="Strainz" large right={<MeButton />} />
       <main class="screen">
         <LargeTitle title="Strainz" />
+        <PlaceLine place="strainz" />
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">
@@ -238,6 +241,7 @@ export function StrainzList() {
           </div>
         )}
       </main>
+      <TourHint id="strainz" />
       <TabBar active="strainz" add={{ label: 'Add a strain to try', onAdd: () => setAdding(true) }} />
       {adding && <WantSheet kind="strain" known={known} onClose={() => setAdding(false)} onAdded={() => setAdding(false)} />}
       {open && (

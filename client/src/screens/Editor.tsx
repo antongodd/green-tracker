@@ -1,3 +1,4 @@
+import { tourDone } from '../tour';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { autoCapitalise } from '../../../shared/domain/capitalise';
 import { canonicalName, usedNames, type UsedName } from '../../../shared/domain/names';
@@ -356,6 +357,7 @@ export function Editor(p: { id: string | null; promoteFrom?: string; name?: stri
       const product = p.promoteFrom ? await promoteEntry(p.promoteFrom, checked.value) : await saveProduct(p.id, checked.value);
       saved.current = true; // the pending uploads now belong to the product
       keeper.done();
+      tourDone('product'); // D97
       // D56: a fanfare when this save puts it at the top of your Leaderboard, else the save sound.
       play(topBefore !== undefined && topBefore !== product.id && topProduct() === product.id ? 'first' : 'save');
       if (p.id) back(`/products/${product.id}`);

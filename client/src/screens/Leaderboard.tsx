@@ -1,3 +1,4 @@
+import { GettingStarted, TourHint } from '../tour';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { formatScore, formatWeightTotal } from '../../../shared/domain/format';
 import { leaderboardEmptyState, leaderboardTiles, rankProducts, type ViewState } from '../../../shared/domain/leaderboard';
@@ -105,6 +106,7 @@ export function Leaderboard() {
       <Header title="Leaderboard" large right={<MeButton />} />
       <main class="screen has-fab">
         <LargeTitle title="Leaderboard" />
+        <GettingStarted />
         {!products && !error && <Skeleton kind="board" />}
         {error && !products && (
           <div class="empty">
@@ -139,6 +141,7 @@ export function Leaderboard() {
           </div>
         )}
       </main>
+      {products && products.length === 0 && <TourHint id="add" />}
       <TabBar active="leaderboard" />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
       {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}

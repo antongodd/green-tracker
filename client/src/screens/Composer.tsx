@@ -1,3 +1,4 @@
+import { tourDone } from '../tour';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { CAPTION_MAX, newestFirst, POST_PHOTOS_MAX, type PostAbout, type PostInput } from '../../../shared/domain/posts';
 import type { Crop, PhotoRecord } from '../../../shared/domain/photo';
@@ -334,6 +335,7 @@ export function Composer(p: { product?: string; entry?: string }) {
       await createPost(input);
       posted.current = true;
       keeper.done();
+      tourDone('post'); // D97
       if (about.kind === 'product') forgetProduct(about.product.id);
       play('save');
       navigate('/feed', { replace: true });

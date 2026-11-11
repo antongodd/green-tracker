@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D96 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D97 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -143,7 +143,7 @@ The browser tests are shared between six machines at once, each with an equal sh
 free). After adding or removing a spec file or a slow test, refresh the timings from a full local run (see
 `scripts/e2e-timings.mjs`); a test not in the file counts as 15 seconds, so nothing is ever left out. The core set is
 the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log and Strainz, photos, the
-editors asking before discarding (`keepediting`), getting it onto the Home Screen (`install`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
+editors asking before discarding (`keepediting`), getting it onto the Home Screen (`install`), a new person's first minutes (`onboarding`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
 
 ## Every change
 
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D97) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D98) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D96.
+- Reopen any decision D1–D97.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -415,6 +415,19 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   button whole at 390×660 (what Chrome leaves of an iPhone) and 390×568: its middle (`.sheet-body`) scrolls if it must. `site.js` keeps its own copy
   of the two browser lists (`install.test.ts` checks they match `shared/domain/install.ts`). The website must never
   show the Share steps again (the same test).
+- Getting started (D97): the browser tests' accounts have none: `playwright.config.ts` sends `x-gt-tour: off` with
+  every request and the test servers (only a server with `TEST_HOOKS`) skip it at sign-up, so every other spec meets
+  the app as it was. A real new account: `browser.newContext({ extraHTTPHeaders: {} })` and
+  `signUp(page, name, { tour: true })` (it lands on the welcome screen, not the tab bar; `onboarding.spec.ts`). The
+  API tests' `signUp` sends no header, so their accounts have it (`/api/auth/me` `tour`); one from before it:
+  sign up with the header (`tour.test.ts` `oldAccount`). The list is the region "Getting started" (`.gs`; one line:
+  the button "Getting started, N of 5 done. Show the steps"); a screen's own step `.tour-line`; a hint `.tour-hint`
+  (floating ones are an `<aside>` after `<main>`: never put anything `position: fixed` inside a `.screen`, which is
+  moved while it fades in); "N of 5 done" is `.tour-toast`. Steps are ticked on the phone where the thing succeeds
+  (`tourDone`, `tourVisit` in `client/src/tour.tsx`): a new way to add a product, post, follow or pick a Look calls
+  it too. A new step or hint goes in `shared/domain/tour.ts` (no migration: the state is JSON). Never tick a step
+  from inside a radio's or checkbox's click: ticking redraws the whole app (`useTourState` in `main.tsx`) and the
+  control is put back before its change is heard (`pickedLook` waits for the tap to finish).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -427,7 +440,8 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.85.1 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96).
-- **Dev:** the same as live.
+- **Dev:** 0.86.0 (2026-11-11): Getting started, onboarding for new people (item 32, D97), waiting for Anton's
+  "go live".
 
 ### The to-do list: GT Ideas
 

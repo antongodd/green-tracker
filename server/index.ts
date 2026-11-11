@@ -16,6 +16,7 @@ import { appearance } from './routes/appearance';
 import { money } from './routes/money';
 import { posts } from './routes/posts';
 import { wants } from './routes/wants';
+import { tour } from './routes/tour';
 import { testHooks } from './routes/testHooks';
 
 export type { Env } from './env';
@@ -65,6 +66,7 @@ app.route('/appearance', appearance);
 app.route('/money', money);
 app.route('/posts', posts);
 app.route('/wants', wants);
+app.route('/tour', tour);
 app.route('/test', testHooks);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'That isn’t here any more.' }, 404));

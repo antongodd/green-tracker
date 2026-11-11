@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { ShareIcon } from '../icons';
 import { invite, WEBSITE } from '../invite';
 import { useSession } from '../session';
+import { tourDone } from '../tour';
 
 /** Invite a friend (D82): on the empty Feed and on People. */
 export function InviteButton(p: { kind?: 'primary' | 'secondary' }) {
@@ -16,6 +17,7 @@ export function InviteButton(p: { kind?: 'primary' | 'secondary' }) {
   if (!username) return null;
   const tap = async () => {
     const r = await invite(username);
+    if (r === 'shared' || r === 'copied') tourDone('friend'); // D97
     if (r === 'copied') setNote('Invite copied: paste it in a message');
     else if (r === 'failed') setNote(`Couldn’t share. Send them ${WEBSITE} and your @${username}`);
   };

@@ -64,7 +64,8 @@ for (const [w, h, name] of [[390, 844, 'iPhone 13–16'], [375, 667, 'iPhone SE'
 test('the buttons lead where they should (D80)', async ({ page }) => {
   await page.goto('/');
   // Three buttons, in this order; no recovery codes.
-  expect(await page.locator('.welcome .actions .btn').allTextContents()).toEqual(['Sign in', 'Create account', 'Sign in with Face ID']);
+  // toHaveText waits for the screen (0.86.0): allTextContents read the list while the app was still loading.
+  await expect(page.locator('.welcome .actions .btn')).toHaveText(['Sign in', 'Create account', 'Sign in with Face ID']);
   await page.getByRole('link', { name: 'Create account' }).click();
   await expect(page).toHaveURL(/\/signup$/);
   await page.goto('/');

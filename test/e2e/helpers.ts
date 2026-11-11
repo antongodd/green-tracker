@@ -16,9 +16,10 @@ export const emailOf = (username: string) => `${username.toLowerCase()}@example.
 
 /**
  * Creates an account through the real sign-up screens (D80: email and password, then the username) and
- * says yes to Face ID, so the account has a passkey as before; lands on the Leaderboard.
+ * says yes to Face ID, so the account has a passkey as before; lands on the Leaderboard. Getting started (D97) is
+ * off for these accounts (playwright.config.ts sends `x-gt-tour: off`).
  */
-export async function signUp(page: Page, username = `u${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`) {
+export async function signUp(page: Page, username = `u${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`, opts: { tour?: boolean } = {}) {
   await addAuthenticator(page);
   await page.goto('/signup');
   await page.getByLabel('Email').fill(emailOf(username));
@@ -29,7 +30,9 @@ export async function signUp(page: Page, username = `u${Date.now().toString(36)}
   await page.getByText('Available').waitFor();
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByRole('button', { name: 'Use Face ID' }).click();
-  await page.getByRole('navigation', { name: 'Main' }).waitFor();
+  // D97: a real new account meets the welcome screen first (`tour`: a context that doesn't send x-gt-tour).
+  if (opts.tour) await page.getByRole('heading', { name: `Welcome, @${username}` }).waitFor();
+  else await page.getByRole('navigation', { name: 'Main' }).waitFor();
   return username;
 }
 
