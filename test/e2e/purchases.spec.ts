@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, openLanded } from './helpers';
 
 // Purchases in the product editor (D42, 0.35.0): each purchase folds into a one-line row (date,
 // a Latest tag on the newest, amount · total · supplier, the price per unit on the right); tapping
@@ -110,7 +110,7 @@ test('Add purchase opens a new one at the bottom, dated today, with the cursor i
   await expect(card(2).locator('.tag-latest')).toHaveCount(0);
   await shot(page, '94-purchases-new');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  await openLanded(page); // D99
   await expect(page.getByRole('region', { name: 'Price history' }).locator('.purchase')).toHaveCount(4);
 });
 

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
-import { settled, signUp } from './helpers';
+import { settled, signUp, openLanded } from './helpers';
 
 // Don't lose my work (0.69.2): the product, Log entry and post editors ask "Keep editing / Discard"
 // before throwing anything away, on Cancel and on a swipe back from the edge (page.goBack() is what
@@ -156,6 +156,7 @@ test('Save tapped twice sends it once', async () => {
   await page.getByLabel('Name').fill('Twice Tapped');
   // Two taps in the same moment, before the screen can show "Saving…".
   await page.getByRole('button', { name: 'Save' }).evaluate((b: HTMLButtonElement) => (b.click(), b.click()));
+  await openLanded(page); // D99
   await expect(page.getByRole('heading', { level: 1, name: 'Twice Tapped' })).toBeVisible();
   expect(posts).toBe(1);
   await page.unroute('**/api/products');

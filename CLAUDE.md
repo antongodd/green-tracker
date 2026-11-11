@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D98 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D99 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D99) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D100) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D98.
+- Reopen any decision D1–D99.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -434,6 +434,12 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   it too. A new step or hint goes in `shared/domain/tour.ts` (no migration: the state is JSON). Never tick a step
   from inside a radio's or checkbox's click: ticking redraws the whole app (`useTourState` in `main.tsx`) and the
   control is put back before its change is heard (`pickedLook` waits for the tap to finish).
+- A new product lands (D99): Save on a **new** product (or a Log entry moved up) opens the **Leaderboard**, not the
+  product's page, when the board as last left (its Type and Rank by, `loadView`) shows it; else the page as before. A
+  test that adds a product in the editor and expects its page meets the board: click the note's **Open** (the status
+  "<name> landed at #N") or go to the page. `html.landing` is on until it has landed and `settled` waits for it; a
+  tap anywhere skips it. Everything it draws is in `.landing-fx` (gone afterwards); the rows are moved only with the
+  Web Animations API. Record what it drew with a MutationObserver (`landing.spec.ts` `RECORD`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.

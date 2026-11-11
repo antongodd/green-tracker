@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, openLanded } from './helpers';
 
 // Getting started (D97): a new person's first minutes, as Anton tried them in the mockups. One welcome screen;
 // a list on the Leaderboard whose five steps tick themselves off as you really do them, that folds to one line
@@ -110,8 +110,7 @@ test('saving a first product ticks the first step by itself', async () => {
   await page.getByLabel('Name').fill('Zkittlez');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(toast(page)).toHaveText('First one ranked. 1 of 5 done');
-  await expect(page).toHaveURL(/\/products\/[^/]+$/);
-  productId = page.url().split('/').pop()!;
+  productId = await openLanded(page); // D99
   await page.goto('/');
   await expect(list(page).locator('.gs-ring')).toHaveText('1/5');
   const first = list(page).getByRole('link', { name: /Add your first product/ });

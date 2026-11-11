@@ -236,8 +236,15 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
  */
 export const settled = (page: Page) =>
   page.evaluate(
-    // The page-load fade, and an action sheet rising into place (0.44.0: axe read a half-faded sheet on CI).
-    (names) => Promise.all(document.getAnimations().filter((a) => names.includes((a as CSSAnimation).animationName)).map((a) => a.finished)),
+    // The page-load fade, and an action sheet rising into place (0.44.0: axe read a half-faded sheet on CI); and a new
+    // product landing on the Leaderboard (D99: `html.landing` from Save until it has landed).
+    async (names) => {
+      await new Promise<void>((done) => {
+        const check = () => (document.documentElement.classList.contains('landing') ? setTimeout(check, 50) : done());
+        check();
+      });
+      await Promise.all(document.getAnimations().filter((a) => names.includes((a as CSSAnimation).animationName)).map((a) => a.finished));
+    },
     ['enter', 'rise'],
   );
 
@@ -258,4 +265,20 @@ export async function photoAction(page: Page, n: number, action: 'Crop' | 'Cut o
   }
   if (action === 'Crop') return;
   await page.getByRole('dialog', { name: 'Remove background' }).getByRole('button', { name: action === 'Draw' ? 'Draw round it' : 'Find the bud for me' }).click();
+}
+
+/**
+ * D99: Save on a new product (or a Log entry moved up) opens the Leaderboard and the product lands there. This skips
+ * the landing (a tap) and opens its page with the note's Open; returns the product's id.
+ */
+export async function openLanded(page: Page): Promise<string> {
+  await expect(page).toHaveURL(/\/$/);
+  const open = page.locator('.toast.landed').getByRole('link', { name: 'Open' });
+  await expect(async () => {
+    if (await page.locator('html.landing').count()) await page.mouse.click(195, 12);
+    await expect(open).toBeVisible({ timeout: 300 });
+  }).toPass({ timeout: 15_000 });
+  await open.click();
+  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  return page.url().split('/').pop()!;
 }

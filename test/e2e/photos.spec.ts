@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { shot, signUp, photoAction } from './helpers';
+import { shot, signUp, photoAction, openLanded } from './helpers';
 
 /** A real JPEG made in the browser: a gradient with a label, so crops are visible in screenshots. */
 async function makeJpeg(page: Page, w: number, h: number, colours: [string, string], label: string) {
@@ -49,6 +49,7 @@ test('add, view, crop, reset and remove photos; editor crops wait for Save', asy
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Save' })).toBeEnabled();
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99
 
   // Profile: hero is the first photo; the grid shows both.
   await expect(page.getByRole('heading', { name: 'Photo Test' })).toBeVisible();

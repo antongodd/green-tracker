@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput } from '../../shared/domain/product';
-import { settled, signUp, wholeScreenContrastFailures } from './helpers';
+import { settled, signUp, wholeScreenContrastFailures, openLanded } from './helpers';
 
 // D56 (0.47.0): sounds and ticks. Sounds can't be heard here, so the app announces each one it
 // plays (a `gt-sound` event, "moment:set"); the page collects them in window.sounds. Ticks need
@@ -68,6 +68,7 @@ async function addProduct(page: Page, product: string, look: string) {
   await page.getByLabel('Look (1 to 10)').fill(look);
   await page.getByLabel('Look (1 to 10)').press('Enter');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await openLanded(page); // D99
   await expect(page.locator('.hero h1')).toHaveText(product);
 }
 
@@ -85,7 +86,7 @@ test('each moment plays its sound: a new #1, a save, a switch, the Log, deleting
   // Saving the #1 again: it was already #1.
   await page.locator('.hdr').getByRole('link', { name: 'Edit' }).click(); // Edit is at the top since D87
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  await openLanded(page); // D99
   await expectHeard(page, ['save:soft']);
 
   // Flicking a switch.

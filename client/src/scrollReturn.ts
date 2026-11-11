@@ -104,3 +104,8 @@ export function land(y: number): void {
   };
   requestAnimationFrame(step);
 }
+
+/** D99: a screen that puts itself somewhere (a product landing) stops any pending `land` from moving it back. */
+export function placedByScreen(): void {
+  landing++;
+}

@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { emptyLogEntryInput, type LogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { expectStatsFit, shot, signUp } from './helpers';
+import { expectStatsFit, shot, signUp, openLanded } from './helpers';
 
 // The approved mockup's Log, seeded through the real API (with real photos).
 const P = (over: Partial<ProductInput>): ProductInput => ({ ...emptyProductInput(), ...over });
@@ -182,10 +182,13 @@ test('promotion: pre-filled from the entry, commits nothing until Save, asks bef
   // Promote for real.
   await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99: it lands on the Leaderboard first
   await expect(page.getByRole('heading', { name: 'Gary Payton' })).toBeVisible();
   await expect(page.locator('.hero-photo img')).toBeVisible(); // the photo moved with it
-  // Back goes to the Log (not the deleted entry); the row is now a product row.
+  // Back to the Leaderboard, then back again to the Log (not the deleted entry); the row is now a product row.
   await page.getByRole('link', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.goBack();
   await expect(page).toHaveURL(/\/log$/);
   await expect(group('United States').locator('.lrow', { hasText: 'Gary Payton' }).getByRole('img', { name: 'Flower product' })).toBeVisible();
   await expect(tile('Total')).toHaveText('32.5g'); // the entry's 3.5g amount was dropped

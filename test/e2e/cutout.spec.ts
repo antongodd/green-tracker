@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
-import { contrastFailures, photoAction, settled, shot, signUp, textBoxes } from './helpers';
+import { contrastFailures, photoAction, settled, shot, signUp, textBoxes, openLanded } from './helpers';
 
 // Remove background (D26). Most tests use a quick stand-in for the AI (anything that
 // differs from the photo's border colour is a "thing"); the last test runs the real one.
@@ -56,6 +56,7 @@ async function newProduct(page: Page, name: string, file: { name: string; mimeTy
   await page.getByLabel('Add photos').setInputFiles([file]);
   await expect(page.getByText('Uploading…')).toHaveCount(0, { timeout: 15_000 });
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99
   await expect(page.locator('main[data-band]')).toBeVisible();
   return page.url().split('/products/')[1]!;
 }
@@ -247,6 +248,7 @@ test('a Log entry photo can be cut out, and promotion keeps the cut-out', async 
   await page.locator('.lrow', { hasText: 'Loose Cut' }).click();
   await page.getByRole('button', { name: 'Add to Leaderboard' }).click();
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99
   await expect(page.locator('.hero-photo.cut img')).toBeVisible();
   const id = page.url().split('/products/')[1]!;
   expect((await product(page, id)).photos[0].cutout).toBe(true);
