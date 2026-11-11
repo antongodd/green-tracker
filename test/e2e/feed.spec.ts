@@ -76,7 +76,7 @@ test('only the first post’s photo loads at once; every other photo waits until
   await expect(fan.locator('.post-photo img').first()).toHaveJSProperty('loading', 'auto');
 });
 
-test('the 🔥 count, “View all 3 comments” and “more” are 44 points, and the count sits apart from the 🔥', async () => {
+test('the 🔥 count, “View all 3 comments” and “more” are 44 points, and the count sits as close to the 🔥 as comments do', async () => {
   await fan.goto('/feed');
   const card = fan.locator('.post', { hasText: 'The end.' });
   await card.scrollIntoViewIfNeeded();
@@ -93,7 +93,22 @@ test('the 🔥 count, “View all 3 comments” and “more” are 44 points, an
   await expect(card.locator('.post-cmts .all')).toHaveText('View all 3 comments');
   const fire = await size('.act.fire');
   const count = await size('.act.count');
-  expect(count.x - (fire.x + fire.width)).toBeGreaterThanOrEqual(4);
+  expect(fire.width).toBeGreaterThanOrEqual(44);
+  expect(count.x).toBeGreaterThanOrEqual(fire.x + fire.width - 0.5); // two buttons, side by side, never overlapping
+  // GT Ideas #36: the gap from the drawn 🔥 to its number is the gap from the drawn comment icon to its number.
+  const gap = (icon: string, num: string) =>
+    card.evaluate(
+      (c, { i, n }) => {
+        const svg = c.querySelector(i)!.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(c.querySelector(n)!);
+        return range.getBoundingClientRect().left - svg.right;
+      },
+      { i: icon, n: num },
+    );
+  const fireGap = await gap('.act.fire svg path', '.act.count');
+  const commentGap = await gap('a.act svg path', 'a.act .num');
+  expect(Math.abs(fireGap - commentGap), `🔥 ${fireGap}px, comments ${commentGap}px`).toBeLessThanOrEqual(1.5);
 });
 
 test('the comment box is solid, and the last comment scrolls clear of it at any width', async () => {
