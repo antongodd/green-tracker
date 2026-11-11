@@ -205,7 +205,8 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   means the timings are stale or a file outgrew it, not a flaky test: refresh `timings.json`, or add a machine (`ci.yml`
   `shard`). Run one machine's share locally with `node scripts/e2e-shard.mjs <n> 6 [core|full]`
   (`DRY=1` only shows the split). A file in `mode: 'parallel'` is shared test by test; any other stays whole.
-- `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
+- `npm ci` may fail with ECONNRESET (retry). If GitHub's machines can't reach Ubuntu's servers, `ci.yml` installs the
+  browser without its system packages after 4 minutes (2026-11-11: two runs failed before any test). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
@@ -444,8 +445,7 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.87.0 (2026-11-11): the film at the top of the website (item 29, D98), with 0.86.0, Getting started,
-  onboarding for new people (item 32, D97).
+- **Live:** 0.87.1 (2026-11-11): the 🔥 next to its number on posts (item 36).
 - **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
@@ -463,6 +463,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |
 | Getting started, onboarding for new people: a welcome screen for a new account, then a Getting started list on the Leaderboard whose five steps tick themselves off (add a product, Strainz and Sources, find a friend, post, pick a Look); it folds to one line or hides; each screen shows its own step and a hint the first time; Settings › About › Show me round again; accounts from before it see none of it unless they ask; a double-tap on a photo timed from the touch (GT Ideas #32; built by the onboarding conversation, which has what Anton tried on GT Dev) | 0.86.0 | D97 | 2026-11-11 | 2026-11-11 |
 | A new ad video, replacing the first: an 85-second film (upright and widescreen) and a 24-second short cut, made with the `brag` skill from the real app (0.84.1) filmed frame by frame: the group chat nobody can answer, snap it, rate it, rank it, Strainz, Sources, post it, your mates, private, Looks, the answer; Anton's photos with Zkittlez the star, made-up people, sources and prices; in `design/ad-video/` with what's real, made up and drawn, and how it was made (GT Ideas #37; Anton: "i love this"); on the website since 0.87.0 | (notes) | | 2026-11-11 | notes only |
