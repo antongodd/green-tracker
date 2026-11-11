@@ -148,6 +148,20 @@ test('double-tap zooms to 2× where you tap, and back', async () => {
   await expect(viewer(owner)).not.toHaveClass(/\bclear\b/);
 });
 
+// 0.86.0: the two taps are timed by the events' own times, not by when the app got round
+// to them, so a busy moment between the taps can't turn a double-tap into two single taps. (The test above was
+// flaky for this on a busy machine: "stayed at 1×".)
+test('a double-tap still counts when the phone is busy between the two taps', async () => {
+  await open(owner);
+  // The first tap is followed by 400ms in which the page can do nothing else (longer than the 300ms window).
+  await owner.evaluate(() => window.addEventListener('pointerup', () => { const until = performance.now() + 400; while (performance.now() < until); }, { once: true }));
+  const m = await middle(owner);
+  await doubleTap(owner, m.x, m.y);
+  await expect.poll(() => scale(owner)).toBeCloseTo(2, 2);
+  await doubleTap(owner, m.x, m.y);
+  await expect.poll(() => scale(owner)).toBeCloseTo(1, 2);
+});
+
 test('drag looks around while zoomed, and the photo stops at its edges', async () => {
   await open(owner);
   const m = await middle(owner);

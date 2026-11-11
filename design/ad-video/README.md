@@ -2,7 +2,7 @@
 
 An 85-second film of Green Tracker for the website and for social media, plus a 24-second short cut. It replaces the
 26-second ad of 5 November (which showed the app before Strainz, the new Looks and the Feed cards). GT Ideas #37.
-**It isn't on the website yet**: that's its own job (GT Ideas #29, a big change, after #26).
+**On the website since 0.87.0 (D98)**: `site/public/media/film.mp4` is `ad-vertical.mp4` re-encoded smaller (720×1280, CRF 27), in the hero with no caption.
 
 | File | What |
 |---|---|

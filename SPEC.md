@@ -169,6 +169,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D95 | **Feed posts as cards, and a Friends row** (2026-11-09; GT Ideas #31 and #33, Anton's screenshot with a red line where one post ran into the next; mockups https://claude.ai/artifact/4XXVj8wykzzcggkS71biwj). The owner: his girlfriend found it "hard to distinguish between posts in the feed… compared to instagram where it's pretty obvious where the post ends", and "its not so obvious where to access your freinds list". Picks: **A, a card for each post** (of A card, B Instagram edge to edge with a line, C a bigger gap and a line); keep the order inside a post ("match instagram"); the same card on a person's Posts and a post's own page ("yes"); for People, **2, a row at the top "but also has an icon"**: the row starts with the people icon and the header's icon stays. | Each post is a card again: the look's glass pane with its edge, 26px corners, 14px apart, the photo inset 6px with 20px corners, the About card inset 8px; no backdrop-filter. Above the Feed's first post, the Friends row: the people icon, up to three of the people you follow (approved only), "You follow N people" (or "Find people to follow"), the follow requests as a number on the icon (0.84.1), People ›; it opens People. Undoes D87's borderless posts only; the rest of D87 stands. |
 | D96 | **Put it on your Home Screen, shown by the app** (2026-11-10; GT Ideas #26; mockups https://claude.ai/artifact/AQ8AUGWGm8hh4TXSzJJR6g). The owner: "she tried to get the app on her phone and followed the instrcutions but she accidently basically added the website to her home screen - we need this mistake to not be repeated… very very clear that this has to be safari." Picks: the fix on the **website and the app**; another browser on an iPhone is **stopped**; the video **re-made**; the steps **before sign-up**, with a small **"Carry on in Safari"** that lasts one visit; people already using it in Safari **see them too**; **Android gets Chrome's steps**; mockups **A and A** (the website shows one button and no Share steps; the app shows all three steps on one screen). | The website never shows the Share steps: one button, "Open the app in Safari", and "Don’t add this page to your Home Screen". The app shows the steps itself whenever it's open in a browser tab on a phone (`shared/domain/install.ts`, `screens/Install.tsx`), before sign-up and to signed-in people alike. An iPhone in any other browser gets "Open this in Safari" with the link to copy and, signed out, no way past (signed in, "Carry on here": nobody is locked out of their own things). The website opened from a Home Screen icon says "This is the website, not the app". Nothing is stored about anyone; no database change. |
 | D97 | **Getting started: onboarding for new people** (2026-11-11; GT Ideas #32; mockups https://claude.ai/artifact/APzcQAEZudqPtBFC2k9Mm3). The owner: "we need onboarding for new customers… taken through the whole app process: adding a product, looking at strains and sources, adding friends, posting to the feed, customising their app look… little popup hints that take them through the app". Of three kinds (a pop-up tour, welcome cards, a checklist) he took the recommendation: **a checklist with one welcome screen in front**. His answers: a **Show me round again** button in Settings, yes; picking a Look **is a step, but not at the start**; Find a friend leans on Invite a friend ("whatever you recommend"). On the mockups: "i like A, but they need to be able to hide it and compact it into something like B as well. but i do also like each individual progress for each screen", then "go ahead". | One welcome screen straight after an account is created, then a **Getting started** card at the top of the Leaderboard with five steps that tick themselves off as you really do them: add a product, look at Strainz and Sources, find a friend (an invite sent or a follow asked for), post, pick a Look. The card folds to one line with a progress bar and can be hidden; Strainz, Sources, the Feed and the Look page each show their own step at the top (then a tick and a link to the next); and each screen has a hint the first time you reach it, shown once. **Only accounts created from now on get it**; anyone can ask for it with Settings › Show me round again (which skips the welcome). Never a tour that locks the screen, no reminders. One new table (`tours`), yours only: never sent to followers, never in Export or Restore. |
+| D98 | **The film at the top of the website** (2026-11-11; GT Ideas #29; mockups https://claude.ai/artifact/FEC2K4M8jyfGtfj8Mko8nT). The owner on the new ad film (GT Ideas #37): "i love this. we need this to go into the website for sure"; of three places (its own section after the top, in place of the drawn phone, lower down) he picked "B, but with no text": a line such as "the whole app in 85 seconds, sound on" "really sounds like AI". **Reopens D86** (the phone you can pick up) and the hero part of **D88/D89** (the drawn phone with his top five) with his pick. | **The film sits in the hero in place of the drawn phone**: upright like a phone on every screen (beside the words on a laptop), its poster the new #1 on the Leaderboard, the iPhone's own controls. **Nothing downloads until it's played, it never plays by itself, and it comes from the website alone** (as D68). **No words beside it**; a name for VoiceOver only. The phone you could pick up and turn, its top five and its two chips go from the page (their styles stay for the share picture). The how-to video stays in the install steps. Website only; the app is unchanged. See §4 *The film at the top of the website*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -2040,6 +2041,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   matches the header's "People" button by exact name. *Tests:* `feed.spec.ts` (the card, the gap, the photo inside it,
   the row's words, size and link); `posts.spec.ts` judges the row's words for readability, now in Sakura too.
 
+- **The film at the top of the website (D98, 0.87.0).** `site/public/index.html`: `figure.film` in the hero, where
+  `.stage` (the drawn phone, D86/D88/D89) was: one `<video controls playsinline preload="none" poster="/media/film.jpg">`
+  with `/media/film.mp4` and an `aria-label` ("A film of Green Tracker in use: 85 seconds, with music and no speech");
+  no `figcaption` and no words (the owner's rule), no captions track (there's no speech). `film.mp4` is
+  `design/ad-video/ad-vertical.mp4` re-encoded for the web (720×1280, H.264 CRF 27, AAC 128k, `+faststart`, about
+  7.5 MB); `film.jpg` its poster at 720×1280. Upright (9:16) at every width: `min(86%, 330px)` wide on a phone, in the
+  hero's second column on a laptop. `site.js` loses the pick-up code; `site.css` keeps `.stage`, `.mini` and `.chip`
+  because the share picture (`site/og.html`) is drawn with them. `media-src 'self'` (D68) already allows it.
+  - *Tests* (`website.spec.ts`): the film's settings, its poster asked for and 720×1280, no `.mp4` asked for before
+    play and only this site's after, upright and inside the screen at 320, 390 and 1280 wide (beside the words at
+    1280), nothing in the figure but the film, an H.264 file under 9 MB; the hero's words test checks there is no
+    caption; the film starts on an iPhone's first screen. The tests of the drawn phone (turning it, its chips, its
+    words) went with it.
 - **Put it on your Home Screen, shown by the app (D96, 0.85.0).** `shared/domain/install.ts`: `installKind(env)` from
   the browser's name (user agent), `navigator.standalone` / `display-mode: standalone` and `maxTouchPoints`:
   `ios-safari` (an iPhone or iPad whose name has `Version/` and `Safari/` and none of `IOS_OTHER`), `ios-other`,
@@ -2090,6 +2104,15 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.87.0 — the film at the top of the website (D98)
+
+- The new ad film (GT Ideas #37) is on the website, in the hero in place of the drawn phone (the owner's pick of three
+  mockups, "B, but with no text"): upright, its poster showing, nothing downloaded until it's played, never playing
+  by itself, from the website alone; no caption. The phone you could pick up (D86) and its top five (D88) go from the
+  page. The how-to video is unchanged. Website only (GT Ideas #29).
+- One more test for 0.86.0's double-tap fix: the page is held busy for 400ms between the two taps, and the photo
+  still zooms (it fails on the code before 0.86.0).
 
 ### 0.86.0 — Getting started: onboarding for new people (D97)
 - A new account now gets a short welcome screen ("Welcome, @name": rate what you try, know your strains and your

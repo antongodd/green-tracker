@@ -82,47 +82,6 @@
     }
   }
 
-  // ---- D86: the phone you can pick up ----
-  // Drag the hero's phone and it turns with your finger (1:1), the light sliding across its glass; past a turn of
-  // 28° it resists more and more; let go and it swings back at your speed (a little overshoot only after a flick).
-  const stage = document.querySelector('.hero .stage'), mini = stage && stage.querySelector('.mini');
-  if (stage && mini) {
-    const MAX = 28, tr = tracker();
-    let ty = 0, tx = 0, rawY = 0, rawX = 0, grab = null, springs = [];
-    const soft = (v) => (Math.abs(v) <= MAX ? v : Math.sign(v) * (MAX + rubber(Math.abs(v) - MAX, 40)));
-    const paint = () => {
-      mini.style.setProperty('--ty', `${ty.toFixed(2)}deg`); mini.style.setProperty('--tx', `${tx.toFixed(2)}deg`);
-      mini.style.setProperty('--gx', `${(30 - ty * 1.4).toFixed(1)}%`); mini.style.setProperty('--gy', `${(18 + tx * 1.4).toFixed(1)}%`);
-    };
-    stage.addEventListener('pointerdown', (e) => {
-      if (e.button) return;
-      springs.forEach((s) => s.stop());
-      grab = { x: e.clientX - rawY * 4, y: e.clientY + rawX * 4, touch: e.pointerType === 'touch' };
-      tr.reset(); tr.add(e.clientX, e.clientY);
-    });
-    stage.addEventListener('pointermove', (e) => {
-      if (!grab) return;
-      // Only once it's clearly a sideways drag does the phone take the finger (a scroll stays a scroll).
-      if (!stage.classList.contains('held')) {
-        if (Math.abs(e.clientX - grab.x - rawY * 4) < 8) return;
-        stage.classList.add('held'); stage.setPointerCapture(e.pointerId);
-      }
-      tr.add(e.clientX, e.clientY);
-      rawY = (e.clientX - grab.x) / 4; rawX = grab.touch ? 0 : -(e.clientY - grab.y) / 4;
-      ty = soft(rawY); tx = soft(rawX) * 0.6; paint();
-    });
-    const letGo = () => {
-      if (!grab) return;
-      grab = null; stage.classList.remove('held');
-      const v = tr.speed(), flick = Math.abs(v.x) > 300;
-      springs = [
-        spring(ty, (n) => { ty = n; rawY = n; paint(); }, { to: 0, velocity: v.x / 4, damping: flick ? 0.6 : 1, response: 0.45 }),
-        spring(tx, (n) => { tx = n; rawX = n / 0.6; paint(); }, { to: 0, velocity: -v.y / 6, damping: flick ? 0.7 : 1, response: 0.45 }),
-      ];
-    };
-    stage.addEventListener('pointerup', letGo); stage.addEventListener('pointercancel', letGo);
-  }
-
   // ---- D86: Make it yours ----
   // Swipe the row of Looks (it snaps to the nearest) or tap one: the page's lights slowly take its colours and the
   // little phone shows it. A light Look shows on the little phone only; the page stays dark (no flash of white).
