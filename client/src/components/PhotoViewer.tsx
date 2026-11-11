@@ -229,8 +229,10 @@ export function PhotoViewer(p: {
   }
   function tap(e: PointerEvent) {
     const s = g.current;
-    const now = Date.now();
-    if (now - s.lastTap < DOUBLE_TAP_MS) {
+    // When the finger touched, not when the app got round to it (0.86.0): on a busy phone two quick taps were
+    // heard more than 300ms apart and counted as two single taps.
+    const now = e.timeStamp;
+    if (s.lastTap && now - s.lastTap < DOUBLE_TAP_MS) {
       clearTimeout(tapTimer.current);
       s.lastTap = 0;
       if (zoom.current.s > 1.01) draw(NO_ZOOM, true);

@@ -1,3 +1,4 @@
+import { PlaceLine, TourHint, tourVisit } from '../tour';
 import { useEffect, useState } from 'preact/hooks';
 import { formatMoney, formatScore } from '../../../shared/domain/format';
 import { useCurrency } from '../money';
@@ -80,6 +81,7 @@ export function BrandsList() {
   const [half, setHalfNow] = useState(lastHalf);
   const setHalf = (h: 'tried' | 'want') => setHalfNow((lastHalf = h));
   const [adding, setAdding] = useState(false);
+  useEffect(() => tourVisit('sources'), []); // D97
   const names = (products ? usedNames(products) : []).map((n) => {
     const named = productsNamed(products!, n.key).map((r) => r.product);
     const top = rankProducts(named, { filter: 'all', rankBy: 'overall' })[0]!;
@@ -94,6 +96,7 @@ export function BrandsList() {
       <Header title="Sources" large right={<MeButton />} />
       <main class="screen">
         <LargeTitle title="Sources" />
+        <PlaceLine place="sources" />
         <div class="wrap halves-wrap">
           <Halves label="Sources" value={half} tried={names.length} want={(wants ?? []).filter((w) => w.kind === 'source').length} wantLabel="To try" onChange={setHalf} />
         </div>
@@ -148,6 +151,7 @@ export function BrandsList() {
           </>
         )}
       </main>
+      <TourHint id="sources" />
       <TabBar active="sources" add={{ label: 'Add a source to try', onAdd: () => setAdding(true) }} />
       {adding && (
         <WantSheet

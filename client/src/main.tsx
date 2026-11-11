@@ -43,6 +43,7 @@ import { PostPage } from './screens/PostPage';
 import { Composer } from './screens/Composer';
 import { StrainCompare, StrainPage, StrainzAll, StrainzList, StrainzWants } from './screens/Strainz';
 import { clearWantsCache, TickedOff } from './wants';
+import { adoptTour, TourToast, useTourState, Welcome } from './tour';
 
 const SIGNED_OUT_PATHS = ['/signin', '/login', '/signup'];
 // D96: on a phone, in a browser tab, the app first shows how to put it on the Home Screen (worked out once).
@@ -56,10 +57,12 @@ function App() {
   const [fresh, setFresh] = useState(false);
   const [skipped, setSkipped] = useState(installSkipped);
   const path = usePath();
+  const tour = useTourState(); // D97
 
   const refresh = useCallback(async () => {
     try {
       const next = await api<Me>('GET', '/auth/me');
+      adoptTour(next.tour); // D97
       // A different (or no) account must never see the previous one's cached data.
       setMe((prev) => {
         if (prev?.user?.username !== next.user?.username) {
@@ -162,6 +165,8 @@ function App() {
     screen = <AddLogin />;
   } else if (me.needsAdult) {
     screen = <AdultOnce />; // D84
+  } else if (tour && !tour.welcomed) {
+    screen = <Welcome />; // D97: once, for a new account
   } else {
     const product = path.match(/^\/products\/([^/]+)(\/edit)?$/);
     const entry = path.match(/^\/log\/([^/]+)(\/promote|\/edit)?$/);
@@ -290,6 +295,7 @@ render(
     <App />
     <OfflineBanner />
     <TickedOff />
+    <TourToast />
     {ticksSupported() && <TickSwitch />}
   </>,
   document.getElementById('app')!,

@@ -38,7 +38,7 @@ test('you at the top: letter, @username and your counts; tapping opens People', 
 
 test('every row has its icon tile, in groups, and still goes where it did', async () => {
   await page.goto('/more');
-  await expect(page.locator('main .list .li')).toHaveCount(19);
+  await expect(page.locator('main .list .li')).toHaveCount(20);
   // D61: the Settings tab, titled so; Brands & suppliers moved to its own tab.
   await expect(page.locator('.hdr .title')).toHaveText('Settings');
   await expect(page.locator('.li', { hasText: 'What followers see' })).toContainText('Leaderboard, Source, Country, Photos, Posts');
@@ -63,6 +63,8 @@ test('every row has its icon tile, in groups, and still goes where it did', asyn
     // D84: what's kept, the house rules, and how to reach Anton (copies the address).
     { label: 'PrivacyWhat’s kept, where, and who sees it', icon: true, tint: 'violet', href: '/more/about/privacy' },
     { label: 'House rules', icon: true, tint: 'green', href: '/more/about/rules' },
+    // D97: Getting started again, for anyone.
+    { label: 'Show me round againThe Getting started list and the hints', icon: true, tint: 'green', href: null },
     { label: `Contact${CONTACT_EMAIL}`, icon: true, tint: 'amber', href: null },
     { label: 'Sign out', icon: true, tint: 'green', href: null },
     { label: 'Sign out everywhere', icon: true, tint: 'green', href: null },

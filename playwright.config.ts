@@ -15,6 +15,9 @@ export default defineConfig({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
     hasTouch: true,
+    // D97: accounts made by the tests skip Getting started (a header only the test servers listen to), so every
+    // spec meets the app as it was. onboarding.spec.ts sends none, and gets what a real new account gets.
+    extraHTTPHeaders: { 'x-gt-tour': 'off' },
     // Kept for failed tests only (uploaded by CI).
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

@@ -160,6 +160,46 @@ test('the how-to video: its thumbnail shows, nothing downloads until it is playe
   expect(mp4.length).toBeLessThan(3_000_000);
 });
 
+// D98: the film of the app at the top, in place of the drawn phone. Like the how-to video: its poster shows, the
+// film downloads only when someone plays it, it never plays by itself, and it comes from this site alone. Upright
+// like a phone on every screen; no words beside it; a name for VoiceOver (no speech in it, so no captions).
+test('the film at the top: its poster shows, nothing downloads until it is played, it never plays by itself, no caption', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('request', (r) => asked.push(new URL(r.url()).pathname));
+  const { elsewhere, problems } = await open(page);
+  const video = page.locator('.hero .film video');
+  await expect(video).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect(await video.evaluate((v: HTMLVideoElement) => ({ controls: v.controls, inline: v.playsInline, preload: v.preload, autoplay: v.autoplay, muted: v.muted, loop: v.loop, paused: v.paused }))).toEqual({ controls: true, inline: true, preload: 'none', autoplay: false, muted: false, loop: false, paused: true });
+  await expect(video).toHaveAttribute('poster', '/media/film.jpg');
+  await expect(video).toHaveAttribute('aria-label', 'A film of Green Tracker in use: 85 seconds, with music and no speech');
+  expect(asked).toContain('/media/film.jpg');
+  expect(await page.evaluate(async () => { const i = new Image(); i.src = '/media/film.jpg'; await i.decode(); return [i.naturalWidth, i.naturalHeight]; })).toEqual([720, 1280]);
+  expect(asked.filter((a) => a.endsWith('.mp4')), 'nothing downloads before play').toEqual([]);
+  // Upright, and inside the screen, on the smallest iPhone, an iPhone and a laptop (beside the words there).
+  for (const [width, height] of [[320, 700], [390, 844], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height });
+    const box = (await video.boundingBox())!;
+    expect(box.height / box.width, `${width}px wide`).toBeCloseTo(16 / 9, 1);
+    expect(box.x, `${width}px wide`).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, `${width}px wide`).toBeLessThanOrEqual(width);
+    if (width === 1280) expect(box.x).toBeGreaterThan((await page.locator('h1').boundingBox())!.x + 400);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  // No words with it: nothing in the figure but the film.
+  expect(await page.locator('.hero .film').evaluate((f) => [f.children.length, f.textContent!.trim()])).toEqual([1, '']);
+  // Played, it asks this site (and only this site) for the film.
+  await video.evaluate((v: HTMLVideoElement) => { v.play().catch(() => {}); });
+  await expect.poll(() => asked.filter((a) => a === '/media/film.mp4').length).toBeGreaterThan(0);
+  expect(elsewhere).toEqual([]);
+  expect(problems).toEqual([]);
+  // An H.264 MP4 that every iPhone plays, small enough for mobile data.
+  const mp4 = readFileSync(join(DIR, 'media/film.mp4'));
+  expect(mp4.subarray(4, 8).toString()).toBe('ftyp');
+  expect(mp4.includes(Buffer.from('avc1'))).toBe(true);
+  expect(mp4.length).toBeLessThan(9_000_000);
+});
+
 test('with Reduce Motion on, nothing moves', async ({ browser }) => {
   const page = await (await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 390, height: 844 } })).newPage();
   await open(page);
@@ -198,30 +238,9 @@ test('the words match today’s app: an email and password, posts for approved f
   await expect(page.locator('#install .openapp')).toHaveAttribute('href', `${APP}/`);
   await expect(page.locator('#install .openapp')).toHaveText('Open the app in Safari');
   await expect(page.locator('#install .usesafari')).toHaveText('Use Safari. It only works in Safari, the blue compass on your iPhone.', { useInnerText: true });
-  // The picture of the app: the app's own words, a price called a price, no name cut short.
-  await expect(page.locator('.mini-strip')).toHaveText('31 products · 7.9 average · 4 countries');
-  await expect(page.locator('.chip.c2')).toHaveText('£9.50/gprice');
-  // Linux draws these names wider than an iPhone does: the names are kept short enough for both.
-  for (const name of await page.locator('.mini .nm b').all()) expect(await name.evaluate((b) => b.scrollWidth <= b.clientWidth), await name.innerText()).toBe(true);
-});
-
-test('the floating chips never cover a score, on a phone or a laptop', async ({ page }) => {
-  for (const [width, height] of [[320, 700], [390, 844], [1280, 800]] as const) {
-    await page.setViewportSize({ width, height });
-    await open(page);
-    // Held still (the chips and the phone float), so the boxes are where they rest.
-    await page.evaluate(() => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = 0; } });
-    const clash = await page.evaluate(() => {
-      const scores = [...document.querySelectorAll('.mini .sc')].map((e) => e.getBoundingClientRect());
-      const out: string[] = [];
-      for (const chip of document.querySelectorAll('.chip')) {
-        const c = chip.getBoundingClientRect();
-        for (const s of scores) if (c.left < s.right && s.left < c.right && c.top < s.bottom && s.top < c.bottom) out.push(chip.textContent!);
-      }
-      return out;
-    });
-    expect(clash, `${width}px wide`).toEqual([]);
-  }
+  // D98: the film at the top has no words beside it (the owner: a caption there "sounds like AI").
+  expect((await page.locator('.hero .film').innerText()).trim()).toBe('');
+  await expect(page.locator('.hero .film figcaption')).toHaveCount(0);
 });
 
 test('the buttons at the top are big enough to tap (44 points), at the top and further down', async ({ page }) => {
@@ -462,28 +481,7 @@ test('the scroll story: the phone stays beside the words and shows each feature 
   }
 });
 
-test('the phone at the top turns with a finger, resists past its limit, and swings back when let go', async ({ page }) => {
-  await open(page);
-  await arrived(page);
-  const mini = page.locator('.mini');
-  const turn = () => mini.evaluate((m) => parseFloat(m.style.getPropertyValue('--ty') || '0'));
-  await mini.evaluate((m) => m.scrollIntoView({ block: 'center', behavior: 'instant' }));
-  const at = await centre(page, '.mini');
-  await page.mouse.move(at.x, at.y);
-  await page.mouse.down();
-  for (let i = 1; i <= 8; i++) { await page.mouse.move(at.x + i * 10, at.y); await page.waitForTimeout(16); }
-  // 1:1: 80px across is a 20° turn (4px of finger a degree).
-  expect(await turn()).toBeCloseTo(20, 0);
-  for (let i = 9; i <= 30; i++) { await page.mouse.move(at.x + i * 10, at.y); await page.waitForTimeout(16); }
-  // 300px would be 75°: past 28° it gives less and less.
-  const far = await turn();
-  expect(far).toBeGreaterThan(28);
-  expect(far).toBeLessThan(45);
-  await page.mouse.up();
-  await expect.poll(turn).toBe(0);
-  // A plain scroll over it is still a scroll (the page isn't held).
-  await expect(page.locator('.stage')).not.toHaveClass(/held/);
-});
+// D98: the phone you could pick up and turn (D86) went when the film took its place at the top.
 
 test('"Put it on my iPhone" slides up a sheet with the one button; Done, Escape or a flick down closes it', async ({ page }) => {
   await open(page);
@@ -708,10 +706,6 @@ test('the overhaul: the new order, the privacy promises, the new app on the phon
   await expect(promises.locator('h3')).toHaveText(['Only friends you approve', 'You choose what they see', 'No ads, no tracking', 'Yours to take or delete']);
   await expect(promises.nth(1)).toContainText('What you paid, where you got it and your notes are never shared.');
   await expect(promises.nth(3)).toContainText('backups keep a copy for up to 30 days');
-  // The phone shows the app as it is now: a large title, the Compact line and the floating tab bar with the +.
-  await expect(page.locator('.mini .mt-l')).toHaveText('Leaderboard');
-  await expect(page.locator('.mini .mb-tabs > span')).toHaveCount(4);
-  await expect(page.locator('.mini .mb-plus')).toHaveCount(1);
   // Drawn icons, never emoji, anywhere on the page.
   expect(await page.locator('body').evaluate((b) => /\p{Extended_Pictographic}/u.test(b.textContent ?? ''))).toBe(false);
   // Labels in sentence case, as in the app.
@@ -722,8 +716,8 @@ test('the overhaul: the new order, the privacy promises, the new app on the phon
   await expect(foot.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', `${APP}/signup`);
   await expect(foot.getByRole('link', { name: 'Email us' })).toHaveAttribute('href', 'mailto:greentracker.help@gmail.com');
   for (const link of await foot.getByRole('link').all()) expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  // On an iPhone the phone starts showing on the very first screen.
-  expect(await page.locator('.mini').evaluate((m) => m.getBoundingClientRect().top)).toBeLessThan(844 - 120);
+  // On an iPhone the film (D98, in the drawn phone's place) starts showing on the very first screen.
+  expect(await page.locator('.hero .film video').evaluate((m) => m.getBoundingClientRect().top)).toBeLessThan(844 - 120);
   await arrived(page);
   expect((await new AxeBuilder({ page }).include('.promises').include('.foot').analyze()).violations.map((v) => v.id)).toEqual([]);
 });

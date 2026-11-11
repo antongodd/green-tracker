@@ -53,7 +53,7 @@ export function PrivacyNotice(p: { onClose?: () => void }) {
           <b>Face ID</b>: only a key your iPhone makes. Your face never leaves your phone.
         </li>
         <li>
-          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, Want to try lists (only you see them, unless you share their names in What followers see), notes, photos, posts, comments, 🔥s and settings.
+          <b>What you add</b>: your @name, profile photo, products, ratings, purchases and prices, Log, Want to try lists (only you see them, unless you share their names in What followers see), notes, photos, posts, comments, 🔥s, settings and which Getting started steps you’ve done.
         </li>
         <li>
           <b>To stop break-ins</b>: a scrambled form of your internet address (never the address itself) to limit how many tries can be made, and a random code for each phone you’ve signed in on.

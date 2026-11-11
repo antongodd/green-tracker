@@ -286,6 +286,10 @@ html.sheet-open { overflow: hidden; }
 .step .n { grid-row: span 2; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--on-accent); background: linear-gradient(135deg, var(--green), var(--teal)); }
 .step b { font-size: 16px; line-height: 1.35; }
 .step p { font-size: 15px; color: var(--text-2); }
+/* The film at the top (D98), in place of the drawn phone (whose styles stay for the share picture, og.html):
+   upright like a phone, the iPhone's own controls, its poster showing until it's played. */
+.film { margin: 22px 0 0; }
+.film video { display: block; width: min(86%, 330px); height: auto; aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 26px; border: 1px solid var(--glass-edge); background: #03070a; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45); }
 /* The how-to video (D68): the iPhone's own controls; the thumbnail shows until it's played. */
 .video { margin: 0; display: grid; gap: 8px; }
 .video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 20px; border: 1px solid var(--glass-edge); background: #03070a; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45); }
@@ -338,8 +342,9 @@ html.sheet-open { overflow: hidden; }
 @media (min-width: 900px) {
   .page { max-width: 1080px; }
   .hero { grid-template-columns: minmax(0, 1fr) 420px; column-gap: 48px; padding-top: 80px; align-items: center; }
-  .hero > :not(.stage) { grid-column: 1; }
-  .stage { grid-column: 2; grid-row: 1 / span 6; }
+  .hero > :not(.film) { grid-column: 1; }
+  .film { grid-column: 2; grid-row: 1 / span 6; margin-top: 0; }
+  .film video { width: min(100%, 340px); }
   /* Everything lines up with the hero's left edge; the steps sit side by side. */
   /* The scroll story: the words on the left, a bigger phone held on the right. */
   .story { grid-template-columns: minmax(0, 1fr) 300px; column-gap: 48px; }

@@ -14,6 +14,7 @@ export * from './logEntry';
 export * from './social';
 export * from './backup';
 export * from './privacy';
+export * from './tour';
 export * from './gems';
 export * from './names';
 export * from './currency';

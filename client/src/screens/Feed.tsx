@@ -1,3 +1,4 @@
+import { TourHint, TourLine, useTour } from '../tour';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Post } from '../../../shared/domain/posts';
 import type { PersonCard } from '../../../shared/domain/social';
@@ -230,6 +231,7 @@ export function Feed() {
     };
   }, []);
 
+  const tour = useTour();
   const restored = useRef(false);
   useLayoutEffect(() => {
     if (restored.current || !list.page) return;
@@ -253,6 +255,13 @@ export function Feed() {
       <Header title="Feed" large left={people} right={<MeButton />} />
       <main class="screen has-fab feed">
         <LargeTitle title="Feed" />
+        {/* D97: the Feed has two steps: find a friend, then post. */}
+        <TourLine step={tour?.done.includes('friend') ? 'post' : 'friend'} />
+        {!tour?.done.includes('friend') && (
+          <TourHint id="friends">
+            <InviteButton kind="secondary" />
+          </TourHint>
+        )}
         {list.error && !list.page && (
           <div class="empty">
             <h2>Couldn’t load the Feed</h2>
@@ -282,6 +291,7 @@ export function Feed() {
           </p>
         )}
       </main>
+      {tour && (tour.done.includes('friend') || tour.seen.includes('friends')) && !tour.done.includes('post') && <TourHint id="post" />}
       <TabBar active="feed" add={{ label: 'New post', onAdd: () => navigate('/feed/new') }} />
     </>
   );

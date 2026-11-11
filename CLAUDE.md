@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D96 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D98 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -143,7 +143,7 @@ The browser tests are shared between six machines at once, each with an equal sh
 free). After adding or removing a spec file or a slow test, refresh the timings from a full local run (see
 `scripts/e2e-timings.mjs`); a test not in the file counts as 15 seconds, so nothing is ever left out. The core set is
 the list in `package.json` (`test:e2e:core`): signing in, data, privacy, followers, products, the Log and Strainz, photos, the
-editors asking before discarding (`keepediting`), getting it onto the Home Screen (`install`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
+editors asking before discarding (`keepediting`), getting it onto the Home Screen (`install`), a new person's first minutes (`onboarding`) and the quality checks. A spec joins it when a break there would hurt Anton's data, privacy or the basics.
 
 ## Every change
 
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D97) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D99) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D96.
+- Reopen any decision D1–D98.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -316,6 +316,11 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   empty); Chromium draws a stand-in, so judge the family named, never the look. The footer's account link is **Create
   an account** (not "Sign up": the top bar's Sign up is found by that exact name). The privacy promises must stay true:
   change them with the app (D45, D77, D80, D84).
+- Website film (D98): `figure.film` in the hero, in the drawn phone's place: `/media/film.mp4` and `/media/film.jpg`
+  (`design/ad-video/ad-vertical.mp4` re-encoded: 720×1280, CRF 27, under 9 MB). **No words beside it** (Anton: a
+  caption there "sounds like AI"): a test checks the figure holds nothing but the film. `.stage`, `.mini` and `.chip`
+  stay in `site.css` for the share picture (`site/og.html`) though the page no longer uses them. Two videos on the
+  page now: find the how-to one with `#install video`, the film with `.hero .film video`.
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README; D96: its first scene is the app's steps screen). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -415,6 +420,19 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   button whole at 390×660 (what Chrome leaves of an iPhone) and 390×568: its middle (`.sheet-body`) scrolls if it must. `site.js` keeps its own copy
   of the two browser lists (`install.test.ts` checks they match `shared/domain/install.ts`). The website must never
   show the Share steps again (the same test).
+- Getting started (D97): the browser tests' accounts have none: `playwright.config.ts` sends `x-gt-tour: off` with
+  every request and the test servers (only a server with `TEST_HOOKS`) skip it at sign-up, so every other spec meets
+  the app as it was. A real new account: `browser.newContext({ extraHTTPHeaders: {} })` and
+  `signUp(page, name, { tour: true })` (it lands on the welcome screen, not the tab bar; `onboarding.spec.ts`). The
+  API tests' `signUp` sends no header, so their accounts have it (`/api/auth/me` `tour`); one from before it:
+  sign up with the header (`tour.test.ts` `oldAccount`). The list is the region "Getting started" (`.gs`; one line:
+  the button "Getting started, N of 5 done. Show the steps"); a screen's own step `.tour-line`; a hint `.tour-hint`
+  (floating ones are an `<aside>` after `<main>`: never put anything `position: fixed` inside a `.screen`, which is
+  moved while it fades in); "N of 5 done" is `.tour-toast`. Steps are ticked on the phone where the thing succeeds
+  (`tourDone`, `tourVisit` in `client/src/tour.tsx`): a new way to add a product, post, follow or pick a Look calls
+  it too. A new step or hint goes in `shared/domain/tour.ts` (no migration: the state is JSON). Never tick a step
+  from inside a radio's or checkbox's click: ticking redraws the whole app (`useTourState` in `main.tsx`) and the
+  control is put back before its change is heard (`pickedLook` waits for the tap to finish).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -426,9 +444,9 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.84.1 (2026-11-09): Feed posts as cards and a Friends row (items 31 and 33).
-- **Dev:** 0.85.1 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96; 0.85.1 the website's
-  sheet no longer cut off in Chrome), waiting for Anton's "go live".
+- **Live:** 0.85.1 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96).
+- **Dev:** 0.86.0 (2026-11-11): Getting started, onboarding for new people (item 32, D97), and 0.87.0
+  (2026-11-11): the film at the top of the website (item 29, D98); both waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
@@ -445,6 +463,8 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A new ad video, replacing the first: an 85-second film (upright and widescreen) and a 24-second short cut, made with the `brag` skill from the real app (0.84.1) filmed frame by frame: the group chat nobody can answer, snap it, rate it, rank it, Strainz, Sources, post it, your mates, private, Looks, the answer; Anton's photos with Zkittlez the star, made-up people, sources and prices; in `design/ad-video/` with what's real, made up and drawn, and how it was made (GT Ideas #37; Anton: "i love this"); not on the website yet (GT Ideas #29) | (notes) | | 2026-11-11 | notes only |
+| Put it on your Home Screen, shown by the app: the website no longer shows the Share steps (one button, Open the app in Safari, and "Don't add this page"); the app shows the three taps itself in a browser tab on a phone, before sign-up, with Carry on in Safari; another browser on an iPhone gets "Open this in Safari" with the link to copy; the website opened from a Home Screen icon says it's the website, not the app; Android gets Chrome's steps; the video re-made; the sheet's button no longer cut off in Chrome (0.85.1, Anton's screenshot) (GT Ideas #26; tried by Anton on GT Dev in Safari and Chrome: "everything works nicely"; Instagram, WhatsApp and Android not yet checked on a real phone) | 0.85.0, 0.85.1 | D96 | 2026-11-10 | 2026-11-10 |
 | Feed posts as cards and a Friends row: each post its own card with a gap between (the Feed, a person's Posts, a post's own page; GT Ideas #31, Anton's screenshot); a Friends row at the top of the Feed with the people icon (follow requests as a number on it, 0.84.1), up to three friends' photos (two on a narrow phone), how many you follow and People ›, the corner icon kept (GT Ideas #33); the first release run caught the row two lines high on the CI fonts, fixed in 0.84.1 (tried by Anton on GT Dev before 0.84.1's badge; VoiceOver not yet checked on his iPhone) | 0.84.0, 0.84.1 | D95 | 2026-11-09 | 2026-11-09 |
 | No dark band behind Rank and Type at the top: the row sits straight on the Look at the starting position and turns to frosted glass only once it sticks under the header as you scroll (Leaderboard, Log, a friend's board; GT Ideas #30, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.83.1 | | 2026-11-06 | 2026-11-06 |
 | Friends on Strainz: Friends who've tried it on a strain's page and a friend's product page (their photo, what they had, their score); a Strainz tab on a friend's profile (strains you've both tried with both scores, the higher one green; only theirs; their Want to try lists if shared); + Want to try from a friend, noted "From @them" (they aren't told); a new switch My Want to try lists (names only, off to start with); the Log never shared (tried by Anton on GT Dev: "its good"; VoiceOver not yet checked on his iPhone) | 0.83.0 | D94 | 2026-11-06 | 2026-11-06 |
