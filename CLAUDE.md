@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D97 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D98 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D98) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D99) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D97.
+- Reopen any decision D1–D98.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -316,6 +316,11 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   empty); Chromium draws a stand-in, so judge the family named, never the look. The footer's account link is **Create
   an account** (not "Sign up": the top bar's Sign up is found by that exact name). The privacy promises must stay true:
   change them with the app (D45, D77, D80, D84).
+- Website film (D98): `figure.film` in the hero, in the drawn phone's place: `/media/film.mp4` and `/media/film.jpg`
+  (`design/ad-video/ad-vertical.mp4` re-encoded: 720×1280, CRF 27, under 9 MB). **No words beside it** (Anton: a
+  caption there "sounds like AI"): a test checks the figure holds nothing but the film. `.stage`, `.mini` and `.chip`
+  stay in `site.css` for the share picture (`site/og.html`) though the page no longer uses them. Two videos on the
+  page now: find the how-to one with `#install video`, the film with `.hero .film video`.
 - Website video (D68): `site/public/media/` holds the rendered video, thumbnail and captions; the source is in
   `site/video/` (re-render with `node site/video/render.cjs`, see its README; D96: its first scene is the app's steps screen). The test browser can't decode H.264, so
   `website.spec.ts` checks the settings, what's downloaded when, and the captions loading, not playback.
@@ -440,8 +445,8 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.85.1 (2026-11-10): Put it on your Home Screen, shown by the app (item 26, D96).
-- **Dev:** 0.86.0 (2026-11-11): Getting started, onboarding for new people (item 32, D97), waiting for Anton's
-  "go live".
+- **Dev:** 0.86.0 (2026-11-11): Getting started, onboarding for new people (item 32, D97), and 0.87.0
+  (2026-11-11): the film at the top of the website (item 29, D98); both waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
