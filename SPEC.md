@@ -2105,6 +2105,11 @@ None.
 
 ## 6. Changelog
 
+### Notes — the 🔥 next to its number is live
+- 0.87.1 (on dev 2026-11-11) went live on 2026-11-11 (release #239). Its pull request's browser tests failed twice
+  before running a test (GitHub's machines couldn't reach Ubuntu's servers to install the browser's packages); `ci.yml`
+  now installs the browser alone after 4 minutes of trying. Notes only.
+
 ### 0.87.1 — the 🔥 next to its number
 
 - On a post (the Feed, a person's Posts, a post's own page) the 🔥's number now sits as close to the 🔥 as the
