@@ -451,8 +451,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.87.1 (2026-11-11): the 🔥 next to its number on posts (item 36).
-- **Dev:** 0.88.0, a new product lands on the Leaderboard (item 38, D99), waiting for Anton's "go live".
+- **Live:** 0.88.0 (2026-11-12): a new product lands on the Leaderboard (item 38, D99).
+- **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
 
@@ -469,6 +469,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A new product lands on the Leaderboard: Save on a new product (or a Log entry moved up) opens the Leaderboard and it comes down on two flames into its place, the rows making room; more band by band in your colour set's colours (a glint, sparks, a ring and a shake), the full show at 9.5 (the other rows dim, fireworks, a banner with its place); a note "<name> landed at #N · Open"; a tap skips it; Reduce Motion fades it in; another Type on the board opens the page as before (GT Ideas #38, Anton's pick A of three mockups; tried by Anton on GT Dev; smoothness, the flames in Safari and VoiceOver not yet confirmed on his iPhone) | 0.88.0 | D99 | 2026-11-11 | 2026-11-12 |
 | The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |
 | Getting started, onboarding for new people: a welcome screen for a new account, then a Getting started list on the Leaderboard whose five steps tick themselves off (add a product, Strainz and Sources, find a friend, post, pick a Look); it folds to one line or hides; each screen shows its own step and a hint the first time; Settings › About › Show me round again; accounts from before it see none of it unless they ask; a double-tap on a photo timed from the touch (GT Ideas #32; built by the onboarding conversation, which has what Anton tried on GT Dev) | 0.86.0 | D97 | 2026-11-11 | 2026-11-11 |
