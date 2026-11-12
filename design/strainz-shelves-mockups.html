@@ -1,0 +1,312 @@
+<title>Most Smoked Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone you can tap through (Strainz, See all, a strain's page) beside the choices and what changes.
+   The app's own look (Aurora Glass), dark by choice. Made-up products and numbers only. */
+:root {
+  color-scheme: dark;
+  --page: #03070a;
+  --ink: #f1f6f3;
+  --ink-2: rgba(241, 246, 243, 0.72);
+  --ink-3: rgba(241, 246, 243, 0.5);
+  --line: rgba(255, 255, 255, 0.12);
+  --panel: rgba(255, 255, 255, 0.05);
+  --green: #45d483;
+  --green-bright: #6fe9a4;
+  --on-green: #03140a;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 72px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 2px; }
+.page { max-width: 980px; margin: 0 auto; display: grid; gap: 40px; }
+h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-bright); font-weight: 600; margin: 0 0 6px; }
+.try { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.ctl { flex: 1 1 300px; min-width: 0; display: grid; gap: 20px; }
+.grp { display: grid; gap: 8px; }
+.grp > b { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; min-height: 44px; text-align: left; }
+.seg button[aria-pressed="true"] { border-color: var(--green); background: rgba(69, 212, 131, 0.14); }
+.way { display: grid; gap: 10px; }
+.way button { display: grid; gap: 2px; width: 100%; }
+.way button span { font-weight: 600; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.way button em { font-style: normal; color: var(--ink-2); font-size: 14px; }
+.rec { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--green); color: var(--on-green); border-radius: 999px; padding: 2px 9px; font-weight: 700; }
+.what { margin: 0; color: var(--ink-2); font-size: 15px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.facts-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 70ch; }
+.facts-list b { color: var(--ink); font-weight: 600; }
+
+/* ---------- the phone ---------- */
+.phone {
+  --bg: #03070a; --text: #f1f6f3; --text-2: rgba(241,246,243,.72); --text-3: rgba(241,246,243,.55);
+  --glass: rgba(255,255,255,.055); --edge: rgba(255,255,255,.12); --bar: rgba(16,24,28,.86);
+  --accent: #45d483; --accent-bright: #6fe9a4; --l1: rgba(47,216,138,.30); --l2: rgba(43,184,196,.24); --l3: rgba(123,107,255,.24);
+  position: relative; flex: 0 0 auto; width: min(390px, 100%); aspect-ratio: 390 / 844; border-radius: 44px; overflow: hidden;
+  background: var(--bg); color: var(--text); border: 1px solid var(--edge); font-size: 15px; line-height: 1.35; isolation: isolate;
+}
+.phone::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1;
+  background: radial-gradient(60% 34% at 12% 8%, var(--l1), transparent 70%), radial-gradient(55% 30% at 95% 38%, var(--l2), transparent 70%), radial-gradient(70% 34% at 30% 100%, var(--l3), transparent 70%); }
+.scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.status { flex: 0 0 auto; height: 50px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px 6px; font-weight: 600; }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 0 0 130px; display: flex; flex-direction: column; gap: 18px; }
+.body::-webkit-scrollbar { display: none; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 4px 12px 0; min-height: 44px; }
+.back { background: none; border: 0; color: var(--accent-bright); font-size: 17px; min-height: 44px; padding: 0 6px; display: flex; align-items: center; gap: 4px; }
+.lt { margin: 0; padding: 0 20px; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.me { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #5a7, #2a6f6a); border: 1px solid var(--edge); }
+
+.fav { margin: 0 16px; display: flex; gap: 14px; align-items: center; background: var(--glass); border: 1px solid var(--edge); border-radius: 22px; padding: 14px; text-align: left; width: calc(100% - 32px); }
+.fav .k { font-size: 12px; color: var(--text-3); display: block; }
+.fav .n { font-size: 22px; font-weight: 700; display: block; }
+.fav .m { font-size: 13px; color: var(--text-2); display: block; }
+
+.shelf { display: grid; gap: 8px; }
+.shelf.new .shelf-h h3::after { content: "New"; margin-left: 8px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; background: var(--accent); color: #03140a; border-radius: 999px; padding: 2px 8px; vertical-align: 3px; font-weight: 700; }
+.shelf-h { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+.shelf-h h3 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.shelf-h button { background: none; border: 0; color: var(--accent-bright); font-size: 15px; min-height: 44px; padding: 0; }
+.rail { list-style: none; margin: 0; padding: 0 20px; display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
+.pick button { background: none; border: 0; padding: 0; width: 84px; display: grid; justify-items: center; gap: 4px; text-align: center; }
+.pk-n { font-size: 14px; font-weight: 600; line-height: 1.2; }
+.pk-m { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.pk-m.g { color: var(--accent-bright); font-weight: 600; }
+
+.ring { position: relative; width: 78px; height: 78px; display: grid; place-items: center; }
+.ring.big { width: 96px; height: 96px; flex: none; }
+.ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ring .track { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 6; }
+.ring .fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+.ring .ph { width: 76%; height: 76%; border-radius: 50%; }
+.ring .v { position: absolute; bottom: -4px; right: -2px; font-family: var(--num); font-size: 12px; font-weight: 700; background: #0d1a16; border: 1px solid var(--edge); border-radius: 999px; padding: 1px 6px; }
+.nug { background: radial-gradient(circle at 38% 34%, var(--c1), var(--c2) 55%, #10261a 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+
+.tabs { position: absolute; left: 14px; right: 14px; bottom: 26px; display: flex; gap: 10px; align-items: center; }
+.tabbar { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bar); border: 1px solid var(--edge); border-radius: 999px; padding: 6px; }
+.tabbar span { text-align: center; font-size: 11px; color: var(--text-3); padding: 6px 0; border-radius: 999px; }
+.tabbar span.on { color: var(--accent-bright); background: rgba(69,212,131,.12); font-weight: 600; }
+.fab { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #58e08c, #40c4c4); color: #03140a; display: grid; place-items: center; font-size: 28px; font-weight: 600; flex: none; }
+
+/* See all */
+.sorts { display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+.sorts::-webkit-scrollbar { display: none; }
+.sorts button { flex: none; background: var(--glass); border: 1px solid var(--edge); border-radius: 999px; padding: 6px 14px; min-height: 36px; font-size: 14px; }
+.sorts button[aria-pressed="true"] { background: rgba(69,212,131,.16); border-color: var(--accent); color: var(--accent-bright); font-weight: 600; }
+.cards { display: grid; gap: 10px; padding: 0 16px; }
+.row { display: flex; gap: 12px; align-items: center; background: var(--glass); border: 1px solid var(--edge); border-radius: 18px; padding: 10px 14px 10px 10px; text-align: left; width: 100%; }
+.row .ring { width: 56px; height: 56px; flex: none; }
+.row .ring .v { font-size: 11px; }
+.row .t { flex: 1; min-width: 0; display: grid; }
+.row .t b { font-size: 16px; }
+.row .t small { color: var(--text-2); font-size: 13px; }
+.row .big-n { font-family: var(--num); font-weight: 700; font-size: 20px; color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+.row .pos { font-family: var(--num); color: var(--text-3); width: 22px; text-align: center; font-weight: 700; }
+.foot { margin: 0 20px; font-size: 13px; color: var(--text-3); }
+
+/* Strain page */
+.hero { display: flex; gap: 14px; align-items: center; padding: 0 20px; }
+.hero .photo { width: 96px; height: 96px; border-radius: 22px; flex: none; }
+.hero h4 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
+.hero .ty { color: var(--text-2); font-size: 14px; }
+.lead { margin: 0 20px; color: var(--text-2); }
+.lead b { color: var(--text); }
+.tiles { margin: 0 16px; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--glass); border: 1px solid var(--edge); border-radius: 20px; padding: 12px 6px; }
+.tile { display: grid; justify-items: center; gap: 2px; }
+.tile + .tile { border-left: 1px solid var(--edge); }
+.tile b { font-family: var(--num); font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile b.hi { color: var(--accent-bright); }
+.tile .cap { font-size: 12px; color: var(--text-3); }
+.btns { display: flex; gap: 10px; padding: 0 16px; }
+.btns span { flex: 1; text-align: center; border-radius: 14px; padding: 12px; font-weight: 600; background: rgba(255,255,255,.08); }
+.btns span.p { background: linear-gradient(135deg, #58e08c, #40c4c4); color: #03140a; }
+.dl { margin: 0 16px; background: var(--glass); border: 1px solid var(--edge); border-radius: 18px; padding: 4px 14px; }
+.dl div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.dl div + div { border-top: 1px solid var(--edge); }
+.dl dt { color: var(--text-3); }
+.dl dd { margin: 0; text-align: right; }
+.dl div.new dd { color: var(--accent-bright); font-weight: 600; }
+.gh { display: flex; justify-content: space-between; align-items: baseline; padding: 0 20px; margin: 4px 0 -6px; }
+.gh h5 { margin: 0; font-size: 18px; }
+.gh .n { color: var(--text-3); font-family: var(--num); }
+.prow { display: flex; gap: 12px; align-items: center; margin: 0 16px; background: var(--glass); border: 1px solid var(--edge); border-radius: 18px; padding: 10px; }
+.prow .th { width: 52px; height: 52px; border-radius: 12px; flex: none; }
+.prow .t { flex: 1; min-width: 0; display: grid; }
+.prow .t b { font-size: 15px; }
+.prow .t small { font-size: 13px; color: var(--text-2); }
+.prow .sc { font-family: var(--num); font-weight: 700; font-size: 20px; }
+.prow .tag { font-size: 11px; color: var(--text-2); border: 1px solid var(--edge); border-radius: 999px; padding: 2px 8px; }
+.prow.log { background: transparent; border-style: dashed; }
+.note { margin: 0 20px; font-size: 13px; color: var(--text-3); }
+.hidden-edible { margin: 0 16px; font-size: 13px; color: var(--text-3); border: 1px dashed var(--edge); border-radius: 14px; padding: 10px 12px; }
+
+@media (prefers-reduced-motion: no-preference) { .scr { animation: in .22s ease-out; } @keyframes in { from { opacity: .4; transform: translateX(8px); } } }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">GT Ideas #35 · Job 35</p>
+    <h1>Most smoked and Most tried on Strainz</h1>
+    <p class="lede">Tap round the phone: a strain on a shelf opens its page, and See all opens the whole list. Every product, name and number here is made up.</p>
+  </header>
+
+  <section class="try">
+    <div class="phone" id="phone" aria-label="iPhone mockup"></div>
+
+    <div class="ctl">
+      <div class="grp">
+        <b>Screen</b>
+        <div class="seg" id="screens">
+          <button data-s="tab" aria-pressed="true">Strainz tab</button>
+          <button data-s="all-smoked" aria-pressed="false">See all: Most smoked</button>
+          <button data-s="all-tried" aria-pressed="false">See all: Most tried</button>
+          <button data-s="strain" aria-pressed="false">Zkittlez page</button>
+          <button data-s="logonly" aria-pressed="false">A strain only in your Log</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <b>Where the total goes on a strain's page</b>
+        <div class="way" id="ways">
+          <button class="seg-b" data-w="A" aria-pressed="true" style="background:var(--panel);border:1px solid var(--green);border-radius:12px;padding:10px 14px;text-align:left">
+            <span>A · A line under the buttons <i class="rec">My pick</i></span>
+            <em>"Total smoked 15.5g" goes in the list with Kinds, Price per gram and From. The three numbers at the top stay Average, Tried and Best.</em>
+          </button>
+          <button class="seg-b" data-w="B" aria-pressed="false" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;text-align:left">
+            <span>B · One of the three numbers at the top</span>
+            <em>The top reads Average, Tried and Smoked. Best moves down next to Lowest.</em>
+          </button>
+        </div>
+      </div>
+
+      <p class="what" id="what"></p>
+
+      <div class="grp">
+        <b>What changes, as agreed</b>
+        <ul class="facts-list">
+          <li><b>Most smoked:</b> grams from every purchase and Log entry, biggest first, shown as <b>15.5g</b>. A strain with no weight anywhere isn't on this shelf.</li>
+          <li><b>Most tried:</b> how many products plus Log entries, shown as <b>×5</b>.</li>
+          <li><b>Edibles leave Strainz completely:</b> shelves, See all, strain pages, Compare and a friend's Strainz tab. They stay on the Leaderboard.</li>
+          <li><b>Log entries are part of Strainz:</b> on a strain's page under "From your Log", no score, so they don't change the average.</li>
+          <li><b>A strain only in your Log</b> opens a strain page like any other.</li>
+          <li><b>Friends</b> never see your Log or your grams.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// Made-up strains: grams = purchases + Log entries (no edibles), tried = products + Log entries.
+const S = [
+  { n: 'Zkittlez', avg: 8.9, g: 15.5, tried: 5, c: ['#b6d36a', '#5f8f34'] },
+  { n: 'Gelato 41', avg: 8.4, g: 7, tried: 3, c: ['#c9a6e0', '#6c4f8a'] },
+  { n: 'Lemon Cherry', avg: 9.1, g: 3.5, tried: 1, c: ['#e6d27a', '#9a7d2c'] },
+  { n: 'Runtz', avg: 7.6, g: 10, tried: 2, c: ['#e3a7c4', '#8a4f6c'] },
+  { n: 'Blue Dream', avg: 7.2, g: 2, tried: 4, c: ['#9cc6e6', '#3f6c8f'] },
+  { n: 'Wedding Cake', avg: 8.1, g: 0, tried: 2, c: ['#e9d9b8', '#8f7a52'] },
+  { n: 'Purple Punch', avg: null, g: 3.5, tried: 1, c: ['#b18ad6', '#5a3f7a'], logOnly: true },
+];
+const fmtG = (g) => (Math.round(g * 10) / 10).toString().replace(/\.0$/, '') + 'g';
+const byAvg = (a, b) => (a.avg === b.avg ? 0 : a.avg === null ? 1 : b.avg === null ? -1 : b.avg - a.avg);
+const sorted = {
+  average: () => [...S].filter((s) => s.avg !== null).sort((a, b) => byAvg(a, b) || a.n.localeCompare(b.n)),
+  smoked: () => [...S].filter((s) => s.g > 0).sort((a, b) => b.g - a.g || b.tried - a.tried || a.n.localeCompare(b.n)),
+  tried: () => [...S].sort((a, b) => b.tried - a.tried || byAvg(a, b) || a.n.localeCompare(b.n)),
+  recent: () => [S[1], S[6], S[0], S[3], S[2], S[4], S[5]],
+};
+let screen = 'tab', way = 'A', back = 'tab';
+
+function ring(s, cls = '') {
+  const r = 44, c = 2 * Math.PI * r, v = s.avg === null ? 0 : s.avg / 10;
+  return `<span class="ring ${cls}"><svg viewBox="0 0 96 96" aria-hidden="true"><circle class="track" cx="48" cy="48" r="${r}"/><circle class="fill" cx="48" cy="48" r="${r}" stroke-dasharray="${(c * v).toFixed(1)} ${c.toFixed(1)}"/></svg><span class="ph nug" style="--c1:${s.c[0]};--c2:${s.c[1]}"></span>${s.avg !== null ? `<span class="v">${s.avg.toFixed(1)}</span>` : ''}</span>`;
+}
+const pick = (s, meta, g) => `<li class="pick"><button data-open="${s.n}">${ring(s)}<span class="pk-n">${s.n}</span><span class="pk-m${g ? ' g' : ''}">${meta}</span></button></li>`;
+const shelf = (id, title, items, isNew) => `<section class="shelf${isNew ? ' new' : ''}"><div class="shelf-h"><h3>${title}</h3><button data-go="${id}">See all</button></div><ul class="rail">${items}</ul></section>`;
+const bar = `<div class="tabs"><div class="tabbar"><span>Leaderboard</span><span class="on">Strainz</span><span>Sources</span><span>Feed</span></div><span class="fab">+</span></div>`;
+const status = `<div class="status"><span>9:41</span><span>●●●</span></div>`;
+
+function tab() {
+  const fav = sorted.average()[0];
+  return `${status}<div class="body"><div class="nav"><span></span><span class="me"></span></div><h2 class="lt">Strainz</h2>
+    <button class="fav" data-open="${fav.n}">${ring(fav, 'big')}<span><span class="k">Your favourite strain</span><span class="n">${fav.n}</span><span class="m">${fav.avg.toFixed(1)} average · ${S.length} strains tried</span></span></button>
+    ${shelf('average', 'Your favourites', sorted.average().map((s) => pick(s, '×' + s.tried)).join(''))}
+    ${shelf('all-smoked', 'Most smoked', sorted.smoked().map((s) => pick(s, fmtG(s.g), true)).join(''), true)}
+    ${shelf('all-tried', 'Most tried', sorted.tried().map((s) => pick(s, '×' + s.tried, true)).join(''))}
+    ${shelf('recent', 'Recently tried', sorted.recent().map((s) => pick(s, '×' + s.tried)).join(''))}
+  </div>${bar}`;
+}
+
+function all(kind) {
+  const list = kind === 'smoked' ? sorted.smoked() : sorted.tried();
+  const rows = list.map((s, i) => `<button class="row" data-open="${s.n}"><span class="pos">${i + 1}</span>${ring(s)}<span class="t"><b>${s.n}</b><small>${s.tried} tried${s.logOnly ? ' · in your Log' : ''}${kind === 'tried' && s.g ? ' · ' + fmtG(s.g) : ''}</small></span><span class="big-n">${kind === 'smoked' ? fmtG(s.g) : '×' + s.tried}</span></button>`).join('');
+  const sorts = ['Best average', 'Most smoked', 'Most tried', 'Recently tried', 'A–Z'].map((l) => `<button aria-pressed="${(kind === 'smoked' && l === 'Most smoked') || (kind === 'tried' && l === 'Most tried')}" data-sort="${l}">${l}</button>`).join('');
+  const foot = kind === 'smoked'
+    ? 'Grams you bought (each purchase’s amount) and grams in your Log. Edibles aren’t strains, so they aren’t here. Wedding Cake has no weight yet, so it isn’t on this list.'
+    : 'Each product and each Log entry counts once. Edibles aren’t strains, so they aren’t here.';
+  return `${status}<div class="body"><div class="nav"><button class="back" data-go="tab">‹ Strainz</button><span></span></div><h2 class="lt">${kind === 'smoked' ? 'Most smoked' : 'Most tried'}</h2><div class="sorts">${sorts}</div><div class="cards">${rows}</div><p class="foot">${foot}</p></div>${bar}`;
+}
+
+function strain(logOnly) {
+  const s = logOnly ? S[6] : S[0];
+  const tiles = logOnly
+    ? [['–', 'Average'], ['1', 'Tried'], way === 'B' ? [fmtG(s.g), 'Smoked', true] : ['–', 'Best']]
+    : way === 'A'
+      ? [['8.9', 'Average'], ['5', 'Tried'], ['9.4', 'Best']]
+      : [['8.9', 'Average'], ['5', 'Tried'], ['15.5g', 'Smoked', true]];
+  const tilesHtml = `<div class="tiles">${tiles.map((t) => `<div class="tile"><b class="${t[2] ? 'hi' : ''}">${t[0]}</b><span class="cap">${t[1]}</span></div>`).join('')}</div>`;
+  const facts = logOnly
+    ? [['Kinds', 'Flower'], ...(way === 'A' ? [['Total smoked', '3.5g', 1]] : []), ['Tried', '2 Nov 2026']]
+    : [['Kinds', 'Flower, Live rosin, Pre-roll'], ...(way === 'A' ? [['Total smoked', '15.5g', 1]] : [['Lowest', '8.2']]), ['Price per gram', '£8.40 on average'], ['From', 'Green Room, Coastal Co'], ['First tried', '4 Jun 2026'], ['Last tried', '9 Nov 2026']];
+  const dl = `<dl class="dl">${facts.map((f) => `<div class="${f[2] ? 'new' : ''}"><dt>${f[0]}</dt><dd>${f[1]}</dd></div>`).join('')}</dl>`;
+  const prod = (name, sub, sc, c) => `<div class="prow"><span class="th nug" style="--c1:${c[0]};--c2:${c[1]}"></span><span class="t"><b>${name}</b><small>${sub}</small></span><span class="sc">${sc}</span></div>`;
+  const log = (sub, c) => `<div class="prow log"><span class="th nug" style="--c1:${c[0]};--c2:${c[1]}"></span><span class="t"><b>${s.n}</b><small>${sub}</small></span><span class="tag">Log</span></div>`;
+  const products = logOnly ? '' : `<div class="gh"><h5>Your Zkittlez products</h5><span class="n">3</span></div>
+      ${prod('Zkittlez', 'Flower · Green Room · 7g', '9.4', S[0].c)}
+      ${prod('Zkittlez', 'Live rosin · Coastal Co · 1g', '9.0', ['#e9c46a', '#a0742a'])}
+      ${prod('Zkittlez', 'Pre-roll · Green Room · 1g', '8.2', S[0].c)}`;
+  const logs = logOnly
+    ? `<div class="gh"><h5>From your Log</h5><span class="n">1</span></div>${log('Flower · 2 Nov 2026 · 3.5g', s.c)}<p class="note">Not rated yet. Move it to your Leaderboard to give it a score.</p>`
+    : `<div class="gh"><h5>From your Log</h5><span class="n">2</span></div>${log('Flower · 18 Oct 2026 · 3.5g', S[0].c)}${log('Flower · 9 Nov 2026 · 3g', S[0].c)}
+       <p class="note">Log entries have no score, so they don’t change the average.</p>
+       <p class="hidden-edible">Your Zkittlez gummies stay on your Leaderboard. Edibles aren’t counted on Strainz.</p>`;
+  const lead = logOnly ? `<p class="lead">Only in your Log so far.</p>` : `<p class="lead"><b>#2</b> of your 6 rated strains.</p>`;
+  return `${status}<div class="body"><div class="nav"><button class="back" data-go="${back}">‹ Back</button><span></span></div>
+    <div class="hero"><span class="photo nug" style="--c1:${s.c[0]};--c2:${s.c[1]}"></span><div><h4>${s.n}</h4><span class="ty">Hybrid${logOnly ? ' · Tried once' : ''}</span></div></div>
+    ${lead}${tilesHtml}<div class="btns"><span class="p">Compare</span><span>Rename</span></div>${dl}${products}${logs}</div>${bar}`;
+}
+
+const WHAT = {
+  tab: 'The Strainz tab. Most smoked is new (the "New" tag is only in this mockup). Its strains show grams in green; Most tried shows ×5 and so on, now counting Log entries. Purple Punch is only in your Log, so it has an empty ring. Swipe a shelf sideways.',
+  'all-smoked': 'See all from Most smoked: every strain with a weight, biggest first. Wedding Cake has no weight anywhere, so it isn’t listed (it’s still on the other shelves).',
+  'all-tried': 'See all from Most tried: products plus Log entries. Blue Dream comes second (×4) even though you bought little of it.',
+  strain: 'Zkittlez: three products and two Log entries, so Tried says 5. Switch between A and B to see where the total goes.',
+  logonly: 'Purple Punch is only in your Log. Today it opens the Log entry; now it opens a strain page like the others, with no score.',
+};
+
+const phone = document.getElementById('phone');
+function render() {
+  const html = screen === 'tab' ? tab() : screen === 'all-smoked' ? all('smoked') : screen === 'all-tried' ? all('tried') : screen === 'logonly' ? strain(true) : strain(false);
+  phone.innerHTML = `<div class="scr">${html}</div>`;
+  document.getElementById('what').textContent = WHAT[screen];
+  document.querySelectorAll('#screens button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === screen)));
+  document.querySelectorAll('#ways button').forEach((b) => { const on = b.dataset.w === way; b.setAttribute('aria-pressed', String(on)); b.style.borderColor = on ? 'var(--green)' : 'var(--line)'; });
+}
+phone.addEventListener('click', (e) => {
+  const o = e.target.closest('[data-open]');
+  const g = e.target.closest('[data-go]');
+  const so = e.target.closest('[data-sort]');
+  if (o) { back = screen.startsWith('all') ? screen : 'tab'; screen = o.dataset.open === 'Purple Punch' ? 'logonly' : 'strain'; if (o.dataset.open !== 'Zkittlez' && o.dataset.open !== 'Purple Punch') screen = 'strain'; render(); }
+  else if (g) { const to = g.dataset.go; screen = to === 'all-smoked' || to === 'all-tried' || to === 'tab' ? to : to === 'all' ? 'tab' : to.startsWith('all') ? to : (to === 'average' || to === 'recent') ? 'tab' : to; render(); }
+  else if (so) { const l = so.dataset.sort; if (l === 'Most smoked') screen = 'all-smoked'; if (l === 'Most tried') screen = 'all-tried'; render(); }
+});
+document.getElementById('screens').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { screen = b.dataset.s; back = 'tab'; render(); } });
+document.getElementById('ways').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { way = b.dataset.w; render(); } });
+render();
+</script>
