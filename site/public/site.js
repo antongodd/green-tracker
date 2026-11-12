@@ -351,4 +351,54 @@
       document.documentElement.classList.remove('sheet-open');
     });
   }
+  // ---- Soft light (D101, as in the app: shared/domain/touch.ts has the same numbers) ----
+  // A soft glow where a finger presses, or following a mouse that moves over things; the story's cards lean a little
+  // towards it (4 degrees at the edge for a finger, 2 for a mouse). Reduce Motion keeps the glow, without the lean.
+  const LIT = '.btn, .foot-links a, .feat, .promises li, .step';
+  const LEANS = '.feat';
+  const host = (el) => {
+    let g = el.querySelector(':scope > .touch-light');
+    if (!g) {
+      g = document.createElement('span'); g.className = 'touch-light'; g.setAttribute('aria-hidden', 'true');
+      if (getComputedStyle(el).position === 'static') el.classList.add('touch-host');
+      el.appendChild(g); void g.offsetWidth;
+    }
+    clearTimeout(g._fade); g.classList.add('on'); return g;
+  };
+  const dim = (el) => {
+    const g = el && el.querySelector(':scope > .touch-light'); if (!g) return;
+    g.classList.remove('on'); clearTimeout(g._fade);
+    g._fade = setTimeout(() => { g.remove(); el.classList.remove('touch-host'); }, 400);
+  };
+  const aimAt = (el, x, y, deg) => {
+    const r = el.getBoundingClientRect(), w = Math.max(1, r.width), h = Math.max(1, r.height);
+    const px = Math.min(w, Math.max(0, x - r.left)), py = Math.min(h, Math.max(0, y - r.top));
+    el.style.setProperty('--tx', `${Math.round(px)}px`); el.style.setProperty('--ty', `${Math.round(py)}px`);
+    if (!el.matches(LEANS) || still) return;
+    el.style.setProperty('--rx', `${(-((py / h) * 2 - 1) * deg).toFixed(2)}deg`);
+    el.style.setProperty('--ry', `${(((px / w) * 2 - 1) * deg).toFixed(2)}deg`);
+  };
+  let pressed = null, px0 = 0, py0 = 0, over = null, overAt = null, moves = 0;
+  const unpress = () => { if (pressed) { pressed.classList.remove('is-pressed'); if (pressed !== over) dim(pressed); } pressed = null; };
+  const unhover = () => { if (over) { over.classList.remove('is-hover'); const el = over; over = null; if (el !== pressed) dim(el); } };
+  document.addEventListener('pointerdown', (e) => {
+    unpress();
+    const el = e.button === 0 && e.target.closest && e.target.closest(LIT); if (!el) return;
+    pressed = el; px0 = e.clientX; py0 = e.clientY;
+    aimAt(el, e.clientX, e.clientY, 4); el.classList.add('is-pressed'); host(el);
+  }, { passive: true });
+  document.addEventListener('pointermove', (e) => {
+    if (pressed && Math.hypot(e.clientX - px0, e.clientY - py0) > 8 && e.pointerType !== 'mouse') unpress();
+    if (e.pointerType !== 'mouse' || !matchMedia('(hover: hover)').matches) return;
+    const el = e.target.closest && e.target.closest(LIT);
+    if (el !== overAt) { overAt = el; moves = 0; if (over && over !== el) unhover(); }
+    if (!el) return;
+    moves += 1; // a real mouse sends many small moves; a pointer that jumps there once lights nothing
+    if (over !== el && moves >= 3) { over = el; el.classList.add('is-hover'); host(el); }
+    if (over === el && el !== pressed) aimAt(el, e.clientX, e.clientY, 2);
+  }, { passive: true });
+  document.addEventListener('pointerup', () => setTimeout(unpress, 120), { passive: true });
+  document.addEventListener('pointercancel', unpress, { passive: true });
+  document.addEventListener('mouseout', (e) => { if (!e.relatedTarget) { overAt = null; unhover(); } }, { passive: true });
+  addEventListener('scroll', () => { if (pressed) unpress(); overAt = null; unhover(); }, { passive: true });
 })();

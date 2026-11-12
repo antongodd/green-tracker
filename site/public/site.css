@@ -484,3 +484,19 @@ h2 { font-weight: 800; font-size: 32px; line-height: 1.08; letter-spacing: -0.03
 }
 .stage { height: 530px; }
 .c2 { top: 478px; }
+
+/* Soft light (D101, as in the app): site.js puts a .touch-light inside what a finger presses, or what a mouse moves
+   over, centred where it is (--tx / --ty), in the colour of the Look picked in "Make it yours". The story's cards
+   lean a little towards it; everything springs back when let go. Reduce Motion keeps only the glow. */
+.touch-host { position: relative; }
+.touch-light { position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(circle 130px at var(--tx, 50%) var(--ty, 50%), color-mix(in srgb, var(--lt1) 20%, transparent), transparent 72%); }
+.touch-light.on { opacity: 1; transition-duration: 0.12s; }
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .feat, .foot-links a { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease, background-color 0.2s ease; }
+  .btn:active, .feat.is-pressed { transition-duration: 0.1s; transition-timing-function: ease-out; }
+  .feat.is-pressed { transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(0.98); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .feat.is-hover:not(.is-pressed) { transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.15s ease-out; }
+}

@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D100 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D101 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D101) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D102) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D100.
+- Reopen any decision D1–D101.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -447,6 +447,13 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   "<name> landed at #N") or go to the page. `html.landing` is on until it has landed and `settled` waits for it; a
   tap anywhere skips it. Everything it draws is in `.landing-fx` (gone afterwards); the rows are moved only with the
   Web Animations API. Record what it drew with a MutationObserver (`landing.spec.ts` `RECORD`).
+- Soft light (D101): `press.ts` appends a `.touch-light` span (last child, `aria-hidden`) to what's pressed and sets
+  `--tx` / `--ty` / `--rx` / `--ry` on it; the span goes 400ms after letting go, so a test counting a button's children
+  or reading its HTML right after a press meets it. A tapped `.tab` gets `.tab-pop` for its bounce (record it with a
+  MutationObserver, `softlight.spec.ts`). The tests' phones have touch, so no hover glow anywhere; a test of the mouse
+  uses `test.use({ hasTouch: false })` and moves with `steps` (a single jump lights nothing, `HOVER_MOVES`). A new
+  pressable styled by `:last-child` would jump while pressed: avoid it, or add it to `NO_LIGHT`. Readability under
+  the glow is judged at its brightest (`softlight.spec.ts`); a brighter glow must pass it.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -458,8 +465,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.88.0 (2026-11-12): a new product lands on the Leaderboard (item 38, D99).
-- **Dev:** 0.89.1, Most smoked and Most tried on Strainz (item 35, D100; Most tried first), going live.
+- **Live:** 0.89.1 (2026-11-12): Most tried and Most smoked on Strainz (item 35, D100).
+- **Dev:** 0.90.0, Soft light: touch and hover feedback everywhere (item 40, D101), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
@@ -476,6 +483,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Most tried and Most smoked on Strainz: two shelves where Most tried was, Most tried (products and Log entries, ×5) then Most smoked (grams bought and logged, 15.5g; Anton swapped them after trying it on GT Dev, 0.89.1); Log entries part of their strain (*From your Log* on its page, no score); a strain only in your Log opens a strain page; a strain's page shows Tried and Total smoked, Compare too; edibles no longer on Strainz anywhere, yours or a friend's (still on the Leaderboard and in the Log) (GT Ideas #35, Anton's pick A of the mockups; tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.89.0, 0.89.1 | D100 | 2026-11-12 | 2026-11-12 |
 | A new product lands on the Leaderboard: Save on a new product (or a Log entry moved up) opens the Leaderboard and it comes down on two flames into its place, the rows making room; more band by band in your colour set's colours (a glint, sparks, a ring and a shake), the full show at 9.5 (the other rows dim, fireworks, a banner with its place); a note "<name> landed at #N · Open"; a tap skips it; Reduce Motion fades it in; another Type on the board opens the page as before (GT Ideas #38, Anton's pick A of three mockups; tried by Anton on GT Dev; smoothness, the flames in Safari and VoiceOver not yet confirmed on his iPhone) | 0.88.0 | D99 | 2026-11-11 | 2026-11-12 |
 | The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |

@@ -735,3 +735,25 @@ test('with a mouse, buttons answer the pointer hovering over them', async ({ bro
   await page.context().close();
 });
 
+
+test.describe('soft light with a mouse (D101)', () => {
+  test.use({ hasTouch: false });
+  test('a glow follows the mouse over a card, which leans towards it; a pointer that only jumps there lights nothing', async ({ page }) => {
+    const { problems } = await open(page);
+    await noRise(page);
+    const feat = page.locator('.feat').first();
+    await feat.scrollIntoViewIfNeeded();
+    await arrived(page);
+    const box = (await feat.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(feat).not.toHaveClass(/is-hover/);
+    await page.mouse.move(box.x + box.width - 10, box.y + box.height / 2, { steps: 8 });
+    await expect(feat).toHaveClass(/is-hover/);
+    await expect(feat.locator('> .touch-light.on')).toHaveCount(1);
+    await expect.poll(() => feat.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix3d\(/);
+    await page.mouse.move(box.x + box.width / 2, box.y - 400, { steps: 8 });
+    await expect(feat).not.toHaveClass(/is-hover/);
+    await expect(feat.locator('.touch-light')).toHaveCount(0);
+    expect(problems).toEqual([]);
+  });
+});
