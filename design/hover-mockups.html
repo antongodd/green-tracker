@@ -1,0 +1,413 @@
+<title>Touch and Hover Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the picker (Today, A, B, C, Reduce Motion) on top, a slim bar that stays (strength, Look), then the app's phone to touch, then a slice of
+   the website to hover (or slide a finger over), then the plan and questions. The app's own look, dark by choice. */
+:root {
+  color-scheme: dark;
+  --page: #03070a;
+  --ink: #f1f6f3;
+  --ink-2: rgba(241, 246, 243, 0.72);
+  --ink-3: rgba(241, 246, 243, 0.5);
+  --line: rgba(255, 255, 255, 0.12);
+  --panel: rgba(255, 255, 255, 0.05);
+  --green: #45d483;
+  --green-bright: #6fe9a4;
+  --on-green: #03140a;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --num: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { background: var(--page); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 72px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 2px; }
+.page { max-width: 980px; margin: 0 auto; display: grid; gap: 40px; }
+h1 { font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 62ch; margin: 10px 0 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-bright); font-weight: 600; margin: 0 0 6px; }
+.grp { display: grid; gap: 8px; }
+.grp > b { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; min-height: 44px; text-align: left; }
+.seg button[aria-pressed="true"] { border-color: var(--green); background: rgba(69, 212, 131, 0.14); }
+.ways { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.ways button { display: grid; gap: 4px; align-content: start; width: 100%; padding: 12px 14px; }
+.ways button span { font-weight: 600; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ways button em { font-style: normal; color: var(--ink-2); font-size: 14px; line-height: 1.4; }
+.rec { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--green); color: var(--on-green); border-radius: 999px; padding: 2px 9px; font-weight: 700; }
+.row2 { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: end; }
+.tog { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.tog input { width: 22px; height: 22px; accent-color: var(--green); }
+.sticky { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: rgba(3, 7, 10, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  margin-inline: -8px; padding: 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.mini { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+.mini button { border: 0; background: none; border-radius: 9px; min-height: 36px; padding: 0 12px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.mini button[aria-pressed="true"] { background: rgba(69, 212, 131, 0.2); color: var(--ink); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--page); }
+.sec { display: grid; gap: 16px; }
+.try { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.notes { flex: 1 1 280px; min-width: 0; display: grid; gap: 12px; color: var(--ink-2); font-size: 15px; }
+.notes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.notes b { color: var(--ink); font-weight: 600; }
+.what { margin: 0; color: var(--ink-2); font-size: 15px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.qs { margin: 0; padding-left: 22px; display: grid; gap: 14px; max-width: 70ch; color: var(--ink-2); }
+.qs b { color: var(--ink); }
+.qs .r { display: block; color: var(--green-bright); font-size: 14px; margin-top: 2px; }
+.facts { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 70ch; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* ---------- the Looks (tokens from the app's styles.css) ---------- */
+.look { --bg: #03070a; --text: #f1f6f3; --text-2: rgba(241,246,243,.7); --text-3: rgba(241,246,243,.5);
+  --glass: rgba(255,255,255,.05); --glass-strong: rgba(255,255,255,.075); --edge: rgba(255,255,255,.12); --bar: rgba(10,17,20,.82);
+  --accent: #45d483; --accent-bright: #6fe9a4; --on-accent: #03140a; --primary: linear-gradient(135deg, #58e08c, #40c4c4);
+  --l1: rgba(47,216,138,.26); --l2: rgba(43,184,196,.22); --l3: rgba(123,107,255,.2);
+  --touch: 88, 224, 140; --touch-a: 0.16; --shine: rgba(255,255,255,.22); --shadow: rgba(0,0,0,.5); }
+.look[data-look="sakura"] { --bg: #130a13; --text: rgb(255,242,247); --text-2: rgba(255,242,247,.72); --text-3: rgba(255,242,247,.5);
+  --glass: rgba(40,18,36,.5); --glass-strong: rgba(255,200,225,.09); --edge: rgba(255,200,225,.16); --bar: rgba(19,10,19,.85);
+  --accent: #f58cba; --accent-bright: #ffb3d3; --on-accent: #24081a; --primary: linear-gradient(135deg, #ffb3d3, #d4b4ff);
+  --l1: rgba(255,150,195,.22); --l2: rgba(190,150,255,.2); --l3: rgba(255,180,150,.12); --touch: 255, 160, 205; }
+.look[data-look="daysky"] { --bg: #eef3fa; --text: #0f1a2c; --text-2: rgba(15,26,44,.74); --text-3: rgba(15,26,44,.66);
+  --glass: rgba(255,255,255,.66); --glass-strong: rgba(255,255,255,.82); --edge: rgba(15,26,44,.13); --bar: rgba(238,243,250,.88);
+  --accent: #1460b8; --accent-bright: #0f55a6; --on-accent: #fff; --primary: linear-gradient(135deg, #1f66c2, #137d90);
+  --l1: rgba(120,180,255,.3); --l2: rgba(255,210,120,.38); --l3: rgba(140,220,230,.26); --touch: 20, 96, 184; --touch-a: 0.1;
+  --shine: rgba(255,255,255,.6); --shadow: rgba(15,26,44,.18); }
+
+/* ---------- the phone ---------- */
+.phone { position: relative; flex: 0 0 auto; width: min(390px, 100%); aspect-ratio: 390 / 844; max-width: 100%; border-radius: 44px; overflow: hidden;
+  background: var(--bg); color: var(--text); border: 1px solid var(--edge); font-size: 15px; line-height: 1.35; isolation: isolate; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.phone::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1;
+  background: radial-gradient(60% 34% at 12% 8%, var(--l1), transparent 70%), radial-gradient(55% 30% at 95% 38%, var(--l2), transparent 70%), radial-gradient(70% 34% at 30% 100%, var(--l3), transparent 70%); }
+.status { height: 50px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px 6px; font-weight: 600; font-size: 15px; }
+.body { padding: 4px 16px 0; display: grid; gap: 10px; }
+.lt { display: flex; justify-content: space-between; align-items: center; }
+.lt h3 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+.me { width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; background: radial-gradient(circle at 35% 30%, #a8d8b0, #3c7d55 70%); box-shadow: 0 0 0 1px var(--edge); }
+.strip { display: flex; gap: 18px; font-size: 13px; color: var(--text-2); }
+.strip b { font-family: var(--num); color: var(--text); font-size: 15px; margin-right: 3px; }
+.ctrls { display: flex; gap: 8px; }
+.pill { border: 1px solid var(--edge); background: var(--glass); border-radius: 999px; padding: 6px 14px; font-size: 14px; min-height: 36px; }
+.show { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--edge); background: var(--glass); display: block; width: 100%; padding: 0; text-align: left; }
+.show .ph { height: 168px; }
+.show .cap { padding: 10px 14px 12px; display: flex; justify-content: space-between; align-items: center; }
+.show .cap div b { display: block; font-size: 17px; }
+.show .cap small { color: var(--text-2); font-size: 13px; }
+.score { font-family: var(--num); font-weight: 700; font-size: 26px; color: var(--accent-bright); }
+.rank { position: absolute; top: 10px; left: 12px; font-family: var(--num); font-weight: 700; font-size: 13px; padding: 3px 9px; border-radius: 99px; background: rgba(0,0,0,.45); color: #fff; z-index: 2; }
+.ph { position: relative; background: radial-gradient(38% 46% at 50% 54%, var(--bud1, #8fcf6e), var(--bud2, #3d7a3a) 62%, transparent 64%), radial-gradient(90% 90% at 50% 50%, rgba(255,255,255,.07), rgba(0,0,0,.25)); }
+.rows { display: grid; gap: 10px; }
+.r { display: grid; grid-template-columns: 22px 46px 1fr auto; gap: 12px; align-items: center; padding: 8px 12px 8px 10px; border-radius: 18px; border: 1px solid var(--edge); background: var(--glass); width: 100%; text-align: left; }
+.r .n { font-family: var(--num); font-weight: 700; color: var(--text-3); text-align: center; }
+.r .th { width: 46px; height: 46px; border-radius: 12px; overflow: hidden; }
+.r .th .ph { height: 100%; }
+.r .t b { display: block; font-size: 15px; }
+.r .t small { color: var(--text-2); font-size: 12.5px; }
+.r .s { font-family: var(--num); font-weight: 700; font-size: 19px; }
+.tabbar { position: absolute; left: 12px; right: 12px; bottom: 22px; display: flex; gap: 10px; align-items: center; z-index: 3; }
+.tabs { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bar); border: 1px solid var(--edge); border-radius: 30px; height: 62px; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.tab { border: 0; background: none; display: grid; justify-items: center; align-content: center; gap: 2px; font-size: 10.5px; color: var(--text-2); padding: 0; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--accent-bright); }
+.fab { width: 62px; height: 62px; border-radius: 50%; border: 0; background: var(--primary); color: var(--on-accent); display: grid; place-items: center; flex: 0 0 auto; }
+.fab svg { width: 26px; height: 26px; }
+.grip { position: absolute; bottom: 7px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--text); opacity: .8; z-index: 4; }
+
+/* ---------- what a touch does ---------- */
+/* The light where your finger is: a soft glow in the Look's colour (B and C). */
+.p { position: relative; isolation: isolate; transition: transform 0.22s ease, box-shadow 0.25s ease, filter 0.2s ease; }
+.p::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.35s ease;
+  background: radial-gradient(circle var(--rad, 110px) at var(--x, 50%) var(--y, 50%), rgba(var(--touch), var(--touch-a)), transparent 72%); }
+.p.down { transform: scale(0.97); transition-duration: 0.1s; }
+.r.p.down, .show.p.down { background-color: var(--glass-strong); }
+.tab .ic { display: inline-grid; }
+.tab.pop .ic { animation: tap-today 0.22s ease; }
+@keyframes tap-today { 50% { transform: scale(0.9); } }
+
+/* A: let go and it springs back with a little overshoot; tab icons bounce. */
+[data-s="a"] .p, [data-s="b"] .p, [data-s="c"] .p { transition: transform 0.5s var(--spring), box-shadow 0.3s ease, filter 0.2s ease; }
+[data-s="a"] .p.down, [data-s="b"] .p.down, [data-s="c"] .p.down { transition: transform 0.12s ease-out, box-shadow 0.2s ease; }
+[data-s="a"] .tab.pop .ic, [data-s="b"] .tab.pop .ic { animation: tap-spring 0.45s var(--settle); }
+[data-s="c"] .tab.pop .ic { animation: tap-big 0.55s var(--settle); }
+@keyframes tap-spring { 25% { transform: scale(0.84); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes tap-big { 20% { transform: scale(0.8); } 55% { transform: scale(1.22) rotate(-6deg); } 80% { transform: scale(0.96); } 100% { transform: scale(1); } }
+
+/* B: the light, and photos lean towards your finger. */
+[data-s="b"] .p.down::after, [data-s="c"] .p.down::after { opacity: 1; transition-duration: 0.12s; }
+[data-s="b"] .p.lean.down { transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(0.98); }
+/* C: more of everything: further lean with a shine, a brighter, bigger light, a glowing +. */
+[data-s="c"] .p { --rad: 170px; }
+[data-s="c"] .p.down::after { background: radial-gradient(circle var(--rad) at var(--x, 50%) var(--y, 50%), rgba(var(--touch), calc(var(--touch-a) * 1.7)), transparent 72%); }
+[data-s="c"] .p.lean.down { transform: perspective(600px) rotateX(calc(var(--rx, 0deg) * 2)) rotateY(calc(var(--ry, 0deg) * 2)) scale(0.98); box-shadow: 0 18px 40px var(--shadow); }
+.lean .shine { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, var(--shine) 48%, transparent 66%); background-size: 250% 100%; background-position: 120% 0; }
+[data-s="c"] .lean.down .shine { opacity: 1; animation: shine 0.9s var(--settle) forwards; }
+@keyframes shine { to { background-position: -40% 0; } }
+.fab.p::after { border-radius: 50%; }
+[data-s="c"] .fab.down { box-shadow: 0 0 0 6px rgba(var(--touch), .18), 0 0 26px rgba(var(--touch), .55); transform: scale(0.94); }
+[data-s="c"] .r.p.down { box-shadow: 0 10px 26px var(--shadow); }
+
+/* Reduce Motion: no lean, no spring, no bounce; the light and the press stay. */
+[data-rm] .p, [data-rm] .p.down { transition: transform 0.15s ease, box-shadow 0.2s ease !important; }
+[data-rm] .p.lean.down { transform: scale(0.97) !important; }
+[data-rm] .tab.pop .ic, [data-rm] .lean .shine { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .p, .p.down { transition-duration: 0.01s; } }
+
+/* ---------- the website slice ---------- */
+.web { width: 100%; border-radius: 22px; overflow: hidden; border: 1px solid var(--edge); background: var(--bg); color: var(--text); position: relative; isolation: isolate; touch-action: none; user-select: none; -webkit-user-select: none; }
+.web::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(50% 60% at 10% 0%, var(--l1), transparent 70%), radial-gradient(40% 60% at 95% 30%, var(--l2), transparent 70%), radial-gradient(60% 60% at 40% 110%, var(--l3), transparent 70%); }
+.wbar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--edge); background: var(--bar); font-size: 13px; color: var(--text-2); }
+.wbar i { width: 10px; height: 10px; border-radius: 50%; background: var(--edge); }
+.wbar span { margin-left: 8px; }
+.win { padding: 22px clamp(14px, 4vw, 34px) 26px; display: grid; gap: 20px; }
+.win h3 { margin: 0; font-size: clamp(22px, 4vw, 34px); letter-spacing: -0.02em; line-height: 1.1; text-wrap: balance; }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.wbtn { border: 1px solid var(--edge); border-radius: 999px; padding: 0 20px; min-height: 46px; font-weight: 600; background: var(--glass); }
+.wbtn.pri { background: var(--primary); color: var(--on-accent); border-color: transparent; }
+.cards { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card { border-radius: 20px; overflow: hidden; border: 1px solid var(--edge); background: var(--glass); padding: 0; text-align: left; display: block; width: 100%; }
+.card .ph { height: 120px; }
+.card .cap { padding: 8px 10px 10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
+.card .cap b { font-size: 15px; }
+.card .cap .score { font-size: 20px; }
+.links { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 15px; font-weight: 600; }
+.lnk { position: relative; padding: 10px 0; color: var(--text); background: none; border: 0; }
+.lnk::before { content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 2px; border-radius: 2px; background: var(--accent-bright); transform: scaleX(0); transform-origin: left; transition: transform 0.35s var(--settle); }
+
+.h { position: relative; isolation: isolate; transition: transform 0.4s var(--settle), box-shadow 0.35s ease, filter 0.2s ease, background-color 0.2s ease; }
+.h::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+  background: radial-gradient(circle var(--rad, 140px) at var(--x, 50%) var(--y, 50%), rgba(var(--touch), var(--touch-a)), transparent 72%); }
+/* Today: buttons brighten. */
+.wbtn.hov { filter: brightness(1.1); }
+/* A: buttons brighten, cards rise a little with a shadow, links underline. */
+[data-s="a"] .card.hov, [data-s="b"] .card.hov { transform: translateY(-4px); box-shadow: 0 14px 30px var(--shadow); }
+[data-s="a"] .lnk.hov::before, [data-s="b"] .lnk.hov::before, [data-s="c"] .lnk.hov::before { transform: scaleX(1); }
+/* B: the light follows the pointer, the cards lean gently towards it. */
+[data-s="b"] .h.hov::after, [data-s="c"] .h.hov::after { opacity: 1; }
+[data-s="b"] .card.hov { transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-4px); transition: transform 0.15s ease-out, box-shadow 0.35s ease; }
+/* C: further lean with a shine; buttons drawn towards the pointer. */
+[data-s="c"] .h { --rad: 190px; }
+[data-s="c"] .h.hov::after { background: radial-gradient(circle var(--rad) at var(--x, 50%) var(--y, 50%), rgba(var(--touch), calc(var(--touch-a) * 1.7)), transparent 72%); }
+[data-s="c"] .card.hov { transform: perspective(700px) rotateX(calc(var(--rx) * 2.2)) rotateY(calc(var(--ry) * 2.2)) translateY(-6px) scale(1.02); box-shadow: 0 22px 44px var(--shadow); transition: transform 0.12s ease-out, box-shadow 0.35s ease; }
+[data-s="c"] .card.hov .shine { opacity: 1; background-position: var(--sx, 50%) 0; transition: background-position 0.1s linear; }
+.card .shine { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+  background: linear-gradient(115deg, transparent 30%, var(--shine) 48%, transparent 66%); background-size: 250% 100%; background-position: 50% 0; }
+[data-s="c"] .wbtn.hov { transform: translate(var(--mx, 0px), var(--my, 0px)); transition: transform 0.18s ease-out, filter 0.2s ease; }
+.h.down { transform: scale(0.97) !important; transition-duration: 0.1s !important; }
+[data-rm] .card.hov, [data-rm] .wbtn.hov { transform: none !important; }
+[data-rm] .card.hov .shine { opacity: 0 !important; }
+</style>
+
+<main class="page">
+  <header>
+    <p class="eyebrow">GT Ideas #40 · Job 40</p>
+    <h1>Touch and hover</h1>
+    <p class="lede">Pick a strength below, then press things on the phone. On a computer, move the mouse over the website further down. On your iPhone, slide a finger over it to see what a mouse would do. The same strength is used for the app and the website.</p>
+  </header>
+
+  <div class="grp">
+      <b>Strength</b>
+      <div class="seg ways" id="ways">
+        <button type="button" data-s="now" aria-pressed="false"><span>Today</span><em>Presses in a little and goes straight back.</em></button>
+        <button type="button" data-s="a" aria-pressed="false"><span>A · Spring</span><em>Presses in, then springs back with a little bounce when you let go. Tab icons bounce.</em></button>
+        <button type="button" data-s="b" aria-pressed="true"><span>B · Soft light <span class="rec">Recommended</span></span><em>A, plus a soft glow in your Look's colour where you touch. Photos lean slightly towards your finger.</em></button>
+        <button type="button" data-s="c" aria-pressed="false"><span>C · Lively</span><em>B, but stronger: photos lean further with a shine, a brighter glow, and the + glows.</em></button>
+      </div>
+      <label class="tog"><input type="checkbox" id="rm"> Reduce Motion is on</label>
+  </div>
+
+  <div class="sticky" id="bar">
+    <div class="mini" id="minis" role="group" aria-label="Strength">
+      <button type="button" data-s="now" aria-pressed="false">Today</button>
+      <button type="button" data-s="a" aria-pressed="false">A</button>
+      <button type="button" data-s="b" aria-pressed="true">B ★</button>
+      <button type="button" data-s="c" aria-pressed="false">C</button>
+    </div>
+    <div class="mini" id="looks" role="group" aria-label="Look">
+      <button type="button" data-look="aurora" aria-pressed="true">Aurora</button>
+      <button type="button" data-look="sakura" aria-pressed="false">Sakura</button>
+      <button type="button" data-look="daysky" aria-pressed="false">Daylight</button>
+    </div>
+  </div>
+
+  <section class="sec">
+    <h2>1 · The app on your iPhone</h2>
+    <div class="try">
+      <div class="phone look" id="phone" data-look="aurora">
+        <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+        <div class="body">
+          <div class="lt"><h3>Leaderboard</h3><button class="me p" type="button" aria-label="Settings"></button></div>
+          <div class="strip"><span><b>14</b>products</span><span><b>8.6</b>average</span><span><b>6</b>sources</span></div>
+          <div class="ctrls"><button class="pill p" type="button">Rank: Overall</button><button class="pill p" type="button">Type: All</button></div>
+          <button class="show p lean" type="button">
+            <span class="rank">#1</span>
+            <span class="shine"></span>
+            <div class="ph" style="--bud1:#b4d66e;--bud2:#4b7d34"></div>
+            <div class="cap"><div><b>Moonlit Mango</b><small>Flower · Hilltop Farms</small></div><span class="score">9.6</span></div>
+          </button>
+          <div class="rows">
+            <button class="r p" type="button"><span class="n">2</span><span class="th lean p"><span class="shine"></span><div class="ph" style="--bud1:#b796d8;--bud2:#5a3d7a"></div></span><span class="t"><b>Violet Fog</b><small>Flower · Green Room</small></span><span class="s">9.2</span></button>
+            <button class="r p" type="button"><span class="n">3</span><span class="th"><div class="ph" style="--bud1:#9ccf7a;--bud2:#3f6e33"></div></span><span class="t"><b>Lime Comet</b><small>Pre-roll · Northside</small></span><span class="s">8.9</span></button>
+            <button class="r p" type="button"><span class="n">4</span><span class="th"><div class="ph" style="--bud1:#d9c27a;--bud2:#7a6a2e"></div></span><span class="t"><b>Honey Dunes</b><small>Flower · Hilltop Farms</small></span><span class="s">8.7</span></button>
+            <button class="r p" type="button"><span class="n">5</span><span class="th"><div class="ph" style="--bud1:#8ec7a8;--bud2:#2f6a52"></div></span><span class="t"><b>Glacier Kush</b><small>Flower · Pine Co.</small></span><span class="s">8.4</span></button>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Tabs">
+          <div class="tabs">
+            <button class="tab" type="button" aria-current="page"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg></span>Leaderboard</button>
+            <button class="tab" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21V11M12 11c-4 0-7-3-7-7 4 0 7 3 7 7zM12 11c4 0 7-3 7-7-4 0-7 3-7 7zM12 15c-3 0-6-1-8-3M12 15c3 0 6-1 8-3"/></svg></span>Strainz</button>
+            <button class="tab" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9h16l-1 11H5zM8 9V7a4 4 0 0 1 8 0v2"/></svg></span>Sources</button>
+            <button class="tab" type="button"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 15l4-4 5 5 3-3 4 4"/></svg></span>Feed</button>
+          </div>
+          <button class="fab p" type="button" aria-label="Add a product"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </nav>
+        <span class="grip"></span>
+      </div>
+      <div class="notes">
+        <p class="what" id="phoneWhat"></p>
+        <ul>
+          <li>Press and hold a <b>row</b> or the <b>#1 photo</b>, then let go. Try the top or a corner of the photo, too.</li>
+          <li>Tap the <b>tabs</b> and the <b>+</b>.</li>
+          <li>Scrolling never lights anything up: as today, a finger that moves counts as a scroll, not a press.</li>
+          <li>Switch the <b>Look</b>: the glow takes each Look's own colour, and Daylight gets a darker one.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>2 · The website, and the app with a mouse</h2>
+    <p class="lede" style="margin:0">On a computer, or an iPad with a trackpad, things react as the pointer passes over them, before you click. The app would do the same for anyone using it with a mouse.</p>
+    <div class="web look" id="web" data-look="aurora">
+      <div class="wbar"><i></i><i></i><i></i><span>green-tracker-site.green-tracker.workers.dev</span></div>
+      <div class="win">
+        <h3>Rate it. Rank it. Know your plug.</h3>
+        <div class="btns"><button class="wbtn pri h" type="button">Open the app</button><button class="wbtn h" type="button">Create an account</button></div>
+        <div class="cards">
+          <button class="card h" type="button"><span class="shine"></span><div class="ph" style="--bud1:#b4d66e;--bud2:#4b7d34"></div><div class="cap"><b>Moonlit Mango</b><span class="score">9.6</span></div></button>
+          <button class="card h" type="button"><span class="shine"></span><div class="ph" style="--bud1:#b796d8;--bud2:#5a3d7a"></div><div class="cap"><b>Violet Fog</b><span class="score">9.2</span></div></button>
+          <button class="card h" type="button"><span class="shine"></span><div class="ph" style="--bud1:#9ccf7a;--bud2:#3f6e33"></div><div class="cap"><b>Lime Comet</b><span class="score">8.9</span></div></button>
+        </div>
+        <div class="links"><button class="lnk h" type="button">Open the app</button><button class="lnk h" type="button">Create an account</button><button class="lnk h" type="button">Email us</button></div>
+      </div>
+    </div>
+    <p class="what" id="webWhat"></p>
+  </section>
+
+  <section class="sec">
+    <h2>The plan</h2>
+    <ul class="facts">
+      <li><b>Everywhere at once.</b> One shared bit of code decides what a touch (or a mouse) does, so every row, card, photo, button, tab and the + gets the same treatment: the Leaderboard, Strainz, Sources, the Feed, product pages, Settings and the sheets.</li>
+      <li><b>Your Look's colour.</b> The glow uses each of the eleven Looks' own colour. It's kept faint so every word stays readable, and the readability tests check it.</li>
+      <li><b>Reduce Motion.</b> When it's on, nothing leans, springs or bounces. The press and the glow stay.</li>
+      <li><b>Nothing else changes.</b> No change to your data, privacy, followers, Export or Restore. The Leaderboard colour effects, the landing show and the Looks' moving backgrounds stay as they are.</li>
+      <li><b>Size:</b> a big change (it changes how the app feels everywhere), so you'll try it on GT Dev before it goes live.</li>
+    </ul>
+  </section>
+
+  <section class="sec">
+    <h2>Questions for you</h2>
+    <ol class="qs">
+      <li><b>Which strength: A, B or C?</b><span class="r">My pick: B. It feels alive but calm, like Apple's own apps. C is fun, but it could get tiring on a screen you use every day.</span></li>
+      <li><b>The same strength for the app and the website?</b><span class="r">My pick: yes, so they feel like one thing. The website could go one step livelier (C) if you'd like it to show off a bit more.</span></li>
+      <li><b>Should photos lean everywhere, or only the big ones?</b> (the #1 photo, a product page's photo, Feed photos, website cards)<span class="r">My pick: only the big ones, plus a small lean on row photos. Many small tilting things at once looks busy.</span></li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const page = document.querySelector('.page');
+  const phone = document.getElementById('phone');
+  const web = document.getElementById('web');
+  const WHAT = {
+    now: ['Today: rows and buttons press in a little, then go straight back.', 'Today: only the buttons brighten under the mouse.'],
+    a: ['A: press in, then a soft spring back with a little bounce when you let go. Tab icons bounce.', 'A: buttons brighten, cards rise a little with a shadow, links underline as the pointer passes.'],
+    b: ['B: A, plus a soft glow where your finger is, and the #1 photo and row photos lean slightly towards your finger.', 'B: A, plus a soft glow that follows the pointer, and cards lean gently towards it.'],
+    c: ['C: B, but stronger: photos lean further with a shine across them, the glow is brighter and bigger, and the + glows.', 'C: B, but stronger: cards lean further with a shine that follows the pointer, and buttons are drawn slightly towards it.'],
+  };
+  let s = 'b';
+  function setS(v) {
+    s = v;
+    page.dataset.s = v;
+    document.querySelectorAll('#ways button, #minis button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === v)));
+    document.getElementById('phoneWhat').textContent = WHAT[v][0];
+    document.getElementById('webWhat').textContent = WHAT[v][1];
+  }
+  ['ways', 'minis'].forEach((id) => document.getElementById(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setS(b.dataset.s); }));
+  document.getElementById('looks').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#looks button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    phone.dataset.look = b.dataset.look; web.dataset.look = b.dataset.look;
+  });
+  const rm = document.getElementById('rm');
+  try { rm.checked = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+  const setRm = () => { if (rm.checked) page.dataset.rm = ''; else delete page.dataset.rm; };
+  rm.addEventListener('change', setRm); setRm();
+  setS('b');
+
+  // Where on the element the finger or pointer is: the light's centre, and how far to lean (up to 4 degrees; C doubles it in CSS).
+  function place(el, x, y) {
+    const r = el.getBoundingClientRect();
+    const px = Math.min(Math.max(x - r.left, 0), r.width), py = Math.min(Math.max(y - r.top, 0), r.height);
+    el.style.setProperty('--x', px + 'px'); el.style.setProperty('--y', py + 'px');
+    el.style.setProperty('--rx', (-(py / r.height - 0.5) * 8).toFixed(2) + 'deg');
+    el.style.setProperty('--ry', ((px / r.width - 0.5) * 8).toFixed(2) + 'deg');
+    el.style.setProperty('--sx', (100 - (px / r.width) * 100).toFixed(1) + '%');
+    el.style.setProperty('--mx', ((px / r.width - 0.5) * 8).toFixed(1) + 'px');
+    el.style.setProperty('--my', ((py / r.height - 0.5) * 6).toFixed(1) + 'px');
+  }
+
+  // The phone: like the app's press.ts. A short wait, any movement is a scroll, a quick tap still shows.
+  let held = [], timer, sx = 0, sy = 0, at = 0;
+  function letGo() {
+    clearTimeout(timer);
+    const els = held; held = [];
+    const wait = Math.max(0, 130 - (performance.now() - at));
+    setTimeout(() => els.forEach((el) => el.classList.remove('down')), els.length && wait);
+  }
+  phone.addEventListener('pointerdown', (e) => {
+    letGo();
+    const top = e.target.closest('.p'); if (!top) return;
+    // A row and its photo both react: the row presses, the photo leans.
+    const els = [top]; const inner = e.target.closest('.th.p'); if (inner && inner !== top) els.push(inner);
+    const outer = top.parentElement && top.parentElement.closest('.r.p'); if (outer) els.push(outer);
+    els.forEach((el) => place(el, e.clientX, e.clientY));
+    sx = e.clientX; sy = e.clientY; at = performance.now();
+    timer = setTimeout(() => { held = els; els.forEach((el) => el.classList.add('down')); }, 60);
+    held = els.slice(0, 0);
+    phone._pending = els;
+  });
+  phone.addEventListener('pointermove', (e) => { if (phone._pending && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) { phone._pending = null; held = []; clearTimeout(timer); phone.querySelectorAll('.down').forEach((el) => el.classList.remove('down')); } });
+  const up = () => { if (phone._pending && !held.length) { held = phone._pending; held.forEach((el) => el.classList.add('down')); } phone._pending = null; letGo(); };
+  phone.addEventListener('pointerup', up);
+  phone.addEventListener('pointercancel', () => { phone._pending = null; held = []; clearTimeout(timer); phone.querySelectorAll('.down').forEach((el) => el.classList.remove('down')); });
+  phone.addEventListener('contextmenu', (e) => e.preventDefault());
+  phone.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
+    phone.querySelectorAll('.tab').forEach((x) => x.removeAttribute('aria-current'));
+    t.setAttribute('aria-current', 'page');
+    t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+  }));
+  phone.addEventListener('animationend', (e) => { const t = e.target.closest('.tab'); if (t) t.classList.remove('pop'); });
+
+  // The website: hover follows the pointer; a finger sliding over it stands in for a mouse.
+  let over = null;
+  function hoverAt(x, y) {
+    const el = document.elementFromPoint(x, y); const h = el && el.closest('#web .h');
+    if (over && over !== h) over.classList.remove('hov');
+    over = h; if (h) { place(h, x, y); h.classList.add('hov'); }
+  }
+  web.addEventListener('pointermove', (e) => hoverAt(e.clientX, e.clientY));
+  web.addEventListener('pointerdown', (e) => {
+    if (e.target.releasePointerCapture) try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+    hoverAt(e.clientX, e.clientY); if (over) over.classList.add('down');
+  });
+  const webUp = (e) => { web.querySelectorAll('.down').forEach((x) => x.classList.remove('down')); if (e.pointerType !== 'mouse' && over) { over.classList.remove('hov'); over = null; } };
+  web.addEventListener('pointerup', webUp); web.addEventListener('pointercancel', webUp);
+  web.addEventListener('pointerleave', () => { if (over) over.classList.remove('hov'); over = null; });
+})();
+</script>

@@ -2634,3 +2634,34 @@ html[data-tone="light"] .pk-m.grams { color: var(--accent); }
 .lrow.entry .lr-m { font-size: 13px; font-weight: 400; color: var(--text-2); }
 .role.log { border: 1px solid var(--divider); color: var(--text-2); background: transparent; }
 .strain-log + .footnote { margin-top: 8px; }
+
+/* ---------- Soft light (D101, GT Ideas #40, Anton's pick B) ----------
+   press.ts puts a .touch-light inside what you press (or what a mouse rests over), centred where the finger is
+   (--tx / --ty): a soft glow in the Look's own colour, faint enough that every word stays readable. Big photos lean a
+   little towards the finger (--rx / --ry, 4 degrees at the edge; 2 with a mouse), everything springs back with a
+   small overshoot when you let go, and a tab's icon bounces when tapped. Reduce Motion keeps the press and the glow,
+   and nothing leans, springs or bounces. */
+:root { --spring: cubic-bezier(0.34, 1.56, 0.64, 1); }
+.touch-light { position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(circle 120px at var(--tx, 50%) var(--ty, 50%), color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%); }
+.touch-light.on { opacity: 1; transition-duration: 0.12s; }
+html[data-tone="light"] .touch-light { background: radial-gradient(circle 120px at var(--tx, 50%) var(--ty, 50%), color-mix(in srgb, var(--accent) 11%, transparent), transparent 72%); }
+@media (prefers-reduced-motion: no-preference) {
+  /* Let go: spring back, a touch past where it started, then settle. Pressing in stays quick and plain. */
+  .row, .scard, .sc-card, .lrow, .li, .cp-row, .sheet .opt, .prow .who, .btn, .fab, .pill, .hbtn, .pcell, .add-cell, .seg button, .more-btn, .clr, .addrow, .acts > *, .post-photo .slide, .hero-photo img {
+    transition: transform 0.5s var(--spring), box-shadow 0.22s ease-out, background-color 0.18s ease-out, border-color 0.18s ease-out, filter 0.18s ease-out;
+  }
+  .is-pressed, .is-pressed.is-pressed, .hero-photo.is-pressed img { transition-duration: 0.1s; transition-timing-function: ease-out; }
+  /* Big photos lean towards the finger: the top three on the Leaderboard, a post's photos in a list, and a product's
+     own photo (the picture tips inside its frame, which stays put, since it runs to the screen's edges). */
+  .sc-card.is-pressed, .post-photo .slide.is-pressed { transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(0.97); }
+  .hero-photo.is-pressed { transform: none; }
+  .hero-photo.is-pressed img { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.06); }
+  .tab-pop svg { animation: tab-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+}
+@keyframes tab-pop { 25% { transform: scale(0.84); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+/* A mouse on a computer: the glow follows the pointer, and the big photos lean gently towards it. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .sc-card.is-hover:not(.is-pressed), .post-photo .slide.is-hover:not(.is-pressed) { transform: perspective(800px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.15s ease-out; }
+  .hero-photo.is-hover:not(.is-pressed) img { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.04); transition: transform 0.15s ease-out; }
+}
