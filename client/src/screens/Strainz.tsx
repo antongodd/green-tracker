@@ -1,12 +1,12 @@
 import { PlaceLine, TourHint, tourVisit } from '../tour';
 import { useEffect, useState } from 'preact/hooks';
-import { formatPerUnit, formatScore, formatVFM } from '../../../shared/domain/format';
+import { formatPerUnit, formatScore, formatVFM, formatWeightTotal } from '../../../shared/domain/format';
 import { rankProducts } from '../../../shared/domain/leaderboard';
 import { matchesName, nameKey } from '../../../shared/domain/names';
 import { photoUrl } from '../../../shared/domain/photo';
 import type { Product } from '../../../shared/domain/product';
 import { productType } from '../../../shared/domain/productTypes';
-import { formatDay, notRated, sortStrains, STRAIN_SORTS, strainPath, strainRank, strainsOf, strainTypeLabel, type Strain, type StrainSort } from '../../../shared/domain/strains';
+import { formatDay, kindLabel, onlyInLog, sortStrains, STRAIN_SORTS, strainPath, strainRank, strainsOf, strainTypeLabel, type Strain, type StrainSort } from '../../../shared/domain/strains';
 import { errorText } from '../api';
 import { BackButton, Header, LargeTitle, Sheet, TabBar } from '../components/chrome';
 import { Tiles } from '../components/Controls';
@@ -26,18 +26,21 @@ import { FriendsTried } from '../components/Friends';
 import type { Want } from '../../../shared/domain/wants';
 import type { PhotoRecord } from '../../../shared/domain/photo';
 import type { ComponentChildren } from 'preact';
-import { CardPhoto, useProducts } from './Brands';
+import { useProducts } from './Brands';
 import type { LogEntry } from '../../../shared/domain/logEntry';
 
 // Strainz (D92): your products grouped by strain (the product's Name), in the Log's place in the tab bar. Since
 // D93 (the owner's pick, option A "Shelves"): your favourite on top, then rows that scroll sideways (Your favourites,
 // Most tried, Want to try, Recently tried, Unranked), each strain a round photo with a ring for its average.
-// See all opens a shelf's whole list: the cards (`StrainzAll`), your Want to try list, or the Log.
+// See all opens a shelf's whole list: the cards (`StrainzAll`), your Want to try list, or the Log. D100: Most smoked
+// (grams) next to Most tried (products and Log entries); Log entries are part of their strain; no edibles.
 
 const enc = encodeURIComponent;
 const SHELF_MAX = 10;
-type Shelf = 'average' | 'tried' | 'recent';
-const SHELF_TITLE: Record<Shelf, string> = { average: 'Your favourites', tried: 'Most tried', recent: 'Recently tried' };
+type Shelf = 'average' | 'smoked' | 'tried' | 'recent';
+const SHELF_TITLE: Record<Shelf, string> = { average: 'Your favourites', smoked: 'Most smoked', tried: 'Most tried', recent: 'Recently tried' };
+/** A strain, as the screens here have it: your products and Log entries. */
+type S = Strain<Product, LogEntry>;
 export const strainzListPath = (shelf: Shelf | 'want') => `/strainz/list/${shelf}`;
 
 /** Your Log entries, from the cache at once and fresh from the server. */
@@ -51,14 +54,34 @@ function useEntries(): LogEntry[] | null {
   return entries;
 }
 
-/** "3 products · Indica". */
-function strainLine(s: Strain<Product>): string {
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "3 products · 2 in your Log · 15.5g · Indica" (D100: the Log entries and grams too). */
+function strainLine(s: S): string {
   const type = strainTypeLabel(s.strainType);
-  return `${s.products.length} ${s.products.length === 1 ? 'product' : 'products'}${type ? ` · ${type}` : ''}`;
+  const parts = [
+    s.products.length ? plural(s.products.length, 'product', 'products') : '',
+    s.entries.length ? (s.products.length ? `${s.entries.length} in your Log` : `In your Log${s.entries.length > 1 ? ` ×${s.entries.length}` : ''}`) : '',
+    s.grams > 0 ? formatWeightTotal(s.grams) : '',
+    type ?? '',
+  ];
+  return parts.filter(Boolean).join(' · ');
 }
 
-/** The picture of a strain: its best product's (else its first's). */
-const cover = (s: Strain<Product>) => s.best?.product ?? s.products[0]!;
+/** The picture of a strain: its best product's (else its first's, else its newest Log entry's). */
+function cover(s: S): { photo: PhotoRecord | null | undefined; productType: string } {
+  const p = s.best?.product ?? s.products[0];
+  if (p) return { photo: p.photos[0], productType: p.productType };
+  const e = s.entries.find((x) => x.photo) ?? s.entries[0]!;
+  return { photo: e.photo, productType: e.productType };
+}
+
+/** A strain's square photo on a card (a cut-out whole), else the type's mark. */
+function StrainPhoto(p: { strain: S }) {
+  const { photo, productType: type } = cover(p.strain);
+  const def = productType(type);
+  return <span class={`scard-ph${photo?.cutout ? ' cut' : ''}`}>{photo ? <img src={photoUrl(photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</span>;
+}
 
 /** A photo in a circle (a cut-out whole), else the type's mark. */
 function RoundPhoto(p: { photo: PhotoRecord | null | undefined; productType: string }) {
@@ -67,7 +90,7 @@ function RoundPhoto(p: { photo: PhotoRecord | null | undefined; productType: str
 }
 
 /** D93: a strain's round photo with a ring filled to its average out of 10, the average on the ring. */
-function StrainRing(p: { strain: Strain<Product>; size?: 'big' }) {
+function StrainRing(p: { strain: S; size?: 'big' }) {
   const r = 44;
   const c = 2 * Math.PI * r;
   const v = p.strain.average === null ? 0 : p.strain.average / 10;
@@ -78,7 +101,7 @@ function StrainRing(p: { strain: Strain<Product>; size?: 'big' }) {
         <circle class="track" cx="48" cy="48" r={r} />
         <circle class="fill" cx="48" cy="48" r={r} stroke-dasharray={`${(c * v).toFixed(1)} ${c.toFixed(1)}`} />
       </svg>
-      <RoundPhoto photo={photo.photos[0]} productType={photo.productType} />
+      <RoundPhoto photo={photo.photo} productType={photo.productType} />
       {p.strain.average !== null && <span class="sring-v num">{formatScore(p.strain.average)}</span>}
     </span>
   );
@@ -87,17 +110,18 @@ function StrainRing(p: { strain: Strain<Product>; size?: 'big' }) {
 /** How often you've had it, read out (the shelf shows ×1, ×2…, the owner's pick). */
 const timesTried = (n: number) => (n === 1 ? 'tried once' : n === 2 ? 'tried twice' : `tried ${n} times`);
 
-/** One strain on a shelf: its ring, name and how often you've had it; opens its page. */
-function Pick(p: { strain: Strain<Product> }) {
+/** One strain on a shelf: its ring, name and how often you've had it (or, on Most smoked, how much); opens its page. */
+function Pick(p: { strain: S; grams?: boolean }) {
   const s = p.strain;
-  const n = s.products.length;
-  const label = `${s.name}, ${s.average === null ? 'unranked' : `average ${formatScore(s.average)}`}, ${timesTried(n)}`;
+  const label = `${s.name}, ${s.average === null ? 'unranked' : `average ${formatScore(s.average)}`}, ${p.grams ? `${formatWeightTotal(s.grams)} smoked` : timesTried(s.tried)}`;
   return (
     <li class="pick">
       <a href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))} aria-label={label}>
         <StrainRing strain={s} />
         <span class="pk-n">{s.name}</span>
-        <span class="pk-m" aria-hidden="true">×{n}</span>
+        <span class={`pk-m${p.grams ? ' grams' : ''}`} aria-hidden="true">
+          {p.grams ? formatWeightTotal(s.grams) : `×${s.tried}`}
+        </span>
       </a>
     </li>
   );
@@ -120,6 +144,34 @@ function ShelfRow(p: { id: string; title: string; all: string; allLabel?: string
   );
 }
 
+/** Unranked (the strains only in your Log): the newest Log entry first. */
+const newestFirst = (list: S[]) => [...list].sort((a, b) => b.entries[0]!.createdAt - a.entries[0]!.createdAt || a.name.localeCompare(b.name));
+
+/** What the Want to try sheet says about a strain you've already had. */
+const knownLine = (strains: S[]) => (name: string) => {
+  const s = strains.find((x) => x.key === nameKey(name));
+  return s ? `You’ve tried ${s.name}: ${s.tried === 1 ? 'once' : `${s.tried} times`}.` : null;
+};
+
+/** A Log entry on its strain's page (D100): its photo, kind, the day and the amount; opens the entry. */
+function EntryRow(p: { entry: LogEntry }) {
+  const e = p.entry;
+  const def = productType(e.productType);
+  const href = `/log/${enc(e.id)}`;
+  const meta = [kindLabel(e), formatDay(new Date(e.createdAt).toISOString().slice(0, 10)), e.amount ? formatWeightTotal(e.amount) : ''].filter(Boolean).join(' · ');
+  return (
+    <a class="lrow entry" href={href} onClick={linkTo(href)}>
+      <div class={`thumb${e.photo?.cutout ? ' cut' : ''}`}>{e.photo ? <img src={photoUrl(e.photo, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</div>
+      <span class="name">
+        {e.name}
+        <span class="lr-m">{meta}</span>
+      </span>
+      <span class="role log">Log</span>
+      <ChevronRight class="chev" />
+    </a>
+  );
+}
+
 /** The Strainz tab (D92; shelves since D93). */
 export function StrainzList() {
   const { products, error } = useProducts();
@@ -129,16 +181,17 @@ export function StrainzList() {
   const [open, setOpen] = useState<Want | null>(null);
   const [removeError, setRemoveError] = useState('');
   useEffect(() => tourVisit('strainz'), []); // D97
-  const strains = products ? strainsOf(products) : [];
-  const unrated = entries ? notRated(entries, strains) : [];
+  const all = products ? strainsOf(products, entries ?? []) : [];
+  // Your favourites: strains with a product (D93); a strain only in your Log is Unranked, but it's on Most smoked, Most
+  // tried and Recently tried like any other (D100).
+  const strains = all.filter((s) => !onlyInLog(s));
+  const unrated = newestFirst(all.filter(onlyInLog));
+  const smoked = all.filter((s) => s.grams > 0);
   const mine = (wants ?? []).filter((w) => w.kind === 'strain');
-  const known = (name: string) => {
-    const s = strains.find((x) => x.key === nameKey(name));
-    return s ? `You’ve tried ${s.name}: ${s.products.length} ${s.products.length === 1 ? 'product' : 'products'}.` : null;
-  };
-  const shelf = (by: Shelf) => sortStrains(strains, by).slice(0, SHELF_MAX);
+  const known = knownLine(all);
+  const shelf = (by: Shelf, list: S[] = all) => sortStrains(list, by).slice(0, SHELF_MAX);
   const favourite = sortStrains(strains, 'average')[0];
-  const nothing = products && strains.length === 0 && unrated.length === 0 && mine.length === 0;
+  const nothing = products && all.length === 0 && mine.length === 0;
   return (
     <>
       <Header title="Strainz" large right={<MeButton />} />
@@ -169,22 +222,30 @@ export function StrainzList() {
                   <span class="fav-k">Your favourite strain</span>
                   <span class="fav-n">{favourite.name}</span>
                   <span class="fav-m">
-                    {formatScore(favourite.average)} average · {strains.length} {strains.length === 1 ? 'strain' : 'strains'} tried
+                    {formatScore(favourite.average)} average · {all.length} {all.length === 1 ? 'strain' : 'strains'} tried
                   </span>
                 </span>
               </a>
             )}
             {strains.length > 0 && (
               <ShelfRow id="average" title={SHELF_TITLE.average} all={strainzListPath('average')}>
-                {shelf('average').map((s) => (
+                {shelf('average', strains).map((s) => (
                   <Pick key={s.key} strain={s} />
                 ))}
               </ShelfRow>
             )}
-            {strains.length > 1 && (
+            {/* Most tried above Most smoked (the owner, 0.89.1). */}
+            {all.length > 1 && (
               <ShelfRow id="tried" title={SHELF_TITLE.tried} all={strainzListPath('tried')}>
                 {shelf('tried').map((s) => (
                   <Pick key={s.key} strain={s} />
+                ))}
+              </ShelfRow>
+            )}
+            {smoked.length > 0 && all.length > 1 && (
+              <ShelfRow id="smoked" title={SHELF_TITLE.smoked} all={strainzListPath('smoked')}>
+                {shelf('smoked', smoked).map((s) => (
+                  <Pick key={s.key} strain={s} grams />
                 ))}
               </ShelfRow>
             )}
@@ -211,7 +272,7 @@ export function StrainzList() {
                 </li>
               </ShelfRow>
             )}
-            {strains.length > 1 && (
+            {all.length > 1 && (
               <ShelfRow id="recent" title={SHELF_TITLE.recent} all={strainzListPath('recent')}>
                 {shelf('recent').map((s) => (
                   <Pick key={s.key} strain={s} />
@@ -220,17 +281,21 @@ export function StrainzList() {
             )}
             {unrated.length > 0 && (
               <ShelfRow id="unrated" title="Unranked" all="/log" allLabel="Your Log">
-                {unrated.slice(0, SHELF_MAX).map((u) => (
-                  <li key={u.key} class="pick">
-                    <a href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)} aria-label={`${u.name}, unranked`}>
-                      <span class="sring dash">
-                        <RoundPhoto photo={u.entry.photo} productType={u.entry.productType} />
-                      </span>
-                      <span class="pk-n">{u.name}</span>
-                      <span class="pk-m">Unranked</span>
-                    </a>
-                  </li>
-                ))}
+                {unrated.slice(0, SHELF_MAX).map((u) => {
+                  // D100: a strain only in your Log opens its strain page, like any other.
+                  const { photo, productType: type } = cover(u);
+                  return (
+                    <li key={u.key} class="pick">
+                      <a href={strainPath(u.name)} onClick={linkTo(strainPath(u.name))} aria-label={`${u.name}, unranked`}>
+                        <span class="sring dash">
+                          <RoundPhoto photo={photo} productType={type} />
+                        </span>
+                        <span class="pk-n">{u.name}</span>
+                        <span class="pk-m">Unranked</span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ShelfRow>
             )}
             {removeError && (
@@ -274,13 +339,16 @@ export function StrainzAll(p: { shelf: Shelf }) {
   const entries = useEntries();
   const [sort, setSort] = useState<StrainSort>(p.shelf);
   const [query, setQuery] = useState('');
-  const strains = products ? strainsOf(products) : [];
-  const unrated = entries ? notRated(entries, strains) : [];
+  const all = products ? strainsOf(products, entries ?? []) : [];
+  // Under Best average the strains only in your Log come after, as Unranked (D93); every other order has them in
+  // place (D100), and Most smoked only the strains with a weight.
+  const apart = sort === 'average';
+  const strains = all.filter((s) => (apart ? !onlyInLog(s) : sort !== 'smoked' || s.grams > 0));
   const shown = sortStrains(
     strains.filter((s) => matchesName(s.name, query)),
     sort,
   );
-  const shownUnrated = unrated.filter((u) => matchesName(u.name, query));
+  const shownUnrated = apart ? newestFirst(all.filter(onlyInLog)).filter((u) => matchesName(u.name, query)) : [];
   return (
     <>
       <Header title={SHELF_TITLE[p.shelf]} left={<BackButton to="/strainz" />} />
@@ -292,12 +360,12 @@ export function StrainzAll(p: { shelf: Shelf }) {
             <p>{error}</p>
           </div>
         )}
-        {products && strains.length === 0 && (
+        {products && all.length === 0 && (
           <EmptyCard art="podium" title="No strains yet">
             <p>Add a product and its name becomes a strain here.</p>
           </EmptyCard>
         )}
-        {products && strains.length > 0 && (
+        {products && all.length > 0 && (
           <>
             <div class="wrap brands-top">
               <label for="strain-search" class="visually-hidden">
@@ -315,7 +383,7 @@ export function StrainzAll(p: { shelf: Shelf }) {
             <div class="scards">
               {shown.map((s) => (
                 <a class="scard" key={s.key} href={strainPath(s.name)} onClick={linkTo(strainPath(s.name))}>
-                  <CardPhoto product={cover(s)} />
+                  <StrainPhoto strain={s} />
                   <span class="scard-top">
                     <span class="nm">{s.name}</span>
                     <span class="avg">
@@ -324,7 +392,7 @@ export function StrainzAll(p: { shelf: Shelf }) {
                     </span>
                   </span>
                   <span class="sub">{strainLine(s)}</span>
-                  {s.products.length === 1 && (
+                  {s.tried === 1 && (
                     <span class="meta roles">
                       <span class="role once">Tried once</span>
                     </span>
@@ -333,26 +401,22 @@ export function StrainzAll(p: { shelf: Shelf }) {
               ))}
               {shown.length === 0 && <p class="scards-none">No matching strains</p>}
             </div>
-            {p.shelf === 'average' && shownUnrated.length > 0 && (
+            {shownUnrated.length > 0 && (
               <section class="unrated" aria-labelledby="unrated-h">
                 <h2 id="unrated-h" class="group-h wrap">
                   <span class="gname">Unranked</span>
                   <span class="n num">{shownUnrated.length}</span>
                 </h2>
                 <div class="scards">
-                  {shownUnrated.map((u) => {
-                    const def = productType(u.entry.productType);
-                    const ph = u.entry.photo;
-                    return (
-                      <a class="scard plain" key={u.key} href={`/log/${enc(u.entry.id)}`} onClick={linkTo(`/log/${enc(u.entry.id)}`)}>
-                        <span class={`scard-ph${ph?.cutout ? ' cut' : ''}`}>{ph ? <img src={photoUrl(ph, 'thumb')} alt="" loading="lazy" decoding="async" /> : def.icon && <TypeMark icon={def.icon} label={def.label} />}</span>
-                        <span class="scard-top">
-                          <span class="nm">{u.name}</span>
-                        </span>
-                        <span class="sub">Unranked{u.count > 1 ? ` · ×${u.count}` : ''}</span>
-                      </a>
-                    );
-                  })}
+                  {shownUnrated.map((u) => (
+                    <a class="scard plain" key={u.key} href={strainPath(u.name)} onClick={linkTo(strainPath(u.name))}>
+                      <StrainPhoto strain={u} />
+                      <span class="scard-top">
+                        <span class="nm">{u.name}</span>
+                      </span>
+                      <span class="sub">Unranked{u.tried > 1 ? ` · ×${u.tried}` : ''}{u.grams > 0 ? ` · ${formatWeightTotal(u.grams)}` : ''}</span>
+                    </a>
+                  ))}
                 </div>
               </section>
             )}
@@ -376,13 +440,10 @@ export function StrainzAll(p: { shelf: Shelf }) {
 /** See all on Want to try (D93): your whole list, with its notes and Remove. */
 export function StrainzWants() {
   const { products } = useProducts();
+  const entries = useEntries();
   const { wants, error } = useWants();
   const [adding, setAdding] = useState(false);
-  const strains = products ? strainsOf(products) : [];
-  const known = (name: string) => {
-    const s = strains.find((x) => x.key === nameKey(name));
-    return s ? `You’ve tried ${s.name}: ${s.products.length} ${s.products.length === 1 ? 'product' : 'products'}.` : null;
-  };
+  const known = knownLine(products ? strainsOf(products, entries ?? []) : []);
   return (
     <>
       <Header title="Want to try" left={<BackButton to="/strainz" />} />
@@ -396,7 +457,7 @@ export function StrainzWants() {
 }
 
 /** Rename a strain (D92): every product and Log entry with its name takes the new one. */
-function RenameSheet(p: { strain: Strain<Product>; onClose: () => void }) {
+function RenameSheet(p: { strain: S; onClose: () => void }) {
   const [name, setName] = useState(p.strain.name);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -427,7 +488,7 @@ function RenameSheet(p: { strain: Strain<Product>; onClose: () => void }) {
             Rename {p.strain.name}
           </h2>
           <p class="small">
-            {n === 1 ? 'Its product takes the new name' : `All ${n} of its products take the new name`}, and so does any Log entry with it. Renaming it to a strain you have joins the two.
+            {n === 0 ? 'Its Log entries take the new name' : `${n === 1 ? 'Its product takes the new name' : `All ${n} of its products take the new name`}, and so does any Log entry with it`}. Renaming it to a strain you have joins the two.
           </p>
           <div class="field">
             <label for="rename-name">Name</label>
@@ -453,7 +514,7 @@ function RenameSheet(p: { strain: Strain<Product>; onClose: () => void }) {
 }
 
 /** Pick the strain to compare with. */
-function PickSheet(p: { strain: Strain<Product>; strains: Strain<Product>[]; onClose: () => void }) {
+function PickSheet(p: { strain: S; strains: S[]; onClose: () => void }) {
   const others = sortStrains(
     p.strains.filter((s) => s.key !== p.strain.key),
     'az',
@@ -491,7 +552,8 @@ export function StrainPage(p: { name: string }) {
   const { products, error, setProducts } = useProducts();
   const [sheet, setSheet] = useState<'rename' | 'pick' | null>(null);
   const [photosOf, setPhotosOf] = useState<Product | null>(null);
-  const strains = products ? strainsOf(products) : [];
+  const entries = useEntries();
+  const strains = products ? strainsOf(products, entries ?? []) : [];
   const key = nameKey(p.name);
   const s = strains.find((x) => x.key === key);
   const name = s?.name ?? p.name;
@@ -510,24 +572,25 @@ export function StrainPage(p: { name: string }) {
             <p>{error}</p>
           </div>
         )}
-        {products && !s && (
+        {products && entries && !s && (
           <EmptyCard art="filter" title={`No ${name}`}>
-            <p>None of your products is called that now.</p>
+            <p>None of your products or Log entries is called that now.</p>
           </EmptyCard>
         )}
         {s && (
           <>
             <div class="wrap stack strain-top">
               <div class="strain-hero">
-                <CardPhoto product={cover(s)} />
+                <StrainPhoto strain={s} />
                 <div class="sh-text">
                   <h1 class="sh-name">{s.name}</h1>
                   <span class="meta roles">
                     {type && <span class="sh-type">{type}</span>}
-                    {s.products.length === 1 && <span class="role once">Tried once</span>}
+                    {s.tried === 1 && <span class="role once">Tried once</span>}
                   </span>
                 </div>
               </div>
+              {onlyInLog(s) && <p class="lead strain-place">Only in your Log so far.</p>}
               {s.average !== null && (
                 <p class="lead strain-place">
                   {rank === 1 ? (
@@ -545,7 +608,7 @@ export function StrainPage(p: { name: string }) {
             <Tiles
               tiles={[
                 { value: s.average === null ? '–' : formatScore(s.average), label: 'Average' },
-                { value: String(s.products.length), label: s.products.length === 1 ? 'Product' : 'Products' },
+                { value: String(s.tried), label: 'Tried' },
                 { value: s.best ? formatScore(s.best.score) : '–', label: 'Best' },
               ]}
               lead={0}
@@ -565,6 +628,12 @@ export function StrainPage(p: { name: string }) {
                   <dt>Kinds</dt>
                   <dd>{s.kinds.join(', ')}</dd>
                 </div>
+                {s.grams > 0 && (
+                  <div>
+                    <dt>Total smoked</dt>
+                    <dd class="num">{formatWeightTotal(s.grams)}</dd>
+                  </div>
+                )}
                 {s.pricePerGram !== null && (
                   <div>
                     <dt>Price per gram</dt>
@@ -596,15 +665,33 @@ export function StrainPage(p: { name: string }) {
               </dl>
             </div>
             <FriendsTried name={s.name} />
-            <h2 class="group-h wrap">
-              <span class="gname">Your {s.name} products</span>
-              <span class="n num">{s.products.length}</span>
-            </h2>
-            <div class="rows">
-              {rows.map((r) => (
-                <ProductRow key={r.product.id} product={r.product} rank={r.rank} band={r.band} first={r.first} onPhoto={() => setPhotosOf(r.product)} />
-              ))}
-            </div>
+            {s.products.length > 0 && (
+              <>
+                <h2 class="group-h wrap">
+                  <span class="gname">Your {s.name} products</span>
+                  <span class="n num">{s.products.length}</span>
+                </h2>
+                <div class="rows">
+                  {rows.map((r) => (
+                    <ProductRow key={r.product.id} product={r.product} rank={r.rank} band={r.band} first={r.first} onPhoto={() => setPhotosOf(r.product)} />
+                  ))}
+                </div>
+              </>
+            )}
+            {s.entries.length > 0 && (
+              <section aria-labelledby="strain-log-h">
+                <h2 id="strain-log-h" class="group-h wrap">
+                  <span class="gname">From your Log</span>
+                  <span class="n num">{s.entries.length}</span>
+                </h2>
+                <div class="lrows strain-log">
+                  {s.entries.map((e) => (
+                    <EntryRow key={e.id} entry={e} />
+                  ))}
+                </div>
+                <p class="footnote wrap">{onlyInLog(s) ? 'Not rated yet. Open one and add it to your Leaderboard to give it a score.' : 'Log entries have no score, so they don’t change the average.'}</p>
+              </section>
+            )}
           </>
         )}
       </main>
@@ -620,7 +707,8 @@ export function StrainPage(p: { name: string }) {
 export function StrainCompare(p: { name: string; other: string }) {
   const main = useCurrency();
   const { products, error } = useProducts();
-  const strains = products ? strainsOf(products) : [];
+  const entries = useEntries();
+  const strains = products ? strainsOf(products, entries ?? []) : [];
   const a = strains.find((x) => x.key === nameKey(p.name));
   const b = strains.find((x) => x.key === nameKey(p.other));
   type Line = { label: string; a: string; b: string; win: number | null };
@@ -634,7 +722,8 @@ export function StrainCompare(p: { name: string; other: string }) {
     a && b
       ? [
           line('Average', a.average, b.average, formatScore),
-          line('Times tried', a.products.length, b.products.length, String),
+          line('Times tried', a.tried, b.tried, String),
+          line('Total smoked', a.grams || null, b.grams || null, formatWeightTotal),
           line('Best', a.best?.score ?? null, b.best?.score ?? null, formatScore),
           line('Lowest', a.lowest?.score ?? a.best?.score ?? null, b.lowest?.score ?? b.best?.score ?? null, formatScore),
           line('Price per gram', a.pricePerGram, b.pricePerGram, (v) => formatPerUnit(v, main), false),
@@ -642,7 +731,7 @@ export function StrainCompare(p: { name: string; other: string }) {
           { label: 'Last tried', a: formatDay(a.lastTried), b: formatDay(b.lastTried), win: a.lastTried === b.lastTried ? null : a.lastTried > b.lastTried ? 0 : 1 },
         ]
       : [];
-  const sideName = (s: Strain<Product> | undefined, fallback: string) => s?.name ?? fallback;
+  const sideName = (s: S | undefined, fallback: string) => s?.name ?? fallback;
   return (
     <>
       <Header title="Compare" left={<BackButton to={a ? strainPath(a.name) : '/strainz'} />} />
@@ -668,14 +757,14 @@ export function StrainCompare(p: { name: string; other: string }) {
               <thead>
                 <tr>
                   <th scope="col">
-                    <CardPhoto product={cover(a)} />
+                    <StrainPhoto strain={a} />
                     <a href={strainPath(a.name)} onClick={linkTo(strainPath(a.name))}>
                       {sideName(a, p.name)}
                     </a>
                   </th>
                   <td />
                   <th scope="col">
-                    <CardPhoto product={cover(b)} />
+                    <StrainPhoto strain={b} />
                     <a href={strainPath(b.name)} onClick={linkTo(strainPath(b.name))}>
                       {sideName(b, p.other)}
                     </a>
@@ -698,7 +787,7 @@ export function StrainCompare(p: { name: string; other: string }) {
                 ))}
               </tbody>
             </table>
-            <p class="footnote">The better figure on each line is green. Price per gram is the latest price you paid, with 20mg of an edible counted as a gram.</p>
+            <p class="footnote">The better figure on each line is green. Price per gram is the latest price you paid. Total smoked is what you bought and logged.</p>
           </div>
         )}
       </main>

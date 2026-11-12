@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D99 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D100 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D100) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D101) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D99.
+- Reopen any decision D1–D100.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -258,6 +258,13 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   never notes: a new field there must be checked in `test/api/friendstrainz.test.ts`. A friend's profile tabs are
   Leaderboard, Posts, **Strainz** (your own keeps two), so a test that reads the tabs on someone else's page meets three.
   Followers in a test: `follow` then `approve` (`friendstrainz.spec.ts` `beforeAll`); put `DEFAULT_PRIVACY` back at the end.
+- Most smoked and Most tried (D100): `strainsOf(products, entries)` (pass the Log entries, or Log-only strains and
+  their counts are missing); a strain has `tried` (products + Log entries) and `grams`; `onlyInLog` strains are the
+  Unranked shelf and open `/strainz/<name>` (not the entry). Edibles are never on Strainz (`onStrainz`): yours, a
+  friend's Strainz tab, Friends who've tried it. A strain's tiles are Average, **Tried**, Best (not Products); its Log
+  entries are the region "From your Log" (`.lrow.entry`, `.lr-m`). A Log entry counts from the day it was added, so a
+  test reading Recently tried or Last tried with one meets today (`strainz.spec.ts` `today`). Sideways rows: judge
+  their words with `railContrastFailures` (helpers); `wholeScreenContrastFailures` skips words past the screen's side.
 - A colour set's effect on a product page (`.hero-photo .tfx`) fades out towards its box's bottom edge (0.81.1), so
   nothing stops there in a line across the photo; `heroedge.spec.ts` holds every animation (`getAnimations().pause()`;
   the CSP refuses `addStyleTag`) and compares the strip with and without the effect. A new piece of an effect must
@@ -451,8 +458,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.87.1 (2026-11-11): the 🔥 next to its number on posts (item 36).
-- **Dev:** 0.88.0, a new product lands on the Leaderboard (item 38, D99), waiting for Anton's "go live".
+- **Live:** 0.88.0 (2026-11-12): a new product lands on the Leaderboard (item 38, D99).
+- **Dev:** 0.89.1, Most smoked and Most tried on Strainz (item 35, D100; Most tried first), going live.
 
 ### The to-do list: GT Ideas
 
@@ -469,6 +476,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| A new product lands on the Leaderboard: Save on a new product (or a Log entry moved up) opens the Leaderboard and it comes down on two flames into its place, the rows making room; more band by band in your colour set's colours (a glint, sparks, a ring and a shake), the full show at 9.5 (the other rows dim, fireworks, a banner with its place); a note "<name> landed at #N · Open"; a tap skips it; Reduce Motion fades it in; another Type on the board opens the page as before (GT Ideas #38, Anton's pick A of three mockups; tried by Anton on GT Dev; smoothness, the flames in Safari and VoiceOver not yet confirmed on his iPhone) | 0.88.0 | D99 | 2026-11-11 | 2026-11-12 |
 | The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |
 | Getting started, onboarding for new people: a welcome screen for a new account, then a Getting started list on the Leaderboard whose five steps tick themselves off (add a product, Strainz and Sources, find a friend, post, pick a Look); it folds to one line or hides; each screen shows its own step and a hint the first time; Settings › About › Show me round again; accounts from before it see none of it unless they ask; a double-tap on a photo timed from the touch (GT Ideas #32; built by the onboarding conversation, which has what Anton tried on GT Dev) | 0.86.0 | D97 | 2026-11-11 | 2026-11-11 |

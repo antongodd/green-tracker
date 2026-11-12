@@ -35,6 +35,7 @@ import { useTheirLook } from '../theirLook';
 import { Avatar } from '../components/Avatar';
 import { Duel, them, useMe } from '../components/Duel';
 import { AddWant, FriendsTried, TheirStrainz } from '../components/Friends';
+import { onStrainz } from '../../../shared/domain/strains';
 import { fetchProducts } from '../products';
 import type { YourScore } from '../../../shared/domain/compare';
 import { photoOf } from './People';
@@ -559,7 +560,8 @@ export function SharedProfile(p: { username: string; id: string; preview?: boole
             <AddWant kind="strain" name={product.name} from={p.username} tried={myStrains.has(nameKey(product.name))} big />
           </div>
         )}
-        {!p.preview && <FriendsTried name={product.name} />}
+        {/* D100: edibles aren't on Strainz, so no Friends who've tried it under one. */}
+        {!p.preview && onStrainz(product.productType) && <FriendsTried name={product.name} />}
         <Ratings product={product} />
         {photos.length > 0 && (
           <section class="sect" aria-label="Photos">

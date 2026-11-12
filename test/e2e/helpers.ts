@@ -190,7 +190,8 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
 export async function wholeScreenContrastFailures(page: Page, path: string, selector: string): Promise<string[]> {
   const worst: string[] = [];
   const judged = new Set<string>();
-  let total = 0;
+  // Every word within the screen's width in any pass (one at the very edge can sit a pixel either side between loads).
+  const onScreen = new Set<string>();
   const load = async () => {
     await page.goto(path);
     for (const part of selector.split(',')) await page.locator(part).first().waitFor(); // each kind of text is on screen
@@ -198,6 +199,9 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
     // text and photographing it moved the headings, so the photo caught the space beside them (0.52.0).
     await page.waitForLoadState('networkidle');
     await settled(page);
+    // Rows that scroll sideways start at their beginning: loading the same address again, Chromium put back where an
+    // earlier check had scrolled them (railContrastFailures judges the rest of each row).
+    await page.evaluate(() => document.querySelectorAll('ul.rail').forEach((r) => (r.scrollLeft = 0)));
   };
   await load();
   // Where each pass scrolls to: a screen (less a little overlap) at a time, ending at the bottom.
@@ -218,14 +222,60 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
       fab: document.querySelector('.fab')?.getBoundingClientRect().toJSON() as DOMRect | undefined,
     }));
     const underFab = (b: TextBox) => !!area.fab && b.x < area.fab.right && b.x + b.w > area.fab.left && b.y < area.fab.bottom && b.y + b.h > area.fab.top;
-    const boxes = (await textBoxes(page, selector)).map((b, i) => ({ ...b, i }));
-    total = boxes.length;
+    // Words past the screen's side (further along a row that scrolls sideways, D93) aren't on this screen: the photo
+    // has nothing there (it read as black, so light words passed and dark ones failed). railContrastFailures judges them.
+    const boxes = (await textBoxes(page, selector)).map((b, i) => ({ ...b, i })).filter((b) => b.x >= 0 && b.x + b.w <= 390);
+    for (const b of boxes) onScreen.add(`${b.i}`);
     const seen = boxes.filter((b) => b.y >= area.top && b.y + b.h <= Math.min(area.bottom, 844) && !underFab(b));
     for (const b of seen) judged.add(`${b.i}`);
     const where = n === 0 ? 'top' : n === stops.length - 1 ? 'bottom' : `at ${Math.round(y)}px`;
     worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${where} ${w}`));
   }
-  if (judged.size !== total) worst.push(`only ${judged.size} of ${total} judged`);
+  const missed = [...onScreen].filter((i) => !judged.has(i)).length;
+  if (missed) worst.push(`only ${onScreen.size - missed} of ${onScreen.size} judged`);
+  return worst;
+}
+
+/**
+ * contrastFailures for the rows that scroll sideways (`ul.rail`, Strainz's shelves, D93): each row brought into the
+ * middle of the screen and scrolled along a screen's width at a time, from a fresh load each time; every word in a row
+ * must be judged whole on the screen at least once.
+ */
+export async function railContrastFailures(page: Page, path: string, selector: string): Promise<string[]> {
+  const worst: string[] = [];
+  const load = async () => {
+    await page.goto(path);
+    await page.locator('ul.rail').first().waitFor();
+    await page.waitForLoadState('networkidle');
+    await settled(page);
+  };
+  await load();
+  const rails = await page.locator('ul.rail').count();
+  for (let r = 0; r < rails; r++) {
+    const judged = new Set<number>();
+    let total = 0;
+    for (let x = 0, last = false; !last; x += 300) {
+      await load();
+      const rail = page.locator('ul.rail').nth(r);
+      await rail.evaluate((el, x) => {
+        el.scrollIntoView({ block: 'center' });
+        el.scrollLeft = x;
+      }, x);
+      last = await rail.evaluate((el) => el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
+      const name = (await rail.getAttribute('aria-label')) ?? `row ${r + 1}`;
+      const area = await page.evaluate(() => ({
+        top: Math.max(0, document.querySelector('.hdr')?.getBoundingClientRect().bottom ?? 0),
+        bottom: Math.min(document.querySelector('.nav')?.getBoundingClientRect().top ?? innerHeight, 844),
+      }));
+      const inRail = selector.split(',').map((part) => `ul.rail[aria-label="${name}"] ${part.trim()}`).join(', ');
+      const boxes = (await textBoxes(page, inRail)).map((b, i) => ({ ...b, i }));
+      total = boxes.length;
+      const seen = boxes.filter((b) => b.x >= 0 && b.x + b.w <= 390 && b.y >= area.top && b.y + b.h <= area.bottom);
+      for (const b of seen) judged.add(b.i);
+      worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${name} at ${x}px: ${w}`));
+    }
+    if (judged.size !== total) worst.push(`row ${r + 1}: only ${judged.size} of ${total} judged`);
+  }
   return worst;
 }
 

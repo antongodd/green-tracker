@@ -2,11 +2,13 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyLogEntryInput } from '../../shared/domain/logEntry';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
+import { formatDay } from '../../shared/domain/strains';
+import { contrastFailures, railContrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
 
 // Strainz (D92, 0.81.0): the tab in the Log's place. Your products grouped by strain (the product's Name), a strain's
 // page, two strains compared, Rename, the Want to try lists (strains on Strainz, sources on Sources) ticked off by a
 // product, the Log entries you never rated, and the + beside the bar on every screen so the bar never changes width.
+// D100: Most smoked (grams) next to Most tried (products and Log entries), Log entries part of their strain, no edibles.
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
@@ -34,7 +36,10 @@ test.beforeAll(async ({ browser }) => {
   await product('Gelato 41', { ratings: rated(8.5), strainType: 'hybrid', dateTried: '2026-10-11' });
   await product('Gelato 41', { ratings: rated(8.1), strainType: 'hybrid', dateTried: '2026-08-20' });
   await call('POST', '/api/log', { ...emptyLogEntryInput(), name: 'Amnesia Haze', country: 'NL' });
-  await call('POST', '/api/log', { ...emptyLogEntryInput(), name: 'Gelato 41' }); // a product's name: shows under the strain only
+  await call('POST', '/api/log', { ...emptyLogEntryInput(), name: 'Gelato 41', amount: 3.5 }); // a product's name: part of that strain (D100)
+  // D100: edibles aren't strains: neither this product nor this Log entry is on Strainz.
+  await product('Zkittlez', { ratings: { taste: 10, high: 10 }, productType: 'edibles', purchases: [{ date: '2026-10-01', amount: 100, totalPaid: 10, supplier: null }] });
+  await call('POST', '/api/log', { ...emptyLogEntryInput(), name: 'Gummy Bears', productType: 'edibles', amount: 50 });
 });
 
 test('the tab bar: Strainz in the Log’s place; the + beside the bar on every screen, the bar always the same width', async () => {
@@ -68,17 +73,28 @@ test('the tab bar: Strainz in the Log’s place; the + beside the bar on every s
 
 /** The names on a shelf, in order. */
 const shelf = (title: string) => page.getByRole('list', { name: title, exact: true }).locator('.pk-n');
+/** Today, as a strain's page and Compare show it: a Log entry counts from the day it was added. */
+const today = () => formatDay(new Date().toISOString().slice(0, 10));
 
-test('Strainz (D93, shelves): your favourite on top, then Your favourites, Most tried, Recently tried, Unranked', async () => {
+test('Strainz (D93, shelves; D100): your favourite on top, then Your favourites, Most tried, Most smoked, Recently tried, Unranked', async () => {
   await page.goto('/strainz');
   await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
-  await expect(page.locator('.fav-card .fav-m')).toHaveText('9.5 average · 3 strains tried');
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Recently tried', 'Unranked']); // no Want to try yet: hidden
+  await expect(page.locator('.fav-card .fav-m')).toHaveText('9.5 average · 4 strains tried');
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Most smoked', 'Recently tried', 'Unranked']); // no Want to try yet: hidden
   await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
-  await expect(shelf('Most tried')).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
-  await expect(shelf('Recently tried')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Gelato 41']);
-  // The Log entry you never rated; the one named like a product isn't there.
+  // Most smoked: grams bought and logged (Gelato 41's Log entry 3.5g; Zkittlez 2g + 1g, its edible not counted); only
+  // strains with a weight.
+  await expect(shelf('Most smoked')).toHaveText(['Gelato 41', 'Zkittlez']);
+  await expect(page.getByRole('list', { name: 'Most smoked', exact: true }).locator('.pk-m')).toHaveText(['3.5g', '3g']);
+  await expect(page.getByRole('list', { name: 'Most smoked', exact: true }).getByRole('link', { name: 'Gelato 41, average 8.3, 3.5g smoked' })).toBeVisible();
+  // Most tried: products and Log entries (Gelato 41: two and one, ahead of Zkittlez on the average).
+  await expect(shelf('Most tried')).toHaveText(['Gelato 41', 'Zkittlez', 'Cookies Zkittlez', 'Amnesia Haze']);
+  await expect(page.getByRole('list', { name: 'Most tried', exact: true }).locator('.pk-m')).toHaveText(['×3', '×3', '×1', '×1']);
+  // A Log entry counts from the day it was added (today).
+  await expect(shelf('Recently tried')).toHaveText(['Amnesia Haze', 'Gelato 41', 'Cookies Zkittlez', 'Zkittlez']);
+  // The strain only in your Log; the edibles nowhere.
   await expect(shelf('Unranked')).toHaveText(['Amnesia Haze']);
+  await expect(page.locator('.pk-n', { hasText: 'Gummy Bears' })).toHaveCount(0);
   const z = page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: 'Zkittlez, average 8.0, tried 3 times' });
   await expect(z.locator('.sring-v')).toHaveText('8.0');
   await expect(page.getByRole('list', { name: 'Your favourites', exact: true }).getByRole('link', { name: /^Cookies Zkittlez/ }).locator('.pk-m')).toHaveText('×1');
@@ -92,6 +108,8 @@ test('Strainz (D93, shelves): your favourite on top, then Your favourites, Most 
   await shot(page, 'strainz-shelves');
   expect(await axe()).toEqual([]);
   expect(await wholeScreenContrastFailures(page, '/strainz', '.fav-k, .fav-n, .fav-m, .shelf h2, .shelf-h a, .pk-n, .pk-m, .sring-v')).toEqual([]);
+  // Each shelf along its whole length (the words off the screen's side, D100's longer shelves).
+  expect(await railContrastFailures(page, '/strainz', '.pk-n, .pk-m, .sring-v')).toEqual([]);
 });
 
 test('the shelves are readable in the light look (Daylight) too', async () => {
@@ -102,6 +120,7 @@ test('the shelves are readable in the light look (Daylight) too', async () => {
     await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
     expect(await axe()).toEqual([]);
     expect(await wholeScreenContrastFailures(page, '/strainz', '.fav-k, .fav-n, .fav-m, .shelf h2, .shelf-h a, .pk-n, .pk-m, .sring-v')).toEqual([]);
+    expect(await railContrastFailures(page, '/strainz', '.pk-n, .pk-m, .sring-v')).toEqual([]);
   } finally {
     await call('PUT', '/api/appearance', { look: 'aurora', top: 'strip', preset: 'aurora', markFirst: false });
     await page.evaluate(() => localStorage.setItem('gt.look', 'aurora'));
@@ -158,15 +177,19 @@ test('See all: a shelf’s whole list as cards, with search and the four sorts',
   await expect(page).toHaveURL(/\/strainz\/list\/tried$/);
   await expect(page.locator('.hdr .title')).toHaveText(/Most tried/);
   await expect(page.getByRole('button', { name: 'Most tried' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(cards()).toHaveText(['Zkittlez', 'Gelato 41', 'Cookies Zkittlez']);
+  await expect(cards()).toHaveText(['Gelato 41', 'Zkittlez', 'Cookies Zkittlez', 'Amnesia Haze']);
   const card = (name: string) => page.locator('.scard', { has: page.locator('.nm', { hasText: new RegExp(`^${name}$`) }) });
   await expect(card('Zkittlez').locator('.avg')).toHaveText('Average 8.0');
-  await expect(card('Zkittlez').locator('.sub')).toHaveText('3 products · Indica');
+  await expect(card('Zkittlez').locator('.sub')).toHaveText('3 products · 3g · Indica');
+  await expect(card('Gelato 41').locator('.sub')).toHaveText('2 products · 1 in your Log · 3.5g · Hybrid');
+  await expect(card('Amnesia Haze').locator('.sub')).toHaveText('In your Log');
   await expect(card('Cookies Zkittlez').locator('.role.once')).toHaveText('Tried once');
+  await page.getByRole('button', { name: 'Most smoked' }).click();
+  await expect(cards()).toHaveText(['Gelato 41', 'Zkittlez']);
   await page.getByRole('button', { name: 'Recently tried' }).click();
-  await expect(cards()).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Gelato 41']);
+  await expect(cards()).toHaveText(['Amnesia Haze', 'Gelato 41', 'Cookies Zkittlez', 'Zkittlez']);
   await page.getByRole('button', { name: 'A–Z' }).click();
-  await expect(cards()).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
+  await expect(cards()).toHaveText(['Amnesia Haze', 'Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
   await page.getByLabel('Search strains').fill('zkit');
   await expect(cards()).toHaveText(['Cookies Zkittlez', 'Zkittlez']);
   expect(await axe()).toEqual([]);
@@ -191,10 +214,12 @@ test('a strain’s page: average, place, best and lowest, kinds, price, sources,
   await expect(page.locator('.sh-name')).toHaveText('Zkittlez');
   await expect(page.locator('.strain-place')).toHaveText('#3 of your 3 rated strains.');
   const tiles = await page.locator('.tile').evaluateAll((els) => els.map((e) => `${e.querySelector('.cap')!.textContent} ${e.querySelector('b')!.textContent}`));
-  expect(tiles).toEqual(['Average 8.0', 'Products 3', 'Best 9.0']);
+  expect(tiles).toEqual(['Average 8.0', 'Tried 3', 'Best 9.0']);
   const facts = await page.locator('.facts > div').evaluateAll((els) => els.map((e) => `${e.querySelector('dt')!.textContent}: ${e.querySelector('dd')!.textContent}`));
-  expect(facts).toEqual(['Kinds: Flower, Live rosin', 'Price per gram: £26.00 on average', 'Value for money: 0.48', 'From: Green Room, Kush Co, Leafy Lane', 'First tried: 2 Jun 2026', 'Last tried: 28 Oct 2026']);
+  // The edible Zkittlez isn't counted (D100): not in Kinds, Total smoked or the products.
+  expect(facts).toEqual(['Kinds: Flower, Live rosin', 'Total smoked: 3g', 'Price per gram: £26.00 on average', 'Value for money: 0.48', 'From: Green Room, Kush Co, Leafy Lane', 'First tried: 2 Jun 2026', 'Last tried: 28 Oct 2026']);
   await expect(page.locator('.rows .row .name')).toHaveText(['Zkittlez', 'ZKITTLEZ', 'Zkittlez']);
+  await expect(page.getByRole('heading', { name: 'From your Log' })).toHaveCount(0);
   await shot(page, 'strainz-strain');
   expect(await axe()).toEqual([]);
   await page.getByRole('button', { name: 'Add a Zkittlez product' }).click();
@@ -207,7 +232,7 @@ test('Compare: pick another strain, side by side, the better figure on each line
   await page.goto('/strainz/Zkittlez');
   await page.getByRole('button', { name: 'Compare' }).click();
   const sheet = page.getByRole('dialog', { name: 'Compare Zkittlez with…' });
-  await expect(sheet.locator('.opt.pick > span:first-child')).toHaveText(['Cookies Zkittlez', 'Gelato 41']);
+  await expect(sheet.locator('.opt.pick > span:first-child')).toHaveText(['Amnesia Haze', 'Cookies Zkittlez', 'Gelato 41']); // D100: a strain only in your Log too
   await sheet.getByRole('link', { name: /Gelato 41/ }).click();
   await expect(page).toHaveURL(/\/strainz\/Zkittlez\/vs\/Gelato%2041$/);
   const rows = await page.locator('table.vs tbody tr').evaluateAll((trs) =>
@@ -215,12 +240,13 @@ test('Compare: pick another strain, side by side, the better figure on each line
   );
   expect(rows).toEqual([
     ['8.0', 'Average', '8.3 (better)*'],
-    ['3 (better)*', 'Times tried', '2'],
+    ['3', 'Times tried', '3'],
+    ['3g', 'Total smoked', '3.5g (better)*'],
     ['9.0 (better)*', 'Best', '8.5'],
     ['7.0', 'Lowest', '8.1 (better)*'],
     ['£26.00', 'Price per gram', '–'],
     ['0.48', 'Value for money', '–'],
-    ['28 Oct 2026 (better)*', 'Last tried', '11 Oct 2026'],
+    ['28 Oct 2026', 'Last tried', `${today()} (better)*`],
   ]);
   await shot(page, 'strainz-compare');
   expect(await axe()).toEqual([]);
@@ -231,7 +257,7 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   await page.getByRole('button', { name: 'Add a strain to try' }).click();
   const sheet = page.getByRole('dialog', { name: 'A strain to try' });
   await sheet.getByLabel('Strain', { exact: true }).fill('zkittlez');
-  await expect(sheet.locator('.hint')).toHaveText('You’ve tried Zkittlez: 3 products.');
+  await expect(sheet.locator('.hint')).toHaveText('You’ve tried Zkittlez: 3 times.');
   await sheet.getByLabel('Strain', { exact: true }).fill('runtz');
   await expect(sheet.locator('.hint')).toHaveCount(0);
   await sheet.getByLabel('Note (optional)').fill('Heard about it from Drew');
@@ -240,7 +266,7 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   await sheet.getByRole('button', { name: 'Add' }).click();
   await expect(sheet).toBeHidden();
   // A Want to try shelf appears, between Most tried and Recently tried, with Add one at its end.
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Want to try', 'Recently tried', 'Unranked']);
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Most smoked', 'Want to try', 'Recently tried', 'Unranked']);
   await expect(shelf('Want to try')).toHaveText(['Runtz', 'Add one']);
   // See all: the whole list, with its notes.
   await page.getByRole('link', { name: 'See all: Want to try' }).click();
@@ -307,7 +333,7 @@ test('Rename: every product with the name takes the new one; renaming into anoth
   await sheet.getByLabel('Name').fill('zkittlez');
   await sheet.getByRole('button', { name: 'Rename' }).click();
   await expect(page).toHaveURL(/\/strainz\/Zkittlez$/);
-  await expect(page.locator('.tile', { hasText: 'Products' }).locator('b')).toHaveText('5');
+  await expect(page.locator('.tile', { hasText: 'Tried' }).locator('b')).toHaveText('6'); // five products and the Log entry
   await page.goto('/strainz');
   await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Zkittlez', 'Runtz', 'Wedding Cake']);
 });
@@ -322,4 +348,36 @@ test('a product moved to Unranked shows there, and Back from it goes to Strainz'
   await page.getByRole('link', { name: 'Back' }).click();
   await expect(page).toHaveURL(/\/strainz$/);
   await expect(shelf('Unranked')).toHaveText(['Blue Dream', 'Amnesia Haze']);
+});
+
+test('D100: a strain’s Log entries are on its page (no score), and a strain only in your Log opens a strain page too', async () => {
+  await page.goto('/strainz');
+  await page.getByRole('list', { name: 'Unranked', exact: true }).getByRole('link', { name: 'Amnesia Haze, unranked' }).click();
+  await expect(page).toHaveURL(/\/strainz\/Amnesia%20Haze$/);
+  await expect(page.locator('.sh-name')).toHaveText('Amnesia Haze');
+  await expect(page.locator('.strain-place')).toHaveText('Only in your Log so far.');
+  const tiles = await page.locator('.tile').evaluateAll((els) => els.map((e) => `${e.querySelector('.cap')!.textContent} ${e.querySelector('b')!.textContent}`));
+  expect(tiles).toEqual(['Average –', 'Tried 1', 'Best –']);
+  await expect(page.getByRole('heading', { name: /^Your .* products/ })).toHaveCount(0);
+  const log = page.getByRole('region', { name: /From your Log/ });
+  await expect(log.locator('.lrow .name')).toHaveText([`Amnesia Haze${'Flower · ' + today()}`]);
+  await expect(log.locator('.footnote')).toHaveText('Not rated yet. Open one and add it to your Leaderboard to give it a score.');
+  expect(await axe()).toEqual([]);
+  expect(await wholeScreenContrastFailures(page, '/strainz/Amnesia%20Haze', '.sh-name, .strain-place, .lrow .name, .lr-m, .role.log, .footnote')).toEqual([]);
+  // A strain with products and a Log entry lists both (Gelato 41 was renamed into Zkittlez above); the entry opens
+  // its own page.
+  await page.goto('/strainz/Zkittlez');
+  await expect(page.locator('.tile', { hasText: 'Tried' }).locator('b')).toHaveText('6');
+  await expect(page.locator('.facts > div', { hasText: 'Total smoked' }).locator('dd')).toHaveText('6.5g');
+  await expect(page.locator('.rows .row')).toHaveCount(5);
+  const entry = page.getByRole('region', { name: /From your Log/ }).locator('.lrow');
+  await expect(entry.locator('.lr-m')).toHaveText(`Flower · ${today()} · 3.5g`);
+  await expect(page.getByRole('region', { name: /From your Log/ }).locator('.footnote')).toHaveText('Log entries have no score, so they don’t change the average.');
+  await shot(page, 'strainz-strain-log');
+  expect(await axe()).toEqual([]);
+  await entry.click();
+  await expect(page).toHaveURL(/\/log\/[^/]+$/);
+  // An edible-only name has no strain page.
+  await page.goto('/strainz/Gummy%20Bears');
+  await expect(page.locator('.sh-name')).toHaveCount(0);
 });
