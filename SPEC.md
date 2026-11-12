@@ -2142,6 +2142,10 @@ None.
 
 ## 6. Changelog
 
+### Notes — Most tried and Most smoked on Strainz is live
+- 0.89.0 and 0.89.1 (on dev 2026-11-12) went live on 2026-11-12 (release #246). Its full run passed, every browser
+  test, none flaky. Notes only.
+
 ### 0.89.1 — Most tried above Most smoked
 
 - On Strainz, Most tried now comes before Most smoked, on the shelves and in See all's sorts (the owner, after trying

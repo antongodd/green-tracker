@@ -458,8 +458,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.88.0 (2026-11-12): a new product lands on the Leaderboard (item 38, D99).
-- **Dev:** 0.89.1, Most smoked and Most tried on Strainz (item 35, D100; Most tried first), going live.
+- **Live:** 0.89.1 (2026-11-12): Most tried and Most smoked on Strainz (item 35, D100).
+- **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
 
@@ -476,6 +476,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Most tried and Most smoked on Strainz: two shelves where Most tried was, Most tried (products and Log entries, ×5) then Most smoked (grams bought and logged, 15.5g; Anton swapped them after trying it on GT Dev, 0.89.1); Log entries part of their strain (*From your Log* on its page, no score); a strain only in your Log opens a strain page; a strain's page shows Tried and Total smoked, Compare too; edibles no longer on Strainz anywhere, yours or a friend's (still on the Leaderboard and in the Log) (GT Ideas #35, Anton's pick A of the mockups; tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.89.0, 0.89.1 | D100 | 2026-11-12 | 2026-11-12 |
 | A new product lands on the Leaderboard: Save on a new product (or a Log entry moved up) opens the Leaderboard and it comes down on two flames into its place, the rows making room; more band by band in your colour set's colours (a glint, sparks, a ring and a shake), the full show at 9.5 (the other rows dim, fireworks, a banner with its place); a note "<name> landed at #N · Open"; a tap skips it; Reduce Motion fades it in; another Type on the board opens the page as before (GT Ideas #38, Anton's pick A of three mockups; tried by Anton on GT Dev; smoothness, the flames in Safari and VoiceOver not yet confirmed on his iPhone) | 0.88.0 | D99 | 2026-11-11 | 2026-11-12 |
 | The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |
