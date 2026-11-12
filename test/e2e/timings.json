@@ -414,5 +414,13 @@
  "zoom.spec.ts › drag looks around while zoomed, and the photo stops at its edges": 5.4,
  "zoom.spec.ts › one tap while zoomed brings the buttons back; Set as cover still works": 8.1,
  "zoom.spec.ts › pinch zooms in around the fingers, up to 4×; the buttons slide away and the scale shows": 8.7,
- "zoom.spec.ts › swiping changes photo only when zoomed out; each photo starts at 1×": 4.7
+ "zoom.spec.ts › swiping changes photo only when zoomed out; each photo starts at 1×": 4.7,
+ "softlight.spec.ts › a press glows where the finger is, then fades when you let go": 4.2,
+ "softlight.spec.ts › the words on a row stay readable under the glow (aurora)": 5.3,
+ "softlight.spec.ts › the words on a row stay readable under the glow (daysky)": 5.0,
+ "softlight.spec.ts › a big photo leans towards the finger": 3.4,
+ "softlight.spec.ts › with Reduce Motion › nothing leans or bounces, and the glow still shows": 2.5,
+ "softlight.spec.ts › a tab bounces when tapped": 2.8,
+ "softlight.spec.ts › with a mouse (a computer) › it lights what it moves over; a pointer that only jumps there leaves nothing": 4.1,
+ "website.spec.ts › soft light with a mouse (D101) › a glow follows the mouse over a card, which leans towards it; a pointer that only jumps there lights nothing": 4.0
 }

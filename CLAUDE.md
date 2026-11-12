@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D100 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D101 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D101) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D102) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D100.
+- Reopen any decision D1–D101.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -447,6 +447,13 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   "<name> landed at #N") or go to the page. `html.landing` is on until it has landed and `settled` waits for it; a
   tap anywhere skips it. Everything it draws is in `.landing-fx` (gone afterwards); the rows are moved only with the
   Web Animations API. Record what it drew with a MutationObserver (`landing.spec.ts` `RECORD`).
+- Soft light (D101): `press.ts` appends a `.touch-light` span (last child, `aria-hidden`) to what's pressed and sets
+  `--tx` / `--ty` / `--rx` / `--ry` on it; the span goes 400ms after letting go, so a test counting a button's children
+  or reading its HTML right after a press meets it. A tapped `.tab` gets `.tab-pop` for its bounce (record it with a
+  MutationObserver, `softlight.spec.ts`). The tests' phones have touch, so no hover glow anywhere; a test of the mouse
+  uses `test.use({ hasTouch: false })` and moves with `steps` (a single jump lights nothing, `HOVER_MOVES`). A new
+  pressable styled by `:last-child` would jump while pressed: avoid it, or add it to `NO_LIGHT`. Readability under
+  the glow is judged at its brightest (`softlight.spec.ts`); a brighter glow must pass it.
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -459,7 +466,7 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.89.1 (2026-11-12): Most tried and Most smoked on Strainz (item 35, D100).
-- **Dev:** the same as live.
+- **Dev:** 0.90.0, Soft light: touch and hover feedback everywhere (item 40, D101), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
