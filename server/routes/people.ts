@@ -11,7 +11,7 @@ import { loadAppearance } from '../lib/appearance';
 import { serveImage } from '../lib/photos';
 import { load } from './products';
 import { compareBoards, yoursByKey, yoursFor } from '../../shared/domain/compare';
-import { compareStrains, kindLabel } from '../../shared/domain/strains';
+import { compareStrains, kindLabel, onStrainz } from '../../shared/domain/strains';
 import { nameKey, usedNames } from '../../shared/domain/names';
 import { overall } from '../../shared/domain/ratings';
 import { loadWants } from './wants';
@@ -261,7 +261,7 @@ people.get('/u/:username/strainz', async (c) => {
   const comparison = compareStrains(mine, products);
   let wants: { kind: 'strain' | 'source'; name: string; tried: boolean }[] | null = null;
   if (privacy.shareWants) {
-    const myStrains = new Set(mine.map((p) => nameKey(p.name)));
+    const myStrains = new Set(mine.filter((p) => onStrainz(p.productType)).map((p) => nameKey(p.name)));
     const mySources = new Set(usedNames(mine).map((n) => n.key));
     wants = (await loadWants(c.env.DB, them.id)).map((w) => ({ kind: w.kind, name: w.name, tried: (w.kind === 'strain' ? myStrains : mySources).has(nameKey(w.name)) }));
   }
@@ -271,6 +271,7 @@ people.get('/u/:username/strainz', async (c) => {
 /**
  * Friends who've tried a strain (D94): every product with that name that the people you follow share with you (their
  * Leaderboard switch, never Private, archived or kept ones, through the same allow-list as their board), best first.
+ * Never edibles (D100: they aren't on Strainz).
  */
 people.get('/strain-friends', async (c) => {
   const me = c.var.user!.id;
@@ -289,7 +290,7 @@ people.get('/strain-friends', async (c) => {
   for (const them of following) {
     const privacy = await loadEffectivePrivacy(db, them.id);
     if (!privacy.shareBoard) continue;
-    const shared = shareProducts(await load(db, them.id, { archived: false }), privacy).filter((p) => nameKey(p.name) === key);
+    const shared = shareProducts(await load(db, them.id, { archived: false }), privacy).filter((p) => nameKey(p.name) === key && onStrainz(p.productType));
     if (!shared.length) continue;
     const person = await card(c, them, 'following');
     for (const p of shared) friends.push({ person, productId: p.id, score: overall(p.productType, p.ratings), kind: kindLabel(p), source: p.source });

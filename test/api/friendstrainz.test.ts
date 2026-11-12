@@ -124,3 +124,17 @@ describe('a friend’s Strainz page (D94)', () => {
     expect(r.json.want).toMatchObject({ name: 'Runtz', note: `From @${samName}` });
   });
 });
+
+describe('edibles aren’t strains (D100)', () => {
+  it('a friend’s edibles are left out of Friends who’ve tried it and their Strainz page', async () => {
+    await product(sam, 'Zkittlez', { productType: 'edibles', ratings: { taste: 10, high: 10 } });
+    await product(sam, 'Gummy Bears', { productType: 'edibles', ratings: { taste: 9, high: 9 } });
+    const f = await friendsOf('Zkittlez');
+    expect(f.map((x) => x.kind)).not.toContain('Edible');
+    expect(f.filter((x) => x.person.username === samName)).toHaveLength(2);
+    expect(await friendsOf('Gummy Bears')).toEqual([]);
+    const r = await me.get(`/api/people/u/${samName}/strainz`);
+    expect(r.json.comparison.both).toEqual([{ name: 'Zkittlez', yours: 8, theirs: 8, count: 2, productId: expect.any(String) }]);
+    expect(r.json.comparison.onlyThem.map((s: { name: string }) => s.name)).toEqual(['Runtz']);
+  });
+});
