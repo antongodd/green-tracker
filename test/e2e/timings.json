@@ -350,7 +350,7 @@
  "strainz.spec.ts › Rename: every product with the name takes the new one; renaming into another strain joins them": 1.7,
  "strainz.spec.ts › See all: a shelf’s whole list as cards, with search and the four sorts": 2.3,
  "strainz.spec.ts › Sources to try: the + adds a source; a product bought there ticks it off": 2.4,
- "strainz.spec.ts › Strainz (D93, shelves; D100): your favourite on top, then Your favourites, Most smoked, Most tried, Recently tried, Unranked": 14,
+ "strainz.spec.ts › Strainz (D93, shelves; D100): your favourite on top, then Your favourites, Most tried, Most smoked, Recently tried, Unranked": 14,
  "strainz.spec.ts › the shelves are readable in the light look (Daylight) too": 11.8,
  "strainz.spec.ts › the tab bar: Strainz in the Log’s place; the + beside the bar on every screen, the bar always the same width": 2.7,
  "strainz.spec.ts › Want to try: the + adds a strain (it says when you’ve tried it); a product with its name ticks it off": 9.1,

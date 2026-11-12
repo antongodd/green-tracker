@@ -234,17 +234,18 @@ export function StrainzList() {
                 ))}
               </ShelfRow>
             )}
-            {smoked.length > 0 && all.length > 1 && (
-              <ShelfRow id="smoked" title={SHELF_TITLE.smoked} all={strainzListPath('smoked')}>
-                {shelf('smoked', smoked).map((s) => (
-                  <Pick key={s.key} strain={s} grams />
-                ))}
-              </ShelfRow>
-            )}
+            {/* Most tried above Most smoked (the owner, 0.89.1). */}
             {all.length > 1 && (
               <ShelfRow id="tried" title={SHELF_TITLE.tried} all={strainzListPath('tried')}>
                 {shelf('tried').map((s) => (
                   <Pick key={s.key} strain={s} />
+                ))}
+              </ShelfRow>
+            )}
+            {smoked.length > 0 && all.length > 1 && (
+              <ShelfRow id="smoked" title={SHELF_TITLE.smoked} all={strainzListPath('smoked')}>
+                {shelf('smoked', smoked).map((s) => (
+                  <Pick key={s.key} strain={s} grams />
                 ))}
               </ShelfRow>
             )}

@@ -76,11 +76,11 @@ const shelf = (title: string) => page.getByRole('list', { name: title, exact: tr
 /** Today, as a strain's page and Compare show it: a Log entry counts from the day it was added. */
 const today = () => formatDay(new Date().toISOString().slice(0, 10));
 
-test('Strainz (D93, shelves; D100): your favourite on top, then Your favourites, Most smoked, Most tried, Recently tried, Unranked', async () => {
+test('Strainz (D93, shelves; D100): your favourite on top, then Your favourites, Most tried, Most smoked, Recently tried, Unranked', async () => {
   await page.goto('/strainz');
   await expect(page.locator('.fav-card .fav-n')).toHaveText('Cookies Zkittlez');
   await expect(page.locator('.fav-card .fav-m')).toHaveText('9.5 average · 4 strains tried');
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most smoked', 'Most tried', 'Recently tried', 'Unranked']); // no Want to try yet: hidden
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Most smoked', 'Recently tried', 'Unranked']); // no Want to try yet: hidden
   await expect(shelf('Your favourites')).toHaveText(['Cookies Zkittlez', 'Gelato 41', 'Zkittlez']);
   // Most smoked: grams bought and logged (Gelato 41's Log entry 3.5g; Zkittlez 2g + 1g, its edible not counted); only
   // strains with a weight.
@@ -266,7 +266,7 @@ test('Want to try: the + adds a strain (it says when you’ve tried it); a produ
   await sheet.getByRole('button', { name: 'Add' }).click();
   await expect(sheet).toBeHidden();
   // A Want to try shelf appears, between Most tried and Recently tried, with Add one at its end.
-  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most smoked', 'Most tried', 'Want to try', 'Recently tried', 'Unranked']);
+  await expect(page.locator('.shelf h2')).toHaveText(['Your favourites', 'Most tried', 'Most smoked', 'Want to try', 'Recently tried', 'Unranked']);
   await expect(shelf('Want to try')).toHaveText(['Runtz', 'Add one']);
   // See all: the whole list, with its notes.
   await page.getByRole('link', { name: 'See all: Want to try' }).click();
