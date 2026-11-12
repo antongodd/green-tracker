@@ -190,7 +190,8 @@ export const textBoxes = async (page: Page, selector: string): Promise<TextBox[]
 export async function wholeScreenContrastFailures(page: Page, path: string, selector: string): Promise<string[]> {
   const worst: string[] = [];
   const judged = new Set<string>();
-  let total = 0;
+  // Every word within the screen's width in any pass (one at the very edge can sit a pixel either side between loads).
+  const onScreen = new Set<string>();
   const load = async () => {
     await page.goto(path);
     for (const part of selector.split(',')) await page.locator(part).first().waitFor(); // each kind of text is on screen
@@ -198,6 +199,9 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
     // text and photographing it moved the headings, so the photo caught the space beside them (0.52.0).
     await page.waitForLoadState('networkidle');
     await settled(page);
+    // Rows that scroll sideways start at their beginning: loading the same address again, Chromium put back where an
+    // earlier check had scrolled them (railContrastFailures judges the rest of each row).
+    await page.evaluate(() => document.querySelectorAll('ul.rail').forEach((r) => (r.scrollLeft = 0)));
   };
   await load();
   // Where each pass scrolls to: a screen (less a little overlap) at a time, ending at the bottom.
@@ -221,13 +225,14 @@ export async function wholeScreenContrastFailures(page: Page, path: string, sele
     // Words past the screen's side (further along a row that scrolls sideways, D93) aren't on this screen: the photo
     // has nothing there (it read as black, so light words passed and dark ones failed). railContrastFailures judges them.
     const boxes = (await textBoxes(page, selector)).map((b, i) => ({ ...b, i })).filter((b) => b.x >= 0 && b.x + b.w <= 390);
-    total = boxes.length;
+    for (const b of boxes) onScreen.add(`${b.i}`);
     const seen = boxes.filter((b) => b.y >= area.top && b.y + b.h <= Math.min(area.bottom, 844) && !underFab(b));
     for (const b of seen) judged.add(`${b.i}`);
     const where = n === 0 ? 'top' : n === stops.length - 1 ? 'bottom' : `at ${Math.round(y)}px`;
     worst.push(...(await contrastFailures(page, seen, 1)).map((w) => `${where} ${w}`));
   }
-  if (judged.size !== total) worst.push(`only ${judged.size} of ${total} judged`);
+  const missed = [...onScreen].filter((i) => !judged.has(i)).length;
+  if (missed) worst.push(`only ${onScreen.size - missed} of ${onScreen.size} judged`);
   return worst;
 }
 

@@ -156,8 +156,8 @@ export const strainTypeLabel = (k: StrainTypeKey | null): string | null => STRAI
 export type StrainSort = 'average' | 'smoked' | 'tried' | 'recent' | 'az';
 export const STRAIN_SORTS: { key: StrainSort; label: string }[] = [
   { key: 'average', label: 'Best average' },
-  { key: 'smoked', label: 'Most smoked' },
   { key: 'tried', label: 'Most tried' },
+  { key: 'smoked', label: 'Most smoked' },
   { key: 'recent', label: 'Recently tried' },
   { key: 'az', label: 'A–Z' },
 ];

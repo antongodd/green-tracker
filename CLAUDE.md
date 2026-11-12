@@ -459,7 +459,7 @@ item goes live, also add it to **Done** here with both dates. A new idea goes st
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
 - **Live:** 0.88.0 (2026-11-12): a new product lands on the Leaderboard (item 38, D99).
-- **Dev:** 0.89.0, Most smoked and Most tried on Strainz (item 35, D100), waiting for Anton's "go live".
+- **Dev:** 0.89.1, Most smoked and Most tried on Strainz (item 35, D100; Most tried first), going live.
 
 ### The to-do list: GT Ideas
 
