@@ -66,6 +66,14 @@ for (const preset of PRESET_KEYS) {
     await page.goto(`/products/${id}`);
     const fx = page.locator('.hero-photo .tfx');
     await expect(fx).toHaveCount(1);
+    // The photo whole and drawn, no older one fading, before either picture (0.89.0: the release run of 0.88.0 caught Synthwave 108 apart,
+    // a photo still arriving between the two pictures; only the effect may differ).
+    await expect(page.locator('.hero-photo img:not(.hero-old)')).toHaveCount(1);
+    await page.locator('.hero-photo img:not(.hero-old)').evaluate(async (img: HTMLImageElement) => {
+      if (!img.complete) await new Promise((r) => img.addEventListener('load', r, { once: true }));
+      await img.decode();
+    });
+    await expect(page.locator('.hero-photo img.hero-old')).toHaveCount(0);
     await settled(page);
     // Hold the lights and every animation still, so the two pictures differ only by the effect.
     await page.evaluate(() => document.getAnimations().forEach((a) => a.pause()));

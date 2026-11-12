@@ -2627,3 +2627,10 @@ table.vs-both td.win { color: var(--accent-bright); }
 html[data-tone="light"] .toast.landed a { color: var(--accent); }
 /* "You tried …! It's off your Want to try list" (D92) may be showing at the same moment: the note sits above it. */
 body:has(.toast.ticked) .toast.landed { translate: 0 -64px; }
+/* D100: Most smoked shows grams; a strain's Log entries, each with its kind, day and amount. */
+.pk-m.grams { color: var(--accent-bright); font-weight: 600; font-variant-numeric: tabular-nums; }
+html[data-tone="light"] .pk-m.grams { color: var(--accent); }
+.lrow.entry .name { display: grid; gap: 2px; min-width: 0; }
+.lrow.entry .lr-m { font-size: 13px; font-weight: 400; color: var(--text-2); }
+.role.log { border: 1px solid var(--divider); color: var(--text-2); background: transparent; }
+.strain-log + .footnote { margin-top: 8px; }

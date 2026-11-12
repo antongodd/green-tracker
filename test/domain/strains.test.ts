@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDay, kindLabel, notRated, sortStrains, strainPath, strainRank, strainsOf, type StrainProduct } from '../../shared/domain/strains';
+import { compareStrains, formatDay, kindLabel, onlyInLog, onStrainz, sortStrains, strainPath, strainRank, strainScores, strainsOf, type StrainEntry, type StrainProduct } from '../../shared/domain/strains';
 import { tickedOffText, validateWantInput, wantsTriedBy } from '../../shared/domain/wants';
 
 // Strainz (D92): a strain is a product's Name, matched like every name (capitals, spaces and punctuation don't
@@ -63,17 +63,17 @@ describe('strainsOf', () => {
     expect(strainRank(strains, 'gelato41')).toBeNull();
   });
 
-  it('Tried, not rated: Log entries whose name is no product, one per name, newest first', () => {
-    const entries = [
-      { id: 'e1', name: 'Amnesia Haze', country: 'NL', createdAt: 1 },
-      { id: 'e2', name: 'amnesia haze', country: 'NL', createdAt: 3 },
-      { id: 'e3', name: 'zkittlez', country: null, createdAt: 2 },
-      { id: 'e4', name: 'Sour Diesel', country: 'US', createdAt: 2 },
+  it('a Log entry with no product of its name is a strain of its own, only in your Log (Unranked)', () => {
+    const entries: StrainEntry[] = [
+      { id: 'e1', name: 'Amnesia Haze', productType: 'flower', amount: null, country: 'NL', createdAt: 1 },
+      { id: 'e2', name: 'amnesia haze', productType: 'flower', amount: 2, country: 'NL', createdAt: 3 },
     ];
-    expect(notRated(entries, strains).map((u) => [u.name, u.entry.id, u.count])).toEqual([
-      ['Amnesia Haze', 'e2', 2],
-      ['Sour Diesel', 'e4', 1],
-    ]);
+    const withLog = strainsOf(list, entries);
+    const a = withLog.find((s) => s.key === 'amnesiahaze')!;
+    expect(onlyInLog(a)).toBe(true);
+    expect(a).toMatchObject({ name: 'Amnesia Haze', tried: 2, grams: 2, average: null, products: [] });
+    expect(a.entries.map((e) => e.id)).toEqual(['e2', 'e1']); // newest first
+    expect(onlyInLog(withLog.find((s) => s.key === 'zkittlez')!)).toBe(false);
   });
 
   it('labels, days and addresses', () => {
@@ -82,6 +82,50 @@ describe('strainsOf', () => {
     expect(kindLabel({ productType: 'edibles' })).toBe('Edible');
     expect(formatDay('2026-06-02')).toBe('2 Jun 2026');
     expect(strainPath(' Gelato 41 ')).toBe('/strainz/Gelato%2041');
+  });
+});
+
+describe('Most smoked and Most tried (D100)', () => {
+  const buy = (amount: number | null) => ({ date: '2026-06-02', amount, totalPaid: 20, supplier: null, seq: 1 });
+  const e = (id: string, name: string, amount: number | null, over: Partial<StrainEntry> = {}): StrainEntry => ({ id, name, productType: 'flower', amount, country: null, createdAt: 5, ...over });
+  const products = [
+    p('Zkittlez', 9, { purchases: [buy(3.5), buy(null)] }),
+    p('Zkittlez', 8, { productType: 'pre_roll', purchases: [buy(1)] }),
+    p('Zkittlez', 9, { productType: 'edibles', purchases: [buy(200)] }), // edibles aren't on Strainz
+    p('Runtz', 7, { purchases: [buy(10)] }),
+    p('Blue Dream', 6),
+    p('Blue Dream', 6.5),
+    p('Gummy Bears', 9, { productType: 'edibles', purchases: [buy(100)] }),
+  ];
+  const entries = [e('l1', 'zkittlez', 3), e('l2', 'Blue Dream', null), e('l3', 'Blue Dream', null), e('l4', 'Zkittlez', 50, { productType: 'edibles' }), e('l5', 'Gummy Bears', 20, { productType: 'edibles' })];
+  const strains = strainsOf(products, entries);
+  const z = strains.find((s) => s.key === 'zkittlez')!;
+
+  it('edibles are left out of Strainz altogether: their products, their Log entries, a strain that was only edibles', () => {
+    expect(onStrainz('edibles')).toBe(false);
+    expect(['flower', 'concentrate', 'pre_roll'].every(onStrainz)).toBe(true);
+    expect(strains.map((s) => s.name).sort()).toEqual(['Blue Dream', 'Runtz', 'Zkittlez']);
+    expect(z.products).toHaveLength(2);
+    expect(z.entries.map((x) => x.id)).toEqual(['l1']);
+    expect(z.kinds).toEqual(['Flower', 'Pre-roll']);
+  });
+
+  it('a strain counts its products and Log entries (tried) and their grams; a blank amount counts 0', () => {
+    expect(z).toMatchObject({ tried: 3, grams: 7.5 });
+    expect(strains.find((s) => s.key === 'bluedream')).toMatchObject({ tried: 4, grams: 0 });
+    expect(z.average).toBeCloseTo(8.5); // Log entries have no score
+  });
+
+  it('Most smoked: most grams first; Most tried: most products and Log entries first', () => {
+    expect(sortStrains(strains, 'smoked').map((s) => s.name)).toEqual(['Runtz', 'Zkittlez', 'Blue Dream']);
+    expect(sortStrains(strains, 'tried').map((s) => s.name)).toEqual(['Blue Dream', 'Zkittlez', 'Runtz']);
+  });
+
+  it('a friend’s strains leave edibles out too', () => {
+    const scored = (name: string, productType: string, score: number) => ({ id: `${name}-${productType}`, name, productType, ratings: { look: score, smell: score, taste: score, burn: score, high: score } });
+    expect(strainScores([scored('Gummy Bears', 'edibles', 9), scored('Runtz', 'flower', 7)]).map((s) => s.name)).toEqual(['Runtz']);
+    const vs = compareStrains([scored('Runtz', 'flower', 8)], [scored('Runtz', 'edibles', 9), scored('Gummy Bears', 'edibles', 9)]);
+    expect(vs).toEqual({ both: [], onlyThem: [] });
   });
 });
 
