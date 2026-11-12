@@ -2162,6 +2162,9 @@ None.
 
 ## 6. Changelog
 
+### Notes — Soft light is live
+- 0.90.0 (on dev 2026-11-12) went live on 2026-11-12 (release #249). Notes only.
+
 ### 0.90.0 — Soft light: touch and hover feedback everywhere (D101)
 
 - What you press in the app glows softly in your Look's colour where your finger is, springs back with a little

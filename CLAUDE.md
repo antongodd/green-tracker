@@ -465,8 +465,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.89.1 (2026-11-12): Most tried and Most smoked on Strainz (item 35, D100).
-- **Dev:** 0.90.0, Soft light: touch and hover feedback everywhere (item 40, D101), waiting for Anton's "go live".
+- **Live:** 0.90.0 (2026-11-12): Soft light, touch and hover feedback everywhere (item 40, D101).
+- **Dev:** the same as live.
 
 ### The to-do list: GT Ideas
 
@@ -483,6 +483,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| Soft light, touch and hover feedback everywhere: what you press glows softly in your Look's colour where your finger is and springs back with a little bounce; the big photos lean towards your finger (the Leaderboard's top three, a post's photos, a product's photo); a tab's icon bounces when tapped; with a mouse the glow follows the pointer, in the app and on the website; Reduce Motion keeps only the press and the glow (GT Ideas #40, Anton's pick B of four in the mockups; tried by Anton on GT Dev; smoothness on a real iPhone and the website with a real mouse not yet confirmed) | 0.90.0 | D101 | 2026-11-12 | 2026-11-12 |
 | Most tried and Most smoked on Strainz: two shelves where Most tried was, Most tried (products and Log entries, ×5) then Most smoked (grams bought and logged, 15.5g; Anton swapped them after trying it on GT Dev, 0.89.1); Log entries part of their strain (*From your Log* on its page, no score); a strain only in your Log opens a strain page; a strain's page shows Tried and Total smoked, Compare too; edibles no longer on Strainz anywhere, yours or a friend's (still on the Leaderboard and in the Log) (GT Ideas #35, Anton's pick A of the mockups; tried by Anton on GT Dev; VoiceOver not yet checked on his iPhone) | 0.89.0, 0.89.1 | D100 | 2026-11-12 | 2026-11-12 |
 | A new product lands on the Leaderboard: Save on a new product (or a Log entry moved up) opens the Leaderboard and it comes down on two flames into its place, the rows making room; more band by band in your colour set's colours (a glint, sparks, a ring and a shake), the full show at 9.5 (the other rows dim, fireworks, a banner with its place); a note "<name> landed at #N · Open"; a tap skips it; Reduce Motion fades it in; another Type on the board opens the page as before (GT Ideas #38, Anton's pick A of three mockups; tried by Anton on GT Dev; smoothness, the flames in Safari and VoiceOver not yet confirmed on his iPhone) | 0.88.0 | D99 | 2026-11-11 | 2026-11-12 |
 | The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
