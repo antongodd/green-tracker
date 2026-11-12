@@ -22,11 +22,13 @@ import { ChevronDown, ChevronRight, LeafLineIcon, LinkIcon, LockLineIcon, NoteIc
 import { scoreHeat } from '../../../shared/domain/heat';
 import { cachedProduct, cachedProducts, fetchProduct, fetchProducts, saveProduct } from '../products';
 import { intoSuggestions, NameSuggestions } from '../components/NameSuggestions';
-import { rankProducts } from '../../../shared/domain/leaderboard';
+import { boardPlace, rankProducts } from '../../../shared/domain/leaderboard';
 import { play, switchAttr } from '../sounds';
 import { Tick } from '../components/Tick';
 import { useOnline } from '../online';
-import { back, navigate, replaceHistory } from '../router';
+import { back, cameFrom, navigate, replaceHistory } from '../router';
+import { expectLanding } from '../landing';
+import { loadView } from '../viewState';
 import { promoteEntry } from '../logEntries';
 import { takePromotion } from '../promotion';
 import { DiscardSheet, snapshot, useKeepEditing } from '../components/KeepEditing';
@@ -161,6 +163,12 @@ function topProduct(): string | null | undefined {
   if (!list) return undefined;
   const top = rankProducts(list, { filter: 'all', rankBy: 'overall' })[0];
   return top?.first ? top.product.id : null;
+}
+
+/** D99: whether a product is on your Leaderboard as you last left it (its Type and Rank by), so it can land there. */
+function onBoard(id: string): boolean {
+  const list = cachedProducts();
+  return !!list && boardPlace(list, id, loadView()) !== null;
 }
 
 /**
@@ -360,13 +368,18 @@ export function Editor(p: { id: string | null; promoteFrom?: string; name?: stri
       tourDone('product'); // D97
       // D56: a fanfare when this save puts it at the top of your Leaderboard, else the save sound.
       play(topBefore !== undefined && topBefore !== product.id && topProduct() === product.id ? 'first' : 'save');
+      // D99: something new on the board lands there, when the board as you left it shows it; else its page opens.
+      const lands = !p.id && onBoard(product.id);
+      if (lands) expectLanding(product.id);
+      const opens = lands ? '/' : `/products/${product.id}`;
       if (p.id) back(`/products/${product.id}`);
       else if (p.promoteFrom) {
-        // The entry is gone: drop its editor from history, then open the new product.
+        // The entry is gone: drop its editor from history, then open the new product (or the board).
         replaceHistory('/log');
-        navigate(`/products/${product.id}`);
+        navigate(opens);
       }
-      else navigate(`/products/${product.id}`, { replace: true });
+      else if (lands && cameFrom() === '/') back('/'); // + from the Leaderboard: back to it, not a second copy
+      else navigate(opens, { replace: true });
     } catch (e) {
       setError((!p.id && timedOutNew(e, p.promoteFrom ? 'your Leaderboard and your Log' : 'your Leaderboard')) || errorText(e));
       sending.current = false;

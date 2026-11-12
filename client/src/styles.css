@@ -2609,3 +2609,21 @@ table.vs-both td.win { color: var(--accent-bright); }
 .tw-points svg { width: 24px; height: 24px; color: var(--accent-bright); flex: none; margin-top: 2px; }
 .tw-points span { display: grid; font-size: 14px; color: var(--text-2); }
 .tw-points b { font-size: 16px; font-weight: 600; color: var(--text); }
+
+/* ---------- A new product lands (D99) ----------
+   Drawn in its own fixed layer after the screen (components/Landing.tsx); gone once it has landed. */
+.landing-fx { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
+.landing-fx i { position: absolute; display: block; border-radius: 50%; }
+.landing-fx .flame { border-radius: 45% 45% 50% 50% / 12% 12% 88% 88%; transform-origin: 50% 0; filter: blur(1.5px);
+  background: linear-gradient(to bottom, #fffbe6, #ffd36b 22%, #ff9a3c 48%, rgba(255, 80, 40, 0.55) 72%, transparent);
+  box-shadow: 0 0 18px 4px rgba(255, 160, 60, 0.45); }
+.landing-fx .banner { left: 50%; top: calc(var(--header-h) + 64px); border-radius: 18px; padding: 10px 18px; white-space: nowrap; text-align: center;
+  font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em; color: #f1f6f3;
+  background: rgba(8, 12, 20, 0.85); border: 1.5px solid; opacity: 0; }
+.landing-fx .banner small { display: block; font-family: var(--font); font-weight: 600; font-size: 13px; color: rgba(241, 246, 243, 0.78); }
+.toast.landed { display: flex; align-items: center; gap: 14px; max-width: calc(100% - 32px); white-space: nowrap; }
+.toast.landed span { overflow: hidden; text-overflow: ellipsis; }
+.toast.landed a { color: var(--accent-bright); font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; margin-block: -12px; }
+html[data-tone="light"] .toast.landed a { color: var(--accent); }
+/* "You tried …! It's off your Want to try list" (D92) may be showing at the same moment: the note sits above it. */
+body:has(.toast.ticked) .toast.landed { translate: 0 -64px; }

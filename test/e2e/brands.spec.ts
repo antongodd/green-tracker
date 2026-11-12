@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { settled, shot, signUp, wholeScreenContrastFailures } from './helpers';
+import { settled, shot, signUp, wholeScreenContrastFailures, openLanded } from './helpers';
 
 // Brands and suppliers (D59, 0.49.0; option A of the mockups). Names you've used in Source and
 // Supplier are offered under those boxes as you type, and saved in the spelling you already use;
@@ -155,7 +155,7 @@ test("Supplier offers the product's Source first, and saves the spelling you use
   await owner.locator('[id$="-paid"]').fill('20');
   await expect(supplier).toHaveValue("Barney's");
   await owner.locator('.savebar .btn.primary').click();
-  await expect(owner).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  await openLanded(owner); // D99
   const saved = (await call(owner, 'GET', '/api/products')).products.find((p: any) => p.name === 'Brand New');
   expect([saved.source, saved.purchases[0].supplier]).toEqual(['Cookies', "Barney's"]);
   ids['Brand New'] = saved.id;

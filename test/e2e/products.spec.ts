@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { shot, signUp } from './helpers';
+import { shot, signUp, openLanded } from './helpers';
 
 // The editor's count line, and Overall live in the Ratings heading (D34, 0.27.0).
 async function expectRated(page: Page, count: string, overall: string) {
@@ -63,7 +63,7 @@ test('add, rate, price, switch type, make private, archive and restore a product
   await page.getByRole('button', { name: 'Save' }).click();
 
   // Profile: Overall is the hero, price, VFM on the unrounded price (8.9 ÷ 2.714… = 3.28).
-  await expect(page).toHaveURL(/\/products\/(?!new$)[^/]+$/);
+  await openLanded(page); // D99: from the Leaderboard it landed on
   await expect(hero(page).getByText('8.9')).toBeVisible();
   await expect(hero(page).getByText('£2.71/g')).toBeVisible();
   await expect(page.getByText('Rated 5 of 5 categories')).toBeVisible();

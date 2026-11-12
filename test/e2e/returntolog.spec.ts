@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import type { ExportFile } from '../../shared/domain/backup';
 import { emptyProductInput, type ProductInput } from '../../shared/domain/product';
-import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures } from './helpers';
+import { contrastFailures, settled, shot, signUp, textBoxes, wholeScreenContrastFailures, openLanded } from './helpers';
 
 // Return to Log (D50, 0.43.0; "Move to Unranked" since D92): a product page's Actions card offers it (between
 // Private and Archive). It asks first, then the product is a Log entry again and its page
@@ -157,6 +157,7 @@ test('Add to leaderboard brings it all back: ratings, purchases, notes and both 
   await expect(page.getByLabel('Name')).toHaveValue('Zkittlez');
   await expect(page.locator('#notes')).toHaveValue('Sweet and smooth.');
   await page.getByRole('button', { name: 'Save' }).click();
+  await openLanded(page); // D99: back on the Leaderboard, it lands again
   await expect(page).toHaveURL(new RegExp(`/products/${ids.Zkittlez}$`)); // the same product
   await expect(page.getByRole('heading', { level: 1, name: 'Zkittlez' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Price history' }).locator('.purchase')).toHaveCount(2);

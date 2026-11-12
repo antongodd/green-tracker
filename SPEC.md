@@ -170,6 +170,7 @@ Recorded 2026-09-23 in answer to the Phase-0 questions.
 | D96 | **Put it on your Home Screen, shown by the app** (2026-11-10; GT Ideas #26; mockups https://claude.ai/artifact/AQ8AUGWGm8hh4TXSzJJR6g). The owner: "she tried to get the app on her phone and followed the instrcutions but she accidently basically added the website to her home screen - we need this mistake to not be repeated… very very clear that this has to be safari." Picks: the fix on the **website and the app**; another browser on an iPhone is **stopped**; the video **re-made**; the steps **before sign-up**, with a small **"Carry on in Safari"** that lasts one visit; people already using it in Safari **see them too**; **Android gets Chrome's steps**; mockups **A and A** (the website shows one button and no Share steps; the app shows all three steps on one screen). | The website never shows the Share steps: one button, "Open the app in Safari", and "Don’t add this page to your Home Screen". The app shows the steps itself whenever it's open in a browser tab on a phone (`shared/domain/install.ts`, `screens/Install.tsx`), before sign-up and to signed-in people alike. An iPhone in any other browser gets "Open this in Safari" with the link to copy and, signed out, no way past (signed in, "Carry on here": nobody is locked out of their own things). The website opened from a Home Screen icon says "This is the website, not the app". Nothing is stored about anyone; no database change. |
 | D97 | **Getting started: onboarding for new people** (2026-11-11; GT Ideas #32; mockups https://claude.ai/artifact/APzcQAEZudqPtBFC2k9Mm3). The owner: "we need onboarding for new customers… taken through the whole app process: adding a product, looking at strains and sources, adding friends, posting to the feed, customising their app look… little popup hints that take them through the app". Of three kinds (a pop-up tour, welcome cards, a checklist) he took the recommendation: **a checklist with one welcome screen in front**. His answers: a **Show me round again** button in Settings, yes; picking a Look **is a step, but not at the start**; Find a friend leans on Invite a friend ("whatever you recommend"). On the mockups: "i like A, but they need to be able to hide it and compact it into something like B as well. but i do also like each individual progress for each screen", then "go ahead". | One welcome screen straight after an account is created, then a **Getting started** card at the top of the Leaderboard with five steps that tick themselves off as you really do them: add a product, look at Strainz and Sources, find a friend (an invite sent or a follow asked for), post, pick a Look. The card folds to one line with a progress bar and can be hidden; Strainz, Sources, the Feed and the Look page each show their own step at the top (then a tick and a link to the next); and each screen has a hint the first time you reach it, shown once. **Only accounts created from now on get it**; anyone can ask for it with Settings › Show me round again (which skips the welcome). Never a tour that locks the screen, no reminders. One new table (`tours`), yours only: never sent to followers, never in Export or Restore. |
 | D98 | **The film at the top of the website** (2026-11-11; GT Ideas #29; mockups https://claude.ai/artifact/FEC2K4M8jyfGtfj8Mko8nT). The owner on the new ad film (GT Ideas #37): "i love this. we need this to go into the website for sure"; of three places (its own section after the top, in place of the drawn phone, lower down) he picked "B, but with no text": a line such as "the whole app in 85 seconds, sound on" "really sounds like AI". **Reopens D86** (the phone you can pick up) and the hero part of **D88/D89** (the drawn phone with his top five) with his pick. | **The film sits in the hero in place of the drawn phone**: upright like a phone on every screen (beside the words on a laptop), its poster the new #1 on the Leaderboard, the iPhone's own controls. **Nothing downloads until it's played, it never plays by itself, and it comes from the website alone** (as D68). **No words beside it**; a name for VoiceOver only. The phone you could pick up and turn, its top five and its two chips go from the page (their styles stay for the share picture). The how-to video stays in the install steps. Website only; the app is unchanged. See §4 *The film at the top of the website*. |
+| D99 | **A new product lands on the Leaderboard** (2026-11-11; GT Ideas #38; mockups https://claude.ai/artifact/43D8eBnBk1nxR7XsZ45kam). The owner: "we need animations when a new product is added. this makes adding something new special. sort of like a rocketship landing down (landing into the leaderboard) it should be different for each leaderboard rank with the 9.5 band being the most special". Of three ways (A a rocket landing on the board, B a calmer drop in, C the badge landing on the product's page) he picked **A**; one landing in each colour set's own colours ("ur suggestion"); also for a Log entry moved up ("yes"); Reduce Motion as shown ("all good"). **Changes where Save goes** for a new product (its page since the start). | **Save on a new product, or a Log entry moved up, opens the Leaderboard and the product lands in its place**: the rows below make room, it comes down from above on a flame, slows and touches down in a puff of dust. **More band by band, in the colour set's colours**: 8.0 a glint, 8.5 sparks, 9.0 a ring of light and a small shake, **9.5 the full show** (the other rows dim, a bigger flame, fireworks, a banner with its place and the band's name). Then a note, "<name> landed at #N · Open". A tap skips it; Reduce Motion: it fades in and glows, the 9.5 banner still shows. **Only when the board as you left it shows the product** (its Type and Rank by); otherwise its page opens as before. Editing a product's score never lands. No data, privacy or follower change. See §4 *A new product lands*. |
 
 ### Design approvals (Phase 1, 2026-09-23)
 
@@ -2041,6 +2042,22 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
   matches the header's "People" button by exact name. *Tests:* `feed.spec.ts` (the card, the gap, the photo inside it,
   the row's words, size and link); `posts.spec.ts` judges the row's words for readability, now in Sakura too.
 
+- **A new product lands (D99, 0.88.0).** `client/src/landing.ts` holds the product to land: the editor's Save
+  (`Editor.tsx`) calls `expectLanding(id)` for a new product or a promoted Log entry when `boardPlace` finds it under
+  the saved view (`loadView`), and opens `/` (back to it when the + was pressed there, so there's no second copy in
+  history); otherwise the product's page, as before. `html.landing` is on from Save until the landing is over
+  (`landed()`). The Leaderboard takes it once (`takeLanding`), skips `restoreRow`, and renders
+  `components/Landing.tsx` after `<main>`: a fixed `.landing-fx` layer (aria-hidden) for everything drawn (flame,
+  dust, glint, sparks, ring, banner) and the note (`.toast.landed`, `role="status"`, a link "Open", for 6 seconds).
+  The rows are only moved with the Web Animations API (the screen's markup is never touched): the row is held
+  hidden, scrolled to 42% of the screen (`placedByScreen` stops a pending `land`), the rows below slide from its
+  height up, it falls from above the screen (1.15s; 1.5s at 9.5) with the flame following, squashes on touch down.
+  Colours are the row's `--t1`…`--t6` (its colour set and band), greys without a band. The 9.5 band dims the other
+  rows (`brightness`), bursts fireworks four times and pops the score. Reduce Motion: a 0.4s fade and the glow (and
+  the banner at 9.5). A `pointerdown` anywhere cancels it. Sounds are unchanged (the save or #1 sound plays on Save).
+  - *Tests:* `landing.spec.ts` (core): the full show at 9.7 (its place, the banner and band name, nothing left
+    behind, the note and axe, Open, Back), more pieces band by band and the banner only at 9.5, Reduce Motion, a tap
+    skipping it, another Type opening the page. `settled` (helpers) waits for `html.landing` to go.
 - **The film at the top of the website (D98, 0.87.0).** `site/public/index.html`: `figure.film` in the hero, where
   `.stage` (the drawn phone, D86/D88/D89) was: one `<video controls playsinline preload="none" poster="/media/film.jpg">`
   with `/media/film.mp4` and an `aria-label` ("A film of Green Tracker in use: 85 seconds, with music and no speech");
@@ -2104,6 +2121,19 @@ Mockups: `design/mockups.html` (https://claude.ai/artifact/33Y3cGCk8u6Kos1u1ht6H
 None.
 
 ## 6. Changelog
+
+### 0.88.0 — a new product lands on the Leaderboard (D99)
+
+- Adding a product is a moment now (GT Ideas #38, the owner's pick A of three mockups): Save opens the Leaderboard and
+  the product comes down on a flame into its place, the rows making room; more of a show band by band in your colour
+  set's colours, the full show at 9.5 (fireworks, a banner with its place). The same when a Log entry moves up. A tap
+  skips it; with Reduce Motion it fades in and glows. If the board is set to a Type it isn't in, its page opens as
+  before. Then a note: "<name> landed at #N · Open".
+
+### Notes — the 🔥 next to its number is live
+- 0.87.1 (on dev 2026-11-11) went live on 2026-11-11 (release #239). Its pull request's browser tests failed twice
+  before running a test (GitHub's machines couldn't reach Ubuntu's servers to install the browser's packages); `ci.yml`
+  now installs the browser alone after 4 minutes of trying. Notes only.
 
 ### 0.87.1 — the 🔥 next to its number
 

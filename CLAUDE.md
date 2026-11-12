@@ -8,7 +8,7 @@ file (and the recipes it touches) in the same pull request.
 
 - **Anton** owns the app and isn't a developer: explain things plainly, without jargon.
 - **Green Tracker**: Cloudflare Workers + D1 + R2, Hono server, Preact client, TypeScript.
-- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D98 so far), the changelog.
+- **SPEC.md is the source of truth**: §4 implementation notes, the decisions table (D1–D99 so far), the changelog.
   Read it (and the README) before your first change.
 
 ## The two sites (D47)
@@ -151,7 +151,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   After going live, the move to Done is a notes-only pull request: it skips the tests, so merge it at once.
 - **Version:** bump `package.json` (then `npm install --package-lock-only`) when the app changes. Notes-only and
   tests-only changes keep the version.
-- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D99) and its §4
+- **SPEC.md:** a changelog entry for every app change. A big change also gets a decision (next is D100) and its §4
   section; a small one only when it really decides something new.
 - **Tests:** add or update tests for what changed, mostly API and unit tests (fast, steady). A browser test is for
   what only a browser can show: a whole journey, a screen's layout, readability, accessibility. Grep **all** test
@@ -176,7 +176,7 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
 - Put `SIGNUP_LIMIT_PER_HOUR` in `wrangler.jsonc`.
 - Loosen the profile photo privacy rule (D23, `photoVisibleSql`).
 - Change Remove background (768px model, onnxruntime-web 1.17.3, the `gt-ai-<model>` cache).
-- Reopen any decision D1–D98.
+- Reopen any decision D1–D99.
 - Loosen how passwords are kept or checked (D80, D83, `server/lib/password.ts`): only a salted PBKDF2 hash, the same
   answer for a wrong password and an unknown email, the per-email, per-device and per-account limits (wrong tries only
   since D83); adding Face ID asks for the password unless just signed in; the email is never shown to anyone else.
@@ -205,7 +205,8 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   means the timings are stale or a file outgrew it, not a flaky test: refresh `timings.json`, or add a machine (`ci.yml`
   `shard`). Run one machine's share locally with `node scripts/e2e-shard.mjs <n> 6 [core|full]`
   (`DRY=1` only shows the split). A file in `mode: 'parallel'` is shared test by test; any other stays whole.
-- `npm ci` may fail with ECONNRESET (retry). GitHub artifact downloads are blocked from the cloud environment.
+- `npm ci` may fail with ECONNRESET (retry). If GitHub's machines can't reach Ubuntu's servers, `ci.yml` installs the
+  browser without its system packages after 4 minutes (2026-11-11: two runs failed before any test). GitHub artifact downloads are blocked from the cloud environment.
 - Browser-test usernames: add random characters to the time (`zoom.spec.ts` `person`); with `--repeat-each` copies
   start in the same millisecond and a time-only name is "already taken". Many older specs still use time only.
 - API tests: each `new Browser()` gets a made-up address, random per file (`test/api/client.ts`); sign-up is limited to
@@ -433,6 +434,12 @@ editors asking before discarding (`keepediting`), getting it onto the Home Scree
   it too. A new step or hint goes in `shared/domain/tour.ts` (no migration: the state is JSON). Never tick a step
   from inside a radio's or checkbox's click: ticking redraws the whole app (`useTourState` in `main.tsx`) and the
   control is put back before its change is heard (`pickedLook` waits for the tap to finish).
+- A new product lands (D99): Save on a **new** product (or a Log entry moved up) opens the **Leaderboard**, not the
+  product's page, when the board as last left (its Type and Rank by, `loadView`) shows it; else the page as before. A
+  test that adds a product in the editor and expects its page meets the board: click the note's **Open** (the status
+  "<name> landed at #N") or go to the page. `html.landing` is on until it has landed and `settled` waits for it; a
+  tap anywhere skips it. Everything it draws is in `.landing-fx` (gone afterwards); the rows are moved only with the
+  Web Animations API. Record what it drew with a MutationObserver (`landing.spec.ts` `RECORD`).
 - Late loads (D55): a new way to change a product on the client calls `changing(id)` (`client/src/products.ts`) as it
   starts, so an older `fetchProduct` can't put the old version back. Test it like `staleload.spec.ts`: hold the GET
   with `route.fetch()`, make the change, then release it.
@@ -444,9 +451,8 @@ and the `ideas` recipe) and move each one along there: talking, building, on GT 
 item goes live, also add it to **Done** here with both dates. A new idea goes straight into GT Ideas, never into this
 file. The "Green Tracker to-do list" conversation answers Anton's questions about the list from GT Ideas.
 
-- **Live:** 0.87.0 (2026-11-11): the film at the top of the website (item 29, D98), with 0.86.0, Getting started,
-  onboarding for new people (item 32, D97).
-- **Dev:** the same as live.
+- **Live:** 0.87.1 (2026-11-11): the 🔥 next to its number on posts (item 36).
+- **Dev:** 0.88.0, a new product lands on the Leaderboard (item 38, D99), waiting for Anton's "go live".
 
 ### The to-do list: GT Ideas
 
@@ -463,6 +469,7 @@ The page's source is `design/gt-ideas.html`.
 
 | Item | Version | Decision | On dev | Live |
 |---|---|---|---|---|
+| The 🔥 next to its number: on a post its count sits as close to the 🔥 as the comments' number to its icon (it was 26px away), both still 44-point buttons; tapping the number shows who gave a fire, as before; and CI installs the browser alone when Ubuntu's servers can't be reached (GT Ideas #36, Anton's screenshot) (not yet seen on Anton's iPhone) | 0.87.1 | | 2026-11-11 | 2026-11-11 |
 | The film at the top of the website: the new ad film (GT Ideas #37) in place of the drawn phone, upright, with no caption (Anton's pick of three mockups: "B, but with no text"); nothing downloads until it's played, it never plays by itself, 7.5 MB; the phone you could pick up goes; the how-to video unchanged (GT Ideas #29; Safari's poster and play button, and the film playing with sound, not yet confirmed on Anton's iPhone) | 0.87.0 | D98 | 2026-11-11 | 2026-11-11 |
 | Getting started, onboarding for new people: a welcome screen for a new account, then a Getting started list on the Leaderboard whose five steps tick themselves off (add a product, Strainz and Sources, find a friend, post, pick a Look); it folds to one line or hides; each screen shows its own step and a hint the first time; Settings › About › Show me round again; accounts from before it see none of it unless they ask; a double-tap on a photo timed from the touch (GT Ideas #32; built by the onboarding conversation, which has what Anton tried on GT Dev) | 0.86.0 | D97 | 2026-11-11 | 2026-11-11 |
 | A new ad video, replacing the first: an 85-second film (upright and widescreen) and a 24-second short cut, made with the `brag` skill from the real app (0.84.1) filmed frame by frame: the group chat nobody can answer, snap it, rate it, rank it, Strainz, Sources, post it, your mates, private, Looks, the answer; Anton's photos with Zkittlez the star, made-up people, sources and prices; in `design/ad-video/` with what's real, made up and drawn, and how it was made (GT Ideas #37; Anton: "i love this"); on the website since 0.87.0 | (notes) | | 2026-11-11 | notes only |

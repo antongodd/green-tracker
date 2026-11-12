@@ -12,6 +12,8 @@ import { Showcase, Spread } from '../components/BoardTop';
 import { ProductRow } from '../components/ProductRow';
 import { RowPhotos } from '../components/ProductPhotos';
 import { ColoursSheet } from '../components/Gems';
+import { Landing } from '../components/Landing';
+import { takeLanding } from '../landing';
 import { PlusIcon } from '../icons';
 import { EmptyCard } from '../components/EmptyCard';
 import { cachedProducts, fetchArchived, fetchProducts, setFlag } from '../products';
@@ -77,6 +79,8 @@ export function Leaderboard() {
   // D79: the product whose photos are open from its row.
   const [photosOf, setPhotosOf] = useState<Product | null>(null);
   const arrivedFromProduct = useRef(/^\/products\//.test(cameFrom() ?? ''));
+  // D99: a product just saved lands in its place (its own scroll, not the row you last tapped).
+  const [landing] = useState(takeLanding);
 
   useEffect(() => {
     fetchProducts()
@@ -89,7 +93,7 @@ export function Leaderboard() {
   useLayoutEffect(() => {
     if (restored.current || !products) return;
     restored.current = true;
-    restoreRow('leaderboard', arrivedFromProduct.current);
+    if (!landing) restoreRow('leaderboard', arrivedFromProduct.current);
   }, [products]);
 
   const change = (next: ViewState) => {
@@ -142,6 +146,7 @@ export function Leaderboard() {
         )}
       </main>
       {products && products.length === 0 && <TourHint id="add" />}
+      {landing && <Landing id={landing} rows={rows} ready={!!products} />}
       <TabBar active="leaderboard" />
       {showKey && <ColoursSheet onClose={() => setShowKey(false)} />}
       {photosOf && <RowPhotos product={photosOf} onChange={(next) => setProducts((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)} onClose={() => setPhotosOf(null)} />}
