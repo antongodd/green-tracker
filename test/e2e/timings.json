@@ -418,7 +418,7 @@
  "softlight.spec.ts › a press glows where the finger is, then fades when you let go": 4.2,
  "softlight.spec.ts › the words on a row stay readable under the glow (aurora)": 5.3,
  "softlight.spec.ts › the words on a row stay readable under the glow (daysky)": 5.0,
- "softlight.spec.ts › a big photo leans towards the finger": 3.4,
+ "softlight.spec.ts › a big photo leans towards the finger, and settles back when let go": 3.4,
  "softlight.spec.ts › with Reduce Motion › nothing leans or bounces, and the glow still shows": 2.5,
  "softlight.spec.ts › a tab bounces when tapped": 2.8,
  "softlight.spec.ts › with a mouse (a computer) › it lights what it moves over; a pointer that only jumps there leaves nothing": 4.1,
