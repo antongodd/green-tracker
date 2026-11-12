@@ -2122,6 +2122,10 @@ None.
 
 ## 6. Changelog
 
+### Notes — a new product landing on the Leaderboard is live
+- 0.88.0 (on dev 2026-11-11) went live on 2026-11-12 (release #242). Its full run passed, 436 browser tests, one flaky
+  (`heroedge.spec.ts` synthwave, passed on its retry; to look into in the next change). Notes only.
+
 ### 0.88.0 — a new product lands on the Leaderboard (D99)
 
 - Adding a product is a moment now (GT Ideas #38, the owner's pick A of three mockups): Save opens the Leaderboard and
